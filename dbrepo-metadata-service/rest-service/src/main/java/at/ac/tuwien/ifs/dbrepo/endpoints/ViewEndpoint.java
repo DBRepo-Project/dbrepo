@@ -84,6 +84,7 @@ public class ViewEndpoint extends RestEndpoint {
         final Database database = databaseService.findById(databaseId);
         return ResponseEntity.ok(filterViews(database, principal)
                 .stream()
+                .filter(view -> view.getArchivedAt() == null)
                 .map(metadataMapper::viewToViewBriefDto)
                 .collect(Collectors.toList()));
     }
@@ -125,23 +126,27 @@ public class ViewEndpoint extends RestEndpoint {
                                                   Principal principal) throws DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException, DashboardServiceException, DashboardServiceConnectionException,
-            MalformedException {
+            MalformedException, ViewNotFoundException {
         if (notification == null || notification.getViewDto() == null) {
             throw new MalformedException("Replication view payload is missing");
         }
         if (notification.getCreationId() == null) {
             throw new MalformedException("Replication view creation id is missing");
         }
-        final Database database = databaseService.findById(databaseId);
-        final View existing = findExistingReplicatedView(database, notification.getCreationId());
-        if (existing != null) {
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(metadataMapper.viewToViewBriefDto(existing));
-        }
         if (notification.getViewDto().getId() == null) {
             notification.getViewDto().setId(notification.getCreationId());
         } else if (!notification.getCreationId().equals(notification.getViewDto().getId())) {
             throw new MalformedException("Replication view id does not match creation id");
+        }
+        final Database database = databaseService.findById(databaseId);
+        final View existing = findExistingReplicatedView(database, notification.getCreationId());
+        if (existing != null) {
+            if (existing.getArchivedAt() == null && notification.getViewDto().getArchivedAt() != null) {
+                existing.setArchivedAt(notification.getViewDto().getArchivedAt());
+                viewService.delete(existing);
+                dashboardService.update(database);
+            }
+            return ResponseEntity.ok(metadataMapper.viewToViewBriefDto(existing));
         }
         final View view = viewService.createReplicated(database, AuthUtil.getUsername(principal),
                 notification.getViewDto());
@@ -270,7 +275,7 @@ public class ViewEndpoint extends RestEndpoint {
     }
 
     @DeleteMapping("/{viewId}")
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @PreAuthorize("hasAuthority('delete-database-view')")
     @Observed(name = "dbrepo_view_delete")
     @Operation(summary = "Delete view",
@@ -312,7 +317,13 @@ public class ViewEndpoint extends RestEndpoint {
             throw new NotAllowedException("Failed to delete view: not the database owner " + database.getOwnedBy());
         }
         final View view = viewService.findById(database, viewId);
+        if (view.getArchivedAt() != null) {
+            return ResponseEntity.accepted().build();
+        }
         viewService.delete(view);
+        if (hasReplicaLocations(database)) {
+            replicationService.replicateView(view);
+        }
         dashboardService.update(databaseService.findById(databaseId));
         return ResponseEntity.accepted()
                 .build();
@@ -355,6 +366,9 @@ public class ViewEndpoint extends RestEndpoint {
         final Database database = databaseService.findById(databaseId);
         validatePrimaryWriteLocation(database);
         final View view = viewService.findById(database, viewId);
+        if (view.getArchivedAt() != null) {
+            throw new NotAllowedException("Archived views are read-only");
+        }
         if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal)) && !view.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to update view: not the database- or view owner");
             throw new NotAllowedException("Failed to update view: not the database- or view owner");

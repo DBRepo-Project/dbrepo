@@ -561,6 +561,7 @@ interface KeycloakErrorDto {
 }
 
 interface ViewBriefDto {
+  archived_at?: string | null;
   id: string;
   database_id: string;
   name: string;
@@ -576,6 +577,7 @@ interface ViewBriefDto {
 }
 
 interface ViewDto {
+  archived_at?: string | null;
   id: string;
   database_id: string;
   name: string;

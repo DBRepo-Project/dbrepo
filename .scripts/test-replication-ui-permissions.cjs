@@ -42,4 +42,17 @@ for (const [file, permissions] of [
 }
 
 assert.equal(options('components/ResourceStatus.vue').computed.mode.call({ resource: context.table }), 'archived')
+for (const [file, permissions] of [
+  ['components/view/ViewToolbar.vue', ['canViewSettings']],
+  ['pages/database/[database_id]/view/[view_id]/settings.vue', ['canUpdateVisibility', 'canDeleteView']]
+]) {
+  const component = options(file)
+  const viewContext = { ...context, view: context.table,
+    roles: ['modify-view-visibility', 'delete-database-view'] }
+  for (const permission of permissions) {
+    assert.equal(component.computed[permission].call(viewContext), false, `${file}: archived ${permission}`)
+    assert.equal(component.computed[permission].call({ ...viewContext,
+      view: { ...context.table, archived_at: null } }), true, `${file}: active ${permission}`)
+  }
+}
 console.log('Replica and archive UI permission checks passed')

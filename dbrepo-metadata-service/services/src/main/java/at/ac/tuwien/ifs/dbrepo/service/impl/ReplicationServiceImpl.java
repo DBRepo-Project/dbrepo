@@ -119,21 +119,16 @@ public class ReplicationServiceImpl implements ReplicationService {
 
     @Override
     public void replicateView(View view) {
-        try {
-            final ViewNotificationDto notification = ViewNotificationDto.builder()
-                    .databaseId(view.getDatabase().getId())
-                    .creationId(view.getId())
-                    .viewDto(metadataMapper.viewToViewDto(view))
-                    .replicas(view.getDatabase().getReplicaUrls())
-                    .build();
-            final ReplicationNotificationOutbox entry = outboxService.enqueue(
-                    ReplicationNotificationType.VIEW_CREATE, HttpMethod.POST, "/api/replication/view",
-                    notification, view.getId());
-            dispatcher.dispatchAsync(entry.getId());
-        } catch (Exception e) {
-            log.error("Failed to enqueue view replication notification for view {}: {}", view.getId(), e.getMessage(),
-                    e);
-        }
+        final ViewNotificationDto notification = ViewNotificationDto.builder()
+                .databaseId(view.getDatabase().getId())
+                .creationId(view.getId())
+                .viewDto(metadataMapper.viewToViewDto(view))
+                .replicas(view.getDatabase().getReplicaUrls())
+                .build();
+        final ReplicationNotificationOutbox entry = outboxService.enqueue(
+                ReplicationNotificationType.VIEW_CREATE, HttpMethod.POST, "/api/replication/view",
+                notification, view.getId());
+        dispatcher.dispatchAsync(entry.getId());
     }
 
     @Override

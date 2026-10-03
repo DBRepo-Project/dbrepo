@@ -306,6 +306,7 @@ CREATE TABLE IF NOT EXISTS `mdb_view`
     is_schema_public BOOLEAN      NOT NULL DEFAULT TRUE,
     InitialView      BOOLEAN      NOT NULL,
     creation_location VARCHAR(255),
+    archived_at      TIMESTAMP(6) NULL DEFAULT NULL,
     created          TIMESTAMP    NOT NULL DEFAULT NOW(),
     last_modified    TIMESTAMP,
     owned_by         VARCHAR(255) NOT NULL,

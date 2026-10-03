@@ -31,6 +31,25 @@ import static org.mockito.Mockito.when;
 @ExtendWith(SpringExtension.class)
 public class ViewEndpointReplicationUnitTest extends BaseTest {
 
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"system"})
+    void archiveThenDelayedCreateDoesNotResurrectView() throws Exception {
+        final var archived = java.time.Instant.parse("2026-10-03T10:00:00.123456Z");
+        when(databaseService.findById(DATABASE_1_ID)).thenReturn(DATABASE_1);
+        when(viewService.findById(DATABASE_1, VIEW_1_ID)).thenReturn(VIEW_1);
+        final var notification = ViewNotificationDto.builder().creationId(VIEW_1_ID)
+                .viewDto(VIEW_1_DTO.toBuilder().archivedAt(archived).build()).build();
+
+        viewEndpoint.replicate(DATABASE_1_ID, notification, USER_1_PRINCIPAL);
+        notification.getViewDto().setArchivedAt(null);
+        viewEndpoint.replicate(DATABASE_1_ID, notification, USER_1_PRINCIPAL);
+
+        assertEquals(archived, VIEW_1.getArchivedAt());
+        verify(viewService).delete(VIEW_1);
+        verify(viewService, never()).createReplicated(any(), any(), any());
+        verify(dashboardService).update(DATABASE_1);
+    }
+
     @MockitoBean
     private DatabaseService databaseService;
 

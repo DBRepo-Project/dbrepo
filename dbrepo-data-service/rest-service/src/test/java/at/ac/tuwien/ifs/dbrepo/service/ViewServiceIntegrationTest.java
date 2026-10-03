@@ -44,10 +44,10 @@ public class ViewServiceIntegrationTest extends BaseTest {
     }
 
     @Test
-    public void delete_succeeds() throws SQLException, ViewMalformedException {
+    public void delete_preservesHistoricalDependencies() {
 
         /* test */
-        viewService.delete(DATABASE_1_CACHE, VIEW_1_CACHE);
+        assertThrows(ViewMalformedException.class, () -> viewService.delete(DATABASE_1_CACHE, VIEW_1_CACHE));
     }
 
     @Test

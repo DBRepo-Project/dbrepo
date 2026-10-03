@@ -874,6 +874,7 @@ class IdentifierBrief(BaseModel):
 
 
 class View(BaseModel):
+    archived_at: Optional[str] = None
     id: str
     name: str
     query: str
@@ -902,6 +903,7 @@ class History(BaseModel):
 
 
 class ViewBrief(BaseModel):
+    archived_at: Optional[str] = None
     id: str
     database_id: str
     name: str

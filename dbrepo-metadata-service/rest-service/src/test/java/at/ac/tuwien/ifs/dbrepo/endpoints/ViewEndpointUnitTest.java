@@ -551,6 +551,7 @@ public class ViewEndpointUnitTest extends BaseTest {
         doNothing()
                 .when(viewService)
                 .delete(view);
+        when(viewService.findById(database, viewId)).thenReturn(view);
         doNothing()
                 .when(dashboardService)
                 .update(database);

@@ -1,6 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
 import at.ac.tuwien.ifs.dbrepo.cache.DatabaseCacheRepository;
+import at.ac.tuwien.ifs.dbrepo.cache.ViewCacheRepository;
 import at.ac.tuwien.ifs.dbrepo.config.RedisContainerConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
@@ -44,6 +45,9 @@ public class ViewServiceUnitTest extends BaseTest {
 
     @MockitoBean
     private DatabaseCacheRepository databaseCacheRepository;
+
+    @MockitoBean
+    private ViewCacheRepository viewCacheRepository;
 
     @Autowired
     private ViewService viewService;
@@ -118,8 +122,7 @@ public class ViewServiceUnitTest extends BaseTest {
     }
 
     @Test
-    public void delete_dataServiceException_fails() throws DataServiceException, DataServiceConnectionException,
-            ViewNotFoundException {
+    public void archive_doesNotDependOnDataService() throws Exception {
 
         /* mock */
         doThrow(DataServiceException.class)
@@ -127,14 +130,13 @@ public class ViewServiceUnitTest extends BaseTest {
                 .deleteView(DATABASE_1_ID, VIEW_1_ID);
 
         /* test */
-        assertThrows(DataServiceException.class, () -> {
-            viewService.delete(VIEW_1);
-        });
+        viewService.delete(VIEW_1);
+        verify(dataServiceGateway, never()).deleteView(any(), any());
+        org.junit.jupiter.api.Assertions.assertNotNull(VIEW_1.getArchivedAt());
     }
 
     @Test
-    public void delete_dataServiceConnection_fails() throws DataServiceException, DataServiceConnectionException,
-            ViewNotFoundException {
+    public void archive_preservesDefinitionWhenDataServiceIsOffline() throws Exception {
 
         /* mock */
         doThrow(DataServiceConnectionException.class)
@@ -142,9 +144,11 @@ public class ViewServiceUnitTest extends BaseTest {
                 .deleteView(DATABASE_1_ID, VIEW_1_ID);
 
         /* test */
-        assertThrows(DataServiceConnectionException.class, () -> {
-            viewService.delete(VIEW_1);
-        });
+        final String query = VIEW_1.getQuery();
+        viewService.delete(VIEW_1);
+        assertEquals(query, VIEW_1.getQuery());
+        org.junit.jupiter.api.Assertions.assertTrue(DATABASE_1.getViews().contains(VIEW_1));
+        verify(dataServiceGateway, never()).deleteView(any(), any());
     }
 
     @Test

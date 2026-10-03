@@ -157,28 +157,7 @@ public class ViewServiceMariaDbImpl extends DataConnector implements ViewService
 
     @Override
     public void delete(Database database, View view) throws SQLException, ViewMalformedException {
-        final ComboPooledDataSource dataSource = getDataSource(database);
-        final Connection connection = dataSource.getConnection();
-        try {
-            /* drop view if exists */
-            final long start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.dropViewRawQuery(database.getInternalName(),
-                            view.getInternalName()))
-                    .execute();
-            log.atDebug()
-                    .setMessage("delete view: " + view.getInternalName() + "." + database.getInternalName())
-                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
-                    .addKeyValue(Constants.ACTION, "view_delete")
-                    .log();
-            connection.commit();
-        } catch (SQLException e) {
-            connection.rollback();
-            log.error("Failed to delete view: {}", e.getMessage());
-            throw new ViewMalformedException("Failed to delete view: " + e.getMessage(), e);
-        } finally {
-            dataSource.close();
-        }
-        log.info("Deleted view {}.{}", database.getInternalName(), view.getInternalName());
+        throw new ViewMalformedException("Physical deletion would destroy historical queries; archive the view through the metadata service");
     }
 
     @Override

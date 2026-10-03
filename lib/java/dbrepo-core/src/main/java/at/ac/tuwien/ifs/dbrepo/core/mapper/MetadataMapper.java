@@ -343,6 +343,7 @@ public interface MetadataMapper {
     default DatabaseDto databaseToActiveDatabaseDto(Database database) {
         final DatabaseDto dto = databaseToDatabaseDto(database);
         dto.setTables(dto.getTables().stream().filter(table -> table.getArchivedAt() == null).toList());
+        dto.setViews(dto.getViews().stream().filter(view -> view.getArchivedAt() == null).toList());
         return dto;
     }
 

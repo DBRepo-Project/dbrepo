@@ -129,13 +129,13 @@ export default {
       return this.hasReadAccess || this.view.owner.username === this.cacheUser.preferred_username || this.database.owner.username === this.cacheUser.preferred_username
     },
     canViewSettings () {
-      if (this.secondaryReplica || !this.cacheUser || !this.view) {
+      if (this.view?.archived_at || this.secondaryReplica || !this.cacheUser || !this.view) {
         return false
       }
       return this.view.owner.username === this.cacheUser.preferred_username
     },
     canCreatePid () {
-      if (this.secondaryReplica || !this.roles || !this.cacheUser || !this.view) {
+      if (this.view?.archived_at || this.secondaryReplica || !this.roles || !this.cacheUser || !this.view) {
         return false
       }
       const cacheUserService = useUserService()

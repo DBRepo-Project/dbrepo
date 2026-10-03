@@ -8,6 +8,7 @@ import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.TimeToLive;
 
 import java.util.List;
+import java.time.Instant;
 import java.util.UUID;
 
 
@@ -22,6 +23,8 @@ public class View {
 
     @Id
     private UUID id;
+
+    private Instant archivedAt;
 
     @Column(nullable = false)
     private String internalName;

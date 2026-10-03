@@ -59,3 +59,8 @@ instance via `REPLICA_SQL_TEST_PORT` (localhost) and
 `ReplicaSqlAccessIntegrationTest` in the data-service Maven reactor. Never point
 this test at a live database server: it recreates `replica_access_test` and its
 test user.
+# View archival
+
+Apply `dbrepo-metadata-db/migration/replication/archive-views.sql` to each metadata database before starting the new services. Like table archival, removing a view hides it from active listings but retains its SQL definition, columns and identifier relationships. Its internal name stays reserved. Historical queries can continue to reference the definition.
+
+The existing view replication notification carries `archived_at`. Receiving an archive is idempotent, and receiving an older create never clears it. Upgrade every peer before allowing view removals; older peers ignore this field. Physical view deletion through the data API is rejected.

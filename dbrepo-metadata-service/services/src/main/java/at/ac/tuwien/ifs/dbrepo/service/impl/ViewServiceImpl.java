@@ -1,6 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.service.impl;
 
 import at.ac.tuwien.ifs.dbrepo.cache.DatabaseCacheRepository;
+import at.ac.tuwien.ifs.dbrepo.cache.ViewCacheRepository;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewUpdateDto;
@@ -18,8 +19,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.LinkedList;
 import java.util.Optional;
 import java.util.UUID;
@@ -33,6 +38,7 @@ public class ViewServiceImpl implements ViewService {
     private final DatabaseRepository databaseRepository;
     private final SearchServiceGateway searchServiceGateway;
     private final DatabaseCacheRepository databaseCacheRepository;
+    private final ViewCacheRepository viewCacheRepository;
 
     @Value("${dbrepo.baseUrl:http://localhost}")
     private String baseUrl;
@@ -40,12 +46,13 @@ public class ViewServiceImpl implements ViewService {
     @Autowired
     public ViewServiceImpl(MetadataMapper metadataMapper, DataServiceGateway dataServiceGateway,
                            DatabaseRepository databaseRepository, SearchServiceGateway searchServiceGateway,
-                           DatabaseCacheRepository databaseCacheRepository) {
+                           DatabaseCacheRepository databaseCacheRepository, ViewCacheRepository viewCacheRepository) {
         this.metadataMapper = metadataMapper;
         this.dataServiceGateway = dataServiceGateway;
         this.databaseRepository = databaseRepository;
         this.searchServiceGateway = searchServiceGateway;
         this.databaseCacheRepository = databaseCacheRepository;
+        this.viewCacheRepository = viewCacheRepository;
     }
 
     @Override
@@ -62,21 +69,30 @@ public class ViewServiceImpl implements ViewService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void delete(View view) throws DataServiceException, DataServiceConnectionException,
             DatabaseNotFoundException, ViewNotFoundException, SearchServiceException, SearchServiceConnectionException {
-        /* delete in data service */
-        dataServiceGateway.deleteView(view.getDatabase().getId(), view.getId());
-        /* delete in metadata database */
-        view.getDatabase()
-                .getViews()
-                .remove(view);
+        if (view.getArchivedAt() == null) {
+            view.setArchivedAt(Instant.now().truncatedTo(ChronoUnit.MICROS));
+        }
+        // Stored queries may depend on the definition, including through other views.
         final Database database = databaseRepository.save(view.getDatabase());
-        /* update cache */
-        databaseCacheRepository.deleteById(view.getDatabase().getId());
-        /* update in search service */
+        final Runnable evict = () -> {
+            databaseCacheRepository.deleteById(view.getDatabase().getId());
+            viewCacheRepository.deleteById(view.getId());
+        };
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    evict.run();
+                }
+            });
+        } else {
+            evict.run();
+        }
         searchServiceGateway.update(database);
-        log.info("Deleted view with id {}", view.getId());
+        log.info("Archived view with id {}", view.getId());
     }
 
     @Override
@@ -146,6 +162,7 @@ public class ViewServiceImpl implements ViewService {
                 .isSchemaPublic(data.getIsSchemaPublic())
                 .isPublic(data.getIsPublic())
                 .creationLocation(data.getCreationLocation())
+                .archivedAt(data.getArchivedAt())
                 .build();
         final ViewDto rawView = dataServiceGateway.createViewRaw(database.getId(), view.getInternalName(),
                 data.getQuery());

@@ -177,19 +177,19 @@ export default {
       return this.view.is_schema_public !== this.modify.is_schema_public
     },
     canUpdateVisibility () {
-      if (this.secondaryReplica || !this.roles || !this.cacheUser || !this.view) {
+      if (this.view?.archived_at || this.secondaryReplica || !this.roles || !this.cacheUser || !this.view) {
         return false
       }
       return this.roles.includes('modify-view-visibility') && this.view.owner.username === this.cacheUser.preferred_username
     },
     canDeleteView () {
-      if (this.secondaryReplica || !this.roles || !this.cacheUser || !this.view) {
+      if (this.view?.archived_at || this.secondaryReplica || !this.roles || !this.cacheUser || !this.view) {
         return false
       }
       return this.roles.includes('delete-database-view') && this.view.owner.username === this.cacheUser.preferred_username
     },
     canViewSettings () {
-      if (this.secondaryReplica || !this.view || !this.access || !this.cacheUser) {
+      if (this.view?.archived_at || this.secondaryReplica || !this.view || !this.access || !this.cacheUser) {
         return false
       }
       const userService = useUserService()

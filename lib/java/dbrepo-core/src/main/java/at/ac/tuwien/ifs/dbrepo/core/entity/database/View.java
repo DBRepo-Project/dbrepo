@@ -69,6 +69,9 @@ public class View {
     @Column(name = "creation_location")
     private String creationLocation;
 
+    @Column(name = "archived_at", columnDefinition = "TIMESTAMP(6)")
+    private Instant archivedAt;
+
     @ToString.Exclude
     @org.springframework.data.annotation.Transient
     @OneToMany(fetch = FetchType.LAZY)

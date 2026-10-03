@@ -72,6 +72,9 @@ public class ViewDto {
     @Schema(description = "The site where the view was initially created", example = "http://localhost:8080", nullable = true)
     private String creationLocation;
 
+    @JsonProperty("archived_at")
+    private Instant archivedAt;
+
     @NotNull
     private UserBriefDto owner;
 

@@ -8,6 +8,7 @@ import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
 import java.util.UUID;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -22,6 +23,9 @@ public class ViewBriefDto {
     @NotNull
     @Schema(description = "The id", example = "787439d0-e85e-400c-a7e6-996a023bfad9")
     private UUID id;
+
+    @JsonProperty("archived_at")
+    private Instant archivedAt;
 
     @NotNull
     @JsonProperty("database_id")
