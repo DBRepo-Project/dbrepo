@@ -50,6 +50,7 @@ dbrepo:
     password: "${SYSTEM_PASSWORD:admin}"
   baseUrl: "${BASE_URL:http://localhost}"
   replication:
+    allowedSites: "${REPLICATION_ALLOWED_SITES:}"
     username: "${REPLICATION_USERNAME:replication}"
     password: "${REPLICATION_PASSWORD:replication}"
     outbox:

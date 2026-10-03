@@ -11,6 +11,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.container.Container;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
+import at.ac.tuwien.ifs.dbrepo.core.replication.ReplicationPeers;
 import at.ac.tuwien.ifs.dbrepo.service.*;
 import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
 import io.micrometer.observation.annotation.Observed;
@@ -54,6 +55,7 @@ public class DatabaseEndpoint extends RestEndpoint {
     private final DashboardService dashboardService;
     private final ReplicationService replicationService;
     private final ReplicationAccessService replicationAccessService;
+    private final ReplicationPeers replicationPeers;
 
     @Value("${dbrepo.baseUrl:http://localhost}")
     private String baseUrl;
@@ -68,7 +70,7 @@ public class DatabaseEndpoint extends RestEndpoint {
     public DatabaseEndpoint(UserService userService, MetadataMapper metadataMapper, StorageService storageService,
                             DatabaseService databaseService, ContainerService containerService,
                             DashboardService dashboardService, ReplicationService replicationService,
-                            ReplicationAccessService replicationAccessService) {
+                            ReplicationAccessService replicationAccessService, ReplicationPeers replicationPeers) {
         this.userService = userService;
         this.metadataMapper = metadataMapper;
         this.storageService = storageService;
@@ -77,6 +79,7 @@ public class DatabaseEndpoint extends RestEndpoint {
         this.dashboardService = dashboardService;
         this.replicationService = replicationService;
         this.replicationAccessService = replicationAccessService;
+        this.replicationPeers = replicationPeers;
     }
 
     @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
@@ -174,6 +177,14 @@ public class DatabaseEndpoint extends RestEndpoint {
             ContainerNotFoundException, SearchServiceException, SearchServiceConnectionException,
             ContainerQuotaException, DashboardServiceException, DashboardServiceConnectionException, NotAllowedException {
         log.debug("endpoint create database, data.name={}", data.getName());
+        if (data.getReplicaUrls() != null) {
+            try {
+                data.setReplicaUrls(data.getReplicaUrls().stream()
+                        .map(replicationPeers::requireAllowedSite).distinct().toList());
+            } catch (IllegalArgumentException e) {
+                throw new NotAllowedException(e.getMessage());
+            }
+        }
         final Container container = containerService.find(data.getCid());
         if (container.getQuota() != null && container.getDatabases().size() + 1 > container.getQuota()) {
             log.error("Failed to create database: quota of {} exceeded", container.getQuota());

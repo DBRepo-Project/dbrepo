@@ -735,6 +735,8 @@ dataservice:
 ## @section Replication Service
 
 replicationservice:
+  ## @param replicationservice.allowedSites Trusted HTTPS site origins allowed to receive shared replication credentials.
+  allowedSites: [ ]
   ## @param replicationservice.enabled Enable the Replication Service.
   enabled: true
   ## @param replicationservice.endpoint Absolute URL to the replication service in the form of http://host:port

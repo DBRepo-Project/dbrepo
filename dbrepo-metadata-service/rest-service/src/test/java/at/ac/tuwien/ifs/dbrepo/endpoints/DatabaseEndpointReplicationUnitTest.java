@@ -40,7 +40,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.ArgumentCaptor;
 
-@SpringBootTest
+@SpringBootTest(properties = "dbrepo.replication.allowedSites=https://peer.example")
 @ExtendWith(SpringExtension.class)
 public class DatabaseEndpointReplicationUnitTest extends BaseTest {
 
@@ -67,6 +67,32 @@ public class DatabaseEndpointReplicationUnitTest extends BaseTest {
 
     @Autowired
     private DatabaseEndpoint databaseEndpoint;
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"create-database"})
+    public void create_untrustedReplica_rejectsBeforeCreatingAnything() throws Exception {
+        final CreateDatabaseDto request = CreateDatabaseDto.builder()
+                .cid(CONTAINER_1_ID).name("replication_test")
+                .replicaUrls(List.of("https://untrusted.example")).build();
+
+        assertThrows(NotAllowedException.class, () -> databaseEndpoint.create(request, USER_1_PRINCIPAL));
+
+        org.mockito.Mockito.verifyNoInteractions(containerService, databaseService, dashboardService, replicationService);
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"create-database"})
+    public void create_trustedReplica_normalizesBeforeProcessing() throws Exception {
+        final CreateDatabaseDto request = CreateDatabaseDto.builder()
+                .cid(CONTAINER_1_ID).name("replication_test")
+                .replicaUrls(List.of("https://PEER.example:443/", "https://peer.example")).build();
+        when(containerService.find(CONTAINER_1_ID)).thenThrow(new ContainerNotFoundException("test container missing"));
+
+        assertThrows(ContainerNotFoundException.class, () -> databaseEndpoint.create(request, USER_1_PRINCIPAL));
+
+        assertEquals(List.of("https://peer.example"), request.getReplicaUrls());
+        verify(containerService).find(CONTAINER_1_ID);
+    }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"system"})

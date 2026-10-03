@@ -1,6 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.config;
 
 import at.ac.tuwien.ifs.dbrepo.auth.BasicRequestInterceptor;
+import at.ac.tuwien.ifs.dbrepo.core.replication.ReplicationPeers;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -8,8 +9,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriBuilderFactory;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
 
 @Slf4j
 @Getter
@@ -60,8 +66,30 @@ public class GatewayConfig {
     }
 
     @Bean("externalReplicationRestTemplate")
-    public RestTemplate externalReplicationRestTemplate() {
-        final RestTemplate restTemplate = timeoutRestTemplate();
+    public RestTemplate externalReplicationRestTemplate(
+            @Value("${dbrepo.replication.allowedSites:}") String allowedSites) {
+        final ReplicationPeers peers = new ReplicationPeers(allowedSites);
+        final SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory() {
+            @Override
+            protected void prepareConnection(HttpURLConnection connection, String method) throws IOException {
+                super.prepareConnection(connection, method);
+                connection.setInstanceFollowRedirects(false);
+            }
+        };
+        factory.setConnectTimeout(10_000);
+        factory.setReadTimeout(30_000);
+        final RestTemplate restTemplate = new RestTemplate(factory);
+        restTemplate.setErrorHandler(new DefaultResponseErrorHandler() {
+            @Override
+            protected boolean hasError(HttpStatusCode status) {
+                return status.is3xxRedirection() || super.hasError(status);
+            }
+        });
+        // Validate the destination before attaching shared credentials, including on retries.
+        restTemplate.getInterceptors().add((request, body, execution) -> {
+            peers.requireAllowedRequest(request.getURI());
+            return execution.execute(request, body);
+        });
         restTemplate.getInterceptors()
                 .add(new BasicRequestInterceptor(replicationUsername, replicationPassword));
         return restTemplate;

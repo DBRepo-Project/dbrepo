@@ -1,6 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.config;
 
 import at.ac.tuwien.ifs.dbrepo.auth.BasicRequestInterceptor;
+import at.ac.tuwien.ifs.dbrepo.core.replication.ReplicationPeers;
 import at.ac.tuwien.ifs.dbrepo.service.CredentialService;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
@@ -83,6 +84,11 @@ public class GatewayConfig {
         restTemplate.getInterceptors()
                 .add(new BasicRequestInterceptor(this));
         return restTemplate;
+    }
+
+    @Bean
+    public ReplicationPeers replicationPeers(@Value("${dbrepo.replication.allowedSites:}") String allowedSites) {
+        return new ReplicationPeers(allowedSites);
     }
 
     @Bean("dataServiceRestTemplate")

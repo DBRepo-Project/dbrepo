@@ -1134,6 +1134,12 @@
         "replicationservice": {
             "type": "object",
             "properties": {
+                "allowedSites": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "auth": {
                     "type": "object",
                     "properties": {

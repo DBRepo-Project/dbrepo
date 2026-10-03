@@ -12,6 +12,32 @@ make gen-secrets
 
 Note that this script overwrites (previously generated) secrets, use with caution.
 
+### Replication Peers
+
+Cross-site replication sends shared credentials only to explicitly configured peers. Set
+`REPLICATION_ALLOWED_SITES` in `.env` to a comma-separated list of trusted HTTPS origins, for example:
+
+```dotenv
+REPLICATION_ALLOWED_SITES=https://site-b.example.org,https://site-c.example.org
+```
+
+Configure this on every participating site before upgrading the metadata and replication services.
+For Helm, use the list `replicationservice.allowedSites`. Empty configuration disables outbound
+cross-site replication, including retries; local databases are unaffected. Existing queued work is
+not removed. Sites must use root origins without paths, queries or embedded credentials. Redirects
+are rejected; configure the final HTTPS origin directly. HTTP is permitted only for explicitly
+listed loopback addresses during local development.
+
+Use a dedicated shared replication account, never the system account, and a non-default password.
+Only add sites whose administrators are trusted with those credentials. This allowlist does not
+provide isolation between peers sharing the same account.
+
+After changing the Docker configuration, recreate only the affected services, preserving volumes:
+
+```shell
+docker compose up -d --no-deps dbrepo-metadata-service dbrepo-replication-service
+```
+
 ### Storage Service
 
 You need to manually update the `s3_config.json` file when changing either `S3_ACCESS_KEY_ID` or `S3_SECRET_ACCESS_KEY`.
@@ -83,4 +109,3 @@ the default `.env` environment variables.
 Next, create a [user account](/infrastructures/dbrepo/1.13/api/#create-user-account) and 
 then [create a database](/infrastructures/dbrepo/1.13/api/#create-database) 
 to [import a dataset](/infrastructures/dbrepo/1.13/api/#import-dataset).
-
