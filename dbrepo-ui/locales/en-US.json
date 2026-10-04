@@ -1667,6 +1667,16 @@
       "localUser": "Select local user",
       "mapped": "Replica owner saved as {username}."
     },
+    "add": {
+      "title": "Add replica",
+      "database": "Primary database",
+      "target": "Target site URL",
+      "empty": "No primary databases are available on this site.",
+      "invalidUrl": "Enter an HTTP or HTTPS site URL without credentials, a query, or a fragment.",
+      "sameSite": "The target must be a different site.",
+      "exists": "This target is already configured for the selected database.",
+      "queued": "Replica creation queued for {database} at {url}. Synchronisation is not yet complete."
+    },
     "synchronisation": {
       "title": "Synchronisation",
       "help": "Manually replay a primary database or table to its configured replicas after an outage. Normal replication does not require this action.",

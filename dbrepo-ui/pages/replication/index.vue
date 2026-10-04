@@ -133,6 +133,60 @@
 
       <section
         class="mt-8"
+        aria-labelledby="replication-add">
+        <h2 id="replication-add" class="text-h6 mb-3">{{ $t('replication.add.title') }}</h2>
+        <form @submit.prevent="addReplica">
+          <v-row align="start">
+            <v-col cols="12" md="4">
+              <v-select
+                v-model="replicaDatabaseId"
+                :items="primaryDatabases"
+                item-title="name"
+                item-value="id"
+                :label="$t('replication.add.database')"
+                :no-data-text="$t('replication.add.empty')"
+                :loading="loadingDatabases"
+                :disabled="addingReplica"
+                density="compact"
+                variant="outlined"
+                hide-details="auto" />
+            </v-col>
+            <v-col cols="12" md="5">
+              <v-text-field
+                v-model="replicaUrl"
+                type="url"
+                :label="$t('replication.add.target')"
+                :error-messages="replicaUrlError"
+                :disabled="addingReplica"
+                density="compact"
+                variant="outlined"
+                hide-details="auto" />
+            </v-col>
+            <v-col cols="12" md="3">
+              <v-btn
+                type="submit"
+                color="primary"
+                prepend-icon="mdi-database-plus"
+                :disabled="!replicaDatabase || !replicaUrl.trim() || !!replicaUrlError || loadingDatabases || addingReplica"
+                :loading="addingReplica">
+                {{ $t('replication.add.title') }}
+              </v-btn>
+            </v-col>
+          </v-row>
+        </form>
+        <v-alert
+          v-if="replicaQueued"
+          class="mt-4"
+          type="info"
+          variant="tonal"
+          closable
+          @click:close="replicaQueued = null">
+          {{ replicaQueued }}
+        </v-alert>
+      </section>
+
+      <section
+        class="mt-8"
         aria-labelledby="replication-sync">
         <div class="d-flex align-center mb-3">
           <h2 id="replication-sync" class="text-h6">{{ $t('replication.synchronisation.title') }}</h2>
@@ -386,6 +440,10 @@ export default {
       cacheStore: useCacheStore(),
       status: null,
       databases: [],
+      replicaDatabaseId: null,
+      replicaUrl: '',
+      addingReplica: false,
+      replicaQueued: null,
       selectedDatabase: null,
       selectedDatabaseId: null,
       selectedTableId: null,
@@ -419,9 +477,34 @@ export default {
     validPageSize () {
       return Number.isInteger(this.pageSize) && this.pageSize > 0 && this.pageSize <= 1000
     },
-    replicatedDatabases () {
+    primaryDatabases () {
       return this.databases.filter(database =>
-        !isSecondaryReplica(database, this.$config.public.api.client) &&
+        !isSecondaryReplica(database, this.$config.public.api.client)
+      )
+    },
+    replicaDatabase () {
+      return this.primaryDatabases.find(database => database.id === this.replicaDatabaseId)
+    },
+    replicaUrlError () {
+      if (!this.replicaUrl.trim()) {
+        return ''
+      }
+      const target = this.normaliseSiteUrl(this.replicaUrl)
+      if (!target) {
+        return this.$t('replication.add.invalidUrl')
+      }
+      if ([this.$config.public.api.client, this.replicaDatabase?.creation_location]
+        .some(url => this.normaliseSiteUrl(url) === target)) {
+        return this.$t('replication.add.sameSite')
+      }
+      if (Object.keys(this.replicaDatabase?.replica_urls || {})
+        .some(url => this.normaliseSiteUrl(url) === target)) {
+        return this.$t('replication.add.exists')
+      }
+      return ''
+    },
+    replicatedDatabases () {
+      return this.primaryDatabases.filter(database =>
         database.replica_urls && Object.keys(database.replica_urls).length > 0
       )
     },
@@ -507,6 +590,38 @@ export default {
     }
   },
   methods: {
+    normaliseSiteUrl (value) {
+      try {
+        const url = new URL(value.trim())
+        if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || url.search || url.hash) {
+          return null
+        }
+        return url.href.replace(/\/+$/, '')
+      } catch {
+        return null
+      }
+    },
+    async addReplica () {
+      if (!this.canManageReplication || !this.replicaDatabase || !this.replicaUrl.trim() ||
+        this.replicaUrlError || this.addingReplica || this.loadingDatabases) {
+        return
+      }
+      const database = this.replicaDatabase
+      const url = this.normaliseSiteUrl(this.replicaUrl)
+      this.addingReplica = true
+      this.replicaQueued = null
+      try {
+        await useReplicationService().addReplica(database.id, url)
+        this.replicaQueued = this.$t('replication.add.queued', {database: database.name, url})
+        useToastInstance().success(this.replicaQueued)
+        this.replicaUrl = ''
+        await this.refreshAll()
+      } catch (error) {
+        this.showError(error)
+      } finally {
+        this.addingReplica = false
+      }
+    },
     statusColor (status) {
       if (['UP', 'SUCCEEDED', 'COMPLETED'].includes(status)) {
         return 'success'

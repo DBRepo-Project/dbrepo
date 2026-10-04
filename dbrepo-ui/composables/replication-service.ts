@@ -9,6 +9,14 @@ export const useReplicationService = (): any => {
     }
   }
 
+  async function addReplica (databaseId: string, replicaUrl: string): Promise<{ status: 'queued' }> {
+    const axios = useAxiosInstance()
+    return request(() => axios.post<{ status: 'queued' }>(
+      `/api/v1/database/${databaseId}/replicas`,
+      {replica_url: replicaUrl}
+    ))
+  }
+
   async function findStatus (): Promise<ReplicationStatusDto> {
     const axios = useAxiosInstance()
     return request(() => axios.get<ReplicationStatusDto>('/api/replication/status'))
@@ -92,6 +100,7 @@ export const useReplicationService = (): any => {
   }
 
   return {
+    addReplica,
     findStatus,
     findReplicationOutbox,
     retryReplicationOutbox,
