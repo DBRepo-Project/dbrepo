@@ -17,8 +17,10 @@ public interface ReplicationService {
 
     void prepare(Connection connection, Database database, Table table) throws SQLException;
 
-    void enqueue(Connection connection, TupleWithTimestampsDto tuple, Database database, Table table,
+    UUID enqueue(Connection connection, TupleWithTimestampsDto tuple, Database database, Table table,
                  HttpMethod method) throws SQLException;
+
+    void dispatchCommitted(Database database, List<UUID> eventIds);
 
     List<TupleReplicationOutboxEntry> findOutboxEntries(Database database) throws SQLException;
 

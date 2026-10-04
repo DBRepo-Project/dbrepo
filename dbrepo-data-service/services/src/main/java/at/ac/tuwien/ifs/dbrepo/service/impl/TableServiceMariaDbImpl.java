@@ -280,6 +280,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         final Map<String, Object> values = new LinkedHashMap<>();
         columns.forEach(column -> values.put(column, null));
         final TupleDto tuple = TupleDto.builder().data(values).build();
+        final List<UUID> eventIds = new ArrayList<>();
         try (ComboPooledDataSource dataSource = getDataSource(database);
              Connection connection = dataSource.getConnection()) {
             replicationService.prepare(connection, database, table);
@@ -306,8 +307,8 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                                 throw new SQLException("Imported tuple was not returned by the database");
                             }
                             // POST is an identity-keyed upsert at the receiver, including duplicate CSV rows.
-                            replicationService.enqueue(connection, tupleWithTimestamps(result, columns), database,
-                                    table, HttpMethod.POST);
+                            eventIds.add(replicationService.enqueue(connection, tupleWithTimestamps(result, columns),
+                                    database, table, HttpMethod.POST));
                         }
                     } else {
                         statement.executeUpdate();
@@ -319,6 +320,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                 throw new MalformedException("Failed to import dataset: " + e.getMessage(), e);
             }
         }
+        replicationService.dispatchCommitted(database, eventIds);
         storageService.deleteObject(data.getLocation());
         log.info("Imported dataset into table {}.{}", database.getInternalName(), table.getInternalName());
     }
@@ -464,8 +466,9 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                     .log();
             final TupleWithTimestampsDto tuple = selectTupleWithTimestamps(connection, database, table,
                     lookupKeys(data.getData()));
-            replicationService.enqueue(connection, tuple, database, table, HttpMethod.POST);
+            final UUID eventId = replicationService.enqueue(connection, tuple, database, table, HttpMethod.POST);
             connection.commit();
+            replicationService.dispatchCommitted(database, eventId == null ? List.of() : List.of(eventId));
             log.info("Created tuple with timestamps in table: {}.{}", database.getInternalName(),
                     table.getInternalName());
             return tuple;
@@ -599,9 +602,11 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "table_update_tuple_with_timestamps")
                     .log();
+            final List<UUID> eventIds = new ArrayList<>();
             final TupleWithTimestampsDto tuple = enqueueChangedTuples(connection, database, table, affectedKeys,
-                    HttpMethod.PUT);
+                    HttpMethod.PUT, eventIds);
             connection.commit();
+            replicationService.dispatchCommitted(database, eventIds);
             log.info("Updated tuple with timestamps in table: {}.{}", database.getInternalName(),
                     table.getInternalName());
             return tuple;
@@ -647,9 +652,11 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "table_delete_tuple_with_timestamps")
                     .log();
+            final List<UUID> eventIds = new ArrayList<>();
             final TupleWithTimestampsDto tuple = enqueueChangedTuples(connection, database, table, affectedKeys,
-                    HttpMethod.DELETE);
+                    HttpMethod.DELETE, eventIds);
             connection.commit();
+            replicationService.dispatchCommitted(database, eventIds);
             log.info("Deleted tuple with timestamps from table: {}.{}", database.getInternalName(),
                     table.getInternalName());
             return tuple;
@@ -1031,13 +1038,16 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     }
 
     private TupleWithTimestampsDto enqueueChangedTuples(Connection connection, Database database, Table table,
-                                                         List<String> keys, HttpMethod method)
+                                                         List<String> keys, HttpMethod method, List<UUID> eventIds)
             throws SQLException, QueryMalformedException, StorageUnavailableException, StorageNotFoundException {
         TupleWithTimestampsDto first = null;
         for (String key : keys) {
             final TupleWithTimestampsDto tuple = selectTupleWithTimestamps(connection, database, table,
                     replicationKeyLookup(key));
-            replicationService.enqueue(connection, tuple, database, table, method);
+            final UUID eventId = replicationService.enqueue(connection, tuple, database, table, method);
+            if (eventId != null) {
+                eventIds.add(eventId);
+            }
             if (first == null) {
                 first = tuple;
             }

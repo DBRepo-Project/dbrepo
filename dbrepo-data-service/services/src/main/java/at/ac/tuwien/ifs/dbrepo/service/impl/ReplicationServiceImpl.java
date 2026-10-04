@@ -66,19 +66,32 @@ public class ReplicationServiceImpl implements ReplicationService {
     }
 
     @Override
-    public void enqueue(Connection connection, TupleWithTimestampsDto tuple, Database database, Table table,
+    public UUID enqueue(Connection connection, TupleWithTimestampsDto tuple, Database database, Table table,
                         HttpMethod method) throws SQLException {
         if (!isEnabled(database, table)) {
-            return;
+            return null;
         }
         if (tuple == null || tuple.getReplicationKey() == null) {
             throw new SQLException("Cannot replicate tuple without a replication key");
         }
-        outboxService.enqueue(connection, database, table, method, DataReplicationDto.builder()
+        return outboxService.enqueue(connection, database, table, method, DataReplicationDto.builder()
                 .tuple(tuple)
                 .database(toDatabaseDto(database))
                 .table(toTableDto(database, table))
-                .build());
+                .build()).getId();
+    }
+
+    @Override
+    public void dispatchCommitted(Database database, List<UUID> eventIds) {
+        if (eventIds.isEmpty()) {
+            return;
+        }
+        try {
+            dispatcher.dispatchAsync(database, List.copyOf(eventIds));
+        } catch (RuntimeException e) {
+            log.error("Failed to schedule committed tuple replication notifications for database {}: {}",
+                    database.getInternalName(), e.getMessage(), e);
+        }
     }
 
     @Override

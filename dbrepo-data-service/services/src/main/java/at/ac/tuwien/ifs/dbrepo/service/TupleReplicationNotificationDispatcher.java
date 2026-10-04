@@ -52,8 +52,10 @@ public class TupleReplicationNotificationDispatcher {
     }
 
     @Async
-    public void dispatchAsync(Database database, UUID id) {
-        dispatch(database, id);
+    public void dispatchAsync(Database database, List<UUID> eventIds) {
+        for (UUID id : eventIds) {
+            dispatch(database, id);
+        }
     }
 
     public int dispatchDue() {

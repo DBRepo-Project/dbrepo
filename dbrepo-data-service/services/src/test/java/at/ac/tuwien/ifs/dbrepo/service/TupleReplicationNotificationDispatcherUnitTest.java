@@ -24,6 +24,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -118,6 +119,24 @@ class TupleReplicationNotificationDispatcherUnitTest {
         when(outbox.claim(database, id, Duration.ofMinutes(5))).thenReturn(Optional.empty());
         assertFalse(dispatcher.dispatch(database, id));
         verifyNoInteractions(http);
+    }
+
+    @Test
+    void committedImportDispatchesBeyondSchedulerBatchSize() throws Exception {
+        final var ids = IntStream.range(0, 30).mapToObj(ignored -> UUID.randomUUID()).toList();
+        when(outbox.claim(eq(database), any(UUID.class), eq(Duration.ofMinutes(5))))
+                .thenAnswer(invocation -> Optional.of(TupleReplicationOutboxEntry.builder()
+                        .id(invocation.getArgument(1)).claimToken(UUID.randomUUID())
+                        .status(TupleReplicationOutboxStatus.PROCESSING).httpMethod(HttpMethod.POST)
+                        .payloadJson("{}").build()));
+        when(outbox.markSucceeded(eq(database), any(UUID.class), any(UUID.class))).thenReturn(true);
+        accepted();
+
+        dispatcher.dispatchAsync(database, ids);
+
+        verify(http, times(ids.size())).exchange(eq("/api/replication/data"), eq(HttpMethod.POST),
+                any(HttpEntity.class), eq(Void.class));
+        verify(outbox, never()).claimDue(any(), anyInt(), any());
     }
 
     private void accepted() {

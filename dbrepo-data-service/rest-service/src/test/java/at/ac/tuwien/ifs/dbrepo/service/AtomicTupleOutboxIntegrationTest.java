@@ -15,7 +15,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.mapstruct.factory.Mappers;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.client.RestTemplate;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -23,6 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -37,6 +42,7 @@ class AtomicTupleOutboxIntegrationTest {
     private Database database;
     private Table table;
     private TableServiceMariaDbImpl service;
+    private TupleReplicationNotificationDispatcher dispatcher;
 
     @BeforeEach
     void setup() throws Exception {
@@ -50,8 +56,8 @@ class AtomicTupleOutboxIntegrationTest {
         table = Table.builder().id(UUID.randomUUID()).internalName("samples")
                 .columns(List.of(Column.builder().internalName("replication_key").columnType(ColumnType.VARCHAR).build(),
                         Column.builder().internalName("sample_value").columnType(ColumnType.INT).build())).build();
-        final ReplicationServiceImpl replication = new ReplicationServiceImpl(outbox,
-                mock(TupleReplicationNotificationDispatcher.class));
+        dispatcher = mock(TupleReplicationNotificationDispatcher.class);
+        final ReplicationServiceImpl replication = new ReplicationServiceImpl(outbox, dispatcher);
         ReflectionTestUtils.setField(replication, "baseUrl", "https://origin.example");
         service = new TableServiceMariaDbImpl(mock(DataMapper.class), Mappers.getMapper(MariaDbMapper.class),
                 mock(SubsetService.class), mock(StorageService.class), mock(DataService.class), replication);
@@ -68,6 +74,12 @@ class AtomicTupleOutboxIntegrationTest {
 
     @Test
     void sourceWritesAndEveryAffectedTupleAreCommittedTogether() throws Exception {
+        final AtomicInteger committed = new AtomicInteger();
+        doAnswer(invocation -> {
+            final List<?> ids = invocation.getArgument(1);
+            assertEquals(committed.addAndGet(ids.size()), count("tuple_replication_notification_outbox"));
+            return null;
+        }).when(dispatcher).dispatchAsync(eq(database), anyList());
         service.createTuple(database, table, tuple("a", 1));
         service.createTuple(database, table, tuple("b", 1));
         service.updateTuple(database, table, update(1, 2));
@@ -76,6 +88,9 @@ class AtomicTupleOutboxIntegrationTest {
         assertEquals(4, count("samples FOR SYSTEM_TIME ALL"));
         final var events = outbox.findAll(database);
         assertEquals(6, events.size());
+        verify(dispatcher, times(4)).dispatchAsync(eq(database), anyList());
+        verify(dispatcher, times(2)).dispatchAsync(eq(database), argThat(ids -> ids.size() == 1));
+        verify(dispatcher, times(2)).dispatchAsync(eq(database), argThat(ids -> ids.size() == 2));
         assertEquals(2, events.stream().filter(e -> e.getHttpMethod().name().equals("DELETE")).count());
         for (var event : events) {
             final var payload = new ObjectMapper().readTree(event.getPayloadJson());
@@ -98,6 +113,7 @@ class AtomicTupleOutboxIntegrationTest {
         assertEquals(2, count("samples WHERE sample_value = 1"));
         assertEquals(2, count("samples FOR SYSTEM_TIME ALL"));
         assertEquals(0, count("tuple_replication_notification_outbox"));
+        verifyNoInteractions(dispatcher);
     }
 
     @Test
@@ -106,6 +122,37 @@ class AtomicTupleOutboxIntegrationTest {
                 .when(outbox).enqueue(any(Connection.class), any(), any(), any(), any());
         assertThrows(IllegalArgumentException.class, () -> service.createTuple(database, table, tuple("a", 1)));
         assertEquals(0, count("samples FOR SYSTEM_TIME ALL"));
+        verifyNoInteractions(dispatcher);
+    }
+
+    @Test
+    void failedImmediateSchedulingLeavesCommittedEventForRetry() throws Exception {
+        doThrow(new IllegalStateException("executor unavailable"))
+                .when(dispatcher).dispatchAsync(eq(database), anyList());
+        service.createTuple(database, table, tuple("a", 1));
+        assertEquals(1, count("samples"));
+        assertEquals(1, count("tuple_replication_notification_outbox"));
+    }
+
+    @Test
+    void committedChangesAreDeliveredWithoutRunningTheScheduler() throws Exception {
+        final RestTemplate http = mock(RestTemplate.class);
+        when(http.exchange(eq("/api/replication/data"), any(HttpMethod.class), any(HttpEntity.class),
+                eq(Void.class))).thenReturn(ResponseEntity.accepted().build());
+        final var sender = new TupleReplicationNotificationDispatcher(http, mock(MetadataService.class), outbox);
+        ReflectionTestUtils.setField(sender, "processingTimeoutSeconds", 300L);
+        doAnswer(invocation -> {
+            sender.dispatchAsync(invocation.getArgument(0), invocation.getArgument(1));
+            return null;
+        }).when(dispatcher).dispatchAsync(eq(database), anyList());
+
+        service.createTuple(database, table, tuple("a", 1));
+        service.updateTuple(database, table, update(1, 2));
+        service.deleteTuple(database, table, TupleDeleteDto.builder().keys(Map.of("sample_value", 2)).build());
+
+        verify(http, times(3)).exchange(eq("/api/replication/data"), any(HttpMethod.class),
+                any(HttpEntity.class), eq(Void.class));
+        assertEquals(3, count("tuple_replication_notification_outbox WHERE status = 'SUCCEEDED'"));
     }
 
     @Test
@@ -117,6 +164,7 @@ class AtomicTupleOutboxIntegrationTest {
                 TupleDeleteDto.builder().keys(Map.of("sample_value", 2)).build());
         assertEquals(0, count("tuple_replication_notification_outbox"));
         assertEquals(2, count("samples FOR SYSTEM_TIME ALL"));
+        verifyNoInteractions(dispatcher);
     }
 
     @Test

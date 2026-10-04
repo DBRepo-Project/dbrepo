@@ -13,6 +13,7 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.StorageUnavailableException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.TableMalformedException;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.StorageService;
+import at.ac.tuwien.ifs.dbrepo.service.TupleReplicationNotificationDispatcher;
 import at.ac.tuwien.ifs.dbrepo.service.outbox.TupleReplicationOutboxServiceMariaDbImpl;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -52,6 +53,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 /** Real Spark CSV parsing and MariaDB transactions; only S3 transport is replaced with local files. */
 @EnabledIfEnvironmentVariable(named = "INGEST_SQL_TEST_PORT", matches = "[0-9]+")
@@ -72,6 +75,7 @@ class IngestReplicationMariaDbIntegrationTest {
     private Table table;
     private TableServiceMariaDbImpl service;
     private ReplicationServiceImpl replication;
+    private TupleReplicationNotificationDispatcher dispatcher;
 
     @BeforeAll
     static void startSpark() {
@@ -100,7 +104,8 @@ class IngestReplicationMariaDbIntegrationTest {
         table = Table.builder().id(UUID.randomUUID()).internalName("samples")
                 .columns(List.of(column("replication_key", ColumnType.VARCHAR), column("sample_value", ColumnType.INT),
                         column("payload", ColumnType.LONGBLOB), column("amount", ColumnType.DECIMAL))).build();
-        replication = new ReplicationServiceImpl(outbox, null);
+        dispatcher = mock(TupleReplicationNotificationDispatcher.class);
+        replication = new ReplicationServiceImpl(outbox, dispatcher);
         ReflectionTestUtils.setField(replication, "baseUrl", ORIGIN);
         service = new TableServiceMariaDbImpl(null, Mappers.getMapper(MariaDbMapper.class), null, storage,
                 new LocalCsvService(), replication);
@@ -119,6 +124,10 @@ class IngestReplicationMariaDbIntegrationTest {
     void importsAllRowsWithGeneratedKeysExactValuesAndOneDurableEventEach() throws Exception {
         final ImportDto input = csv("sample_value,payload,amount\n"
                 + "1,\"literal,bytes\",12345678901234567890.123456789012345678\n2,,\n");
+        doAnswer(invocation -> {
+            assertEquals(2, count("tuple_replication_notification_outbox"));
+            return null;
+        }).when(dispatcher).dispatchAsync(eq(database), anyList());
         service.importDataset(database, table, input);
 
         assertEquals(2, count("samples"));
@@ -126,6 +135,7 @@ class IngestReplicationMariaDbIntegrationTest {
         assertEquals(2, count("(SELECT DISTINCT replication_key FROM samples) AS identities"));
         final var events = outbox.findAll(database);
         assertEquals(2, events.size());
+        verify(dispatcher).dispatchAsync(eq(database), argThat(ids -> ids.size() == 2));
         for (var event : events) {
             assertEquals("POST", event.getHttpMethod().name());
             final var tuple = json.readTree(event.getPayloadJson()).get("tuple");
@@ -187,6 +197,7 @@ class IngestReplicationMariaDbIntegrationTest {
         final ImportDto input = csv("sample_value,payload,amount\n1,first,\n1,updated,\n2,second,\n,invalid,\n");
         assertThrows(MalformedException.class, () -> service.importDataset(database, table, input));
         assertRolledBack(input);
+        verifyNoInteractions(dispatcher);
     }
 
     @Test
