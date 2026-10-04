@@ -41,6 +41,14 @@ public class ReplicationCreation {
                 + origin.trim().replaceAll("/+$", "")).getBytes(StandardCharsets.UTF_8));
     }
 
+    public static UUID localId(String kind, UUID parentId, String origin, UUID creationId, String targetSite) {
+        if (targetSite == null || targetSite.isBlank()) {
+            throw new IllegalArgumentException("Replication creation requires a target site");
+        }
+        return UUID.nameUUIDFromBytes((localId(kind, parentId, origin, creationId) + "\n"
+                + targetSite.trim().replaceAll("/+$", "")).getBytes(StandardCharsets.UTF_8));
+    }
+
     public static String databaseName(UUID id) {
         return "replica_" + id.toString().replace("-", "");
     }

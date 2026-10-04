@@ -74,8 +74,8 @@ public class ReplicationServiceImpl implements ReplicationService {
     @Override
     public UUID reserveCreation(String kind, UUID parentId, String origin, UUID creationId,
                                 String physicalName, Object payload) {
-        final UUID id = ReplicationCreation.localId(kind, parentId, origin, creationId);
-        final String name = physicalName == null ? ReplicationCreation.databaseName(id) : physicalName;
+        final UUID legacyId = ReplicationCreation.localId(kind, parentId, origin, creationId);
+        final UUID targetId = ReplicationCreation.localId(kind, parentId, origin, creationId, baseUrl);
         final String hash;
         try {
             hash = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
@@ -85,22 +85,31 @@ public class ReplicationServiceImpl implements ReplicationService {
         }
         final TransactionTemplate intentTransaction = new TransactionTemplate(transactionManager);
         intentTransaction.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        UUID id;
         try {
-            intentTransaction.executeWithoutResult(status -> {
-                if (entityManager.find(ReplicationCreation.class, id) == null) {
-                    entityManager.persist(ReplicationCreation.builder().id(id).kind(kind).parentId(parentId)
+            id = intentTransaction.execute(status -> {
+                final UUID selected = entityManager.find(ReplicationCreation.class, legacyId) == null
+                        ? targetId : legacyId;
+                if (entityManager.find(ReplicationCreation.class, selected) == null) {
+                    final String name = physicalName == null ? ReplicationCreation.databaseName(selected) : physicalName;
+                    entityManager.persist(ReplicationCreation.builder().id(selected).kind(kind).parentId(parentId)
                             .physicalName(name).payloadHash(hash).build());
                     entityManager.flush();
                 }
+                return selected;
             });
         } catch (RuntimeException failure) {
             // A competing identical request may have committed the reservation first.
-            if (intentTransaction.execute(status -> entityManager.find(ReplicationCreation.class, id)) == null) {
-                throw failure;
-            }
+            final UUID existing = intentTransaction.execute(status -> {
+                if (entityManager.find(ReplicationCreation.class, legacyId) != null) return legacyId;
+                return entityManager.find(ReplicationCreation.class, targetId) == null ? null : targetId;
+            });
+            if (existing == null) throw failure;
+            id = existing;
         }
         // Held through the caller's metadata transaction, including endpoint work after create returns.
         final ReplicationCreation intent = entityManager.find(ReplicationCreation.class, id, LockModeType.PESSIMISTIC_WRITE);
+        final String name = physicalName == null ? ReplicationCreation.databaseName(id) : physicalName;
         if (!hash.equals(intent.getPayloadHash()) || !name.equals(intent.getPhysicalName())) {
             throw new IllegalArgumentException("Replication creation id was reused with a different payload");
         }

@@ -12,7 +12,9 @@ import org.springframework.orm.jpa.SharedEntityManagerCreator;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.security.MessageDigest;
 import java.sql.DriverManager;
+import java.util.HexFormat;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -25,6 +27,7 @@ class ReplicationCreationSqlTest {
     private final UUID parent = UUID.randomUUID();
     private final UUID remoteId = UUID.randomUUID();
     private final String origin = "https://origin.example";
+    private final String target = "https://replica-a.example";
     private final String schema = "ddl_retry_test_" + UUID.randomUUID().toString().replace("-", "");
     private EntityManagerFactory factory;
     private EntityManager entityManager;
@@ -57,6 +60,7 @@ class ReplicationCreationSqlTest {
         ReflectionTestUtils.setField(service, "entityManager", entityManager);
         ReflectionTestUtils.setField(service, "transactionManager", manager);
         ReflectionTestUtils.setField(service, "objectMapper", new ObjectMapper());
+        ReflectionTestUtils.setField(service, "baseUrl", target);
     }
 
     @AfterEach
@@ -74,7 +78,7 @@ class ReplicationCreationSqlTest {
 
     @Test
     void intentSurvivesMetadataRollbackAndResponseRetryKeepsTheSameIdentity() {
-        final UUID expected = ReplicationCreation.localId("DATABASE", parent, origin, remoteId);
+        final UUID expected = ReplicationCreation.localId("DATABASE", parent, origin, remoteId, target);
         assertThrows(IllegalStateException.class, () -> transaction.executeWithoutResult(status -> {
             assertEquals(expected, reserve("DATABASE", null, Map.of("name", "measurements")));
             entityManager.persist(new Resource(expected));
@@ -100,17 +104,65 @@ class ReplicationCreationSqlTest {
                 reserve("TABLE", "samples", Map.of("type", "BIGINT"))));
         assertThrows(RuntimeException.class, () -> transaction.executeWithoutResult(status ->
                 service.reserveCreation("TABLE", parent, origin, UUID.randomUUID(), "samples", Map.of("type", "INT"))));
-        assertEquals(ReplicationCreation.localId("TABLE", parent, origin, remoteId),
+        assertEquals(ReplicationCreation.localId("TABLE", parent, origin, remoteId, target),
                 transaction.execute(status -> reserve("TABLE", "samples", Map.of("type", "INT"))));
     }
 
     @Test
     void differentOriginsHaveDifferentIdentitiesAndDatabaseNames() {
-        final UUID first = ReplicationCreation.localId("DATABASE", parent, origin, remoteId);
-        final UUID second = ReplicationCreation.localId("DATABASE", parent, "https://other.example", remoteId);
+        final UUID first = ReplicationCreation.localId("DATABASE", parent, origin, remoteId, target);
+        final UUID second = ReplicationCreation.localId("DATABASE", parent, "https://other.example", remoteId, target);
         assertNotEquals(first, second);
         assertNotEquals(ReplicationCreation.databaseName(first), ReplicationCreation.databaseName(second));
-        assertEquals(first, ReplicationCreation.localId("DATABASE", parent, origin + "/", remoteId));
+        assertEquals(first, ReplicationCreation.localId("DATABASE", parent, origin + "/", remoteId, target + "/"));
+    }
+
+    @Test
+    void twoReplicaSitesKeepDistinctDatabaseAndTableIdentitiesAcrossRetries() {
+        final String otherTarget = "https://replica-b.example";
+        for (String kind : new String[]{"DATABASE", "TABLE"}) {
+            final UUID first = ReplicationCreation.localId(kind, parent, origin, remoteId, target);
+            final UUID second = ReplicationCreation.localId(kind, parent, origin, remoteId, otherTarget);
+            assertNotEquals(first, second);
+            assertNotEquals(first, ReplicationCreation.localId(kind, parent, origin, remoteId));
+            assertEquals(first, ReplicationCreation.localId(kind, parent, origin, remoteId, target + "/"));
+        }
+        final UUID first = transaction.execute(status -> reserve("DATABASE", null, Map.of("name", "measurements")));
+        ReflectionTestUtils.setField(service, "baseUrl", otherTarget);
+        final UUID second = ReplicationCreation.localId("DATABASE", parent, origin, remoteId, otherTarget);
+        assertThrows(IllegalStateException.class, () -> transaction.executeWithoutResult(status -> {
+            assertEquals(second, reserve("DATABASE", null, Map.of("name", "measurements")));
+            throw new IllegalStateException("injected rollback");
+        }));
+        assertNotEquals(first, second);
+        assertEquals(second, transaction.execute(status -> reserve("DATABASE", null, Map.of("name", "measurements"))));
+        ReflectionTestUtils.setField(service, "baseUrl", target);
+        assertEquals(first, transaction.execute(status -> reserve("DATABASE", null, Map.of("name", "measurements"))));
+    }
+
+    @Test
+    void existingLegacyReservationKeepsItsIdAfterUpgradeAndRollback() throws Exception {
+        final Object payload = Map.of("name", "measurements");
+        final String hash = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
+                .digest(new ObjectMapper().writeValueAsBytes(payload)));
+        for (String kind : new String[]{"DATABASE", "TABLE"}) {
+            final UUID legacyId = ReplicationCreation.localId(kind, parent, origin, remoteId);
+            final String name = kind.equals("TABLE") ? "samples" : ReplicationCreation.databaseName(legacyId);
+            transaction.executeWithoutResult(status -> entityManager.persist(ReplicationCreation.builder()
+                    .id(legacyId).kind(kind).parentId(parent).physicalName(name).payloadHash(hash).build()));
+            assertThrows(IllegalStateException.class, () -> transaction.executeWithoutResult(status -> {
+                assertEquals(legacyId, reserve(kind, kind.equals("TABLE") ? name : null, payload));
+                entityManager.persist(new Resource(legacyId));
+                throw new IllegalStateException("injected rollback");
+            }));
+            transaction.executeWithoutResult(status -> {
+                assertNull(service.findCreated(Resource.class, legacyId));
+                assertEquals(legacyId, reserve(kind, kind.equals("TABLE") ? name : null, payload));
+                entityManager.persist(new Resource(legacyId));
+            });
+            assertEquals(legacyId, transaction.execute(status ->
+                    reserve(kind, kind.equals("TABLE") ? name : null, payload)));
+        }
     }
 
     @Test
