@@ -17,6 +17,7 @@ import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.DataService;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
+import at.ac.tuwien.ifs.dbrepo.service.ReplicationActivationService;
 import at.ac.tuwien.ifs.dbrepo.service.StorageService;
 import at.ac.tuwien.ifs.dbrepo.service.SubsetService;
 import at.ac.tuwien.ifs.dbrepo.service.TableService;
@@ -50,6 +51,9 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     private final StorageService storageService;
     private final DataService computeService;
     private final ReplicationService replicationService;
+
+    @Autowired
+    private ReplicationActivationService activation;
 
     @Value("${dbrepo.baseUrl:http://localhost}")
     private String baseUrl;
@@ -263,6 +267,15 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     public void importDataset(Database database, Table table, ImportDto data) throws MalformedException,
             SQLException, QueryMalformedException, StorageUnavailableException, TableMalformedException,
             StorageNotFoundException {
+        try (var mutation = activation == null ? null : activation.beginMutation(database, table)) {
+            importDatasetUnlocked(mutation == null ? database : mutation.database(),
+                    mutation == null ? table : mutation.table(), data);
+        }
+    }
+
+    private void importDatasetUnlocked(Database database, Table table, ImportDto data) throws MalformedException,
+            SQLException, QueryMalformedException, StorageUnavailableException, TableMalformedException,
+            StorageNotFoundException {
         if (ReplicationSites.isReplica(database.getCreationLocation(), baseUrl)
                 || ReplicationSites.isReplica(table.getCreationLocation(), baseUrl)) {
             throw new QueryMalformedException("Cannot import a dataset into a remote read-only table");
@@ -361,6 +374,14 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     @Timed(value = "dbrepo_data_delete_tuple", description = "Time spent deleting a table tuple", histogram = true)
     public void deleteTuple(Database database, Table table, TupleDeleteDto data) throws SQLException,
             TableMalformedException, QueryMalformedException, StorageUnavailableException, StorageNotFoundException {
+        try (var mutation = activation == null ? null : activation.beginMutation(database, table)) {
+            deleteTupleUnlocked(mutation == null ? database : mutation.database(),
+                    mutation == null ? table : mutation.table(), data);
+        }
+    }
+
+    private void deleteTupleUnlocked(Database database, Table table, TupleDeleteDto data) throws SQLException,
+            TableMalformedException, QueryMalformedException, StorageUnavailableException, StorageNotFoundException {
         if (replicationService.isEnabled(database, table)) {
             deleteTupleWithTimestamps(database, table, data);
             return;
@@ -399,6 +420,14 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     @Override
     @Timed(value = "dbrepo_data_create_tuple", description = "Time spent creating a table tuple", histogram = true)
     public void createTuple(Database database, Table table, TupleDto data) throws SQLException,
+            QueryMalformedException, TableMalformedException, StorageUnavailableException, StorageNotFoundException {
+        try (var mutation = activation == null ? null : activation.beginMutation(database, table)) {
+            createTupleUnlocked(mutation == null ? database : mutation.database(),
+                    mutation == null ? table : mutation.table(), data);
+        }
+    }
+
+    private void createTupleUnlocked(Database database, Table table, TupleDto data) throws SQLException,
             QueryMalformedException, TableMalformedException, StorageUnavailableException, StorageNotFoundException {
         if (replicationService.isEnabled(database, table)) {
             createTupleWithTimestamps(database, table, data);
@@ -517,6 +546,14 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     @Override
     @Timed(value = "dbrepo_data_update_tuple", description = "Time spent updating a table tuple", histogram = true)
     public void updateTuple(Database database, Table table, TupleUpdateDto data) throws SQLException,
+            QueryMalformedException, TableMalformedException, StorageUnavailableException, StorageNotFoundException {
+        try (var mutation = activation == null ? null : activation.beginMutation(database, table)) {
+            updateTupleUnlocked(mutation == null ? database : mutation.database(),
+                    mutation == null ? table : mutation.table(), data);
+        }
+    }
+
+    private void updateTupleUnlocked(Database database, Table table, TupleUpdateDto data) throws SQLException,
             QueryMalformedException, TableMalformedException, StorageUnavailableException, StorageNotFoundException {
         if (replicationService.isEnabled(database, table)) {
             updateTupleWithTimestamps(database, table, data);

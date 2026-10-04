@@ -55,6 +55,12 @@ public class MetadataServiceImpl implements MetadataService {
             return optional.get();
         }
         log.trace("Cache miss on database: {}", id);
+        return refreshDatabase(id);
+    }
+
+    @Override
+    public Database refreshDatabase(UUID id) throws DatabaseNotFoundException, RemoteUnavailableException,
+            MetadataServiceException {
         final Database database = metadataServiceGateway.getDatabaseById(id);
         database.setExp(cacheConfig.getTtl());
         return databaseRepository.save(database);
@@ -121,6 +127,12 @@ public class MetadataServiceImpl implements MetadataService {
             return optional.get();
         }
         log.trace("Cache miss on table: {}", id);
+        return refreshTable(databaseId, id);
+    }
+
+    @Override
+    public Table refreshTable(UUID databaseId, UUID id) throws TableNotFoundException, RemoteUnavailableException,
+            MetadataServiceException {
         final Table table = metadataServiceGateway.getTableById(databaseId, id);
         table.setExp(cacheConfig.getTtl());
         return tableRepository.save(table);

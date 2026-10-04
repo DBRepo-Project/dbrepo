@@ -21,6 +21,10 @@ public interface MetadataService {
     Database getDatabase(UUID id) throws DatabaseNotFoundException, RemoteUnavailableException,
             MetadataServiceException;
 
+    /** Reload topology from metadata and replace the cached database used by dispatchers. */
+    Database refreshDatabase(UUID id) throws DatabaseNotFoundException, RemoteUnavailableException,
+            MetadataServiceException;
+
     List<Database> getDatabases() throws DatabaseNotFoundException, RemoteUnavailableException,
             MetadataServiceException;
 
@@ -74,6 +78,9 @@ public interface MetadataService {
      * @throws MetadataServiceException   The metadata service could not process the request.
      */
     Table getTable(UUID databaseId, UUID id) throws TableNotFoundException, RemoteUnavailableException,
+            MetadataServiceException;
+
+    Table refreshTable(UUID databaseId, UUID id) throws TableNotFoundException, RemoteUnavailableException,
             MetadataServiceException;
 
     /**

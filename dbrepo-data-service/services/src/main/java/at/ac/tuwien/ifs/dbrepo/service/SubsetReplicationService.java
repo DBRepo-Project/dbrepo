@@ -84,6 +84,43 @@ public class SubsetReplicationService extends DataConnector {
         return routes;
     }
 
+    /** Queue current canonical state only; never recreate results or touch versioned query rows. */
+    public void backfill(Database database, String targetSite) throws SQLException {
+        final String target = requireBackfillTarget(database, targetSite);
+        final var pool = getDataSource(database);
+        try (Connection connection = pool.getConnection(); Statement ddl = connection.createStatement()) {
+            ddl.execute(mapper.queryStoreCreateSubsetOutboxRawQuery());
+            try (PreparedStatement statement = connection.prepareStatement("""
+                    INSERT INTO qs_subset_outbox (query_id, target_site, revision)
+                    SELECT id, ?, replication_revision FROM qs_queries
+                    WHERE creation_location IS NOT NULL AND replication_revision > 0
+                    ON DUPLICATE KEY UPDATE
+                        next_attempt = IF(VALUES(revision) > revision, UTC_TIMESTAMP(6), next_attempt),
+                        revision = GREATEST(revision, VALUES(revision))
+                    """)) {
+                statement.setString(1, target);
+                statement.executeUpdate();
+            }
+        } finally {
+            pool.close();
+        }
+    }
+
+    public String requireBackfillTarget(Database database, String targetSite) {
+        final String target;
+        final Map<String, UUID> configured;
+        try {
+            target = peers.requireAllowedSite(targetSite);
+            configured = routes(database);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Untrusted subset replication site");
+        }
+        if (target.equals(localSite) || configured.get(target) == null) {
+            throw conflict("Subset backfill requires a configured non-local target database mapping");
+        }
+        return target;
+    }
+
     public void enqueue(Connection connection, UUID queryId) throws SQLException {
         if (connection.getAutoCommit()) throw new SQLException("Subset outbox requires the query-store transaction");
         try (PreparedStatement statement = connection.prepareStatement(mapper.queryStoreEnqueueSubsetRawQuery())) {

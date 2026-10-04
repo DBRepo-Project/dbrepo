@@ -316,6 +316,75 @@ class SubsetReplicationIntegrationTest {
         assertEquals(sent.resultHash(), read(localId).resultHash());
     }
 
+    @Test
+    void backfillQueuesOnlyNewTargetAndPreservesHistorySnapshotsAndRetryState() throws Exception {
+        database.setReplicaUrls(Map.of(B, B_ID));
+        final UUID saved = create();
+        service.persist(database, saved, true);
+        final UUID unsaved = service.storeQuery(database, "SELECT 'second' a", "SELECT 'second' a", SELECTED, "alice");
+        // Legacy rows remain ineligible, just as in the ordinary enqueue path.
+        sql("INSERT INTO qs_queries (query,query_normalized,is_persisted,query_hash) VALUES ('SELECT 1','SELECT 1',TRUE,'legacy')");
+        sql("DELETE FROM qs_subset_outbox");
+        final long history = count("qs_queries FOR SYSTEM_TIME ALL");
+        final String payloads = string("SELECT GROUP_CONCAT(HEX(payload) ORDER BY query_id,row_no) FROM qs_subset_result_rows");
+        final SubsetReplicationDto before = read(saved);
+        database.setReplicaUrls(Map.of(B, B_ID, C, C_ID));
+        replication.backfill(database, C);
+        assertEquals(2, count("qs_subset_outbox"));
+        assertEquals(0, count("qs_subset_outbox WHERE target_site='" + B + "'"));
+        assertEquals(2, number("SELECT revision FROM qs_subset_outbox WHERE query_id='" + saved + "'"));
+        assertEquals(1, number("SELECT revision FROM qs_subset_outbox WHERE query_id='" + unsaved + "'"));
+        sql("UPDATE qs_subset_outbox SET attempts=3,last_error='offline',next_attempt='2099-01-01'");
+        replication.backfill(database, "https://C.example:443/");
+        assertEquals(2, count("qs_subset_outbox WHERE attempts=3 AND last_error='offline' AND next_attempt='2099-01-01'"));
+        assertEquals(before, read(saved));
+        assertEquals(history, count("qs_queries FOR SYSTEM_TIME ALL"));
+        assertEquals(payloads, string("SELECT GROUP_CONCAT(HEX(payload) ORDER BY query_id,row_no) FROM qs_subset_result_rows"));
+        assertEquals(2, count("qs_subset_results WHERE ready=TRUE"));
+
+        final var client = mock(RestTemplate.class);
+        publishedArtifact(client);
+        when(client.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
+                .thenReturn(ResponseEntity.noContent().build());
+        sql("UPDATE qs_subset_outbox SET next_attempt=UTC_TIMESTAMP(6)");
+        assertEquals(2, new SubsetReplicationDispatcher(null, replication, client, mapper,
+                new SubsetResultService(mapper, json)).dispatch(database));
+        verify(client, times(2)).exchange(eq(C + "/api/v1/database/" + C_ID + "/subset/replicate"),
+                eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class));
+        assertEquals(0, count("qs_subset_outbox"));
+        assertEquals(history, count("qs_queries FOR SYSTEM_TIME ALL"));
+    }
+
+    @Test
+    void backfillAdvancesStaleOutboxWithoutTouchingOtherPeersOrRegressingNewerRevision() throws Exception {
+        final UUID id = create();
+        service.persist(database, id, true);
+        sql("UPDATE qs_subset_outbox SET revision=1,attempts=4,last_error='offline',next_attempt='2099-01-01'");
+        replication.backfill(database, C);
+        assertEquals(1, count("qs_subset_outbox WHERE target_site='" + C + "' AND revision=2 AND next_attempt<'2099-01-01'"));
+        assertEquals(1, count("qs_subset_outbox WHERE target_site='" + B + "' AND revision=1 AND next_attempt='2099-01-01'"));
+        sql("UPDATE qs_subset_outbox SET revision=3,next_attempt='2099-01-01' WHERE target_site='" + C + "'");
+        replication.backfill(database, C);
+        assertEquals(1, count("qs_subset_outbox WHERE target_site='" + C + "' AND revision=3 AND next_attempt='2099-01-01'"));
+    }
+
+    @Test
+    void backfillFailureIsAtomicAndDoesNotChangeCanonicalState() throws Exception {
+        final UUID id = create();
+        service.storeQuery(database, "SELECT 'second' a", "SELECT 'second' a", SELECTED, "alice");
+        sql("DELETE FROM qs_subset_outbox");
+        final long history = count("qs_queries FOR SYSTEM_TIME ALL");
+        final var before = read(id);
+        sql("CREATE TRIGGER fail_subset_outbox BEFORE INSERT ON qs_subset_outbox FOR EACH ROW "
+                + "BEGIN IF EXISTS (SELECT 1 FROM qs_subset_outbox) THEN "
+                + "SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='second insert failure'; END IF; END");
+        assertThrows(SQLException.class, () -> replication.backfill(database, C));
+        assertEquals(0, count("qs_subset_outbox"));
+        assertEquals(before, read(id));
+        assertEquals(history, count("qs_queries FOR SYSTEM_TIME ALL"));
+        assertEquals(2, count("qs_subset_results WHERE ready=TRUE"));
+    }
+
     private SubsetReplicationService replication(String site) {
         return new SubsetReplicationService(mapper, json, new ReplicationPeers(A + "," + B + "," + C),
                 Validation.buildDefaultValidatorFactory().getValidator(), site, new SubsetResultService(mapper, json));
