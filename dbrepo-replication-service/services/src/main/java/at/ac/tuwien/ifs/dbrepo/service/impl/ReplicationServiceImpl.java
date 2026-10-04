@@ -234,8 +234,7 @@ public class ReplicationServiceImpl implements ReplicationService {
             try {
                 final String path = site(replica.getUrl()) + "/api/v1/database/" + replica.getReplicaDatabaseId()
                         + "/view/replicate";
-                final ResponseEntity<ViewBriefDto> response = externalReplicationRestTemplate.exchange(path,
-                        HttpMethod.POST, new HttpEntity<>(notification), ViewBriefDto.class);
+                final ResponseEntity<ViewBriefDto> response = sendView(path, notification);
                 if (response.getStatusCode().is2xxSuccessful()) {
                     successful++;
                 } else {
@@ -530,9 +529,25 @@ public class ReplicationServiceImpl implements ReplicationService {
         final ViewNotificationDto notification = readPayload(entry, ViewNotificationDto.class);
         final String path = site(entry.getTargetSiteUrl()) + "/api/v1/database/" + resolveDatabaseId(entry)
                 + "/view/replicate";
-        final ResponseEntity<ViewBriefDto> response = externalReplicationRestTemplate.exchange(path, HttpMethod.POST,
-                new HttpEntity<>(notification), ViewBriefDto.class);
+        final ResponseEntity<ViewBriefDto> response = sendView(path, notification);
         requireBody(response, "view replication retry");
+    }
+
+    private ResponseEntity<ViewBriefDto> sendView(String path, ViewNotificationDto notification) {
+        final DatabaseDto source = fetchDatabase(notification.getDatabaseId());
+        // Resolve source-qualified names through the receiver connection's local database.
+        // Copy the payload: retained retry events must keep their original SQL and identity.
+        final var view = notification.getViewDto().toBuilder()
+                .query(ViewSqlSchema.localize(notification.getViewDto().getQuery(), source.getInternalName()))
+                .build();
+        final ViewNotificationDto localized = ViewNotificationDto.builder()
+                .databaseId(notification.getDatabaseId())
+                .creationId(notification.getCreationId())
+                .viewDto(view)
+                .replicas(notification.getReplicas())
+                .build();
+        return externalReplicationRestTemplate.exchange(path, HttpMethod.POST,
+                new HttpEntity<>(localized), ViewBriefDto.class);
     }
 
     private void retryData(ReplicationOutboxEntry entry) throws JsonProcessingException {
