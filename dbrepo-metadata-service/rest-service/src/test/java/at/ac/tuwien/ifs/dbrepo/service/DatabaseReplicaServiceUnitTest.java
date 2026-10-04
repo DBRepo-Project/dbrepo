@@ -55,6 +55,7 @@ class DatabaseReplicaServiceUnitTest {
         database.setIsPublic(false); database.setIsSchemaPublic(false); database.setCreationLocation(null);
         database.setContainer(Container.builder().id(UUID.randomUUID()).image(new ContainerImage()).build());
         when(entities.find(Database.class, database.getId(), LockModeType.PESSIMISTIC_WRITE)).thenReturn(database);
+        when(entities.find(Database.class, database.getId(), LockModeType.PESSIMISTIC_READ)).thenReturn(database);
         when(users.findByUsername("alice")).thenReturn(UserDto.builder().id(UUID.randomUUID()).username("alice").build());
         when(outbox.enqueue(any(), any(), anyString(), any(), any()))
                 .thenReturn(ReplicationNotificationOutbox.builder().id(notificationId).build());
@@ -132,6 +133,32 @@ class DatabaseReplicaServiceUnitTest {
         // A rollback does not invoke afterCommit; the notification stays in the originating transaction.
         TransactionSynchronizationManager.getSynchronizations().forEach(s -> s.afterCommit());
         verify(dispatcher).dispatchAsync(notificationId);
+    }
+
+    @Test
+    void activationReloadsDetachedDatabaseBeforeReadingLazyAssociations() {
+        final Database detached = mock(Database.class);
+        when(detached.getId()).thenReturn(database.getId());
+        when(detached.getReplicaUrls()).thenThrow(new org.hibernate.LazyInitializationException("Detached replica URLs"));
+        when(detached.getTables()).thenThrow(new org.hibernate.LazyInitializationException("Detached tables"));
+        database.getTables().add(table("existing_table"));
+
+        assertDoesNotThrow(() -> service.request(detached, TARGET));
+
+        verify(entities).find(Database.class, database.getId(), LockModeType.PESSIMISTIC_READ);
+        verify(detached, never()).getReplicaUrls();
+        verify(detached, never()).getTables();
+        verify(outbox).enqueue(eq(ReplicationNotificationType.DATABASE_PREPARE), eq(HttpMethod.POST),
+                eq("/api/replication/database/" + database.getId() + "/prepare"), any(), eq(database.getId()));
+        verifyNoInteractions(dispatcher);
+    }
+
+    @Test
+    void activationRejectsDatabaseRemovedSinceEndpointLookup() {
+        when(entities.find(Database.class, database.getId(), LockModeType.PESSIMISTIC_READ)).thenReturn(null);
+        final var error = assertThrows(ResponseStatusException.class, () -> service.request(database, TARGET));
+        assertEquals(404, error.getStatusCode().value());
+        verifyNoInteractions(outbox, dispatcher);
     }
 
     private Table table(String name) {

@@ -58,7 +58,9 @@ public class DatabaseReplicaService {
     private String issuer;
 
     @Transactional
-    public void request(Database database, String url) {
+    public void request(Database detached, String url) {
+        final Database database = entityManager.find(Database.class, detached.getId(), LockModeType.PESSIMISTIC_READ);
+        if (database == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Database not found");
         final String target = validate(database, url);
         if (hasTarget(database, target)) return;
         orderedTables(database);
