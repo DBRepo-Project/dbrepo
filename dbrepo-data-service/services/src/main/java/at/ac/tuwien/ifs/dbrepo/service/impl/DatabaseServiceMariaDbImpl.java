@@ -45,8 +45,13 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
             if (ReplicationSites.isReplica(data.getCreationLocation(), baseUrl)) {
                 final var creationId = data.getReplicaUrls() == null ? null
                         : data.getReplicaUrls().get(data.getCreationLocation());
-                final var id = ReplicationCreation.localId("DATABASE", data.getContainerId(),
+                final var legacyId = ReplicationCreation.localId("DATABASE", data.getContainerId(),
                         data.getCreationLocation(), creationId);
+                final var targetId = ReplicationCreation.localId("DATABASE", data.getContainerId(),
+                        data.getCreationLocation(), creationId, baseUrl);
+                // Metadata retains legacy reservations and scopes new reservations to this target site.
+                final var id = ReplicationCreation.databaseName(legacyId).equals(data.getInternalName())
+                        ? legacyId : targetId;
                 if (!ReplicationCreation.databaseName(id).equals(data.getInternalName())) {
                     throw new SQLException("Replicated database name does not match its creation identity");
                 }
