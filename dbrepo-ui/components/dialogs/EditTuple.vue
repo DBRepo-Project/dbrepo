@@ -10,7 +10,7 @@
         variant="elevated">
         <v-card-text>
           <v-row
-            v-for="(column, idx) in table.columns"
+            v-for="(column, idx) in editableColumns"
             :key="`c-${idx}`"
             dense>
             <v-col>
@@ -50,7 +50,6 @@
                 :counter="maxLength(column) !== null"
                 :maxlength="maxLength(column)"
                 :required="required(column)"
-                :readonly="edit && column.internal_name === 'replication_key'"
                 persistent-hint
                 :variant="inputVariant"
                 :label="column.internal_name"
@@ -326,6 +325,13 @@ export default {
     table () {
       return this.cacheStore.getTable
     },
+    replicationKeyManaged () {
+      return [this.database?.replica_urls, this.table?.replica_urls]
+        .some(urls => urls && Object.keys(urls).length > 0)
+    },
+    editableColumns () {
+      return this.table.columns.filter(column => !this.replicationKeyManaged || column.internal_name !== 'replication_key')
+    },
     columnTypes () {
       if (!this.container) {
         return []
@@ -444,7 +450,9 @@ export default {
       console.debug('table has primary key: set update tuple constraints', constraints)
       const tupleService = useTupleService()
       const data = { ...this.tuple }
-      delete data.replication_key
+      if (this.replicationKeyManaged) {
+        delete data.replication_key
+      }
       this.loading = true
       tupleService.update(this.$route.params.database_id, this.$route.params.table_id, { data, keys: constraints })
         .then(() => {
@@ -466,20 +474,18 @@ export default {
         })
     },
     addTuple () {
-      const constraints = {}
-      this.table.columns
-        .filter(c => c.is_primary_key)
-        .forEach((c) => {
-          constraints[c.internal_name] = this.tuple[c.internal_name]
-        })
-      this.table.columns.forEach((column) => {
+      this.editableColumns.forEach((column) => {
         if (!(column.internal_name in this.tuple)) {
           this.tuple[column.internal_name] = null
         }
       })
       const tupleService = useTupleService()
+      const data = { ...this.tuple }
+      if (this.replicationKeyManaged) {
+        delete data.replication_key
+      }
       this.loading = true
-      tupleService.create(this.$route.params.database_id, this.$route.params.table_id, { data: this.tuple })
+      tupleService.create(this.$route.params.database_id, this.$route.params.table_id, { data })
         .then(() => {
           const toast = useToastInstance()
           toast.success(this.$t('success.data.add'))
