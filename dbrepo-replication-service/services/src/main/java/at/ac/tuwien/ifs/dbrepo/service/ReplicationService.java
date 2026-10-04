@@ -2,6 +2,7 @@ package at.ac.tuwien.ifs.dbrepo.service;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DataReplicationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseBootstrapDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableDeleteNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.ViewNotificationDto;
@@ -12,6 +13,10 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ReplicationService {
+
+    UUID prepareDatabase(UUID databaseId, String targetSite);
+
+    List<UUID> bootstrapDatabase(DatabaseBootstrapDto request);
 
     int replicateDatabase(DatabaseNotificationDto notification);
 

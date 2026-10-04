@@ -46,6 +46,7 @@ class ReplicationDependencyUnitTest {
         service.replicateTableDelete(TableDeleteNotificationDto.builder().databaseId(databaseId).tableId(tableId)
                 .databaseReplicaIds(pending).tableReplicaIds(pending).archivedAt(Instant.now()).build());
         final DataReplicationDto payload = payload(pending, Map.of());
+        metadata(payload.getDatabase(), payload.getTable());
         when(data.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(Map.class)))
                 .thenReturn(ResponseEntity.ok(Map.of()));
         service.replicateData(payload, HttpMethod.POST);
@@ -138,6 +139,7 @@ class ReplicationDependencyUnitTest {
     void staleAcknowledgementDoesNotInventReceiverVisibility() {
         final DataReplicationDto request = payload(Map.of("https://replica.example", remoteDatabaseId),
                 Map.of("https://replica.example", remoteTableId));
+        metadata(request.getDatabase(), request.getTable());
         when(external.exchange(endsWith("/data/replicate"), eq(HttpMethod.POST), any(HttpEntity.class),
                 eq(TupleWithTimestampsDto.class))).thenReturn(ResponseEntity.ok(TupleWithTimestampsDto.builder()
                 .replicationKey("key").data(Map.of()).applied(false).build()));

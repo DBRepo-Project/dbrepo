@@ -44,9 +44,10 @@ public class ReplicationServiceImplUnitTest {
     @org.junit.jupiter.params.ParameterizedTest
     @org.junit.jupiter.params.provider.ValueSource(strings = {"online", "offline", "unmapped"})
     void partialDeliveryStillDistributesOtherPeersTimestampEvidence(String targetState) {
+        final RestTemplate metadata = mock(RestTemplate.class);
         final RestTemplate external = mock(RestTemplate.class);
         final ReplicationOutboxService outbox = mock(ReplicationOutboxService.class);
-        final ReplicationServiceImpl service = new ReplicationServiceImpl(mock(RestTemplate.class),
+        final ReplicationServiceImpl service = new ReplicationServiceImpl(metadata,
                 mock(RestTemplate.class), external, new ObjectMapper(), outbox);
         ReflectionTestUtils.setField(service, "baseUrl", "http://local.test");
         final UUID databaseId = UUID.randomUUID(), tableId = UUID.randomUUID();
@@ -61,6 +62,10 @@ public class ReplicationServiceImplUnitTest {
                 .database(DatabaseDto.builder().id(databaseId).replicaUrls(databases).build())
                 .table(TableDto.builder().id(tableId).replicaUrls(Map.of("http://b.test", tableB, "http://c.test", tableC)).build())
                 .tuple(tuple).build();
+        when(metadata.exchange(eq("/api/v1/database/" + databaseId), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(DatabaseDto.class)))
+                .thenReturn(ResponseEntity.ok(request.getDatabase()));
+        when(metadata.exchange(eq("/api/v1/database/" + databaseId + "/table/" + tableId), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(TableDto.class)))
+                .thenReturn(ResponseEntity.ok(request.getTable()));
         when(external.exchange(eq("http://b.test/api/v1/database/" + databaseB + "/table/" + tableB + "/data/replicate"),
                 eq(HttpMethod.POST), any(HttpEntity.class), eq(TupleWithTimestampsDto.class))).thenReturn(ResponseEntity.ok(tuple));
         when(external.exchange(eq("http://c.test/api/v1/database/" + databaseC + "/table/" + tableC + "/data/replicate"),

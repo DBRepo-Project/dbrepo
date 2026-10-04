@@ -50,6 +50,19 @@ public class FileReplicationOutboxServiceUnitTest {
     }
 
     @Test
+    void conflictingBootstrapBatchCannotPersistAnIncompletePrefix() {
+        final var service = service();
+        final var original = enqueue(service);
+        final var newJob = ReplicationOutboxEntry.builder().id(UUID.randomUUID())
+                .operationType(ReplicationOutboxOperationType.DATABASE_CREATE).targetSiteUrl("http://site-a").build();
+        final var conflict = ReplicationOutboxEntry.builder().id(original.getId())
+                .operationType(ReplicationOutboxOperationType.DATABASE_PREPARE).targetSiteUrl("http://other-site").build();
+        assertThrows(IllegalArgumentException.class, () -> service.enqueueAll(java.util.List.of(newJob, conflict)));
+        assertEquals(1, service.findAll().size());
+        assertTrue(service.findById(newJob.getId()).isEmpty());
+    }
+
+    @Test
     public void markSucceededShouldRemoveEntryFromDueRetries() {
         final FileReplicationOutboxService service = service();
         final ReplicationOutboxEntry entry = service.enqueue(ReplicationOutboxOperationType.VIEW_CREATE,

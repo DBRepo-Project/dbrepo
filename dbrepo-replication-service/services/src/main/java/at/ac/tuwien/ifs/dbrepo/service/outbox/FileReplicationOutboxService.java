@@ -114,6 +114,28 @@ public class FileReplicationOutboxService implements ReplicationOutboxService, A
     }
 
     @Override
+    public synchronized void enqueueAll(List<ReplicationOutboxEntry> requested) {
+        final List<ReplicationOutboxEntry> entries = readEntries();
+        boolean changed = false;
+        for (ReplicationOutboxEntry entry : requested) {
+            final var existing = entries.stream().filter(e -> e.getId().equals(entry.getId())).findFirst();
+            if (existing.isPresent()) {
+                final var stored = existing.get();
+                if (stored.getOperationType() != entry.getOperationType()
+                        || !java.util.Objects.equals(stored.getTargetSiteUrl(), entry.getTargetSiteUrl())
+                        || !java.util.Objects.equals(stored.getLocalDatabaseId(), entry.getLocalDatabaseId())
+                        || !java.util.Objects.equals(stored.getLocalTableId(), entry.getLocalTableId())) {
+                    throw new IllegalArgumentException("Bootstrap job identity was reused for another resource");
+                }
+                continue;
+            }
+            entries.add(entry);
+            changed = true;
+        }
+        if (changed) writeEntries(entries);
+    }
+
+    @Override
     public synchronized List<ReplicationOutboxEntry> findAll() {
         return readEntries();
     }

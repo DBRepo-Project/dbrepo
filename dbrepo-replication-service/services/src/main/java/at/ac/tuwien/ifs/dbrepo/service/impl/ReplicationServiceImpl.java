@@ -13,6 +13,8 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableUpdateReplicationUrl
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleWithTimestampsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DataReplicationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseBootstrapDto;
+import at.ac.tuwien.ifs.dbrepo.core.replication.ReplicationPeers;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableDeleteNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.TableNotificationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleReplicationTimestampDto;
@@ -46,6 +48,8 @@ import java.util.Map;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.nio.charset.StandardCharsets;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Slf4j
 @Service
@@ -64,6 +68,9 @@ public class ReplicationServiceImpl implements ReplicationService {
 
     @Value("${dbrepo.baseUrl:http://localhost}")
     private String baseUrl;
+
+    @Value("${dbrepo.replication.allowedSites:}")
+    private String allowedSites;
 
     @Value("${dbrepo.replication.outbox.retryDelaySeconds:30}")
     private long retryDelaySeconds;
@@ -87,6 +94,87 @@ public class ReplicationServiceImpl implements ReplicationService {
         this.objectMapper = objectMapper;
         this.outboxService = outboxService;
         this.snapshots = new HistorySnapshotTransfer(dataServiceRestTemplate, externalReplicationRestTemplate);
+    }
+
+    @Override
+    public UUID prepareDatabase(UUID databaseId, String targetSite) {
+        final String target = bootstrapTarget(targetSite);
+        requirePrimaryDatabase(fetchDatabase(databaseId));
+        final UUID requestId = DatabaseBootstrapDto.idFor(databaseId, target);
+        final ReplicationOutboxEntry job = bootstrapJob(requestId, target,
+                ReplicationOutboxOperationType.DATABASE_PREPARE, databaseId, null, null, List.of(), null);
+        outboxService.enqueueAll(List.of(job));
+        return job.getId();
+    }
+
+    @Override
+    public List<UUID> bootstrapDatabase(DatabaseBootstrapDto request) {
+        final String target = bootstrapTarget(request.targetSite());
+        final UUID databaseId = request.database().getCreationId();
+        if (!DatabaseBootstrapDto.idFor(databaseId, target).equals(request.requestId())) {
+            throw new IllegalArgumentException("Bootstrap request ID does not match its database and target");
+        }
+        if (request.tables().stream().map(TableNotificationDto::getCreationId).distinct().count() != request.tables().size()
+                || request.views().stream().map(ViewNotificationDto::getCreationId).distinct().count() != request.views().size()) {
+            throw new IllegalArgumentException("Bootstrap contains duplicate table or view IDs");
+        }
+        requirePrimaryDatabase(fetchDatabase(databaseId));
+        final List<ReplicationOutboxEntry> jobs = new ArrayList<>();
+        final UUID preparation = bootstrapJob(DatabaseBootstrapDto.idFor(databaseId, target), target,
+                ReplicationOutboxOperationType.DATABASE_PREPARE, databaseId, null, null, List.of(), null).getId();
+        final ReplicationOutboxEntry database = bootstrapJob(request.requestId(), target,
+                ReplicationOutboxOperationType.DATABASE_CREATE, databaseId, null, request.database(), List.of(preparation), null);
+        jobs.add(database);
+        UUID dependency = database.getId();
+        for (TableNotificationDto table : request.tables()) {
+            if (!databaseId.equals(table.getDatabaseId())) throw new IllegalArgumentException("Bootstrap table database mismatch");
+            final var job = bootstrapJob(request.requestId(), target, ReplicationOutboxOperationType.TABLE_CREATE,
+                    databaseId, table.getCreationId(), table, List.of(dependency), null);
+            jobs.add(job);
+            dependency = job.getId();
+        }
+        for (TableNotificationDto table : request.tables()) {
+            final UUID snapshotId = UUID.nameUUIDFromBytes((request.requestId() + ":snapshot:" + table.getCreationId())
+                    .getBytes(StandardCharsets.UTF_8));
+            final var job = bootstrapJob(request.requestId(), target, ReplicationOutboxOperationType.HISTORY_SYNC,
+                    databaseId, table.getCreationId(), new HistorySyncRequest(snapshotId, 100), List.of(dependency), null);
+            jobs.add(job);
+            dependency = job.getId();
+        }
+        for (ViewNotificationDto view : request.views()) {
+            if (!databaseId.equals(view.getDatabaseId())) throw new IllegalArgumentException("Bootstrap view database mismatch");
+            final var job = bootstrapJob(request.requestId(), target, ReplicationOutboxOperationType.VIEW_CREATE,
+                    databaseId, null, view, List.of(dependency), view.getCreationId());
+            jobs.add(job);
+            dependency = job.getId();
+        }
+        jobs.add(bootstrapJob(request.requestId(), target, ReplicationOutboxOperationType.SUBSET_BACKFILL,
+                databaseId, null, null, List.of(dependency), null));
+        outboxService.enqueueAll(jobs);
+        return jobs.stream().map(ReplicationOutboxEntry::getId).toList();
+    }
+
+    private String bootstrapTarget(String url) {
+        final String target = new ReplicationPeers(allowedSites).requireAllowedSite(url);
+        if (isLocalSite(target)) throw new IllegalArgumentException("Cannot replicate a database to its source site");
+        return target;
+    }
+
+    private ReplicationOutboxEntry bootstrapJob(UUID requestId, String target, ReplicationOutboxOperationType operation,
+                                               UUID databaseId, UUID tableId, Object payload,
+                                               List<UUID> dependencies, UUID viewId) {
+        final Instant now = Instant.now();
+        try {
+            return ReplicationOutboxEntry.builder()
+                    .id(UUID.nameUUIDFromBytes((requestId + ":" + operation + ":" + tableId + ":" + viewId)
+                            .getBytes(StandardCharsets.UTF_8)))
+                    .operationType(operation).status(ReplicationOutboxStatus.PENDING).targetSiteUrl(target)
+                    .httpMethod("POST").localDatabaseId(databaseId).localTableId(tableId)
+                    .payloadJson(objectMapper.writeValueAsString(payload)).dependencies(dependencies)
+                    .createdAt(now).updatedAt(now).nextAttemptAt(now).build();
+        } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException("Cannot encode database bootstrap", e);
+        }
     }
 
     @Override
@@ -263,6 +351,9 @@ public class ReplicationServiceImpl implements ReplicationService {
         if (request.getDatabase().getCreationLocation() == null) {
             request.getDatabase().setCreationLocation(normalizedBaseUrl());
         }
+        // A target may have been added since the transaction captured this event's metadata.
+        request.setDatabase(fetchDatabase(request.getDatabase().getId()));
+        request.setTable(fetchTable(request.getDatabase().getId(), request.getTable().getId()));
         final List<TupleReplicationTimestampDto> timestamps = new ArrayList<>();
         int successful = 0;
         for (String replicaUrl : targetSites(request)) {
@@ -413,7 +504,25 @@ public class ReplicationServiceImpl implements ReplicationService {
     }
 
     private void retry(ReplicationOutboxEntry entry) throws JsonProcessingException {
+        if (entry.getDependencies() != null) {
+            for (UUID id : entry.getDependencies()) {
+                final var dependency = outboxService.findById(id).orElseThrow(
+                        () -> new IllegalStateException("Missing bootstrap dependency " + id));
+                if (dependency.getStatus() == ReplicationOutboxStatus.CANCELLED) {
+                    throw new IllegalStateException("Bootstrap dependency was cancelled: " + id);
+                }
+                if (dependency.getStatus() != ReplicationOutboxStatus.SUCCEEDED) {
+                    throw new ReplicaDependencyPendingException("Waiting for bootstrap dependency " + id);
+                }
+            }
+        }
         switch (entry.getOperationType()) {
+            case DATABASE_PREPARE -> dataServiceRestTemplate.postForEntity(UriComponentsBuilder
+                    .fromPath("/api/v1/database/" + entry.getLocalDatabaseId() + "/replication/activate")
+                    .queryParam("targetSite", bootstrapTarget(entry.getTargetSiteUrl())).build().toUriString(), null, Void.class);
+            case SUBSET_BACKFILL -> dataServiceRestTemplate.postForEntity(UriComponentsBuilder
+                    .fromPath("/api/v1/database/" + entry.getLocalDatabaseId() + "/subset/replication-backfill")
+                    .queryParam("targetSite", bootstrapTarget(entry.getTargetSiteUrl())).build().toUriString(), null, Void.class);
             case DATABASE_CREATE -> retryDatabaseCreate(entry);
             case DATABASE_REPLICA_SYNC -> retryDatabaseReplicaSync(entry);
             case TABLE_CREATE -> retryTableCreate(entry);

@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.util.UUID;
+import java.util.List;
 
 @Data
 @Builder
@@ -33,6 +34,8 @@ public class ReplicationOutboxEntry {
     private UUID remoteTableId;
 
     private String payloadJson;
+
+    private List<UUID> dependencies;
 
     private int attempts;
 

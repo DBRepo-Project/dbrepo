@@ -1,6 +1,8 @@
 package at.ac.tuwien.ifs.dbrepo.service.outbox;
 
 public enum ReplicationOutboxOperationType {
+    DATABASE_PREPARE,
+    SUBSET_BACKFILL,
     DATABASE_CREATE,
     DATABASE_REPLICA_SYNC,
     TABLE_CREATE,

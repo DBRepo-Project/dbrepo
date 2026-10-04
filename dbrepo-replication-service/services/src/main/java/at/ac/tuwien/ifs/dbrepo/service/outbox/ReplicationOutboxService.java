@@ -10,6 +10,8 @@ import java.util.UUID;
 
 public interface ReplicationOutboxService {
 
+    void enqueueAll(List<ReplicationOutboxEntry> entries);
+
     ReplicationOutboxEntry enqueue(ReplicationOutboxOperationType operationType, String targetSiteUrl,
                                    HttpMethod httpMethod, Object payload, UUID localDatabaseId, UUID localTableId,
                                    UUID remoteDatabaseId, UUID remoteTableId, String lastError);

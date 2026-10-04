@@ -1,6 +1,8 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseNotificationDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.DatabaseBootstrapDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.AddReplicaDto;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,8 +16,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/replication/database")
@@ -24,6 +28,21 @@ import java.util.Map;
 public class DatabaseEndpoint {
 
     private final ReplicationService replicationService;
+
+    @PostMapping("/{databaseId}/prepare")
+    @PreAuthorize("hasAuthority('system')")
+    public ResponseEntity<Map<String, Object>> prepare(@PathVariable("databaseId") UUID databaseId,
+                                                       @Valid @RequestBody AddReplicaDto request) {
+        return ResponseEntity.accepted().body(Map.of("status", "queued", "job",
+                replicationService.prepareDatabase(databaseId, request.replicaUrl())));
+    }
+
+    @PostMapping("/bootstrap")
+    @PreAuthorize("hasAuthority('system')")
+    public ResponseEntity<Map<String, Object>> bootstrap(@Valid @RequestBody DatabaseBootstrapDto request) {
+        return ResponseEntity.accepted().body(Map.of("status", "queued", "jobs",
+                replicationService.bootstrapDatabase(request)));
+    }
 
     @PostMapping
     @PreAuthorize("hasAuthority('system')")
