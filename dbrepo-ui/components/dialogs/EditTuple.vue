@@ -50,6 +50,7 @@
                 :counter="maxLength(column) !== null"
                 :maxlength="maxLength(column)"
                 :required="required(column)"
+                :readonly="edit && column.internal_name === 'replication_key'"
                 persistent-hint
                 :variant="inputVariant"
                 :label="column.internal_name"
@@ -442,8 +443,10 @@ export default {
         })
       console.debug('table has primary key: set update tuple constraints', constraints)
       const tupleService = useTupleService()
+      const data = { ...this.tuple }
+      delete data.replication_key
       this.loading = true
-      tupleService.update(this.$route.params.database_id, this.$route.params.table_id, { data: this.tuple, keys: constraints })
+      tupleService.update(this.$route.params.database_id, this.$route.params.table_id, { data, keys: constraints })
         .then(() => {
           const toast = useToastInstance()
           toast.success(this.$t('success.data.update'))
