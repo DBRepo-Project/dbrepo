@@ -206,6 +206,7 @@ public class ViewEndpoint extends RestEndpoint {
             ImageNotFoundException, ViewExistsException, DashboardServiceException, DashboardServiceConnectionException, ColumnNotFoundException {
         log.debug("endpoint create view, databaseId={}, data.name={}", databaseId, data.getName());
         final Database database = databaseService.findById(databaseId);
+        databaseService.lockForUpdate(database);
         validatePrimaryWriteLocation(database);
         if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to create view: not the database owner");
@@ -311,6 +312,7 @@ public class ViewEndpoint extends RestEndpoint {
             DashboardServiceConnectionException {
         log.debug("endpoint delete view, databaseId={}, viewId={}", databaseId, viewId);
         final Database database = databaseService.findById(databaseId);
+        databaseService.lockForUpdate(database);
         validatePrimaryWriteLocation(database);
         if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to delete view: not the database owner {}", database.getOwnedBy());

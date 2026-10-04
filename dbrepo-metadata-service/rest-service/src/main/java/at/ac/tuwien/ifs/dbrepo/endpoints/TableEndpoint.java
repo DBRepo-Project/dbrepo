@@ -266,6 +266,7 @@ public class TableEndpoint extends RestEndpoint {
             throw new NotAllowedException("Only replication requests may specify a creation location");
         }
         final Database database = databaseService.findById(databaseId);
+        databaseService.lockForUpdate(database);
         validatePrimaryWriteLocation(database);
         endpointValidator.validateOnlyAccess(database, principal, true);
         ensureReplicationKeyColumn(database, data);
@@ -481,6 +482,7 @@ public class TableEndpoint extends RestEndpoint {
             DashboardServiceConnectionException {
         log.debug("endpoint delete table, databaseId={}, tableId={}", databaseId, tableId);
         final Database database = databaseService.findById(databaseId);
+        databaseService.lockForUpdate(database);
         final Table table = tableService.findById(database, tableId);
         /* roles */
         if (!table.getOwnedBy().equals(AuthUtil.getUsername(principal)) && !AuthUtil.hasRole(principal, "delete-foreign-table")) {

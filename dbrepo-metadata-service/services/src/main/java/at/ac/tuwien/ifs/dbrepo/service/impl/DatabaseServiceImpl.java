@@ -20,6 +20,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.foreignKey
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.primaryKey.PrimaryKey;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.unique.Unique;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
+import at.ac.tuwien.ifs.dbrepo.core.replication.ReplicationPeers;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
@@ -31,6 +32,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.PersistenceContext;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -49,11 +53,23 @@ public class DatabaseServiceImpl implements DatabaseService {
     private final SearchServiceGateway searchServiceGateway;
     private final DatabaseCacheRepository databaseCacheRepository;
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    @Override
+    @Transactional
+    public void lockForUpdate(Database database) {
+        entityManager.refresh(database, LockModeType.PESSIMISTIC_WRITE);
+    }
+
     @Autowired
     private ReplicationService replicationService;
 
     @Value("${dbrepo.baseUrl:http://localhost}")
     private String baseUrl;
+
+    @Value("${dbrepo.replication.allowedSites:}")
+    private String allowedSites;
 
     @Autowired
     public DatabaseServiceImpl(RabbitConfig rabbitConfig, MetadataMapper metadataMapper,
@@ -456,16 +472,24 @@ public class DatabaseServiceImpl implements DatabaseService {
             throws DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException,
             MalformedException {
         final Database database = findById(databaseId);
+        lockForUpdate(database);
         final Optional<ReplicaLocation> replicaLocation = database.getReplicaUrls()
                 .stream()
                 .filter(location -> location.getUrl().equals(data.getReplicaUrl()))
                 .findFirst();
-        if (replicaLocation.isEmpty()) {
-            log.error("Failed to find replica URL {} for database {}", data.getReplicaUrl(), databaseId);
-            throw new MalformedException("Failed to find replica URL for database");
+        final ReplicaLocation location;
+        if (replicaLocation.isPresent()) {
+            location = replicaLocation.get();
+        } else {
+            try {
+                location = ReplicaLocation.builder().url(new ReplicationPeers(allowedSites)
+                        .requireAllowedSite(data.getReplicaUrl())).build();
+            } catch (IllegalArgumentException e) {
+                throw new MalformedException("Untrusted replica URL", e);
+            }
+            database.getReplicaUrls().add(location);
         }
-        replicaLocation.get()
-                .setReplicaDatabaseId(data.getReplicaDatabaseId());
+        location.setReplicaDatabaseId(data.getReplicaDatabaseId());
         final Database updatedDatabase = databaseRepository.save(database);
         databaseCacheRepository.deleteById(updatedDatabase.getId());
         searchServiceGateway.update(updatedDatabase);

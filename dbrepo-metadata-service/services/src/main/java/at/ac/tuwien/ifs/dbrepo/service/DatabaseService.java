@@ -77,6 +77,8 @@ public interface DatabaseService {
      */
     Database findById(UUID databaseId) throws DatabaseNotFoundException;
 
+    void lockForUpdate(Database database);
+
     /**
      * Creates a new database with minimal metadata in the metadata database and creates a new database on the
      * container.

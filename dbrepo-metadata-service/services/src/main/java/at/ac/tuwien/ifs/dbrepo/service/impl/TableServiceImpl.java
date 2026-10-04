@@ -31,6 +31,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import at.ac.tuwien.ifs.dbrepo.core.replication.ReplicationPeers;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
@@ -46,6 +50,12 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class TableServiceImpl implements TableService {
+
+    @Value("${dbrepo.replication.allowedSites:}")
+    private String allowedSites;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     private final RabbitConfig rabbitConfig;
     private final MetadataMapper metadataMapper;
@@ -365,18 +375,27 @@ public class TableServiceImpl implements TableService {
             log.error("Failed to find table with id {}", tableId);
             throw new TableNotFoundException("Failed to find table with id " + tableId);
         }
+        entityManager.refresh(table.get().getDatabase(), LockModeType.PESSIMISTIC_WRITE);
         final Optional<ReplicaTableLocation> replicaLocation = table.get().getReplicaUrls()
                 .stream()
                 .filter(location -> location.getUrl().equals(data.getReplicaUrl()))
                 .findFirst();
-        if (replicaLocation.isEmpty()) {
-            log.error("Failed to find replica URL {} for table {}", data.getReplicaUrl(), tableId);
-            throw new MalformedException("Failed to find replica URL for table");
+        final ReplicaTableLocation location;
+        if (replicaLocation.isPresent()) {
+            location = replicaLocation.get();
+        } else {
+            try {
+                location = ReplicaTableLocation.builder().url(new ReplicationPeers(allowedSites)
+                        .requireAllowedSite(data.getReplicaUrl())).build();
+            } catch (IllegalArgumentException e) {
+                throw new MalformedException("Untrusted replica URL", e);
+            }
+            table.get().getReplicaUrls().add(location);
         }
-        replicaLocation.get()
-                .setReplicaTableId(data.getReplicaTableId());
+        location.setReplicaTableId(data.getReplicaTableId());
         final Database database = databaseRepository.save(table.get().getDatabase());
         databaseCacheRepository.deleteById(database.getId());
+        tableCacheRepository.deleteById(tableId);
         searchServiceGateway.update(database);
         log.info("Updated replica table id for table {}", tableId);
         return table.get();
