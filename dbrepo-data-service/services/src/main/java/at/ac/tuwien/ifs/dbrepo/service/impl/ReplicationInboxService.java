@@ -55,6 +55,11 @@ public class ReplicationInboxService extends DataConnector {
     public TupleWithTimestampsDto apply(Database database, Table table, DataReplicationDto event, HttpMethod method)
             throws SQLException, TableMalformedException, StorageUnavailableException, StorageNotFoundException {
         validate(database, table, event, method);
+        if (!HttpMethod.DELETE.equals(method)) {
+            final UUID version = event.getTuple().getVersionId() == null ? event.getEventId() : event.getTuple().getVersionId();
+            if (!version.equals(event.getEventId())) throw new TableMalformedException("Values version must match its source event");
+            event.getTuple().setVersionId(version);
+        }
         final String payload = encode(Map.of("method", method.name(), "sequence", event.getEventSequence(), "target", table.getId(),
                 "database", event.getDatabase().getId(), "table", event.getTable().getId(), "tuple", event.getTuple()));
         final var pool = getDataSource(database);
@@ -68,7 +73,7 @@ public class ReplicationInboxService extends DataConnector {
             try {
                 final long baseline = lockTableHead(connection, table, event.getDatabase().getId(), event.getTable().getId());
                 lockHead(connection, table, event);
-                final TupleWithTimestampsDto receipt = receipt(connection, event, payload);
+                final TupleWithTimestampsDto receipt = receipt(connection, table, event, payload);
                 if (receipt != null) {
                     connection.commit();
                     return receipt;
@@ -78,11 +83,6 @@ public class ReplicationInboxService extends DataConnector {
                     throw new TableMalformedException("Different replication events share the same source sequence");
                 }
                 final TupleWithTimestampsDto result;
-                if (!HttpMethod.DELETE.equals(method)) {
-                    final UUID version = event.getTuple().getVersionId() == null ? event.getEventId() : event.getTuple().getVersionId();
-                    if (!version.equals(event.getEventId())) throw new TableMalformedException("Values version must match its source event");
-                    event.getTuple().setVersionId(version);
-                }
                 if (head > event.getEventSequence() || baseline >= event.getEventSequence()) {
                     if (!HttpMethod.DELETE.equals(method)) retainVersion(connection, table, event.getTuple());
                     result = absent(event);
@@ -249,14 +249,7 @@ public class ReplicationInboxService extends DataConnector {
 
     private void retainVersion(Connection connection, Table table, TupleWithTimestampsDto tuple)
             throws SQLException, StorageUnavailableException, StorageNotFoundException {
-        final String names = String.join(",", table.getColumns().stream().map(x -> quote(x.getInternalName())).toList());
-        final String placeholders = String.join(",", java.util.Collections.nCopies(table.getColumns().size(), "?"));
-        try (var insert = connection.prepareStatement("INSERT IGNORE INTO " + quote(TupleVersionHistory.importedName(table))
-                + " (" + names + ",_version_id) VALUES(" + placeholders + ",?)")) {
-            int index = 1;
-            for (Column column : table.getColumns()) bind(insert, index++, column, tuple.getData().get(column.getInternalName()));
-            insert.setString(index, tuple.getVersionId().toString()); insert.executeUpdate();
-        }
+        TupleVersionHistory.retain(connection, table, tuple.getVersionId(), tuple.getData());
     }
 
     private List<String> currentKeys(Connection connection, Table table, String after) throws SQLException {
@@ -404,7 +397,7 @@ public class ReplicationInboxService extends DataConnector {
         }
     }
 
-    private TupleWithTimestampsDto receipt(Connection connection, DataReplicationDto event, String payload)
+    private TupleWithTimestampsDto receipt(Connection connection, Table table, DataReplicationDto event, String payload)
             throws SQLException, TableMalformedException {
         try (PreparedStatement select = connection.prepareStatement(
                 "SELECT payload, receipt FROM tuple_replication_inbox WHERE event_id = ?")) {
@@ -413,15 +406,44 @@ public class ReplicationInboxService extends DataConnector {
                 if (!result.next()) {
                     return null;
                 }
-                if (!payload.equals(result.getString(1))) {
+                if (!canonicalPayload(payload, event.getEventId()).equals(canonicalPayload(result.getString(1), event.getEventId()))) {
                     throw new TableMalformedException("Replication event identity was reused with different content");
                 }
                 try {
-                    return json.readValue(result.getString(2), TupleWithTimestampsDto.class);
+                    final var receipt = json.readValue(result.getString(2), TupleWithTimestampsDto.class);
+                    if (receipt.getVersionId() == null && !Boolean.FALSE.equals(receipt.getApplied()) && receipt.getInsertedAt() != null) {
+                        final String method = json.readTree(payload).path("method").asText();
+                        final UUID version = "DELETE".equals(method) ? TupleVersionHistory.findVersion(connection,
+                                table.getId(), receipt.getReplicationKey(), receipt.getInsertedAt()) : event.getEventId();
+                        if (version != null) {
+                            receipt.setVersionId(version);
+                            TupleVersionHistory.bindNative(connection, table.getId(), receipt);
+                            try (var update = connection.prepareStatement("UPDATE tuple_replication_inbox SET receipt=? WHERE event_id=?")) {
+                                update.setString(1, encode(receipt)); update.setString(2, event.getEventId().toString()); update.executeUpdate();
+                            }
+                        }
+                    }
+                    return receipt;
                 } catch (JsonProcessingException failure) {
                     throw new SQLException("Stored replication receipt is invalid", failure);
                 }
             }
+        }
+    }
+
+    private com.fasterxml.jackson.databind.JsonNode canonicalPayload(String payload, UUID event) throws SQLException {
+        try {
+            final var value = json.readTree(payload);
+            final var tuple = (com.fasterxml.jackson.databind.node.ObjectNode) value.path("tuple");
+            if (List.of("POST", "PUT").contains(value.path("method").asText()) && !tuple.hasNonNull("versionId")) {
+                tuple.put("versionId", event.toString());
+            }
+            for (String field : List.of("versionId", "visibilityStart", "visibilityEnd")) {
+                if (!tuple.hasNonNull(field)) tuple.remove(field);
+            }
+            return value;
+        } catch (JsonProcessingException | ClassCastException e) {
+            throw new SQLException("Invalid retained event payload", e);
         }
     }
 

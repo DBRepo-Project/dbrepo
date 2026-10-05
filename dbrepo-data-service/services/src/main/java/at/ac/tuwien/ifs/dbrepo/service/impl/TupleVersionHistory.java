@@ -3,6 +3,7 @@ package at.ac.tuwien.ifs.dbrepo.service.impl;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleWithTimestampsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleReplicationTimestampDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpMethod;
 
 import java.nio.charset.StandardCharsets;
@@ -12,6 +13,7 @@ import java.util.*;
 
 /** Version identities refer to native rows; only versions missing from native history need stored values. */
 public final class TupleVersionHistory {
+    private static final ObjectMapper JSON = new ObjectMapper().findAndRegisterModules();
     private TupleVersionHistory() { }
 
     public static void prepare(Connection c, Table table) throws SQLException {
@@ -82,6 +84,15 @@ public final class TupleVersionHistory {
     public static void bindNative(Connection c, UUID tableId, TupleWithTimestampsDto tuple) throws SQLException {
         final UUID existing = findVersion(c, tableId, tuple.getReplicationKey(), tuple.getInsertedAt());
         if (existing != null && !existing.equals(tuple.getVersionId())) throw new SQLException("Native version identity conflict");
+        try (var s = c.prepareStatement("SELECT replication_id,native_start FROM tuple_replication_versions WHERE table_id=? AND version_id=?")) {
+            s.setString(1, tableId.toString()); s.setString(2, tuple.getVersionId().toString());
+            try (var r = s.executeQuery()) {
+                if (r.next() && (!tuple.getReplicationKey().equals(r.getString(1))
+                        || !tuple.getInsertedAt().equals(r.getTimestamp(2, utc()).toInstant()))) {
+                    throw new SQLException("Values version is already bound to a different native row");
+                }
+            }
+        }
         try (var s = c.prepareStatement("INSERT IGNORE INTO tuple_replication_versions"
                 + " (table_id,replication_id,version_id,native_start) VALUES(?,?,?,?)")) {
             s.setString(1, tableId.toString()); s.setString(2, tuple.getReplicationKey());
@@ -136,7 +147,12 @@ public final class TupleVersionHistory {
 
     /** Only source-native periods can be recovered without guessing a replica's processing time. */
     public static void backfillSource(Connection c, String site, UUID databaseId, Table table) throws SQLException {
+        backfillLocal(c, site, databaseId, table, true);
+    }
+
+    public static void backfillLocal(Connection c, String site, UUID databaseId, Table table, boolean source) throws SQLException {
         if (c.getAutoCommit()) throw new SQLException("History backfill requires a transaction");
+        recoverEventBindings(c, table, source);
         final String name = quote(table.getInternalName());
         try (var s = c.prepareStatement("SELECT h.replication_key,h.ROW_START,h.ROW_END,c.ROW_START IS NOT NULL"
                 + " FROM " + name + " FOR SYSTEM_TIME ALL h LEFT JOIN " + name
@@ -147,13 +163,47 @@ public final class TupleVersionHistory {
                 if (key == null) continue;
                 final Instant start = rows.getTimestamp(2, utc()).toInstant();
                 UUID version = findVersion(c, table.getId(), key, start);
-                if (version == null) version = legacyVersion(site, databaseId, table.getId(), key, start);
+                if (version == null && source) version = legacyVersion(site, databaseId, table.getId(), key, start);
+                if (version == null) continue;
                 final var tuple = TupleWithTimestampsDto.builder().replicationKey(key).versionId(version)
                         .insertedAt(start).deletedAt(rows.getBoolean(4) ? null : rows.getTimestamp(3, utc()).toInstant()).build();
                 bindNative(c, table.getId(), tuple);
                 ReplicationTimestampServiceMariaDbImpl.upsertTimestamp(c, TupleReplicationTimestampDto.builder()
                         .siteUrl(site).databaseId(databaseId).tableId(table.getId()).replicationId(key).versionId(version)
                         .rowStart(start).rowEnd(tuple.getDeletedAt()).build());
+            }
+        }
+    }
+
+    /** Retained events and applied receipts are evidence; matching values alone are not. */
+    private static void recoverEventBindings(Connection c, Table table, boolean source) throws SQLException {
+        final String journal = source ? "tuple_replication_notification_outbox" : "tuple_replication_inbox";
+        try (var tables = c.getMetaData().getTables(c.getCatalog(), null, journal, new String[]{"TABLE"})) {
+            if (!tables.next()) return;
+        }
+        final String sql = source ? "SELECT id,http_method,payload,NULL AS receipt FROM " + journal + " WHERE table_id=?"
+                : "SELECT event_id,JSON_UNQUOTE(JSON_EXTRACT(payload,'$.method')),payload,receipt FROM " + journal + " WHERE table_id=?";
+        try (var s = c.prepareStatement(sql)) {
+            s.setString(1, table.getId().toString());
+            try (var rows = s.executeQuery()) {
+                while (rows.next()) {
+                    if (!List.of("POST", "PUT").contains(rows.getString(2))) continue;
+                    try {
+                        final var payload = JSON.readTree(rows.getString(3));
+                        final var tuple = source ? JSON.treeToValue(payload.get("tuple"), TupleWithTimestampsDto.class)
+                                : JSON.readValue(rows.getString(4), TupleWithTimestampsDto.class);
+                        if (tuple == null || Boolean.FALSE.equals(tuple.getApplied()) || tuple.getInsertedAt() == null
+                                || tuple.getReplicationKey() == null) continue;
+                        final UUID event = UUID.fromString(rows.getString(1));
+                        if (tuple.getVersionId() != null && !tuple.getVersionId().equals(event)) {
+                            throw new SQLException("Retained event has a conflicting version identity");
+                        }
+                        tuple.setVersionId(event);
+                        bindNative(c, table.getId(), tuple);
+                    } catch (java.io.IOException | IllegalArgumentException e) {
+                        throw new SQLException("Retained event cannot establish a historical version identity", e);
+                    }
+                }
             }
         }
     }

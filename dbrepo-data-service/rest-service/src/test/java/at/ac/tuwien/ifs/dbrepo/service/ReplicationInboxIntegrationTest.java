@@ -303,6 +303,29 @@ class ReplicationInboxIntegrationTest {
     }
 
     @Test
+    void legacyReceiptsRecoverDistinctVersionsEvenWhenTheirValuesAreEqual() throws Exception {
+        final var first = event(1, "a", "10");
+        final var second = event(2, "a", "10");
+        final var original = apply(first, HttpMethod.POST);
+        final var updated = apply(second, HttpMethod.PUT);
+        try (var c = connection(); var s = c.createStatement()) {
+            s.execute("DELETE FROM tuple_replication_versions");
+            s.execute("DELETE FROM tuple_replication_timestamps");
+            s.execute("UPDATE tuple_replication_inbox SET receipt=JSON_REMOVE(receipt,'$.versionId','$.visibilityStart','$.visibilityEnd'),"
+                    + "payload=JSON_REMOVE(payload,'$.tuple.versionId','$.tuple.visibilityStart','$.tuple.visibilityEnd')");
+            c.setAutoCommit(false);
+            at.ac.tuwien.ifs.dbrepo.service.impl.TupleVersionHistory.backfillLocal(c,"https://replica.example",database.getId(),table,false);
+            assertEquals(first.getEventId(),at.ac.tuwien.ifs.dbrepo.service.impl.TupleVersionHistory.findVersion(c,table.getId(),"a",original.getInsertedAt()));
+            assertEquals(second.getEventId(),at.ac.tuwien.ifs.dbrepo.service.impl.TupleVersionHistory.findVersion(c,table.getId(),"a",updated.getInsertedAt()));
+            c.commit();
+        }
+        assertEquals(first.getEventId(),apply(first,HttpMethod.POST).getVersionId());
+        assertEquals(2,count("samples FOR SYSTEM_TIME ALL"));
+        assertEquals(2,count("tuple_replication_timestamps WHERE site_url='https://replica.example'"));
+        assertEquals(0,count("tuple_replication_timestamps WHERE site_url='https://origin.example'"));
+    }
+
+    @Test
     void decimalAndBinarySurviveWireRoundTripWithoutStorageLookup() throws Exception {
         final var event = event(1, "a", "1234567890123456789012.1234567890123456");
         event.getTuple().getData().put("data_blob", new byte[]{0, 1, -1, 0, 23});

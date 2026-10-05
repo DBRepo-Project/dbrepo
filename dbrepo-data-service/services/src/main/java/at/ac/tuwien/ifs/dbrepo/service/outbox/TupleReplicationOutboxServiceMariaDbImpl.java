@@ -86,7 +86,7 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
         final long sequence = nextSequence(connection);
         if (payload.getTuple() != null && payload.getTuple().getInsertedAt() != null) {
             TupleVersionHistory.record(connection, payload.getDatabase().getCreationLocation(), database.getId(), table.getId(),
-                    payload.getTuple(), method, eventId);
+                    payload.getTuple(), method, HttpMethod.DELETE.equals(method) ? payload.getTuple().getVersionId() : eventId);
         }
         final DataReplicationDto event = new DataReplicationDto(payload.getTuple(), payload.getDatabase(),
                 payload.getTable(), eventId, sequence);

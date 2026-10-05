@@ -15,11 +15,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @EnabledIfEnvironmentVariable(named = "TUPLE_VERSION_SQL_PORT", matches = "[0-9]+")
 class SubsetHistoryIntegrationTest {
-    private static final String A="https://a.example", B="https://b.example";
+    private static final String A="https://a.example", B="https://b.example", C="https://c.example";
     private static final Instant T=Instant.parse("2026-01-01T10:03:00.123456Z");
-    private final UUID aId=UUID.randomUUID(), bId=UUID.randomUUID();
+    private final UUID aId=UUID.randomUUID(), bId=UUID.randomUUID(), cId=UUID.randomUUID();
     private final Table aTable=Table.builder().id(UUID.randomUUID()).internalName("measurements").creationLocation(A).build();
     private final Table bTable=Table.builder().id(UUID.randomUUID()).internalName("measurements").creationLocation(A).build();
+    private final Table cTable=Table.builder().id(UUID.randomUUID()).internalName("measurements").creationLocation(A).build();
 
     private Connection connection(String schema) throws SQLException {
         return DriverManager.getConnection("jdbc:mariadb://127.0.0.1:"+System.getenv("TUPLE_VERSION_SQL_PORT")+"/"+schema,
@@ -31,12 +32,15 @@ class SubsetHistoryIntegrationTest {
     }
 
     @BeforeEach void setup() throws Exception {
+        aTable.setReplicaUrls(Map.of(B,bTable.getId(),C,cTable.getId()));
+        bTable.setReplicaUrls(Map.of(A,aTable.getId(),C,cTable.getId()));
+        cTable.setReplicaUrls(Map.of(A,aTable.getId(),B,bTable.getId()));
         try (var c=connection(""); var s=c.createStatement()) {
-            for (String schema:List.of("subset_history_a","subset_history_b")) {
+            for (String schema:List.of("subset_history_a","subset_history_b","subset_history_c")) {
                 s.execute("DROP DATABASE IF EXISTS "+schema); s.execute("CREATE DATABASE "+schema);
             }
         }
-        for (var entry:Map.of("subset_history_a",aTable,"subset_history_b",bTable).entrySet()) {
+        for (var entry:Map.of("subset_history_a",aTable,"subset_history_b",bTable,"subset_history_c",cTable).entrySet()) {
             try (var c=connection(entry.getKey()); var s=c.createStatement()) {
                 s.execute("CREATE TABLE measurements(pk INT,value INT,replication_key VARCHAR(255),"
                         +"ROW_START TIMESTAMP(6) GENERATED ALWAYS AS ROW START,ROW_END TIMESTAMP(6) GENERATED ALWAYS AS ROW END,"
@@ -90,6 +94,103 @@ class SubsetHistoryIntegrationTest {
                     A,T,queryA.context(),"select value from measurements order by pk",B)));
             assertEquals(List.of(0,1,2),values(b,SubsetHistory.replay(b,database("subset_history_b",bId,bTable),
                     B,T,queryB.context(),"select value from measurements order by pk",B)));
+            a.setAutoCommit(false);
+            for(int i=0;i<5;i++) interval(a,B,bId,bTable,versions.get(i),i,
+                    i<3?T.minusSeconds(30):T.plusSeconds(60),null,i+1,null);
+            a.commit(); a.setAutoCommit(true);
+            assertEquals(List.of(0,1,2),values(a,SubsetHistory.replay(a,database("subset_history_a",aId,aTable),
+                    B,T,queryB.context(),"select value from measurements order by pk",A)));
+            try(var c=connection("subset_history_c")) {
+                c.setAutoCommit(false);
+                for(int i=0;i<5;i++) {
+                    retain(c,cTable,versions.get(i),i,i);
+                    interval(c,A,aId,aTable,versions.get(i),i,T.minusSeconds(60),null,i+1,null);
+                    interval(c,B,bId,bTable,versions.get(i),i,i<3?T.minusSeconds(30):T.plusSeconds(60),null,i+1,null);
+                }
+                c.commit();c.setAutoCommit(true);
+                assertEquals(List.of(0,1,2,3,4),values(c,SubsetHistory.replay(c,database("subset_history_c",cId,cTable),
+                        A,T,queryA.context(),"select value from measurements order by pk",C)));
+                assertEquals(List.of(0,1,2),values(c,SubsetHistory.replay(c,database("subset_history_c",cId,cTable),
+                        B,T,queryB.context(),"select value from measurements order by pk",C)));
+            }
+        }
+    }
+
+    @Test void updatesCommittedAfterTheObservedCutCannotChangeTheResultEvenWithAnEarlierNativeTimestamp() throws Exception {
+        try(var a=connection("subset_history_a")) {
+            a.setAutoCommit(false);
+            final UUID original=UUID.randomUUID(),later=UUID.randomUUID();
+            retain(a,aTable,original,1,20);
+            interval(a,A,aId,aTable,original,1,T.minusSeconds(60),null,2,null);
+            a.commit();a.setAutoCommit(true);
+            final var query=SubsetHistory.capture(a,database("subset_history_a",aId,aTable),A,"select value from measurements",T);
+            a.setAutoCommit(false);
+            interval(a,A,aId,aTable,original,1,T.minusSeconds(60),T.minusSeconds(30),2,6L);
+            retain(a,aTable,later,1,10);
+            interval(a,A,aId,aTable,later,1,T.minusSeconds(30),null,6,null);
+            a.commit();a.setAutoCommit(true);
+            assertEquals(List.of(20),values(a,SubsetHistory.replay(a,database("subset_history_a",aId,aTable),A,T,
+                    query.context(),"select value from measurements",A)));
+        }
+    }
+
+    @Test void unknownNativeReplicaVersionsCannotSilentlyBecomeAnEmptySubset() throws Exception {
+        try(var b=connection("subset_history_b");var s=b.createStatement()) {
+            s.execute("INSERT INTO measurements(pk,value,replication_key) VALUES(1,20,'K1')");
+            assertThrows(SubsetHistoryIncompleteException.class,()->SubsetHistory.capture(b,
+                    database("subset_history_b",bId,bTable),B,"select value from measurements",Instant.now().plusSeconds(1)));
+        }
+    }
+
+    @Test void emptyResultsAndTechnicalColumnExclusionUseTheSameHistoricalRelation() throws Exception {
+        try(var a=connection("subset_history_a")) {
+            final var query=SubsetHistory.capture(a,database("subset_history_a",aId,aTable),A,"select * from measurements",T);
+            try(var s=a.createStatement();var rows=s.executeQuery(query.sql())) {
+                assertFalse(rows.next()); assertEquals(2,rows.getMetaData().getColumnCount());
+                assertEquals("pk",rows.getMetaData().getColumnLabel(1));
+            }
+        }
+    }
+
+    @Test void enumAndSetKeepTheirNativeOrderingAndNumericMeaning() throws Exception {
+        try(var a=connection("subset_history_a");var s=a.createStatement()) {
+            s.execute("SET SESSION system_versioning_alter_history=KEEP");
+            s.execute("ALTER TABLE measurements ADD category ENUM('z','a'), ADD tags SET('z','a')");
+            s.execute("DROP TABLE "+TupleVersionHistory.importedName(aTable));
+            TupleVersionHistory.prepareImported(a,aTable);
+            s.execute("INSERT INTO measurements(pk,value,replication_key,category,tags) VALUES(1,20,'K1','z','z')");
+            a.setAutoCommit(false);
+            final UUID imported=UUID.randomUUID();
+            TupleVersionHistory.retain(a,aTable,imported,Map.of("pk",2,"value",20,"replication_key","K2","category","a","tags","a"));
+            interval(a,A,aId,aTable,imported,2,T.minusSeconds(60),null,1,null);
+            a.commit();a.setAutoCommit(true);
+            final Instant selected=Instant.now();
+            final var query=SubsetHistory.capture(a,database("subset_history_a",aId,aTable),A,
+                    "select pk,category+0,tags+0 from measurements order by category,pk",selected);
+            try(var rows=s.executeQuery(query.sql())) {
+                assertTrue(rows.next());assertEquals(1,rows.getInt(1));assertEquals(1,rows.getInt(2));assertEquals(1,rows.getInt(3));
+                assertTrue(rows.next());assertEquals(2,rows.getInt(1));assertEquals(2,rows.getInt(2));assertEquals(2,rows.getInt(3));
+                assertFalse(rows.next());
+            }
+        }
+    }
+
+    @Test void replayAndSparkConnectionsUseUtcRegardlessOfTheJvmTimeZone() throws Exception {
+        try(var a=connection("subset_history_a");var s=a.createStatement()) {
+            a.setAutoCommit(false);final UUID version=UUID.randomUUID();retain(a,aTable,version,1,20);
+            interval(a,A,aId,aTable,version,1,T.minusSeconds(60),null,1,null);a.commit();a.setAutoCommit(true);
+            final var query=SubsetHistory.capture(a,database("subset_history_a",aId,aTable),A,"select value from measurements",T);
+            s.execute("SET time_zone='-03:00'");
+            assertEquals(List.of(20),values(a,SubsetHistory.replay(a,database("subset_history_a",aId,aTable),A,T,
+                    query.context(),"select value from measurements",A)));
+        }
+        final var container=at.ac.tuwien.ifs.dbrepo.core.entity.cache.Container.builder().host("127.0.0.1")
+                .port(Integer.valueOf(System.getenv("TUPLE_VERSION_SQL_PORT")))
+                .image(at.ac.tuwien.ifs.dbrepo.core.entity.cache.Image.builder().jdbcMethod("mariadb").build()).build();
+        final String url=new DataConnector(){}.getSparkJdbcUrl(container,"subset_history_a");
+        try(var c=DriverManager.getConnection(url,"root",System.getenv("TUPLE_VERSION_SQL_PASSWORD"));
+            var s=c.createStatement();var r=s.executeQuery("SELECT @@session.time_zone")) {
+            assertTrue(r.next());assertEquals("+00:00",r.getString(1));
         }
     }
 

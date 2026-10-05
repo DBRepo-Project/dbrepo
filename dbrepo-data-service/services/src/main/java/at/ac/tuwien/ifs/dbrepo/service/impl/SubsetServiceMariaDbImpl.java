@@ -112,6 +112,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
+            try (Statement session = connection.createStatement()) { session.execute("SET time_zone='+00:00'"); }
             final long start = System.currentTimeMillis();
             final CallableStatement callableStatement = connection.prepareCall(mariaDbMapper.queryStoreHashQueryRawQuery());
             callableStatement.setString(1, statement);

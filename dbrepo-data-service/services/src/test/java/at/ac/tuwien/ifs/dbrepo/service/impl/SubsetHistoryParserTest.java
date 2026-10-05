@@ -25,4 +25,11 @@ class SubsetHistoryParserTest {
         assertTrue(sql.contains("historical_first"), sql);
         assertTrue(sql.contains("historical_second"), sql);
     }
+
+    @Test void fullyQualifiedAsterisksReferToTheRewrittenAlias() {
+        final String sql = SubsetHistory.rewrite("select example.first.* from example.first", "example",
+                name -> "select pk,value from historical_" + name);
+        assertFalse(sql.contains("`example`.`first`"), sql);
+        assertTrue(sql.contains("`first`.*"), sql);
+    }
 }

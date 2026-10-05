@@ -240,6 +240,9 @@ class IngestReplicationMariaDbIntegrationTest {
         assertEquals(1, count("samples WHERE replication_key = 'original' AND sample_value = 1 AND amount = 1"));
         assertStoredBlob("original", "before".getBytes(StandardCharsets.UTF_8));
         assertEquals(0, outbox.findAll(database).size());
+        assertEquals(0, count("tuple_replication_versions"));
+        assertEquals(0, count("tuple_replication_timestamps"));
+        assertEquals(0, count("tuple_visibility_counter WHERE sequence <> 0"));
         assertTrue(Files.exists(Path.of(input.getLocation())));
     }
 
@@ -759,13 +762,17 @@ class IngestReplicationMariaDbIntegrationTest {
     private void assertRolledBack(ImportDto input) throws Exception {
         assertEquals(0, count("samples FOR SYSTEM_TIME ALL"));
         assertEquals(0, outbox.findAll(database).size());
+        assertEquals(0, count("tuple_replication_versions"));
+        assertEquals(0, count("tuple_replication_timestamps"));
+        assertEquals(0, count("tuple_visibility_counter WHERE sequence <> 0"));
         assertTrue(Files.exists(Path.of(input.getLocation())));
         assertNoStagingTables();
     }
 
     private void assertNoStagingTables() throws Exception {
         assertEquals(0, count("information_schema.tables WHERE table_schema = '" + DATABASE
-                + "' AND table_name NOT IN ('samples', 'tuple_replication_notification_outbox', 'tuple_replication_journal_counter')"));
+                + "' AND table_name NOT IN ('samples', 'tuple_replication_notification_outbox', 'tuple_replication_journal_counter',"
+                + "'tuple_replication_versions','tuple_replication_timestamps','tuple_visibility_counter')"));
     }
 
     private Connection connection() throws Exception {

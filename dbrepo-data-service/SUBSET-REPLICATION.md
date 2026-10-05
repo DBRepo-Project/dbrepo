@@ -59,6 +59,13 @@ and resolves target UUIDs and allowlist membership on every attempt. Relay to ot
 configured peers excludes the sender. Duplicate detection terminates cycles.
 Inspect `attempts`, `next_attempt` and `last_error` in `qs_subset_outbox`.
 
+Before acknowledging metadata delivery, the dispatcher sends the origin site's
+relevant visibility intervals in batches of 256 through the existing timestamp
+endpoint. This also distributes intervals recovered from retained receipts when a
+subset originates on a replica. A failed evidence batch keeps the subset pending.
+The current implementation scans the relevant interval history for each delivery;
+per-peer interval checkpoints can reduce that cost for large histories.
+
 Configuration uses `BASE_URL`, `REPLICATION_USERNAME`, `REPLICATION_PASSWORD`,
 `REPLICATION_ALLOWED_SITES` and `SUBSET_REPLICATION_ENABLED`.
 `SUBSET_REPLICATION_ENABLED=false` pauses metadata dispatch while preserving enqueue.
@@ -90,6 +97,11 @@ HTTP 410, so an old result sender cannot silently succeed.
 
 Hashing uses a short-lived SQL work table, removed on success or failure.
 It does not retain a materialized subset result.
+
+Hashing and download connections use UTC. For ENUM and SET columns, small typed
+domain tables preserve MariaDB's ordinal comparisons and ordering across the
+combined history relation. They contain distinct domain values, not tuple versions
+or subset results.
 
 ## Verification
 

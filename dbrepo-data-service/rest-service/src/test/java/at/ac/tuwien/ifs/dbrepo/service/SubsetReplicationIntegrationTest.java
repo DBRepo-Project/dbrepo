@@ -382,6 +382,33 @@ class SubsetReplicationIntegrationTest {
     }
 
     @Test
+    void visibilityEvidenceFailureKeepsTheSubsetPendingUntilBothTransfersSucceed() throws Exception {
+        final UUID tableId=UUID.randomUUID(),targetB=UUID.randomUUID(),targetC=UUID.randomUUID();
+        database.setTables(List.of(at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table.builder().id(tableId)
+                .internalName("measurements").creationLocation(A).replicaUrls(Map.of(B,targetB,C,targetC)).build()));
+        sql("CREATE TABLE measurements(value INT,replication_key VARCHAR(255)) WITH SYSTEM VERSIONING");
+        sql("INSERT INTO measurements VALUES(20,'K')");
+        service.storeQuery(database,"SELECT value FROM measurements","SELECT value FROM measurements",
+                Instant.now().truncatedTo(java.time.temporal.ChronoUnit.MICROS),"alice");
+        final var client=mock(RestTemplate.class);
+        when(client.exchange(anyString(),eq(HttpMethod.POST),any(HttpEntity.class),eq(Void.class)))
+                .thenThrow(new org.springframework.web.client.ResourceAccessException("offline"));
+        final var dispatcher=new SubsetReplicationDispatcher(null,replication,client,mapper);
+        assertEquals(0,dispatcher.dispatch(database));
+        assertEquals(2,count("qs_subset_outbox"));
+        verify(client,never()).exchange(anyString(),eq(HttpMethod.PUT),any(HttpEntity.class),eq(Void.class));
+        when(client.exchange(anyString(),eq(HttpMethod.POST),any(HttpEntity.class),eq(Void.class)))
+                .thenReturn(ResponseEntity.ok().build());
+        when(client.exchange(anyString(),eq(HttpMethod.PUT),any(HttpEntity.class),eq(Void.class)))
+                .thenReturn(ResponseEntity.noContent().build());
+        sql("UPDATE qs_subset_outbox SET next_attempt=UTC_TIMESTAMP(6)");
+        assertEquals(2,dispatcher.dispatch(database));
+        assertEquals(0,count("qs_subset_outbox"));
+        verify(client,times(2)).exchange(eq(B+"/api/v1/database/"+B_ID+"/table/"+targetB+"/timestamps"),
+                eq(HttpMethod.POST),any(HttpEntity.class),eq(Void.class));
+    }
+
+    @Test
     void backfillAdvancesStaleOutboxWithoutTouchingOtherPeersOrRegressingNewerRevision() throws Exception {
         final UUID id = create();
         service.persist(database, id, true);

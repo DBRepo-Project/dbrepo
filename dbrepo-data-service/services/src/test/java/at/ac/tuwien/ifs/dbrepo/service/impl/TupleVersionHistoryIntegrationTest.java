@@ -94,4 +94,22 @@ class TupleVersionHistoryIntegrationTest {
     private TupleWithTimestampsDto tuple(Instant start, Instant end) {
         return TupleWithTimestampsDto.builder().replicationKey("K").insertedAt(start).deletedAt(end).build();
     }
+
+    @Test void latePredecessorGetsItsKnownSuccessorsBoundaryAndSequence() throws Exception {
+        try(var c=connection()) {
+            c.setAutoCommit(false);
+            final var later=TupleReplicationTimestampDto.builder().siteUrl(SITE).databaseId(database).tableId(table)
+                    .replicationId("K").versionId(UUID.randomUUID()).rowStart(START.plusSeconds(60)).visibilityStart(2L).build();
+            ReplicationTimestampServiceMariaDbImpl.upsertTimestamp(c,later);
+            final var earlier=TupleReplicationTimestampDto.builder().siteUrl(SITE).databaseId(database).tableId(table)
+                    .replicationId("K").versionId(UUID.randomUUID()).rowStart(START).visibilityStart(1L).build();
+            ReplicationTimestampServiceMariaDbImpl.upsertTimestamp(c,earlier);
+            ReplicationTimestampServiceMariaDbImpl.upsertTimestamp(c,earlier);
+            try(var s=c.createStatement();var rows=s.executeQuery("SELECT row_end,visibility_end FROM tuple_replication_timestamps ORDER BY row_start")) {
+                assertTrue(rows.next());assertEquals(START.plusSeconds(60),rows.getTimestamp(1,TupleVersionHistory.utc()).toInstant());
+                assertEquals(2,rows.getLong(2));
+            }
+            c.commit();
+        }
+    }
 }

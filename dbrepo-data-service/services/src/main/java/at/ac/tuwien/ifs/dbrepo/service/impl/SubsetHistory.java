@@ -34,8 +34,13 @@ public final class SubsetHistory {
         collect(db, query, views, referenced, new HashSet<>());
         TupleVersionHistory.prepare(c, null);
         for (Table table : referenced.values()) {
-            if (hasKey(c, table)) TupleVersionHistory.prepareImported(c, table);
+            if (hasKey(c, table)) {
+                TupleVersionHistory.prepareImported(c, table);
+                prepareDomains(c, table);
+            }
         }
+        final int isolation = c.getTransactionIsolation();
+        c.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
         c.setAutoCommit(false);
         try {
             final Map<String, Binding> bindings = new LinkedHashMap<>();
@@ -43,8 +48,10 @@ public final class SubsetHistory {
             final long cut = TupleVersionHistory.cut(c);
             for (Table table : referenced.values()) {
                 final boolean nativeOnly = !hasKey(c, table);
-                if (!nativeOnly && (table.getCreationLocation() == null || table.getCreationLocation().equals(site))) {
-                    TupleVersionHistory.backfillSource(c, site, db.getId(), table);
+                if (!nativeOnly) {
+                    TupleVersionHistory.backfillLocal(c, site, db.getId(), table,
+                            table.getCreationLocation() == null || table.getCreationLocation().equals(site));
+                    requireNativeCoverage(c, table, selected);
                 }
                 final Proof proof = nativeOnly ? null : proof(c, visible(site, db.getId(), table.getId(), selected, cut));
                 bindings.put(table.getInternalName(), new Binding(table.getId(), nativeOnly, proof));
@@ -58,17 +65,26 @@ public final class SubsetHistory {
             c.rollback(); throw e;
         } catch (java.io.IOException e) {
             c.rollback(); throw new SQLException("Cannot encode subset execution metadata", e);
-        } finally { c.setAutoCommit(true); }
+        } finally { c.setAutoCommit(true); c.setTransactionIsolation(isolation); }
     }
 
     public static String replay(Connection c, Database db, String origin, Instant selected,
                                 String context, String query, String localSite) throws SQLException {
         if (context == null) throw incomplete("This subset has no proven historical version mapping");
+        final Execution execution = decode(context);
+        try (var s = c.createStatement()) { s.execute("SET time_zone='+00:00'"); }
+        for (Binding binding : execution.tables().values()) {
+            if (!binding.nativeOnly()) prepareDomains(c, table(db, origin, execution, binding));
+        }
+        return execute(c, db, origin, selected, execution, query, localSite);
+    }
+
+    public static Execution decode(String context) {
         final Execution execution;
         try { execution = JSON.readValue(context, Execution.class); }
         catch (java.io.IOException e) { throw incomplete("Invalid subset execution metadata"); }
         validate(execution);
-        return execute(c, db, origin, selected, execution, query, localSite);
+        return execution;
     }
 
     public static void validate(Execution e) {
@@ -89,14 +105,13 @@ public final class SubsetHistory {
         final Map<String, String> relations = new HashMap<>();
         for (var entry : execution.tables().entrySet()) {
             final String name = entry.getKey();
-            final Table table = db.getTables().stream().filter(t -> name.equals(t.getInternalName())).findFirst()
-                    .orElseThrow(() -> incomplete("Historical table mapping is missing: " + name));
             final Binding binding = entry.getValue();
+            final Table table = table(db, site, execution, binding);
             if (binding.nativeOnly()) {
                 if (!Objects.equals(site, localSite) || !execution.databaseId().equals(db.getId())) {
                     throw incomplete("An unreplicated native version has no cross-site identity");
                 }
-                relations.put(name, "SELECT " + columns(c, table, "h", false) + " FROM " + quote(name)
+                relations.put(name, "SELECT " + columns(c, table, "h", false) + " FROM " + quote(table.getInternalName())
                         + " FOR SYSTEM_TIME AS OF TIMESTAMP " + literal(selected) + " h");
                 continue;
             }
@@ -106,10 +121,30 @@ public final class SubsetHistory {
             final String available = "SELECT DISTINCT h.replication_key AS replication_id,h._version_id AS version_id FROM ("
                     + versions + ") h JOIN (" + visible + ") t ON h.replication_key=t.replication_id AND h._version_id=t.version_id";
             if (!binding.visible().equals(proof(c, available))) throw incomplete("Historical tuple values are incomplete for " + name);
-            relations.put(name, "SELECT " + columns(c, table, "h", false) + " FROM (" + versions + ") h JOIN ("
-                    + visible + ") t ON h.replication_key=t.replication_id AND h._version_id=t.version_id");
+            final Map<String,String> projection = new HashMap<>();
+            final StringBuilder joins = new StringBuilder();
+            int index = 0;
+            for (var domain : domains(c, table).entrySet()) {
+                try (var s = c.createStatement()) {
+                    s.executeUpdate("INSERT IGNORE INTO " + quote(domain.getValue()) + " (value) SELECT DISTINCT h."
+                            + quote(domain.getKey()) + " FROM (" + versions + ") h WHERE h." + quote(domain.getKey()) + " IS NOT NULL");
+                }
+                final String alias = "d" + index++;
+                projection.put(domain.getKey(), alias + ".value AS " + quote(domain.getKey()));
+                joins.append(" LEFT JOIN ").append(quote(domain.getValue())).append(" ").append(alias)
+                        .append(" ON BINARY ").append(alias).append(".value=BINARY h.").append(quote(domain.getKey()));
+            }
+            relations.put(name, "SELECT " + columns(c, table, "h", false, projection) + " FROM (" + versions + ") h JOIN ("
+                    + visible + ") t ON h.replication_key=t.replication_id AND h._version_id=t.version_id" + joins);
         }
         return expand(query, execution.databaseName(), relations, execution.views(), new HashSet<>());
+    }
+
+    public static Table table(Database db, String origin, Execution execution, Binding binding) {
+        return db.getTables().stream().filter(t -> execution.databaseId().equals(db.getId())
+                ? binding.tableId().equals(t.getId())
+                : t.getReplicaUrls() != null && binding.tableId().equals(t.getReplicaUrls().get(origin))).findFirst()
+                .orElseThrow(() -> incomplete("Historical table identity mapping is missing"));
     }
 
     private static void collect(Database db, String query, Map<String, String> views,
@@ -158,6 +193,10 @@ public final class SubsetHistory {
                     final boolean aliased = Arrays.stream(ctx.queryParts()).anyMatch(p -> p instanceof QOM.TableAlias<?> a
                             && a.$table() == table);
                     ctx.queryPart(aliased ? replacement : replacement.as(table.getName()));
+                } else if (ctx.queryPart() instanceof QualifiedAsterisk star
+                        && star.qualifier().getQualifiedName().getName().length == 2
+                        && star.qualifier().getQualifiedName().first().equals(database)) {
+                    ctx.queryPart(DSL.table(DSL.name(star.qualifier().getName())).asterisk().except(star.$except()));
                 } else if (ctx.queryPart() instanceof Field<?> field && field.getQualifiedName().getName().length == 3
                         && field.getQualifiedName().first().equals(database)) {
                     final String[] parts = field.getQualifiedName().getName();
@@ -194,6 +233,15 @@ public final class SubsetHistory {
         } catch (java.security.NoSuchAlgorithmException e) { throw new IllegalStateException(e); }
     }
 
+    private static void requireNativeCoverage(Connection c, Table table, Instant selected) throws SQLException {
+        try (var s = c.createStatement(); var r = s.executeQuery("SELECT 1 FROM " + quote(table.getInternalName())
+                + " FOR SYSTEM_TIME AS OF TIMESTAMP " + literal(selected) + " h LEFT JOIN tuple_replication_versions m"
+                + " ON m.table_id=" + literal(table.getId().toString())
+                + " AND m.replication_id=h.replication_key AND m.native_start=h.ROW_START WHERE m.version_id IS NULL LIMIT 1")) {
+            if (r.next()) throw incomplete("Visible native history has no proven version identity: " + table.getInternalName());
+        }
+    }
+
     private static String versions(Connection c, Table table) throws SQLException {
         final String nativeColumns = columns(c, table, "h", true);
         final String importedColumns = columns(c, table, "i", true);
@@ -206,6 +254,11 @@ public final class SubsetHistory {
     }
 
     private static String columns(Connection c, Table table, String alias, boolean internal) throws SQLException {
+        return columns(c, table, alias, internal, Map.of());
+    }
+
+    private static String columns(Connection c, Table table, String alias, boolean internal,
+                                   Map<String,String> projection) throws SQLException {
         final List<String> columns = new ArrayList<>();
         try (var s = c.prepareStatement("SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE()"
                 + " AND TABLE_NAME=? ORDER BY ORDINAL_POSITION")) {
@@ -214,7 +267,9 @@ public final class SubsetHistory {
                 while (rows.next()) {
                     final String name = rows.getString(1);
                     if (!name.equalsIgnoreCase("ROW_START") && !name.equalsIgnoreCase("ROW_END")
-                            && (internal || !name.equals("replication_key"))) columns.add(alias + "." + quote(name));
+                            && (internal || !name.equals("replication_key"))) {
+                        columns.add(projection.getOrDefault(name, alias + "." + quote(name)));
+                    }
                 }
             }
         }
@@ -227,6 +282,30 @@ public final class SubsetHistory {
                 + " AND TABLE_NAME=? AND COLUMN_NAME='replication_key'")) {
             s.setString(1, table.getInternalName()); try (var r = s.executeQuery()) { return r.next(); }
         }
+    }
+
+    /** A typed domain lookup preserves ENUM/SET ordinal semantics, which UNION converts to text. */
+    private static void prepareDomains(Connection c, Table table) throws SQLException {
+        for (var domain : domains(c, table).entrySet()) {
+            try (var s = c.createStatement()) {
+                s.execute("CREATE TABLE IF NOT EXISTS " + quote(domain.getValue()) + " AS SELECT "
+                        + quote(domain.getKey()) + " AS value FROM " + quote(table.getInternalName()) + " WHERE FALSE");
+                s.execute("ALTER TABLE " + quote(domain.getValue()) + " ADD UNIQUE INDEX IF NOT EXISTS domain_value(value)");
+            }
+        }
+    }
+
+    private static Map<String,String> domains(Connection c, Table table) throws SQLException {
+        final Map<String,String> domains = new LinkedHashMap<>();
+        try (var s = c.prepareStatement("SELECT COLUMN_NAME,ORDINAL_POSITION FROM information_schema.COLUMNS"
+                + " WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=? AND DATA_TYPE IN ('enum','set') ORDER BY ORDINAL_POSITION")) {
+            s.setString(1, table.getInternalName());
+            try (var rows = s.executeQuery()) {
+                while (rows.next()) domains.put(rows.getString(1), "_dbrepo_domain_"
+                        + table.getId().toString().replace("-", "") + "_" + rows.getInt(2));
+            }
+        }
+        return domains;
     }
 
     private static String quote(String name) { return TupleVersionHistory.quote(name); }

@@ -313,6 +313,7 @@ public interface MariaDbMapper {
                     SET queryId = (SELECT id FROM qs_queries
                         WHERE query_hash = query_digest AND result_hash = result_digest
                             AND creation_location <=> @dbrepo_subset_origin
+                            AND execution_context <=> @dbrepo_subset_context
                         ORDER BY created, id LIMIT 1);
                     IF queryId IS NULL THEN
                         SET queryId = UUID();

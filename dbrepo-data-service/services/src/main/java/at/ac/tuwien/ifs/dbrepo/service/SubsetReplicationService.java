@@ -211,6 +211,13 @@ public class SubsetReplicationService extends DataConnector {
                 || !value.selectedAt().equals(value.selectedAt().truncatedTo(ChronoUnit.MICROS))) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid canonical subset state");
         }
+        if (value.executionContext() != null) {
+            final var execution = at.ac.tuwien.ifs.dbrepo.service.impl.SubsetHistory.decode(value.executionContext());
+            final UUID originDatabase = value.originSite().equals(localSite) ? database.getId() : routes(database).get(value.originSite());
+            if (!execution.databaseId().equals(originDatabase)) {
+                throw conflict("Subset execution database does not match its origin mapping");
+            }
+        }
         final String sender;
         final String origin;
         try {
