@@ -60,6 +60,8 @@ public class ReplicationInboxService extends DataConnector {
         final var pool = getDataSource(database);
         try (Connection connection = pool.getConnection()) {
             prepare(connection);
+            TupleVersionHistory.prepare(connection, table);
+            TupleVersionHistory.prepareImported(connection, table);
             requireInnoDb(connection, table.getInternalName(), "tuple_replication_inbox", "tuple_replication_heads",
                     "tuple_replication_table_heads");
             connection.setAutoCommit(false);
@@ -76,10 +78,20 @@ public class ReplicationInboxService extends DataConnector {
                     throw new TableMalformedException("Different replication events share the same source sequence");
                 }
                 final TupleWithTimestampsDto result;
+                if (!HttpMethod.DELETE.equals(method)) {
+                    final UUID version = event.getTuple().getVersionId() == null ? event.getEventId() : event.getTuple().getVersionId();
+                    if (!version.equals(event.getEventId())) throw new TableMalformedException("Values version must match its source event");
+                    event.getTuple().setVersionId(version);
+                }
                 if (head > event.getEventSequence() || baseline >= event.getEventSequence()) {
+                    if (!HttpMethod.DELETE.equals(method)) retainVersion(connection, table, event.getTuple());
                     result = absent(event);
                 } else {
                     result = mutate(connection, database, table, event, method);
+                    if (!Boolean.FALSE.equals(result.getApplied())) {
+                        TupleVersionHistory.record(connection, baseUrl, database.getId(), table.getId(), result, method,
+                                event.getTuple().getVersionId());
+                    }
                     advance(connection, table, event);
                 }
                 try (PreparedStatement insert = connection.prepareStatement("""
@@ -221,6 +233,18 @@ public class ReplicationInboxService extends DataConnector {
                 bind(statement, index++, column, values.get(column.getInternalName()));
             }
             try (var row = statement.executeQuery()) { return row.next(); }
+        }
+    }
+
+    private void retainVersion(Connection connection, Table table, TupleWithTimestampsDto tuple)
+            throws SQLException, StorageUnavailableException, StorageNotFoundException {
+        final String names = String.join(",", table.getColumns().stream().map(x -> quote(x.getInternalName())).toList());
+        final String placeholders = String.join(",", java.util.Collections.nCopies(table.getColumns().size(), "?"));
+        try (var insert = connection.prepareStatement("INSERT IGNORE INTO " + quote(TupleVersionHistory.importedName(table))
+                + " (" + names + ",_version_id) VALUES(" + placeholders + ",?)")) {
+            int index = 1;
+            for (Column column : table.getColumns()) bind(insert, index++, column, tuple.getData().get(column.getInternalName()));
+            insert.setString(index, tuple.getVersionId().toString()); insert.executeUpdate();
         }
     }
 

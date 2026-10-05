@@ -4,6 +4,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.replication.DataReplicationDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import at.ac.tuwien.ifs.dbrepo.service.impl.DataConnector;
+import at.ac.tuwien.ifs.dbrepo.service.impl.TupleVersionHistory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -83,6 +84,10 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
         }
         final UUID eventId = UUID.randomUUID();
         final long sequence = nextSequence(connection);
+        if (payload.getTuple() != null && payload.getTuple().getInsertedAt() != null) {
+            TupleVersionHistory.record(connection, payload.getDatabase().getCreationLocation(), database.getId(), table.getId(),
+                    payload.getTuple(), method, eventId);
+        }
         final DataReplicationDto event = new DataReplicationDto(payload.getTuple(), payload.getDatabase(),
                 payload.getTable(), eventId, sequence);
         final TupleReplicationOutboxEntry entry = TupleReplicationOutboxEntry.builder()
@@ -413,6 +418,7 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
         if (!connection.getAutoCommit()) {
             throw new SQLException("Prepare source journal schema before starting a transaction");
         }
+        if ("MariaDB".equals(connection.getMetaData().getDatabaseProductName())) TupleVersionHistory.prepare(connection, null);
         try (ResultSet tables = connection.getMetaData().getTables(connection.getCatalog(), null, COUNTER_TABLE, null)) {
             if (tables.next()) {
                 try (PreparedStatement ready = connection.prepareStatement("SELECT initialized FROM " + COUNTER_TABLE

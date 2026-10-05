@@ -7,6 +7,7 @@ import lombok.extern.jackson.Jacksonized;
 
 import java.time.Instant;
 import java.util.Map;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -30,6 +31,13 @@ public class TupleWithTimestampsDto {
 
     @Schema(description = "Replication key for the tuple")
     private String replicationKey;
+
+    @Schema(description = "Identity of the values version, shared by all sites")
+    private UUID versionId;
+
+    private Long visibilityStart;
+
+    private Long visibilityEnd;
 
     @Schema(description = "Whether this event has a local version; false for superseded events and empty deletes")
     private Boolean applied;

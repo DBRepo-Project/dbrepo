@@ -22,6 +22,13 @@ public class TupleReplicationTimestampDto {
     @Schema(description = "Unique identifier for the replication operation")
     private String replicationId;
 
+    @Schema(description = "Identity of the tuple values version, shared by all sites")
+    private UUID versionId;
+
+    private Long visibilityStart;
+
+    private Long visibilityEnd;
+
     @Schema(description = "ID of the database containing the table")
     private UUID databaseId;
 

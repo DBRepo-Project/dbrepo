@@ -88,7 +88,7 @@ public class ReplicationTimestampServiceMariaDbImpl extends DataConnector implem
         }
     }
 
-    private void ensureTableExists(Connection connection) throws SQLException {
+    public void ensureTableExists(Connection connection) throws SQLException {
         if (!connection.getAutoCommit()) {
             throw new SQLException("Timestamp schema initialization requires an auto-commit connection");
         }
@@ -105,6 +105,15 @@ public class ReplicationTimestampServiceMariaDbImpl extends DataConnector implem
                 """;
         try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
             preparedStatement.executeUpdate();
+        }
+        try (var columns = connection.getMetaData().getColumns(connection.getCatalog(), null,
+                "tuple_replication_timestamps", "version_id")) {
+            if (!columns.next()) {
+                try (var ddl = connection.createStatement()) {
+                    ddl.execute("ALTER TABLE tuple_replication_timestamps ADD COLUMN IF NOT EXISTS version_id VARCHAR(36),"
+                            + " ADD COLUMN IF NOT EXISTS visibility_start BIGINT, ADD COLUMN IF NOT EXISTS visibility_end BIGINT");
+                }
+            }
         }
         if (hasCurrentSchema(connection)) {
             return;
@@ -201,12 +210,30 @@ public class ReplicationTimestampServiceMariaDbImpl extends DataConnector implem
         }
     }
 
-    private void upsertTimestamp(Connection connection, TupleReplicationTimestampDto timestamp) throws SQLException {
+    public static void upsertTimestamp(Connection connection, TupleReplicationTimestampDto timestamp) throws SQLException {
+        try (var check = connection.prepareStatement("SELECT version_id FROM tuple_replication_timestamps"
+                + " WHERE site_url=? AND replication_id=? AND database_id=? AND table_id=? AND row_start=? FOR UPDATE")) {
+            check.setString(1, timestamp.getSiteUrl());
+            check.setString(2, timestamp.getReplicationId());
+            check.setString(3, timestamp.getDatabaseId().toString());
+            check.setString(4, timestamp.getTableId().toString());
+            check.setTimestamp(5, toTimestamp(timestamp), Calendar.getInstance(TimeZone.getTimeZone("UTC")));
+            try (var row = check.executeQuery()) {
+                if (row.next() && row.getString(1) != null && timestamp.getVersionId() != null
+                        && !row.getString(1).equals(timestamp.getVersionId().toString())) {
+                    throw new SQLException("Timestamp interval belongs to a different tuple version");
+                }
+            }
+        }
         final String statement = """
                 INSERT INTO tuple_replication_timestamps
-                    (site_url, replication_id, database_id, table_id, row_start, row_end)
-                VALUES (?, ?, ?, ?, ?, ?)
+                    (site_url, replication_id, database_id, table_id, row_start, row_end,
+                     version_id, visibility_start, visibility_end)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON DUPLICATE KEY UPDATE
+                    version_id = COALESCE(version_id, VALUES(version_id)),
+                    visibility_start = COALESCE(visibility_start, VALUES(visibility_start)),
+                    visibility_end = COALESCE(visibility_end, VALUES(visibility_end)),
                     row_end = CASE
                         WHEN row_end IS NULL THEN VALUES(row_end)
                         WHEN VALUES(row_end) IS NULL THEN row_end
@@ -215,6 +242,9 @@ public class ReplicationTimestampServiceMariaDbImpl extends DataConnector implem
                 """;
         try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
             bindTimestamp(preparedStatement, timestamp);
+            preparedStatement.setString(7, timestamp.getVersionId() == null ? null : timestamp.getVersionId().toString());
+            preparedStatement.setObject(8, timestamp.getVisibilityStart());
+            preparedStatement.setObject(9, timestamp.getVisibilityEnd());
             preparedStatement.executeUpdate();
         }
     }
@@ -223,7 +253,7 @@ public class ReplicationTimestampServiceMariaDbImpl extends DataConnector implem
             throws SQLException {
         final String statement = """
                 UPDATE tuple_replication_timestamps
-                SET row_end = ?
+                SET row_end = ?, visibility_end = COALESCE(?, visibility_end)
                 WHERE site_url = ?
                   AND replication_id = ?
                   AND database_id = ?
@@ -235,17 +265,18 @@ public class ReplicationTimestampServiceMariaDbImpl extends DataConnector implem
         final Calendar utc = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
             preparedStatement.setTimestamp(1, rowStart, utc);
-            preparedStatement.setString(2, timestamp.getSiteUrl());
-            preparedStatement.setString(3, timestamp.getReplicationId());
-            preparedStatement.setString(4, String.valueOf(timestamp.getDatabaseId()));
-            preparedStatement.setString(5, String.valueOf(timestamp.getTableId()));
-            preparedStatement.setTimestamp(6, rowStart, utc);
+            preparedStatement.setObject(2, timestamp.getVisibilityStart());
+            preparedStatement.setString(3, timestamp.getSiteUrl());
+            preparedStatement.setString(4, timestamp.getReplicationId());
+            preparedStatement.setString(5, String.valueOf(timestamp.getDatabaseId()));
+            preparedStatement.setString(6, String.valueOf(timestamp.getTableId()));
             preparedStatement.setTimestamp(7, rowStart, utc);
+            preparedStatement.setTimestamp(8, rowStart, utc);
             preparedStatement.executeUpdate();
         }
     }
 
-    private void bindTimestamp(PreparedStatement preparedStatement, TupleReplicationTimestampDto timestamp)
+    private static void bindTimestamp(PreparedStatement preparedStatement, TupleReplicationTimestampDto timestamp)
             throws SQLException {
         preparedStatement.setString(1, timestamp.getSiteUrl());
         preparedStatement.setString(2, timestamp.getReplicationId());
@@ -260,11 +291,11 @@ public class ReplicationTimestampServiceMariaDbImpl extends DataConnector implem
         }
     }
 
-    private Timestamp toTimestamp(TupleReplicationTimestampDto timestamp) {
+    private static Timestamp toTimestamp(TupleReplicationTimestampDto timestamp) {
         return toTimestamp(timestamp.getRowStart());
     }
 
-    private Timestamp toTimestamp(java.time.Instant value) {
+    private static Timestamp toTimestamp(java.time.Instant value) {
         if (value == null) {
             return null;
         }

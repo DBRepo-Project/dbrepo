@@ -382,8 +382,7 @@ public class ReplicationServiceImpl implements ReplicationService {
                     continue;
                 }
                 if (!Boolean.FALSE.equals(tuple.getApplied())) {
-                    timestamps.add(timestamp(replicaUrl, tuple.getReplicationKey(), remoteDatabaseId, remoteTableId,
-                            tuple.getInsertedAt(), tuple.getDeletedAt()));
+                    timestamps.add(timestamp(replicaUrl, remoteDatabaseId, remoteTableId, tuple));
                 }
                 successful++;
             } catch (Exception e) {
@@ -393,8 +392,7 @@ public class ReplicationServiceImpl implements ReplicationService {
                         request.getTable().getId(), remoteDatabaseId, remoteTableId, e.getMessage());
             }
         }
-        timestamps.add(timestamp(normalizedBaseUrl(), request.getTuple().getReplicationKey(), request.getDatabase().getId(),
-                request.getTable().getId(), request.getTuple().getInsertedAt(), request.getTuple().getDeletedAt()));
+        timestamps.add(timestamp(normalizedBaseUrl(), request.getDatabase().getId(), request.getTable().getId(), request.getTuple()));
         synchronizeTimestamps(request, method, timestamps);
         return successful;
     }
@@ -570,11 +568,9 @@ public class ReplicationServiceImpl implements ReplicationService {
                             remoteTableId, payload, method);
                     final List<TupleReplicationTimestampDto> timestamps = new ArrayList<>();
                     if (!Boolean.FALSE.equals(applied.getApplied())) {
-                        timestamps.add(timestamp(entry.getTargetSiteUrl(), applied.getReplicationKey(), remoteDatabaseId,
-                                remoteTableId, applied.getInsertedAt(), applied.getDeletedAt()));
+                        timestamps.add(timestamp(entry.getTargetSiteUrl(), remoteDatabaseId, remoteTableId, applied));
                     }
-                    timestamps.add(timestamp(normalizedBaseUrl(), payload.getTuple().getReplicationKey(), database.getId(),
-                            table.getId(), payload.getTuple().getInsertedAt(), payload.getTuple().getDeletedAt()));
+                    timestamps.add(timestamp(normalizedBaseUrl(), database.getId(), table.getId(), payload.getTuple()));
                     synchronizeTimestamps(payload, method, timestamps);
                 });
     }
@@ -672,11 +668,9 @@ public class ReplicationServiceImpl implements ReplicationService {
                 remoteTableId, request, method);
         final List<TupleReplicationTimestampDto> timestamps = new ArrayList<>();
         if (!Boolean.FALSE.equals(tuple.getApplied())) {
-            timestamps.add(timestamp(entry.getTargetSiteUrl(), tuple.getReplicationKey(), remoteDatabaseId,
-                    remoteTableId, tuple.getInsertedAt(), tuple.getDeletedAt()));
+            timestamps.add(timestamp(entry.getTargetSiteUrl(), remoteDatabaseId, remoteTableId, tuple));
         }
-        timestamps.add(timestamp(normalizedBaseUrl(), request.getTuple().getReplicationKey(), request.getDatabase().getId(),
-                request.getTable().getId(), request.getTuple().getInsertedAt(), request.getTuple().getDeletedAt()));
+        timestamps.add(timestamp(normalizedBaseUrl(), request.getDatabase().getId(), request.getTable().getId(), request.getTuple()));
         synchronizeTimestamps(request, method, timestamps);
     }
 
@@ -986,15 +980,18 @@ public class ReplicationServiceImpl implements ReplicationService {
         return HttpMethod.POST;
     }
 
-    private TupleReplicationTimestampDto timestamp(String siteUrl, String replicationId, UUID databaseId, UUID tableId,
-                                                   Instant rowStart, Instant rowEnd) {
+    private TupleReplicationTimestampDto timestamp(String siteUrl, UUID databaseId, UUID tableId,
+                                                   TupleWithTimestampsDto tuple) {
         return TupleReplicationTimestampDto.builder()
                 .siteUrl(site(siteUrl))
-                .replicationId(replicationId)
+                .replicationId(tuple.getReplicationKey())
+                .versionId(tuple.getVersionId())
+                .visibilityStart(tuple.getVisibilityStart())
+                .visibilityEnd(tuple.getVisibilityEnd())
                 .databaseId(databaseId)
                 .tableId(tableId)
-                .rowStart(rowStart)
-                .rowEnd(rowEnd)
+                .rowStart(tuple.getInsertedAt())
+                .rowEnd(tuple.getDeletedAt())
                 .build();
     }
 
