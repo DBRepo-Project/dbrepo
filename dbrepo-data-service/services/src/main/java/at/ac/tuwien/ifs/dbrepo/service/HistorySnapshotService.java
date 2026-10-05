@@ -5,6 +5,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import at.ac.tuwien.ifs.dbrepo.core.replication.ReplicationSites;
 import at.ac.tuwien.ifs.dbrepo.service.impl.DataConnector;
+import at.ac.tuwien.ifs.dbrepo.service.impl.TupleVersionHistory;
 import at.ac.tuwien.ifs.dbrepo.service.outbox.TupleReplicationOutboxServiceMariaDbImpl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -44,6 +45,12 @@ public class HistorySnapshotService extends DataConnector {
         try (var pool = getDataSource(database); Connection reader = pool.getConnection(); Connection writer = pool.getConnection()) {
             prepare(writer);
             journal.ensureTableExists(writer);
+            writer.setAutoCommit(false);
+            try {
+                TupleVersionHistory.backfillSource(writer, baseUrl, database.getId(), table);
+                writer.commit();
+            } catch (SQLException | RuntimeException failure) { writer.rollback(); throw failure; }
+            finally { writer.setAutoCommit(true); }
             require(transactionalTables(writer, List.of("tuple_replication_notification_outbox", "tuple_replication_journal_counter")) == 2,
                     HttpStatus.CONFLICT, "Source journal must use transactional storage");
             final String exportLock = "dbrepo-history:" + request.snapshotId();
@@ -99,7 +106,7 @@ public class HistorySnapshotService extends DataConnector {
                     writer.commit();
                     writer.setAutoCommit(true);
                     final Export export = export(reader, writer, table, request.snapshotId(), columns);
-                    final Manifest manifest = new Manifest(1, request.snapshotId(), baseUrl, database.getId(), table.getId(),
+                    final Manifest manifest = new Manifest(2, request.snapshotId(), baseUrl, database.getId(), table.getId(),
                             observed.epoch(), state.committedThrough(), eventId, state.legacyThrough(), request.base(), columns,
                             MAX_CHUNK_ROWS, MAX_CHUNK_BYTES, export.chunks(), export.rows(), export.currentKeys(),
                             export.historyDigest(), export.currentKeysDigest());
@@ -147,6 +154,8 @@ public class HistorySnapshotService extends DataConnector {
         validateTarget(database, table, manifest);
         try (var pool = getDataSource(database); Connection c = pool.getConnection()) {
             prepare(c);
+            TupleVersionHistory.prepare(c, table);
+            TupleVersionHistory.prepareImported(c, table);
             require(schema(c, table).equals(manifest.columns()), HttpStatus.CONFLICT, "Source and target physical schemas differ");
             c.setAutoCommit(false);
             try {
@@ -254,6 +263,19 @@ public class HistorySnapshotService extends DataConnector {
                                 && HexFormat.of().formatHex(history.digest()).equals(manifest.historyDigest())
                                 && HexFormat.of().formatHex(keys.digest()).equals(manifest.currentKeysDigest()),
                         HttpStatus.UNPROCESSABLE_ENTITY, "Staged history does not match the saved source manifest");
+                if (manifest.format() >= 2) {
+                    for (long index = 0; index < manifest.chunks(); index++) {
+                        for (Row row : rows(readChunk(c, snapshotId, index), manifest.columns())) {
+                            require(row.versionId() != null, HttpStatus.CONFLICT, "History version identity is missing");
+                            TupleVersionHistory.retain(c, table, row.versionId(), data(manifest, row));
+                            if (row.visibility() != null) {
+                                for (var interval : row.visibility()) {
+                                    at.ac.tuwien.ifs.dbrepo.service.impl.ReplicationTimestampServiceMariaDbImpl.upsertTimestamp(c, interval);
+                                }
+                            }
+                        }
+                    }
+                }
                 if (callback != null) callback.apply(c, database, table, storedEnvelope(stored));
                 execute(c, "UPDATE " + SNAPSHOTS + " SET status=? WHERE snapshot_id=?",
                         callback == null ? "VERIFIED" : "RECONCILED", text(snapshotId));
@@ -343,8 +365,13 @@ public class HistorySnapshotService extends DataConnector {
                         require(rowBytes <= MAX_CHUNK_BYTES, HttpStatus.PAYLOAD_TOO_LARGE, "Encoded history row exceeds snapshot chunk bound");
                         cells.add(value);
                     }
-                    final Row row = new Row(cells.get(keyIndex), period(source, columns.size() + 1),
-                            period(source, columns.size() + 2), source.getBoolean(columns.size() + 3), cells);
+                    final String start = period(source, columns.size() + 1);
+                    final UUID version = TupleVersionHistory.findVersion(reader, table.getId(), cells.get(keyIndex),
+                            source.getTimestamp(columns.size() + 1, TupleVersionHistory.utc()).toInstant());
+                    require(version != null, HttpStatus.CONFLICT, "Native history version mapping is incomplete");
+                    final Row row = new Row(cells.get(keyIndex), start,
+                            period(source, columns.size() + 2), source.getBoolean(columns.size() + 3), cells,
+                            version, TupleVersionHistory.visibility(reader, version));
                     final byte[] encoded = encode(row);
                     require(encoded.length + 2 <= MAX_CHUNK_BYTES, HttpStatus.PAYLOAD_TOO_LARGE, "History row exceeds snapshot chunk bound");
                     if (!pending.isEmpty() && (pending.size() == MAX_CHUNK_ROWS || bytes.size() + encoded.length + 2 > MAX_CHUNK_BYTES)) {
@@ -440,7 +467,7 @@ public class HistorySnapshotService extends DataConnector {
     private static void validateEnvelope(Envelope envelope) throws IOException {
         require(envelope != null && envelope.manifest() != null, HttpStatus.BAD_REQUEST, "Snapshot manifest required");
         final Manifest m = envelope.manifest();
-        require(m.format() == 1 && m.snapshotId() != null && m.sourceDatabaseId() != null && m.sourceTableId() != null
+        require((m.format() == 1 || m.format() == 2) && m.snapshotId() != null && m.sourceDatabaseId() != null && m.sourceTableId() != null
                         && m.epoch() != null && m.boundary() >= 0 && m.legacyThrough() >= 0 && m.legacyThrough() <= m.boundary()
                         && (m.boundary() == 0 ? m.boundaryEventId() == null : m.boundaryEventId() != null)
                         && m.rows() >= 0 && m.currentKeys() >= 0 && m.currentKeys() <= m.rows() && m.chunks() >= 0

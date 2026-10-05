@@ -22,7 +22,8 @@ public final class HistorySnapshotCodec {
     public static final int MAX_CHUNK_BYTES = 4 * 1024 * 1024;
     public static final int MAX_CHUNK_ROWS = 256;
     public static final int MAX_COLUMNS = 1024;
-    private static final ObjectMapper JSON = new ObjectMapper().enable(JsonParser.Feature.STRICT_DUPLICATE_DETECTION);
+    private static final ObjectMapper JSON = new ObjectMapper().findAndRegisterModules()
+            .enable(JsonParser.Feature.STRICT_DUPLICATE_DETECTION);
     private static final DateTimeFormatter PERIOD = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss.SSSSSS")
             .withResolverStyle(ResolverStyle.STRICT);
     private HistorySnapshotCodec() { }
@@ -101,6 +102,17 @@ public final class HistorySnapshotCodec {
             try {
                 if (row == null || row.cells() == null || row.cells().size() != columns.size()
                         || !Objects.equals(row.replicationKey(), row.cells().get(key))) throw new IOException("Snapshot row schema/key mismatch");
+                if (row.visibility() != null) {
+                    for (var interval : row.visibility()) {
+                        if (row.versionId() == null || !row.versionId().equals(interval.getVersionId())
+                                || !Objects.equals(row.replicationKey(), interval.getReplicationId())
+                                || interval.getSiteUrl() == null || interval.getDatabaseId() == null || interval.getTableId() == null
+                                || interval.getRowStart() == null || (interval.getRowEnd() != null
+                                    && interval.getRowEnd().isBefore(interval.getRowStart()))) {
+                            throw new IOException("History visibility does not identify its values version");
+                        }
+                    }
+                }
                 final LocalDateTime start = LocalDateTime.parse(row.rowStart(), PERIOD);
                 final LocalDateTime end = LocalDateTime.parse(row.rowEnd(), PERIOD);
                 if (end.isBefore(start)) throw new IOException("Reversed native history period");

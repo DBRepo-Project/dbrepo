@@ -124,6 +124,8 @@ public class ReplicationInboxService extends DataConnector {
                                                 HistorySnapshotService snapshots) throws SQLException, IOException {
         try (var pool = getDataSource(database); Connection connection = pool.getConnection()) {
             prepare(connection);
+            TupleVersionHistory.prepare(connection, table);
+            TupleVersionHistory.prepareImported(connection, table);
             requireInnoDb(connection, table.getInternalName(), "tuple_replication_inbox", "tuple_replication_heads",
                     "tuple_replication_table_heads");
         }
@@ -147,10 +149,17 @@ public class ReplicationInboxService extends DataConnector {
                         }
                         final var row = rows.get(key.rowIndex());
                         final var event = snapshotEvent(manifest, key.replicationKey(), HistorySnapshotCodec.data(manifest, row));
+                        event.getTuple().setVersionId(row.versionId());
                         lockHead(connection, table, event);
                         if (head(connection, table, event) <= manifest.boundary()) {
-                            if (!matchesCurrent(connection, table, event.getTuple().getData())) {
-                                mutate(connection, database, table, event, HttpMethod.PUT);
+                            final var current = select(connection, table, key.replicationKey(), false);
+                            final UUID currentVersion = current == null ? null : TupleVersionHistory.findVersion(connection,
+                                    table.getId(), key.replicationKey(), current.getInsertedAt());
+                            if (!matchesCurrent(connection, table, event.getTuple().getData())
+                                    || (row.versionId() != null && !row.versionId().equals(currentVersion))) {
+                                final var applied = mutate(connection, database, table, event, HttpMethod.PUT);
+                                if (row.versionId() != null) TupleVersionHistory.record(connection, baseUrl, database.getId(),
+                                        table.getId(), applied, HttpMethod.PUT, row.versionId());
                             }
                             advance(connection, table, event);
                         }
@@ -167,7 +176,9 @@ public class ReplicationInboxService extends DataConnector {
                             final var event = snapshotEvent(manifest, key, Map.of("replication_key", key));
                             lockHead(connection, table, event);
                             if (head(connection, table, event) <= manifest.boundary()) {
-                                mutate(connection, database, table, event, HttpMethod.DELETE);
+                                final var deleted = mutate(connection, database, table, event, HttpMethod.DELETE);
+                                if (!Boolean.FALSE.equals(deleted.getApplied())) TupleVersionHistory.record(connection,
+                                        baseUrl, database.getId(), table.getId(), deleted, HttpMethod.DELETE, null);
                                 advance(connection, table, event);
                             }
                         }

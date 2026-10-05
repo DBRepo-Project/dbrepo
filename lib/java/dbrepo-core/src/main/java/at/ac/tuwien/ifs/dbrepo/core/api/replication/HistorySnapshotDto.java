@@ -15,7 +15,12 @@ public final class HistorySnapshotDto {
     public record Column(String name, int jdbcType, String sqlType, int precision, int scale,
                          boolean nullable, boolean signed, String collation) { }
     // Text cells preserve JDBC numeric/temporal representations; binary SQL types use base64. NULL stays NULL.
-    public record Row(String replicationKey, String rowStart, String rowEnd, boolean current, List<String> cells) { }
+    public record Row(String replicationKey, String rowStart, String rowEnd, boolean current, List<String> cells,
+                      UUID versionId, List<TupleReplicationTimestampDto> visibility) {
+        public Row(String replicationKey, String rowStart, String rowEnd, boolean current, List<String> cells) {
+            this(replicationKey, rowStart, rowEnd, current, cells, null, List.of());
+        }
+    }
     public record Manifest(int format, UUID snapshotId, String origin, UUID sourceDatabaseId, UUID sourceTableId,
                            UUID epoch, long boundary, UUID boundaryEventId, long legacyThrough, Checkpoint base,
                            List<Column> columns, int chunkRows, int chunkBytes, long chunks, long rows,
