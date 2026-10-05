@@ -55,8 +55,6 @@ public class Subset {
 
     private Long replicationRevision;
 
-    private String snapshotHash;
-
     private String executionContext;
 
     @TimeToLive

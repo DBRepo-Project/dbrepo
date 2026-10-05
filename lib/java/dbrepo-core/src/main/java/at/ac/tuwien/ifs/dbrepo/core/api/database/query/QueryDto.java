@@ -87,7 +87,5 @@ public class QueryDto {
     @JsonProperty("replication_revision")
     private Long replicationRevision;
 
-    @JsonProperty("snapshot_hash")
-    private String snapshotHash;
 
 }

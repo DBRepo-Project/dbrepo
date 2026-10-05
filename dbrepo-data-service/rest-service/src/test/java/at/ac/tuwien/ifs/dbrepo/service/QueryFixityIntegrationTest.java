@@ -72,8 +72,8 @@ class QueryFixityIntegrationTest {
     @Test
     void storesMicrosecondSelectionAndNormalizedQueryAndReusesCanonicalIdentity() throws Exception {
         final Instant selected = Instant.parse("2020-02-29T12:34:56.123456Z");
-        final var id = service.storeQuery(database, "SELECT a FROM data", "SELECT 'original' a", selected, "alice");
-        assertEquals(id, service.storeQuery(database, "SELECT a FROM data", "SELECT 'original' a",
+        final var id = service.storeQuery(database, "SELECT 'original' a", "SELECT 'original' a", selected, "alice");
+        assertEquals(id, service.storeQuery(database, "SELECT 'original' a", "SELECT 'original' a",
                 selected.plusSeconds(1), "bob"));
         try (Connection connection = connect(); var result = connection.createStatement().executeQuery("SELECT * FROM qs_queries")) {
             assertTrue(result.next());

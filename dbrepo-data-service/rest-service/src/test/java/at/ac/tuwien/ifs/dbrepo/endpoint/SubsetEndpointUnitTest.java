@@ -78,6 +78,12 @@ public class SubsetEndpointUnitTest extends BaseTest {
     @Autowired
     private SubsetEndpoint subsetEndpoint;
 
+    @org.junit.jupiter.api.BeforeEach
+    void executionQueries() throws Exception {
+        when(subsetService.executionQuery(any(), any())).thenAnswer(call ->
+                ((at.ac.tuwien.ifs.dbrepo.core.entity.cache.Subset) call.getArgument(1)).getQueryNormalized());
+    }
+
     @Test
     void replayRejectsChangedResultBeforeReturningAnyRows() throws Exception {
         QUERY_5_CACHE.setResultHash("v2:reference");
@@ -87,7 +93,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
                 .thenReturn(SubsetMetadata.builder().resultHash("v2:changed").resultCount(QUERY_5_RESULT_NUMBER).build());
         for (String method : List.of("GET", "HEAD")) {
             when(httpServletRequest.getMethod()).thenReturn(method);
-            assertThrows(QueryExecutionException.class, () -> subsetEndpoint.getData(DATABASE_3_ID, QUERY_5_ID,
+            assertThrows(SubsetIntegrityMismatchException.class, () -> subsetEndpoint.getData(DATABASE_3_ID, QUERY_5_ID,
                     null, "application/json", httpServletRequest, null, null, null));
         }
         verifyNoInteractions(dataService, analyseService);
@@ -104,7 +110,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
         assertEquals("verified", subsetEndpoint.getData(DATABASE_3_ID, QUERY_5_ID, null, "application/json",
                 httpServletRequest, null, null, null).getHeaders().getFirst("X-Integrity"));
         QUERY_5_CACHE.setResultNumber(QUERY_5_RESULT_NUMBER + 1);
-        assertThrows(QueryExecutionException.class, () -> subsetEndpoint.getData(DATABASE_3_ID, QUERY_5_ID, null,
+        assertThrows(SubsetIntegrityMismatchException.class, () -> subsetEndpoint.getData(DATABASE_3_ID, QUERY_5_ID, null,
                 "application/json", httpServletRequest, null, null, null));
         QUERY_5_CACHE.setResultHash("legacy");
         assertEquals("legacy-unverified", subsetEndpoint.getData(DATABASE_3_ID, QUERY_5_ID, null, "application/json",

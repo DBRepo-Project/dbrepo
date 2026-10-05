@@ -76,7 +76,7 @@ class SubsetReplicationIntegrationTest {
     @Test
     void localIdentitySelectionFixityAndPersistenceShareDurableOutbox() throws Exception {
         final UUID id = create();
-        assertEquals(id, service.storeQuery(database, "SELECT a FROM data", "SELECT 'original' a",
+        assertEquals(id, service.storeQuery(database, "SELECT 'original' a", "SELECT 'original' a",
                 SELECTED.plusSeconds(10), "another-local-user"));
         final SubsetReplicationDto initial = read(id);
         assertEquals(A, initial.originSite());
@@ -157,8 +157,7 @@ class SubsetReplicationIntegrationTest {
         failOutbox();
         assertThrows(QueryStoreInsertException.class, this::create);
         assertEquals(0, count("qs_queries"));
-        assertEquals(0, count("qs_subset_results"));
-        assertEquals(0, count("qs_subset_result_rows"));
+
         sql("DROP TRIGGER fail_subset_outbox");
         final UUID id = create();
         final SubsetReplicationDto sent = read(id);
@@ -177,7 +176,7 @@ class SubsetReplicationIntegrationTest {
         database.setReplicaUrls(new HashMap<>(Collections.singletonMap(B, null)));
         final UUID id = create();
         final RestTemplate client = mock(RestTemplate.class);
-        var dispatcher = new SubsetReplicationDispatcher(null, replication, client, mapper, new SubsetResultService(mapper, json));
+        var dispatcher = new SubsetReplicationDispatcher(null, replication, client, mapper);
         assertEquals(0, dispatcher.dispatch(database));
         verifyNoInteractions(client);
         assertEquals(1, count("qs_subset_outbox"));
@@ -189,18 +188,18 @@ class SubsetReplicationIntegrationTest {
         assertEquals(2, number("SELECT attempts FROM qs_subset_outbox"));
         sql("UPDATE qs_subset_outbox SET next_attempt = UTC_TIMESTAMP(6)");
         reset(client);
-        publishedArtifact(client);
+
         when(client.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
                 .thenAnswer(call -> {
                     service.persist(database, id, true);
                     return ResponseEntity.noContent().build();
                 });
-        dispatcher = new SubsetReplicationDispatcher(null, replication(A), client, mapper, new SubsetResultService(mapper, json));
+        dispatcher = new SubsetReplicationDispatcher(null, replication(A), client, mapper);
         assertEquals(1, dispatcher.dispatch(database));
         assertEquals(1, count("qs_subset_outbox"));
         assertEquals(2, number("SELECT revision FROM qs_subset_outbox"));
         reset(client);
-        publishedArtifact(client);
+
         when(client.exchange(eq(B + "/api/v1/database/" + B_ID + "/subset/replicate"), eq(HttpMethod.PUT),
                 any(HttpEntity.class), eq(Void.class))).thenReturn(ResponseEntity.noContent().build());
         assertEquals(1, dispatcher.dispatch(database));
@@ -267,10 +266,13 @@ class SubsetReplicationIntegrationTest {
     }
 
     @Test
-    void remoteReplayFailsClosedAgainstActualLocalFixityBeforeDataOrSchemaIsReturned() throws Exception {
-        sql("CREATE TABLE sample_data (a VARCHAR(32))");
+    void remoteReplayFailsClosedWithoutHistoricalIdentitiesBeforeDataOrSchemaIsReturned() throws Exception {
+        sql("CREATE TABLE sample_data (a VARCHAR(32)) WITH SYSTEM VERSIONING");
         sql("INSERT INTO sample_data VALUES ('original')");
-        final UUID id = service.storeQuery(database, "SELECT a FROM sample_data", "SELECT a FROM sample_data", SELECTED, "alice");
+        database.setTables(List.of(at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table.builder()
+                .id(UUID.randomUUID()).internalName("sample_data").build()));
+        final UUID id = service.storeQuery(database, "SELECT a FROM sample_data", "SELECT a FROM sample_data",
+                Instant.now().truncatedTo(java.time.temporal.ChronoUnit.MICROS), "alice");
         final SubsetReplicationDto sent = read(id);
         asReceiver();
         replication.receive(database, sent);
@@ -286,7 +288,7 @@ class SubsetReplicationIntegrationTest {
                 mock(EndpointValidator.class), null, new com.fasterxml.jackson.databind.ObjectMapper());
         for (String method : List.of("GET", "HEAD")) {
             when(request.getMethod()).thenReturn(method);
-            assertThrows(QueryExecutionException.class, () -> endpoint.getData(B_ID, id, null, "application/json",
+            assertThrows(at.ac.tuwien.ifs.dbrepo.core.exception.SubsetHistoryIncompleteException.class, () -> endpoint.getData(B_ID, id, null, "application/json",
                     request, null, null, null));
         }
         verifyNoInteractions(data, analyse);
@@ -317,7 +319,7 @@ class SubsetReplicationIntegrationTest {
     }
 
     @Test
-    void backfillQueuesOnlyNewTargetAndPreservesHistorySnapshotsAndRetryState() throws Exception {
+    void backfillQueuesOnlyNewTargetAndPreservesQueryHistoryAndRetryState() throws Exception {
         database.setReplicaUrls(Map.of(B, B_ID));
         final UUID saved = create();
         service.persist(database, saved, true);
@@ -326,7 +328,7 @@ class SubsetReplicationIntegrationTest {
         sql("INSERT INTO qs_queries (query,query_normalized,is_persisted,query_hash) VALUES ('SELECT 1','SELECT 1',TRUE,'legacy')");
         sql("DELETE FROM qs_subset_outbox");
         final long history = count("qs_queries FOR SYSTEM_TIME ALL");
-        final String payloads = string("SELECT GROUP_CONCAT(HEX(payload) ORDER BY query_id,row_no) FROM qs_subset_result_rows");
+
         final SubsetReplicationDto before = read(saved);
         database.setReplicaUrls(Map.of(B, B_ID, C, C_ID));
         replication.backfill(database, C);
@@ -339,20 +341,44 @@ class SubsetReplicationIntegrationTest {
         assertEquals(2, count("qs_subset_outbox WHERE attempts=3 AND last_error='offline' AND next_attempt='2099-01-01'"));
         assertEquals(before, read(saved));
         assertEquals(history, count("qs_queries FOR SYSTEM_TIME ALL"));
-        assertEquals(payloads, string("SELECT GROUP_CONCAT(HEX(payload) ORDER BY query_id,row_no) FROM qs_subset_result_rows"));
-        assertEquals(2, count("qs_subset_results WHERE ready=TRUE"));
-
         final var client = mock(RestTemplate.class);
-        publishedArtifact(client);
+
         when(client.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
                 .thenReturn(ResponseEntity.noContent().build());
         sql("UPDATE qs_subset_outbox SET next_attempt=UTC_TIMESTAMP(6)");
-        assertEquals(2, new SubsetReplicationDispatcher(null, replication, client, mapper,
-                new SubsetResultService(mapper, json)).dispatch(database));
+        assertEquals(2, new SubsetReplicationDispatcher(null, replication, client, mapper).dispatch(database));
         verify(client, times(2)).exchange(eq(C + "/api/v1/database/" + C_ID + "/subset/replicate"),
                 eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class));
         assertEquals(0, count("qs_subset_outbox"));
         assertEquals(history, count("qs_queries FOR SYSTEM_TIME ALL"));
+    }
+
+    @Test
+    void repeatedMigrationRemovesOldResultsAndPreservesQueryIdentityAndHistory() throws Exception {
+        final UUID id = create();
+        final var before = read(id);
+        final long history = count("qs_queries FOR SYSTEM_TIME ALL");
+        try (Connection c = DriverManager.getConnection(url + "/subset_replication_test", "root", password);
+             Statement s = c.createStatement()) {
+            s.execute("SET SESSION system_versioning_alter_history=KEEP");
+            s.execute("ALTER TABLE qs_queries ADD snapshot_hash CHAR(64)");
+            s.execute("CREATE TABLE qs_subset_results(query_id VARCHAR(36),snapshot_hash CHAR(64))");
+            s.execute("CREATE TABLE qs_subset_result_rows(query_id VARCHAR(36),payload LONGBLOB)");
+            s.execute("INSERT INTO qs_subset_results VALUES('" + id + "','old')");
+            s.execute("INSERT INTO qs_subset_result_rows VALUES('" + id + "','old-result')");
+            s.execute("CREATE PROCEDURE _capture_subset_result() SELECT 1");
+        }
+        service.upgradeQueryStore(database);
+        service.upgradeQueryStore(database);
+        assertEquals(before, read(id));
+        assertEquals(history, count("qs_queries FOR SYSTEM_TIME ALL"));
+        assertEquals(0, number("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE()"
+                + " AND table_name IN ('qs_subset_results','qs_subset_result_rows')"));
+        assertEquals(0, number("SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE()"
+                + " AND table_name='qs_queries' AND column_name='snapshot_hash'"));
+        assertEquals(0, number("SELECT COUNT(*) FROM information_schema.routines WHERE routine_schema=DATABASE()"
+                + " AND routine_name='_capture_subset_result'"));
+        assertEquals(2, count("qs_subset_outbox"));
     }
 
     @Test
@@ -382,21 +408,14 @@ class SubsetReplicationIntegrationTest {
         assertEquals(0, count("qs_subset_outbox"));
         assertEquals(before, read(id));
         assertEquals(history, count("qs_queries FOR SYSTEM_TIME ALL"));
-        assertEquals(2, count("qs_subset_results WHERE ready=TRUE"));
+
     }
 
     private SubsetReplicationService replication(String site) {
         return new SubsetReplicationService(mapper, json, new ReplicationPeers(A + "," + B + "," + C),
-                Validation.buildDefaultValidatorFactory().getValidator(), site, new SubsetResultService(mapper, json));
+                Validation.buildDefaultValidatorFactory().getValidator(), site);
     }
 
-    private void publishedArtifact(RestTemplate client) {
-        when(client.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class),
-                eq(at.ac.tuwien.ifs.dbrepo.core.api.replication.SubsetResultManifestDto.Progress.class)))
-                .thenReturn(ResponseEntity.ok(new at.ac.tuwien.ifs.dbrepo.core.api.replication.SubsetResultManifestDto.Progress(true, 1, 0)));
-        when(client.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class)))
-                .thenReturn(ResponseEntity.noContent().build());
-    }
 
     private SubsetServiceMariaDbImpl service(SubsetReplicationService replication) {
         final var service = new SubsetServiceMariaDbImpl(null, Mappers.getMapper(DataMapper.class), mapper, null,
@@ -405,7 +424,7 @@ class SubsetReplicationIntegrationTest {
     }
 
     private UUID create() throws Exception {
-        return service.storeQuery(database, "SELECT a FROM data", "SELECT 'original' a", SELECTED, "alice");
+        return service.storeQuery(database, "SELECT 'original' a", "SELECT 'original' a", SELECTED, "alice");
     }
 
     private void asReceiver() throws Exception {
@@ -416,8 +435,8 @@ class SubsetReplicationIntegrationTest {
     }
 
     private void clearCurrentSite() throws Exception {
-        sql("DELETE FROM qs_subset_result_rows");
-        sql("DELETE FROM qs_subset_results");
+
+
         sql("DELETE FROM qs_subset_outbox");
         sql("DELETE FROM qs_queries");
     }

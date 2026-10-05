@@ -28,10 +28,9 @@ import static org.mockito.Mockito.*;
 
 class SubsetReplicationBackfillUnitTest {
     private static final String A = "https://a.example", B = "https://b.example", C = "https://c.example";
-    private final SubsetResultService results = mock(SubsetResultService.class);
     private final SubsetReplicationService service = spy(new SubsetReplicationService(
             Mappers.getMapper(MariaDbMapper.class), new ObjectMapper(), new ReplicationPeers(A + "," + B + "," + C),
-            mock(Validator.class), A, results));
+            mock(Validator.class), A));
 
     @Test
     void rejectsUntrustedLocalUnconfiguredAndUnmappedTargetsBeforeOpeningDatabase() {
@@ -42,7 +41,6 @@ class SubsetReplicationBackfillUnitTest {
         database.setReplicaUrls(Collections.singletonMap(B, null));
         assertThrows(ResponseStatusException.class, () -> service.backfill(database, B));
         verify(service, never()).getDataSource(any(Database.class));
-        verifyNoInteractions(results);
     }
 
     @Test
@@ -62,7 +60,6 @@ class SubsetReplicationBackfillUnitTest {
         verify(insert).close();
         verify(connection).close();
         verify(pool).close();
-        verifyNoInteractions(results);
     }
 
     @Test

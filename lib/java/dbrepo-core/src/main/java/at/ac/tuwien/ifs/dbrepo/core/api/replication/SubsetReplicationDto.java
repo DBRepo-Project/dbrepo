@@ -21,15 +21,7 @@ public record SubsetReplicationDto(
         @NotNull @Pattern(regexp = "v2:[0-9a-f]{64}") @JsonProperty("result_hash") String resultHash,
         @NotNull @PositiveOrZero @JsonProperty("result_count") Long resultCount,
         @Positive long revision,
-        @Pattern(regexp = "[0-9a-f]{64}") @JsonProperty("snapshot_hash") String snapshotHash,
         @Size(max = 262144) @JsonProperty("execution_context") String executionContext) {
-
-    public SubsetReplicationDto(UUID queryId, String originSite, String senderSite, UUID senderDatabaseId,
-                                String query, String queryNormalized, Instant selectedAt, Boolean persisted,
-                                String resultHash, Long resultCount, long revision, String snapshotHash) {
-        this(queryId, originSite, senderSite, senderDatabaseId, query, queryNormalized, selectedAt, persisted,
-                resultHash, resultCount, revision, snapshotHash, null);
-    }
 
     public SubsetReplicationDto(UUID queryId, String originSite, String senderSite, UUID senderDatabaseId,
                                 String query, String queryNormalized, Instant selectedAt, Boolean persisted,
