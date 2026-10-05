@@ -73,6 +73,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
                     + "ADD COLUMN IF NOT EXISTS creation_location VARCHAR(512), "
                     + "ADD COLUMN IF NOT EXISTS replication_revision BIGINT NOT NULL DEFAULT 0, "
                     + "ADD COLUMN IF NOT EXISTS snapshot_hash CHAR(64), "
+                    + "ADD COLUMN IF NOT EXISTS execution_context LONGTEXT, "
                     + "ADD INDEX IF NOT EXISTS query_fixity (query_hash, result_hash)");
             statement.execute(mariaDbMapper.queryStoreCreateSubsetOutboxRawQuery());
             statement.execute(mariaDbMapper.queryStoreCreateResultsRawQuery());
@@ -221,6 +222,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
             subset.setCreationLocation(resultSet.getString("creation_location"));
             subset.setReplicationRevision(resultSet.getLong("replication_revision"));
             subset.setSnapshotHash(resultSet.getString("snapshot_hash"));
+            subset.setExecutionContext(resultSet.getString("execution_context"));
             subset.setType(SubsetType.QUERY);
             subset.setDatabaseId(database.getId());
             return subset;
@@ -244,6 +246,11 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
         try {
             /* insert query into query store */
             subsetReplication.prepare(connection, database, null);
+            final var execution = SubsetHistory.capture(connection, database, subsetReplication.localSite(), query, timestamp);
+            try (PreparedStatement settings = connection.prepareStatement(
+                    "SET @dbrepo_subset_context=?,@dbrepo_subset_execution_sql=?")) {
+                settings.setString(1, execution.context()); settings.setString(2, execution.sql()); settings.execute();
+            }
             final long start = System.currentTimeMillis();
             final CallableStatement callableStatement = connection.prepareCall(mariaDbMapper.queryStoreStoreQueryRawQuery());
             if (username != null) {
@@ -325,6 +332,15 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
     public SubsetResultReader openResult(Database database, Subset subset)
             throws SQLException, QueryExecutionException {
         return subsetReplication.openResult(database, subset);
+    }
+
+    @Override
+    public String executionQuery(Database database, Subset subset) throws SQLException {
+        final var pool = getDataSource(database);
+        try (Connection c = pool.getConnection()) {
+            return SubsetHistory.replay(c, database, subset.getCreationLocation(), subset.getExecution(),
+                    subset.getExecutionContext(), subset.getQuery(), subsetReplication.localSite());
+        } finally { pool.close(); }
     }
 
 }

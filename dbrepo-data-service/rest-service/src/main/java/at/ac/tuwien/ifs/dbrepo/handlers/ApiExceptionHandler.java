@@ -17,6 +17,11 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @ControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
+    @ExceptionHandler({SubsetHistoryIncompleteException.class, SubsetIntegrityMismatchException.class})
+    public ResponseEntity<ApiErrorDto> handleSubsetReproduction(RuntimeException e) {
+        return generic_handle(e.getClass(), e.getLocalizedMessage());
+    }
+
     @Hidden
     @ResponseStatus(code = HttpStatus.UNAUTHORIZED)
     @ExceptionHandler(AccessDeniedException.class)

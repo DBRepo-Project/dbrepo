@@ -58,7 +58,8 @@ public class SubsetReplicationService extends DataConnector {
             statement.execute(mapper.queryStoreCreateSubsetOutboxRawQuery());
         }
         try (PreparedStatement statement = connection.prepareStatement(
-                "SET @dbrepo_subset_origin = ?, @dbrepo_subset_targets = ?, time_zone = '+00:00'")) {
+                "SET @dbrepo_subset_origin = ?, @dbrepo_subset_targets = ?,"
+                        + " @dbrepo_subset_context=NULL,@dbrepo_subset_execution_sql=NULL,time_zone = '+00:00'")) {
             statement.setString(1, localSite);
             statement.setString(2, encoded);
             statement.execute();
@@ -150,7 +151,7 @@ public class SubsetReplicationService extends DataConnector {
                 localSite, database.getId(), row.getString("query"), row.getString("query_normalized"),
                 row.getTimestamp("executed", utc()).toInstant(), row.getBoolean("is_persisted"),
                 row.getString("result_hash"), row.getLong("result_number"), row.getLong("replication_revision"),
-                row.getString("snapshot_hash"));
+                row.getString("snapshot_hash"), row.getString("execution_context"));
     }
 
     public void receive(Database database, SubsetReplicationDto incoming) throws SQLException {
@@ -176,8 +177,8 @@ public class SubsetReplicationService extends DataConnector {
                 if (stored == null) {
                     try (PreparedStatement statement = connection.prepareStatement("""
                         INSERT INTO qs_queries (id, created_by, query, query_normalized, executed,
-                            is_persisted, query_hash, result_hash, result_number, creation_location, replication_revision, snapshot_hash)
-                        VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            is_persisted, query_hash, result_hash, result_number, creation_location, replication_revision, snapshot_hash, execution_context)
+                        VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         """)) {
                         statement.setString(1, incoming.queryId().toString());
                         statement.setString(2, incoming.query());
@@ -190,6 +191,7 @@ public class SubsetReplicationService extends DataConnector {
                         statement.setString(9, incoming.originSite());
                         statement.setLong(10, incoming.revision());
                         statement.setString(11, incoming.snapshotHash());
+                        statement.setString(12, incoming.executionContext());
                         statement.executeUpdate();
                     }
                 } else if (changed) {
@@ -238,6 +240,7 @@ public class SubsetReplicationService extends DataConnector {
     private boolean sameIdentity(SubsetReplicationDto a, SubsetReplicationDto b) {
         return Objects.equals(a.originSite(), b.originSite()) && a.query().equals(b.query())
                 && a.queryNormalized().equals(b.queryNormalized()) && a.selectedAt().equals(b.selectedAt())
+                && Objects.equals(a.executionContext(), b.executionContext())
                 && (a.snapshotHash() == null || b.snapshotHash() == null || a.snapshotHash().equals(b.snapshotHash()))
                 && Objects.equals(a.resultHash(), b.resultHash()) && Objects.equals(a.resultCount(), b.resultCount());
     }
@@ -307,6 +310,8 @@ public class SubsetReplicationService extends DataConnector {
     private static ResponseStatusException conflict(String message) {
         return new ResponseStatusException(HttpStatus.CONFLICT, message);
     }
+
+    public String localSite() { return localSite; }
 
     private static Calendar utc() {
         return Calendar.getInstance(TimeZone.getTimeZone("UTC"));

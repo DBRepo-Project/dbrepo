@@ -17,6 +17,8 @@ public interface SubsetService {
 
     SubsetResultReader openResult(Database database, Subset subset) throws SQLException, QueryExecutionException;
 
+    String executionQuery(Database database, Subset subset) throws SQLException;
+
     void upgradeQueryStore(Database database) throws SQLException;
 
     void replicate(Database database, SubsetReplicationDto subset) throws SQLException;

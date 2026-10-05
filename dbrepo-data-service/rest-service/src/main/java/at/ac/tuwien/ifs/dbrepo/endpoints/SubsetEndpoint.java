@@ -430,12 +430,13 @@ public class SubsetEndpoint {
                         .contentType(org.springframework.http.MediaType.parseMediaType(accept)).headers(headers).body(body);
             }
             final boolean versionedHash = subset.getResultHash() != null && subset.getResultHash().startsWith("v2:");
+            final String executionQuery = subsetService.executionQuery(database, subset);
             headers.set("X-Integrity", versionedHash ? "verified" : "legacy-unverified");
             if (versionedHash || request.getMethod().equals("HEAD")) {
-                final SubsetMetadata metadata = subsetService.getMetadata(database, subset.getQueryNormalized());
+                final SubsetMetadata metadata = subsetService.getMetadata(database, executionQuery);
                 if (versionedHash && (!subset.getResultHash().equals(metadata.getResultHash())
                         || !java.util.Objects.equals(subset.getResultNumber(), metadata.getResultCount()))) {
-                    throw new QueryExecutionException("Stored subset integrity check failed; the original result cannot be reproduced");
+                    throw new SubsetIntegrityMismatchException("Stored subset integrity check failed; the original result cannot be reproduced");
                 }
                 headers.set("X-Count", "" + metadata.getResultCount());
                 headers.set("X-Result-Hash", metadata.getResultHash());
@@ -447,8 +448,9 @@ public class SubsetEndpoint {
                         .build();
             }
             final QueryDto query = metadataMapper.subsetToQueryDto(subset);
+            query.setQueryNormalized(executionQuery);
             query.setIdentifiers(metadataServiceGateway.getIdentifiers(database.getId(), subset.getId()));
-            final String paginatedStatement = mariaDbMapper.paginateSubset(subset.getQueryNormalized(),
+            final String paginatedStatement = mariaDbMapper.paginateSubset(executionQuery,
                     accept.equals("text/csv") ? null : page,
                     accept.equals("text/csv") ? null : size);
             headers.set("Access-Control-Expose-Headers", "X-Count X-Result-Hash X-Id X-Headers X-Integrity");

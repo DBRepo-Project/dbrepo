@@ -57,6 +57,8 @@ public class Subset {
 
     private String snapshotHash;
 
+    private String executionContext;
+
     @TimeToLive
     private Long exp;
 }

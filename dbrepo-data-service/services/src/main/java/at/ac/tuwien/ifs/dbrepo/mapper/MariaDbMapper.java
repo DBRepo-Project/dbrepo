@@ -181,6 +181,7 @@ public interface MariaDbMapper {
                     result_hash VARCHAR(255), result_number BIGINT,
                     creation_location VARCHAR(512), replication_revision BIGINT NOT NULL DEFAULT 0,
                     snapshot_hash CHAR(64),
+                    execution_context LONGTEXT,
                     INDEX query_fixity (query_hash, result_hash)
                 ) ENGINE=InnoDB WITH SYSTEM VERSIONING
                 """;
@@ -410,7 +411,8 @@ public interface MariaDbMapper {
                     IF selected_at IS NULL OR normalized_query IS NULL OR normalized_query = '' THEN
                         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Query and selection timestamp are required';
                     END IF;
-                    EXECUTE IMMEDIATE CONCAT('CREATE TABLE `', work_table, '` AS (', normalized_query, ')');
+                    EXECUTE IMMEDIATE CONCAT('CREATE TABLE `', work_table, '` AS (',
+                        COALESCE(@dbrepo_subset_execution_sql, normalized_query), ')');
                     CALL hash_table(work_table, result_digest, result_count);
                     SET identity_lock = SHA2(CONCAT(DATABASE(), ':', COALESCE(@dbrepo_subset_origin, ''),
                         ':', query_digest, ':', result_digest),256);
@@ -430,11 +432,11 @@ public interface MariaDbMapper {
                             SELECT snapshot_hash INTO snapshot_digest FROM qs_subset_results WHERE query_id = queryId;
                         END IF;
                         INSERT INTO qs_queries(id, created_by, query, query_normalized, is_persisted,
-                            query_hash, result_hash, result_number, executed, creation_location, replication_revision, snapshot_hash)
+                            query_hash, result_hash, result_number, executed, creation_location, replication_revision, snapshot_hash, execution_context)
                         VALUES(queryId, username, original_query, normalized_query, FALSE,
                             query_digest, result_digest, result_count, selected_at, @dbrepo_subset_origin,
                             IF(@dbrepo_subset_origin IS NULL, 0, 1),
-                            snapshot_digest);
+                            snapshot_digest, @dbrepo_subset_context);
                     END IF;
                     IF @dbrepo_subset_origin IS NOT NULL THEN
                 """ + queryStoreEnqueueSubsetRawQuery().replace("?", "queryId") + ";\n" + """
@@ -484,7 +486,7 @@ public interface MariaDbMapper {
     }
 
     default String queryStoreFindQueryRawQuery() {
-        final String statement = "SELECT `id`, `created_by`, `query`, `query_normalized`, `query_hash`, `result_hash`, `result_number`, `is_persisted`, `executed`, `creation_location`, `replication_revision`, `snapshot_hash` FROM `qs_queries` q WHERE q.`id` = ?";
+        final String statement = "SELECT `id`, `created_by`, `query`, `query_normalized`, `query_hash`, `result_hash`, `result_number`, `is_persisted`, `executed`, `creation_location`, `replication_revision`, `snapshot_hash`, `execution_context` FROM `qs_queries` q WHERE q.`id` = ?";
         log.trace("mapped find query statement: {}", statement);
         return statement;
     }
