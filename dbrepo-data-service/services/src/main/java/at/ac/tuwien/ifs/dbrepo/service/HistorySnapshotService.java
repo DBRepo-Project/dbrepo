@@ -106,7 +106,7 @@ public class HistorySnapshotService extends DataConnector {
                     writer.commit();
                     writer.setAutoCommit(true);
                     final Export export = export(reader, writer, table, request.snapshotId(), columns);
-                    final Manifest manifest = new Manifest(2, request.snapshotId(), baseUrl, database.getId(), table.getId(),
+                    final Manifest manifest = new Manifest(3, request.snapshotId(), baseUrl, database.getId(), table.getId(),
                             observed.epoch(), state.committedThrough(), eventId, state.legacyThrough(), request.base(), columns,
                             MAX_CHUNK_ROWS, MAX_CHUNK_BYTES, export.chunks(), export.rows(), export.currentKeys(),
                             export.historyDigest(), export.currentKeysDigest());
@@ -266,8 +266,8 @@ public class HistorySnapshotService extends DataConnector {
                 if (manifest.format() >= 2) {
                     for (long index = 0; index < manifest.chunks(); index++) {
                         for (Row row : rows(readChunk(c, snapshotId, index), manifest.columns())) {
-                            require(row.versionId() != null, HttpStatus.CONFLICT, "History version identity is missing");
-                            TupleVersionHistory.retain(c, table, row.versionId(), data(manifest, row));
+                            require(row.masterSiteTs() != null, HttpStatus.CONFLICT, "History version identity is missing");
+                            TupleVersionHistory.retain(c, table, row.masterSiteTs(), data(manifest, row));
                             if (row.visibility() != null) {
                                 for (var interval : row.visibility()) {
                                     at.ac.tuwien.ifs.dbrepo.service.impl.ReplicationTimestampServiceMariaDbImpl.upsertTimestamp(c, interval);
@@ -366,12 +366,12 @@ public class HistorySnapshotService extends DataConnector {
                         cells.add(value);
                     }
                     final String start = period(source, columns.size() + 1);
-                    final UUID version = TupleVersionHistory.findVersion(reader, table.getId(), cells.get(keyIndex),
+                    final java.time.Instant version = TupleVersionHistory.findVersion(reader, table.getId(), cells.get(keyIndex),
                             source.getTimestamp(columns.size() + 1, TupleVersionHistory.utc()).toInstant());
                     require(version != null, HttpStatus.CONFLICT, "Native history version mapping is incomplete");
                     final Row row = new Row(cells.get(keyIndex), start,
                             period(source, columns.size() + 2), source.getBoolean(columns.size() + 3), cells,
-                            version, TupleVersionHistory.visibility(reader, version));
+                            version, TupleVersionHistory.visibility(reader, table, cells.get(keyIndex), version));
                     final byte[] encoded = encode(row);
                     require(encoded.length + 2 <= MAX_CHUNK_BYTES, HttpStatus.PAYLOAD_TOO_LARGE, "History row exceeds snapshot chunk bound");
                     if (!pending.isEmpty() && (pending.size() == MAX_CHUNK_ROWS || bytes.size() + encoded.length + 2 > MAX_CHUNK_BYTES)) {
@@ -467,7 +467,7 @@ public class HistorySnapshotService extends DataConnector {
     private static void validateEnvelope(Envelope envelope) throws IOException {
         require(envelope != null && envelope.manifest() != null, HttpStatus.BAD_REQUEST, "Snapshot manifest required");
         final Manifest m = envelope.manifest();
-        require((m.format() == 1 || m.format() == 2) && m.snapshotId() != null && m.sourceDatabaseId() != null && m.sourceTableId() != null
+        require((m.format() == 1 || m.format() == 3) && m.snapshotId() != null && m.sourceDatabaseId() != null && m.sourceTableId() != null
                         && m.epoch() != null && m.boundary() >= 0 && m.legacyThrough() >= 0 && m.legacyThrough() <= m.boundary()
                         && (m.boundary() == 0 ? m.boundaryEventId() == null : m.boundaryEventId() != null)
                         && m.rows() >= 0 && m.currentKeys() >= 0 && m.currentKeys() <= m.rows() && m.chunks() >= 0

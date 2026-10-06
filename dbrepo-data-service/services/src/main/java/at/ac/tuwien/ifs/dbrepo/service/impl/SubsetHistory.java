@@ -56,7 +56,7 @@ public final class SubsetHistory {
                 final Proof proof = nativeOnly ? null : proof(c, visible(site, db.getId(), table.getId(), selected, cut));
                 bindings.put(table.getInternalName(), new Binding(table.getId(), nativeOnly, proof));
             }
-            final Execution execution = new Execution(1, db.getInternalName(), db.getId(), cut, bindings, views);
+            final Execution execution = new Execution(2, db.getInternalName(), db.getId(), cut, bindings, views);
             final String sql = execute(c, db, site, selected, execution, query, site);
             final String encoded = JSON.writeValueAsString(execution);
             c.commit();
@@ -88,7 +88,7 @@ public final class SubsetHistory {
     }
 
     public static void validate(Execution e) {
-        if (e == null || e.format() != 1 || e.databaseId() == null || e.databaseName() == null
+        if (e == null || e.format() != 2 || e.databaseId() == null || e.databaseName() == null
                 || e.cut() < 0 || e.tables() == null || e.views() == null || e.tables().size() + e.views().size() > 256) {
             throw incomplete("Unsupported subset execution metadata");
         }
@@ -118,8 +118,8 @@ public final class SubsetHistory {
             final String visible = visible(site, execution.databaseId(), binding.tableId(), selected, execution.cut());
             if (!binding.visible().equals(proof(c, visible))) throw incomplete("Site visibility evidence is incomplete for " + name);
             final String versions = versions(c, table);
-            final String available = "SELECT DISTINCT h.replication_key AS replication_id,h._version_id AS version_id FROM ("
-                    + versions + ") h JOIN (" + visible + ") t ON h.replication_key=t.replication_id AND h._version_id=t.version_id";
+            final String available = "SELECT DISTINCT h.replication_key AS replication_id,h._master_site_ts AS master_site_ts FROM ("
+                    + versions + ") h JOIN (" + visible + ") t ON h.replication_key=t.replication_id AND h._master_site_ts=t.master_site_ts";
             if (!binding.visible().equals(proof(c, available))) throw incomplete("Historical tuple values are incomplete for " + name);
             final Map<String,String> projection = new HashMap<>();
             final StringBuilder joins = new StringBuilder();
@@ -135,7 +135,7 @@ public final class SubsetHistory {
                         .append(" ON BINARY ").append(alias).append(".value=BINARY h.").append(quote(domain.getKey()));
             }
             relations.put(name, "SELECT " + columns(c, table, "h", false, projection) + " FROM (" + versions + ") h JOIN ("
-                    + visible + ") t ON h.replication_key=t.replication_id AND h._version_id=t.version_id" + joins);
+                    + visible + ") t ON h.replication_key=t.replication_id AND h._master_site_ts=t.master_site_ts" + joins);
         }
         return expand(query, execution.databaseName(), relations, execution.views(), new HashSet<>());
     }
@@ -208,7 +208,7 @@ public final class SubsetHistory {
     }
 
     private static String visible(String site, UUID database, UUID table, Instant selected, long cut) {
-        return "SELECT DISTINCT replication_id,version_id FROM tuple_replication_timestamps WHERE site_url=" + literal(site)
+        return "SELECT DISTINCT replication_id,master_site_ts FROM tuple_replication_timestamps WHERE site_url=" + literal(site)
                 + " AND database_id=" + literal(database.toString()) + " AND table_id=" + literal(table.toString())
                 + " AND row_start <= " + literal(selected) + " AND (visibility_start IS NULL OR visibility_start <= " + cut + ")"
                 + " AND (row_end IS NULL OR row_end > " + literal(selected) + " OR visibility_end > " + cut + ")";
@@ -218,12 +218,13 @@ public final class SubsetHistory {
         try {
             final MessageDigest digest = MessageDigest.getInstance("SHA-256");
             long count = 0;
-            try (var s = c.createStatement(); var rows = s.executeQuery("SELECT replication_id,version_id FROM (" + sql
-                    + ") p ORDER BY BINARY replication_id,BINARY version_id")) {
+            try (var s = c.createStatement(); var rows = s.executeQuery("SELECT replication_id,master_site_ts FROM (" + sql
+                    + ") p ORDER BY BINARY replication_id,BINARY master_site_ts")) {
                 while (rows.next()) {
                     if (rows.getString(2) == null) throw incomplete("A visible tuple has no proven version identity");
                     for (int i = 1; i <= 2; i++) {
-                        final byte[] value = rows.getString(i).getBytes(StandardCharsets.UTF_8);
+                        final byte[] value = (i == 1 ? rows.getString(i)
+                                : rows.getTimestamp(i, TupleVersionHistory.utc()).toInstant().toString()).getBytes(StandardCharsets.UTF_8);
                         digest.update(ByteBuffer.allocate(4).putInt(value.length).array()); digest.update(value);
                     }
                     count++;
@@ -237,7 +238,7 @@ public final class SubsetHistory {
         try (var s = c.createStatement(); var r = s.executeQuery("SELECT 1 FROM " + quote(table.getInternalName())
                 + " FOR SYSTEM_TIME AS OF TIMESTAMP " + literal(selected) + " h LEFT JOIN tuple_replication_versions m"
                 + " ON m.table_id=" + literal(table.getId().toString())
-                + " AND m.replication_id=h.replication_key AND m.native_start=h.ROW_START WHERE m.version_id IS NULL LIMIT 1")) {
+                + " AND m.replication_id=h.replication_key AND m.native_start=h.ROW_START WHERE m.master_site_ts IS NULL LIMIT 1")) {
             if (r.next()) throw incomplete("Visible native history has no proven version identity: " + table.getInternalName());
         }
     }
@@ -245,12 +246,12 @@ public final class SubsetHistory {
     private static String versions(Connection c, Table table) throws SQLException {
         final String nativeColumns = columns(c, table, "h", true);
         final String importedColumns = columns(c, table, "i", true);
-        return "SELECT " + nativeColumns + ",m.version_id AS _version_id FROM " + quote(table.getInternalName())
+        return "SELECT " + nativeColumns + ",m.master_site_ts AS _master_site_ts FROM " + quote(table.getInternalName())
                 + " FOR SYSTEM_TIME ALL h JOIN tuple_replication_versions m ON m.table_id=" + literal(table.getId().toString())
-                + " AND m.replication_id=h.replication_key AND m.native_start=h.ROW_START"
-                + " UNION ALL SELECT " + importedColumns + ",i._version_id FROM " + quote(TupleVersionHistory.importedName(table))
-                + " i WHERE NOT EXISTS (SELECT 1 FROM tuple_replication_versions m WHERE m.table_id="
-                + literal(table.getId().toString()) + " AND m.version_id=i._version_id)";
+                + " AND m.replication_id=h.replication_key AND m.native_start=h.ROW_START AND m.master_site_ts IS NOT NULL"
+                + " UNION ALL SELECT " + importedColumns + ",i._master_site_ts FROM " + quote(TupleVersionHistory.importedName(table))
+                + " i WHERE i._master_site_ts IS NOT NULL AND NOT EXISTS (SELECT 1 FROM tuple_replication_versions m WHERE m.table_id="
+                + literal(table.getId().toString()) + " AND m.replication_id=i.replication_key AND m.master_site_ts=i._master_site_ts)";
     }
 
     private static String columns(Connection c, Table table, String alias, boolean internal) throws SQLException {

@@ -51,14 +51,14 @@ class SubsetHistoryIntegrationTest {
         }
     }
 
-    private void retain(Connection c, Table table, UUID version, int key, int value) throws Exception {
+    private void retain(Connection c, Table table, Instant version, int key, int value) throws Exception {
         TupleVersionHistory.retain(c,table,version,Map.of("pk",key,"value",value,"replication_key","K"+key));
     }
 
-    private void interval(Connection c, String site, UUID db, Table table, UUID version, int key,
+    private void interval(Connection c, String site, UUID db, Table table, Instant version, int key,
                           Instant start, Instant end, long sequence, Long endSequence) throws Exception {
         ReplicationTimestampServiceMariaDbImpl.upsertTimestamp(c,TupleReplicationTimestampDto.builder()
-                .siteUrl(site).databaseId(db).tableId(table.getId()).replicationId("K"+key).versionId(version)
+                .siteUrl(site).databaseId(db).tableId(table.getId()).replicationId("K"+key).masterSiteTs(version)
                 .rowStart(start).rowEnd(end).visibilityStart(sequence).visibilityEnd(endSequence).build());
     }
 
@@ -69,7 +69,7 @@ class SubsetHistoryIntegrationTest {
     }
 
     @Test void delayedInsertReproducesTheActualExecutionSiteNotTheTargetsOldState() throws Exception {
-        final List<UUID> versions=new ArrayList<>(); for(int i=0;i<5;i++)versions.add(UUID.randomUUID());
+        final List<Instant> versions=Collections.nCopies(5,T.minusSeconds(60));
         try(var a=connection("subset_history_a");var b=connection("subset_history_b")) {
             a.setAutoCommit(false);b.setAutoCommit(false);
             for(int i=0;i<5;i++) {
@@ -119,7 +119,7 @@ class SubsetHistoryIntegrationTest {
     @Test void updatesCommittedAfterTheObservedCutCannotChangeTheResultEvenWithAnEarlierNativeTimestamp() throws Exception {
         try(var a=connection("subset_history_a")) {
             a.setAutoCommit(false);
-            final UUID original=UUID.randomUUID(),later=UUID.randomUUID();
+            final Instant original=T.minusSeconds(60),later=T.minusSeconds(30);
             retain(a,aTable,original,1,20);
             interval(a,A,aId,aTable,original,1,T.minusSeconds(60),null,2,null);
             a.commit();a.setAutoCommit(true);
@@ -160,7 +160,7 @@ class SubsetHistoryIntegrationTest {
             TupleVersionHistory.prepareImported(a,aTable);
             s.execute("INSERT INTO measurements(pk,value,replication_key,category,tags) VALUES(1,20,'K1','z','z')");
             a.setAutoCommit(false);
-            final UUID imported=UUID.randomUUID();
+            final Instant imported=T.minusSeconds(60);
             TupleVersionHistory.retain(a,aTable,imported,Map.of("pk",2,"value",20,"replication_key","K2","category","a","tags","a"));
             interval(a,A,aId,aTable,imported,2,T.minusSeconds(60),null,1,null);
             a.commit();a.setAutoCommit(true);
@@ -177,7 +177,7 @@ class SubsetHistoryIntegrationTest {
 
     @Test void replayAndSparkConnectionsUseUtcRegardlessOfTheJvmTimeZone() throws Exception {
         try(var a=connection("subset_history_a");var s=a.createStatement()) {
-            a.setAutoCommit(false);final UUID version=UUID.randomUUID();retain(a,aTable,version,1,20);
+            a.setAutoCommit(false);final Instant version=T.minusSeconds(60);retain(a,aTable,version,1,20);
             interval(a,A,aId,aTable,version,1,T.minusSeconds(60),null,1,null);a.commit();a.setAutoCommit(true);
             final var query=SubsetHistory.capture(a,database("subset_history_a",aId,aTable),A,"select value from measurements",T);
             s.execute("SET time_zone='-03:00'");
@@ -195,7 +195,7 @@ class SubsetHistoryIntegrationTest {
     }
 
     @Test void delayedUpdateAndLaterDeleteSelectTheOriginalSitesValuesVersion() throws Exception {
-        final UUID old=UUID.randomUUID(),updated=UUID.randomUUID();
+        final Instant old=T.minusSeconds(180),updated=T.minusSeconds(60);
         try(var a=connection("subset_history_a");var b=connection("subset_history_b")) {
             a.setAutoCommit(false);b.setAutoCommit(false);
             for(var c:List.of(a,b)) {
@@ -216,9 +216,56 @@ class SubsetHistoryIntegrationTest {
         }
     }
 
+    @Test void masterTimestampMapsToTheRightNativeVersionDespiteDifferentArrivalTimes() throws Exception {
+        try (var a=connection("subset_history_a");var b=connection("subset_history_b")) {
+            final Instant first=nativeChange(a,aTable,A,aId,10,null,true);
+            nativeChange(b,bTable,B,bId,10,first,true);
+            final Instant second=nativeChange(a,aTable,A,aId,20,null,false);
+            final Instant selected;
+            try(var s=a.createStatement();var r=s.executeQuery("SELECT UTC_TIMESTAMP(6)")) {
+                assertTrue(r.next());selected=r.getTimestamp(1,TupleVersionHistory.utc()).toInstant();
+            }
+            final var original=SubsetHistory.capture(a,database("subset_history_a",aId,aTable),A,
+                    "select value from measurements",selected);
+            final Instant third=nativeChange(a,aTable,A,aId,30,null,false);
+            final Instant localSecond=nativeChange(b,bTable,B,bId,20,second,false);
+            nativeChange(b,bTable,B,bId,30,third,false);
+            assertNotEquals(second,localSecond);
+            b.setAutoCommit(false);
+            for(Instant master:List.of(first,second,third)) {
+                for(var timestamp:TupleVersionHistory.visibility(a,aTable,"K1",master)) {
+                    ReplicationTimestampServiceMariaDbImpl.upsertTimestamp(b,timestamp);
+                }
+            }
+            b.commit();b.setAutoCommit(true);
+            assertEquals(List.of(20),values(b,SubsetHistory.replay(b,database("subset_history_b",bId,bTable),
+                    A,selected,original.context(),"select value from measurements",B)));
+            assertEquals(List.of(30),values(b,"SELECT value FROM measurements"));
+        }
+    }
+
+    private Instant nativeChange(Connection c,Table table,String site,UUID database,int value,Instant master,boolean insert)
+            throws Exception {
+        c.setAutoCommit(false);
+        try(var s=c.createStatement()) {
+            s.executeUpdate(insert ? "INSERT INTO measurements VALUES(1,"+value+",'K1',DEFAULT,DEFAULT)"
+                    : "UPDATE measurements SET value="+value+" WHERE replication_key='K1'");
+            final Instant local;
+            try(var r=s.executeQuery("SELECT ROW_START FROM measurements WHERE replication_key='K1'")) {
+                assertTrue(r.next());local=r.getTimestamp(1,TupleVersionHistory.utc()).toInstant();
+            }
+            final var tuple=at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleWithTimestampsDto.builder()
+                    .replicationKey("K1").insertedAt(local).build();
+            TupleVersionHistory.record(c,site,database,table.getId(),tuple,
+                    insert?org.springframework.http.HttpMethod.POST:org.springframework.http.HttpMethod.PUT,master==null?local:master);
+            c.commit();c.setAutoCommit(true);
+            return local;
+        }
+    }
+
     @Test void historicalViewDefinitionAndJoinsAreRewrittenToTheSameVersionRelations() throws Exception {
         try(var a=connection("subset_history_a")) {
-            a.setAutoCommit(false);final UUID version=UUID.randomUUID();retain(a,aTable,version,1,20);
+            a.setAutoCommit(false);final Instant version=T.minusSeconds(60);retain(a,aTable,version,1,20);
             interval(a,A,aId,aTable,version,1,T.minusSeconds(60),null,1,null);a.commit();a.setAutoCommit(true);
             final var db=database("subset_history_a",aId,aTable);
             db.setViews(List.of(View.builder().internalName("recorded").query("select pk,value from measurements").build()));

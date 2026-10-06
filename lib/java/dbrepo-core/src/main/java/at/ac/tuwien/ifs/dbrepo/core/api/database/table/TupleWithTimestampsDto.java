@@ -7,7 +7,6 @@ import lombok.extern.jackson.Jacksonized;
 
 import java.time.Instant;
 import java.util.Map;
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -16,6 +15,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Jacksonized
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties("versionId")
 @ToString
 public class TupleWithTimestampsDto {
 
@@ -32,8 +32,8 @@ public class TupleWithTimestampsDto {
     @Schema(description = "Replication key for the tuple")
     private String replicationKey;
 
-    @Schema(description = "Identity of the values version, shared by all sites")
-    private UUID versionId;
+    @Schema(description = "Original ROW_START of this values version on the writing site, in UTC microseconds")
+    private Instant masterSiteTs;
 
     private Long visibilityStart;
 

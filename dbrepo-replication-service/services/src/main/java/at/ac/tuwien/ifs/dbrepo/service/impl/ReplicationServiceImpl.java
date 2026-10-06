@@ -985,7 +985,7 @@ public class ReplicationServiceImpl implements ReplicationService {
         return TupleReplicationTimestampDto.builder()
                 .siteUrl(site(siteUrl))
                 .replicationId(tuple.getReplicationKey())
-                .versionId(tuple.getVersionId())
+                .masterSiteTs(tuple.getMasterSiteTs())
                 .visibilityStart(tuple.getVisibilityStart())
                 .visibilityEnd(tuple.getVisibilityEnd())
                 .databaseId(databaseId)

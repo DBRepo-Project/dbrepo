@@ -311,15 +311,15 @@ class ReplicationInboxIntegrationTest {
         try (var c = connection(); var s = c.createStatement()) {
             s.execute("DELETE FROM tuple_replication_versions");
             s.execute("DELETE FROM tuple_replication_timestamps");
-            s.execute("UPDATE tuple_replication_inbox SET receipt=JSON_REMOVE(receipt,'$.versionId','$.visibilityStart','$.visibilityEnd'),"
-                    + "payload=JSON_REMOVE(payload,'$.tuple.versionId','$.tuple.visibilityStart','$.tuple.visibilityEnd')");
+            s.execute("UPDATE tuple_replication_inbox SET receipt=JSON_SET(JSON_REMOVE(receipt,'$.masterSiteTs','$.visibilityStart','$.visibilityEnd'),'$.versionId',event_id),"
+                    + "payload=JSON_SET(JSON_REMOVE(payload,'$.tuple.masterSiteTs','$.tuple.visibilityStart','$.tuple.visibilityEnd'),'$.tuple.versionId',event_id)");
             c.setAutoCommit(false);
             at.ac.tuwien.ifs.dbrepo.service.impl.TupleVersionHistory.backfillLocal(c,"https://replica.example",database.getId(),table,false);
-            assertEquals(first.getEventId(),at.ac.tuwien.ifs.dbrepo.service.impl.TupleVersionHistory.findVersion(c,table.getId(),"a",original.getInsertedAt()));
-            assertEquals(second.getEventId(),at.ac.tuwien.ifs.dbrepo.service.impl.TupleVersionHistory.findVersion(c,table.getId(),"a",updated.getInsertedAt()));
+            assertEquals(first.getTuple().getInsertedAt(),at.ac.tuwien.ifs.dbrepo.service.impl.TupleVersionHistory.findVersion(c,table.getId(),"a",original.getInsertedAt()));
+            assertEquals(second.getTuple().getInsertedAt(),at.ac.tuwien.ifs.dbrepo.service.impl.TupleVersionHistory.findVersion(c,table.getId(),"a",updated.getInsertedAt()));
             c.commit();
         }
-        assertEquals(first.getEventId(),apply(first,HttpMethod.POST).getVersionId());
+        assertEquals(first.getTuple().getInsertedAt(),apply(first,HttpMethod.POST).getMasterSiteTs());
         assertEquals(2,count("samples FOR SYSTEM_TIME ALL"));
         assertEquals(2,count("tuple_replication_timestamps WHERE site_url='https://replica.example'"));
         assertEquals(0,count("tuple_replication_timestamps WHERE site_url='https://origin.example'"));
@@ -376,7 +376,7 @@ class ReplicationInboxIntegrationTest {
                 .table(TableDto.builder().id(sourceTable).creationLocation("https://origin.example")
                         .replicaUrls(Map.of("https://replica.example", table.getId())).build())
                 .tuple(TupleWithTimestampsDto.builder().replicationKey(key).data(data)
-                        .insertedAt(Instant.parse("2026-09-01T10:00:00.123456Z")).build()).build();
+                        .insertedAt(Instant.parse("2026-09-01T10:00:00.123456Z").plusSeconds(sequence)).build()).build();
     }
 
     private TupleWithTimestampsDto apply(DataReplicationDto event, HttpMethod method) throws Exception {

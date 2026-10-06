@@ -104,7 +104,7 @@ public final class HistorySnapshotCodec {
                         || !Objects.equals(row.replicationKey(), row.cells().get(key))) throw new IOException("Snapshot row schema/key mismatch");
                 if (row.visibility() != null) {
                     for (var interval : row.visibility()) {
-                        if (row.versionId() == null || !row.versionId().equals(interval.getVersionId())
+                        if (row.masterSiteTs() == null || !row.masterSiteTs().equals(interval.getMasterSiteTs())
                                 || !Objects.equals(row.replicationKey(), interval.getReplicationId())
                                 || interval.getSiteUrl() == null || interval.getDatabaseId() == null || interval.getTableId() == null
                                 || interval.getRowStart() == null || (interval.getRowEnd() != null

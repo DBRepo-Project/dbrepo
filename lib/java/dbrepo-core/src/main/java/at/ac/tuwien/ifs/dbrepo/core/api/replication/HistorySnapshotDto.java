@@ -16,7 +16,7 @@ public final class HistorySnapshotDto {
                          boolean nullable, boolean signed, String collation) { }
     // Text cells preserve JDBC numeric/temporal representations; binary SQL types use base64. NULL stays NULL.
     public record Row(String replicationKey, String rowStart, String rowEnd, boolean current, List<String> cells,
-                      UUID versionId, List<TupleReplicationTimestampDto> visibility) {
+                      java.time.Instant masterSiteTs, List<TupleReplicationTimestampDto> visibility) {
         public Row(String replicationKey, String rowStart, String rowEnd, boolean current, List<String> cells) {
             this(replicationKey, rowStart, rowEnd, current, cells, null, List.of());
         }

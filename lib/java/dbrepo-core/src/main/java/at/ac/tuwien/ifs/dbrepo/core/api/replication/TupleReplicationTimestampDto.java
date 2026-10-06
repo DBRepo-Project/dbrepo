@@ -19,11 +19,11 @@ public class TupleReplicationTimestampDto {
     @Schema(description = "URL of the site where the tuple originated")
     private String siteUrl;
 
-    @Schema(description = "Unique identifier for the replication operation")
+    @Schema(description = "Stable tuple replication key")
     private String replicationId;
 
-    @Schema(description = "Identity of the tuple values version, shared by all sites")
-    private UUID versionId;
+    @Schema(description = "Original TS_added of this values version on the writing site, in UTC microseconds")
+    private Instant masterSiteTs;
 
     private Long visibilityStart;
 

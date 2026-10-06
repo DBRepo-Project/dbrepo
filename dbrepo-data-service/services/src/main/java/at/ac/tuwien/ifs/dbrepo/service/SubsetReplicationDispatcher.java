@@ -151,11 +151,11 @@ public class SubsetReplicationDispatcher extends DataConnector {
                 try (var rows = s.executeQuery()) {
                     while (rows.next()) {
                         final Timestamp end = rows.getTimestamp("row_end", TupleVersionHistory.utc());
-                        final String version = rows.getString("version_id");
+                        final Timestamp version = rows.getTimestamp("master_site_ts", TupleVersionHistory.utc());
                         batch.add(TupleReplicationTimestampDto.builder().siteUrl(query.originSite())
                                 .databaseId(execution.databaseId()).tableId(binding.tableId())
                                 .replicationId(rows.getString("replication_id"))
-                                .versionId(version == null ? null : UUID.fromString(version))
+                                .masterSiteTs(version == null ? null : version.toInstant())
                                 .rowStart(rows.getTimestamp("row_start", TupleVersionHistory.utc()).toInstant())
                                 .rowEnd(end == null ? null : end.toInstant())
                                 .visibilityStart((Long) rows.getObject("visibility_start"))

@@ -6,7 +6,6 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpMethod;
 
-import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.time.Instant;
 import java.util.*;
@@ -23,10 +22,18 @@ public final class TupleVersionHistory {
             ddl.execute("""
                     CREATE TABLE IF NOT EXISTS tuple_replication_versions (
                         table_id VARCHAR(36) NOT NULL, replication_id VARCHAR(255) NOT NULL,
-                        version_id VARCHAR(36) NOT NULL, native_start TIMESTAMP(6) NOT NULL,
-                        PRIMARY KEY(table_id, version_id), UNIQUE KEY native_version(table_id, replication_id, native_start)
+                        master_site_ts TIMESTAMP(6) NULL, native_start TIMESTAMP(6) NOT NULL,
+                        PRIMARY KEY(table_id, replication_id, native_start),
+                        UNIQUE KEY master_version(table_id, replication_id, master_site_ts)
                     ) ENGINE=InnoDB
                     """);
+            if (hasColumn(c, "tuple_replication_versions", "version_id")
+                    && !hasColumn(c, "tuple_replication_versions", "master_site_ts")) {
+                ddl.execute("ALTER TABLE tuple_replication_versions ADD COLUMN IF NOT EXISTS master_site_ts TIMESTAMP(6) NULL,"
+                        + " MODIFY version_id VARCHAR(36) NULL, DROP PRIMARY KEY,"
+                        + " ADD PRIMARY KEY(table_id,replication_id,native_start),"
+                        + " ADD UNIQUE INDEX IF NOT EXISTS master_version(table_id,replication_id,master_site_ts)");
+            }
             ddl.execute("CREATE TABLE IF NOT EXISTS tuple_visibility_counter"
                     + " (id INT PRIMARY KEY, sequence BIGINT NOT NULL) ENGINE=InnoDB");
             ddl.execute("INSERT IGNORE INTO tuple_visibility_counter VALUES(1,0)");
@@ -44,9 +51,20 @@ public final class TupleVersionHistory {
             ddl.execute("CREATE TABLE IF NOT EXISTS " + quote(importedName(table))
                     + " ENGINE=InnoDB AS SELECT " + columns + " FROM " + quote(table.getInternalName()) + " WHERE 0");
             ddl.execute("ALTER TABLE " + quote(importedName(table))
-                    + " ADD COLUMN IF NOT EXISTS _version_id VARCHAR(36),"
-                    + " ADD UNIQUE INDEX IF NOT EXISTS imported_version (_version_id)");
+                    + " ADD COLUMN IF NOT EXISTS _master_site_ts TIMESTAMP(6) NULL,"
+                    + " ADD UNIQUE INDEX IF NOT EXISTS imported_master_version (replication_key,_master_site_ts)");
         }
+    }
+
+    private static boolean hasColumn(Connection c, String table, String column) throws SQLException {
+        try (var columns = c.getMetaData().getColumns(c.getCatalog(), null, table, column)) { return columns.next(); }
+    }
+
+    public static Instant requireMasterTimestamp(Instant value) throws SQLException {
+        if (value == null || !value.equals(value.truncatedTo(java.time.temporal.ChronoUnit.MICROS))) {
+            throw new SQLException("Master TS_added must be present with UTC microsecond precision");
+        }
+        return value;
     }
 
     public static long cut(Connection c) throws SQLException {
@@ -68,24 +86,23 @@ public final class TupleVersionHistory {
         }
     }
 
-    public static UUID findVersion(Connection c, UUID tableId, String key, Instant nativeStart) throws SQLException {
-        try (var s = c.prepareStatement("SELECT version_id FROM tuple_replication_versions"
+    public static Instant findVersion(Connection c, UUID tableId, String key, Instant nativeStart) throws SQLException {
+        try (var s = c.prepareStatement("SELECT master_site_ts FROM tuple_replication_versions"
                 + " WHERE table_id=? AND replication_id=? AND native_start=?")) {
             s.setString(1, tableId.toString()); s.setString(2, key); s.setTimestamp(3, Timestamp.from(nativeStart), utc());
-            try (var r = s.executeQuery()) { return r.next() ? UUID.fromString(r.getString(1)) : null; }
+            try (var r = s.executeQuery()) {
+                return r.next() && r.getTimestamp(1, utc()) != null ? r.getTimestamp(1, utc()).toInstant() : null;
+            }
         }
     }
 
-    public static UUID legacyVersion(String site, UUID database, UUID table, String key, Instant start) {
-        return UUID.nameUUIDFromBytes(("dbrepo:tuple-version:v1:" + site + ":" + database + ":" + table
-                + ":" + key.length() + ":" + key + ":" + start).getBytes(StandardCharsets.UTF_8));
-    }
-
     public static void bindNative(Connection c, UUID tableId, TupleWithTimestampsDto tuple) throws SQLException {
-        final UUID existing = findVersion(c, tableId, tuple.getReplicationKey(), tuple.getInsertedAt());
-        if (existing != null && !existing.equals(tuple.getVersionId())) throw new SQLException("Native version identity conflict");
-        try (var s = c.prepareStatement("SELECT replication_id,native_start FROM tuple_replication_versions WHERE table_id=? AND version_id=?")) {
-            s.setString(1, tableId.toString()); s.setString(2, tuple.getVersionId().toString());
+        requireMasterTimestamp(tuple.getMasterSiteTs());
+        final Instant existing = findVersion(c, tableId, tuple.getReplicationKey(), tuple.getInsertedAt());
+        if (existing != null && !existing.equals(tuple.getMasterSiteTs())) throw new SQLException("Native version identity conflict");
+        try (var s = c.prepareStatement("SELECT replication_id,native_start FROM tuple_replication_versions WHERE table_id=? AND master_site_ts=? AND replication_id=?")) {
+            s.setString(1, tableId.toString()); s.setTimestamp(2, Timestamp.from(tuple.getMasterSiteTs()), utc());
+            s.setString(3, tuple.getReplicationKey());
             try (var r = s.executeQuery()) {
                 if (r.next() && (!tuple.getReplicationKey().equals(r.getString(1))
                         || !tuple.getInsertedAt().equals(r.getTimestamp(2, utc()).toInstant()))) {
@@ -94,25 +111,27 @@ public final class TupleVersionHistory {
             }
         }
         try (var s = c.prepareStatement("INSERT IGNORE INTO tuple_replication_versions"
-                + " (table_id,replication_id,version_id,native_start) VALUES(?,?,?,?)")) {
+                + " (table_id,replication_id,master_site_ts,native_start) VALUES(?,?,?,?)"
+                + " ON DUPLICATE KEY UPDATE master_site_ts=COALESCE(master_site_ts,VALUES(master_site_ts))")) {
             s.setString(1, tableId.toString()); s.setString(2, tuple.getReplicationKey());
-            s.setString(3, tuple.getVersionId().toString()); s.setTimestamp(4, Timestamp.from(tuple.getInsertedAt()), utc());
+            s.setTimestamp(3, Timestamp.from(tuple.getMasterSiteTs()), utc()); s.setTimestamp(4, Timestamp.from(tuple.getInsertedAt()), utc());
             s.executeUpdate();
+        }
+        if (!tuple.getMasterSiteTs().equals(findVersion(c, tableId, tuple.getReplicationKey(), tuple.getInsertedAt()))) {
+            throw new SQLException("Conflicting master timestamp for native values version");
         }
     }
 
     public static void record(Connection c, String site, UUID databaseId, UUID tableId,
-                              TupleWithTimestampsDto tuple, HttpMethod method, UUID eventId) throws SQLException {
+                              TupleWithTimestampsDto tuple, HttpMethod method, Instant masterSiteTs) throws SQLException {
         if (c.getAutoCommit()) throw new SQLException("Version visibility requires the data transaction");
         if (tuple.getInsertedAt() == null) throw new SQLException("Native version start is required");
-        UUID version = HttpMethod.DELETE.equals(method)
-                ? findVersion(c, tableId, tuple.getReplicationKey(), tuple.getInsertedAt()) : eventId;
-        if (version == null) {
-            if (!HttpMethod.DELETE.equals(method)) throw new SQLException("Tuple version identity is missing");
-            version = eventId == null ? legacyVersion(site, databaseId, tableId, tuple.getReplicationKey(), tuple.getInsertedAt()) : eventId;
-        }
-        tuple.setVersionId(version);
-        bindNative(c, tableId, tuple);
+        final Instant mapped = findVersion(c, tableId, tuple.getReplicationKey(), tuple.getInsertedAt());
+        final Instant version = HttpMethod.DELETE.equals(method) && mapped != null ? mapped : masterSiteTs;
+        if (version != null || !HttpMethod.DELETE.equals(method)) requireMasterTimestamp(version);
+        tuple.setMasterSiteTs(version);
+        // Legacy deletes may close known local visibility without proving a source version.
+        if (version != null) bindNative(c, tableId, tuple);
         final long sequence = advance(c);
         final Instant boundary = HttpMethod.DELETE.equals(method) ? tuple.getDeletedAt() : tuple.getInsertedAt();
         if (boundary == null) throw new SQLException("Version visibility boundary is required");
@@ -131,9 +150,9 @@ public final class TupleVersionHistory {
         Long start = sequence;
         if (HttpMethod.DELETE.equals(method)) {
             try (var s = c.prepareStatement("SELECT visibility_start FROM tuple_replication_timestamps"
-                    + " WHERE site_url=? AND database_id=? AND table_id=? AND version_id=?")) {
+                    + " WHERE site_url=? AND database_id=? AND table_id=? AND replication_id=? AND row_start=?")) {
                 s.setString(1, site); s.setString(2, databaseId.toString()); s.setString(3, tableId.toString());
-                s.setString(4, version.toString());
+                s.setString(4, tuple.getReplicationKey()); s.setTimestamp(5, Timestamp.from(tuple.getInsertedAt()), utc());
                 try (var r = s.executeQuery()) { start = r.next() ? (Long) r.getObject(1) : null; }
             }
         }
@@ -141,7 +160,7 @@ public final class TupleVersionHistory {
         tuple.setVisibilityEnd(HttpMethod.DELETE.equals(method) ? sequence : null);
         ReplicationTimestampServiceMariaDbImpl.upsertTimestamp(c, TupleReplicationTimestampDto.builder()
                 .siteUrl(site).databaseId(databaseId).tableId(tableId).replicationId(tuple.getReplicationKey())
-                .versionId(version).rowStart(tuple.getInsertedAt()).rowEnd(tuple.getDeletedAt())
+                .masterSiteTs(version).rowStart(tuple.getInsertedAt()).rowEnd(tuple.getDeletedAt())
                 .visibilityStart(start).visibilityEnd(tuple.getVisibilityEnd()).build());
     }
 
@@ -162,14 +181,14 @@ public final class TupleVersionHistory {
                 final String key = rows.getString(1);
                 if (key == null) continue;
                 final Instant start = rows.getTimestamp(2, utc()).toInstant();
-                UUID version = findVersion(c, table.getId(), key, start);
-                if (version == null && source) version = legacyVersion(site, databaseId, table.getId(), key, start);
+                Instant version = findVersion(c, table.getId(), key, start);
+                if (version == null && source) version = start;
                 if (version == null) continue;
-                final var tuple = TupleWithTimestampsDto.builder().replicationKey(key).versionId(version)
+                final var tuple = TupleWithTimestampsDto.builder().replicationKey(key).masterSiteTs(version)
                         .insertedAt(start).deletedAt(rows.getBoolean(4) ? null : rows.getTimestamp(3, utc()).toInstant()).build();
                 bindNative(c, table.getId(), tuple);
                 ReplicationTimestampServiceMariaDbImpl.upsertTimestamp(c, TupleReplicationTimestampDto.builder()
-                        .siteUrl(site).databaseId(databaseId).tableId(table.getId()).replicationId(key).versionId(version)
+                        .siteUrl(site).databaseId(databaseId).tableId(table.getId()).replicationId(key).masterSiteTs(version)
                         .rowStart(start).rowEnd(tuple.getDeletedAt()).build());
             }
         }
@@ -194,11 +213,13 @@ public final class TupleVersionHistory {
                                 : JSON.readValue(rows.getString(4), TupleWithTimestampsDto.class);
                         if (tuple == null || Boolean.FALSE.equals(tuple.getApplied()) || tuple.getInsertedAt() == null
                                 || tuple.getReplicationKey() == null) continue;
-                        final UUID event = UUID.fromString(rows.getString(1));
-                        if (tuple.getVersionId() != null && !tuple.getVersionId().equals(event)) {
-                            throw new SQLException("Retained event has a conflicting version identity");
+                        final var sent = JSON.treeToValue(payload.get("tuple"), TupleWithTimestampsDto.class);
+                        final Instant master = sent.getMasterSiteTs() != null ? sent.getMasterSiteTs() : sent.getInsertedAt();
+                        requireMasterTimestamp(master);
+                        if (tuple.getMasterSiteTs() != null && !tuple.getMasterSiteTs().equals(master)) {
+                            throw new SQLException("Retained receipt has a conflicting master timestamp");
                         }
-                        tuple.setVersionId(event);
+                        tuple.setMasterSiteTs(master);
                         bindNative(c, table.getId(), tuple);
                     } catch (java.io.IOException | IllegalArgumentException e) {
                         throw new SQLException("Retained event cannot establish a historical version identity", e);
@@ -208,15 +229,21 @@ public final class TupleVersionHistory {
         }
     }
 
-    public static List<TupleReplicationTimestampDto> visibility(Connection c, UUID version) throws SQLException {
+    public static List<TupleReplicationTimestampDto> visibility(Connection c, Table table, String key, Instant version) throws SQLException {
         final List<TupleReplicationTimestampDto> result = new ArrayList<>();
-        try (var s = c.prepareStatement("SELECT * FROM tuple_replication_timestamps WHERE version_id=?"
+        final var tableIds = new HashSet<UUID>();
+        tableIds.add(table.getId());
+        if (table.getReplicaUrls() != null) tableIds.addAll(table.getReplicaUrls().values());
+        try (var s = c.prepareStatement("SELECT * FROM tuple_replication_timestamps WHERE master_site_ts=? AND replication_id=? AND table_id IN ("
+                + String.join(",", Collections.nCopies(tableIds.size(), "?")) + ")"
                 + " ORDER BY site_url,database_id,table_id,row_start")) {
-            s.setString(1, version.toString());
+            s.setTimestamp(1, Timestamp.from(version), utc()); s.setString(2, key);
+            int index = 3;
+            for (UUID id : tableIds) s.setString(index++, id.toString());
             try (var rows = s.executeQuery()) {
                 while (rows.next()) {
                     final Timestamp end = rows.getTimestamp("row_end", utc());
-                    result.add(TupleReplicationTimestampDto.builder().versionId(version)
+                    result.add(TupleReplicationTimestampDto.builder().masterSiteTs(version)
                             .siteUrl(rows.getString("site_url")).databaseId(UUID.fromString(rows.getString("database_id")))
                             .tableId(UUID.fromString(rows.getString("table_id"))).replicationId(rows.getString("replication_id"))
                             .rowStart(rows.getTimestamp("row_start", utc()).toInstant()).rowEnd(end == null ? null : end.toInstant())
@@ -228,7 +255,8 @@ public final class TupleVersionHistory {
         return result;
     }
 
-    public static void retain(Connection c, Table table, UUID version, Map<String, Object> values) throws SQLException {
+    public static void retain(Connection c, Table table, Instant version, Map<String, Object> values) throws SQLException {
+        requireMasterTimestamp(version);
         final Map<String,String> columns = columns(c, table);
         final String names = String.join(",", columns.keySet().stream().map(TupleVersionHistory::quote).toList());
         final String placeholders = String.join(",", Collections.nCopies(columns.size(), "?"));
@@ -238,13 +266,13 @@ public final class TupleVersionHistory {
             return (text ? "BINARY " : "") + quote(x.getKey()) + " <=> " + (text ? "BINARY " : "") + "?";
         }).toList());
         try (var insert = c.prepareStatement("INSERT IGNORE INTO " + quote(importedName(table))
-                + " (" + names + ",_version_id) VALUES(" + placeholders + ",?)")) {
+                + " (" + names + ",_master_site_ts) VALUES(" + placeholders + ",?)")) {
             int index = bindValues(insert, columns, values);
-            insert.setString(index, version.toString()); insert.executeUpdate();
+            insert.setTimestamp(index, Timestamp.from(version), utc()); insert.executeUpdate();
         }
         try (var check = c.prepareStatement("SELECT 1 FROM " + quote(importedName(table))
-                + " WHERE " + predicates + " AND _version_id=?")) {
-            int index = bindValues(check, columns, values); check.setString(index, version.toString());
+                + " WHERE " + predicates + " AND _master_site_ts=?")) {
+            int index = bindValues(check, columns, values); check.setTimestamp(index, Timestamp.from(version), utc());
             try (var r = check.executeQuery()) { if (!r.next()) throw new SQLException("Historical values version conflict"); }
         }
     }

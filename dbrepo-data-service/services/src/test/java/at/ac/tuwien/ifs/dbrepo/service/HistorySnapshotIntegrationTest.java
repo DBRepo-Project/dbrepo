@@ -67,24 +67,24 @@ class HistorySnapshotIntegrationTest {
     }
 
     @Test
-    void transferredHistoryCarriesVersionIdentityAndSourceVisibility() throws Exception {
+    void transferredHistoryCarriesMasterTimestampAndSourceVisibility() throws Exception {
         final Artifact artifact = export(null);
-        assertEquals(2, artifact.envelope().manifest().format());
+        assertEquals(3, artifact.envelope().manifest().format());
         final List<Row> history = artifact.chunks().stream().flatMap(chunk ->
                 uncheckedRows(chunk, artifact.envelope().manifest().columns()).stream()).toList();
-        assertEquals(3, history.stream().map(Row::versionId).distinct().count());
+        assertEquals(3, history.stream().map(row -> List.of(row.replicationKey(),row.masterSiteTs())).distinct().count());
         for (Row row : history) {
-            assertNotNull(row.versionId());
+            assertNotNull(row.masterSiteTs());
             assertEquals(1, row.visibility().size());
             assertEquals(ORIGIN, row.visibility().getFirst().getSiteUrl());
-            assertEquals(row.versionId(), row.visibility().getFirst().getVersionId());
+            assertEquals(row.masterSiteTs(), row.visibility().getFirst().getMasterSiteTs());
         }
         releaseSourceArtifact(artifact);
         receiver.beginImport(target, targetTable, new Import(targetTable.getId(), artifact.envelope()));
         for (Chunk chunk : artifact.chunks()) receiver.putChunk(target, artifact.id(), chunk);
         receiver.verifyImport(target, targetTable, artifact.id());
         try (Connection c = connection(); var s = c.createStatement(); var rows = s.executeQuery(
-                "SELECT COUNT(DISTINCT _version_id) FROM "
+                "SELECT COUNT(DISTINCT replication_key,_master_site_ts) FROM "
                         + at.ac.tuwien.ifs.dbrepo.service.impl.TupleVersionHistory.importedName(targetTable))) {
             assertTrue(rows.next()); assertEquals(3, rows.getLong(1));
         }

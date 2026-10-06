@@ -29,6 +29,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.time.Instant;
 import java.util.Base64;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,10 +56,14 @@ public class ReplicationInboxService extends DataConnector {
     public TupleWithTimestampsDto apply(Database database, Table table, DataReplicationDto event, HttpMethod method)
             throws SQLException, TableMalformedException, StorageUnavailableException, StorageNotFoundException {
         validate(database, table, event, method);
-        if (!HttpMethod.DELETE.equals(method)) {
-            final UUID version = event.getTuple().getVersionId() == null ? event.getEventId() : event.getTuple().getVersionId();
-            if (!version.equals(event.getEventId())) throw new TableMalformedException("Values version must match its source event");
-            event.getTuple().setVersionId(version);
+        if (event.getTuple().getInsertedAt() != null) {
+            final var master = event.getTuple().getMasterSiteTs() == null
+                    ? event.getTuple().getInsertedAt() : event.getTuple().getMasterSiteTs();
+            TupleVersionHistory.requireMasterTimestamp(master);
+            if (!master.equals(event.getTuple().getInsertedAt())) throw new TableMalformedException("Master TS_added differs from source version start");
+            event.getTuple().setMasterSiteTs(master);
+        } else if (!HttpMethod.DELETE.equals(method)) {
+            throw new TableMalformedException("Source version start is required");
         }
         final String payload = encode(Map.of("method", method.name(), "sequence", event.getEventSequence(), "target", table.getId(),
                 "database", event.getDatabase().getId(), "table", event.getTable().getId(), "tuple", event.getTuple()));
@@ -90,7 +95,7 @@ public class ReplicationInboxService extends DataConnector {
                     result = mutate(connection, database, table, event, method);
                     if (!Boolean.FALSE.equals(result.getApplied())) {
                         TupleVersionHistory.record(connection, baseUrl, database.getId(), table.getId(), result, method,
-                                event.getTuple().getVersionId());
+                                event.getTuple().getMasterSiteTs());
                     }
                     advance(connection, table, event);
                 }
@@ -149,17 +154,17 @@ public class ReplicationInboxService extends DataConnector {
                         }
                         final var row = rows.get(key.rowIndex());
                         final var event = snapshotEvent(manifest, key.replicationKey(), HistorySnapshotCodec.data(manifest, row));
-                        event.getTuple().setVersionId(row.versionId());
+                        event.getTuple().setMasterSiteTs(row.masterSiteTs());
                         lockHead(connection, table, event);
                         if (head(connection, table, event) <= manifest.boundary()) {
                             final var current = select(connection, table, key.replicationKey(), false);
-                            final UUID currentVersion = current == null ? null : TupleVersionHistory.findVersion(connection,
+                            final Instant currentVersion = current == null ? null : TupleVersionHistory.findVersion(connection,
                                     table.getId(), key.replicationKey(), current.getInsertedAt());
                             if (!matchesCurrent(connection, table, event.getTuple().getData())
-                                    || (row.versionId() != null && !row.versionId().equals(currentVersion))) {
+                                    || (row.masterSiteTs() != null && !row.masterSiteTs().equals(currentVersion))) {
                                 final var applied = mutate(connection, database, table, event, HttpMethod.PUT);
-                                if (row.versionId() != null) TupleVersionHistory.record(connection, baseUrl, database.getId(),
-                                        table.getId(), applied, HttpMethod.PUT, row.versionId());
+                                if (row.masterSiteTs() != null) TupleVersionHistory.record(connection, baseUrl, database.getId(),
+                                        table.getId(), applied, HttpMethod.PUT, row.masterSiteTs());
                             }
                             advance(connection, table, event);
                         }
@@ -249,7 +254,7 @@ public class ReplicationInboxService extends DataConnector {
 
     private void retainVersion(Connection connection, Table table, TupleWithTimestampsDto tuple)
             throws SQLException, StorageUnavailableException, StorageNotFoundException {
-        TupleVersionHistory.retain(connection, table, tuple.getVersionId(), tuple.getData());
+        TupleVersionHistory.retain(connection, table, tuple.getMasterSiteTs(), tuple.getData());
     }
 
     private List<String> currentKeys(Connection connection, Table table, String after) throws SQLException {
@@ -406,17 +411,17 @@ public class ReplicationInboxService extends DataConnector {
                 if (!result.next()) {
                     return null;
                 }
-                if (!canonicalPayload(payload, event.getEventId()).equals(canonicalPayload(result.getString(1), event.getEventId()))) {
+                if (!canonicalPayload(payload).equals(canonicalPayload(result.getString(1)))) {
                     throw new TableMalformedException("Replication event identity was reused with different content");
                 }
                 try {
                     final var receipt = json.readValue(result.getString(2), TupleWithTimestampsDto.class);
-                    if (receipt.getVersionId() == null && !Boolean.FALSE.equals(receipt.getApplied()) && receipt.getInsertedAt() != null) {
+                    if (receipt.getMasterSiteTs() == null && !Boolean.FALSE.equals(receipt.getApplied()) && receipt.getInsertedAt() != null) {
                         final String method = json.readTree(payload).path("method").asText();
-                        final UUID version = "DELETE".equals(method) ? TupleVersionHistory.findVersion(connection,
-                                table.getId(), receipt.getReplicationKey(), receipt.getInsertedAt()) : event.getEventId();
+                        final Instant version = "DELETE".equals(method) ? TupleVersionHistory.findVersion(connection,
+                                table.getId(), receipt.getReplicationKey(), receipt.getInsertedAt()) : event.getTuple().getMasterSiteTs();
                         if (version != null) {
-                            receipt.setVersionId(version);
+                            receipt.setMasterSiteTs(version);
                             TupleVersionHistory.bindNative(connection, table.getId(), receipt);
                             try (var update = connection.prepareStatement("UPDATE tuple_replication_inbox SET receipt=? WHERE event_id=?")) {
                                 update.setString(1, encode(receipt)); update.setString(2, event.getEventId().toString()); update.executeUpdate();
@@ -431,14 +436,13 @@ public class ReplicationInboxService extends DataConnector {
         }
     }
 
-    private com.fasterxml.jackson.databind.JsonNode canonicalPayload(String payload, UUID event) throws SQLException {
+    private com.fasterxml.jackson.databind.JsonNode canonicalPayload(String payload) throws SQLException {
         try {
             final var value = json.readTree(payload);
             final var tuple = (com.fasterxml.jackson.databind.node.ObjectNode) value.path("tuple");
-            if (List.of("POST", "PUT").contains(value.path("method").asText()) && !tuple.hasNonNull("versionId")) {
-                tuple.put("versionId", event.toString());
-            }
-            for (String field : List.of("versionId", "visibilityStart", "visibilityEnd")) {
+            tuple.remove("versionId");
+            if (!tuple.hasNonNull("masterSiteTs") && tuple.hasNonNull("insertedAt")) tuple.set("masterSiteTs", tuple.get("insertedAt"));
+            for (String field : List.of("masterSiteTs", "visibilityStart", "visibilityEnd")) {
                 if (!tuple.hasNonNull(field)) tuple.remove(field);
             }
             return value;

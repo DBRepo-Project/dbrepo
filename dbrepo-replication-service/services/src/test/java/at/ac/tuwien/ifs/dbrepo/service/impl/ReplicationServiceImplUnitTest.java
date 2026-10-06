@@ -57,7 +57,10 @@ public class ReplicationServiceImplUnitTest {
         if (databaseC != null) databases.put("http://c.test", databaseC);
         final String key = UUID.randomUUID().toString();
         final var tuple = TupleWithTimestampsDto.builder().replicationKey(key)
-                .insertedAt(Instant.parse("2026-10-03T10:00:00Z")).build();
+                .insertedAt(Instant.parse("2026-10-03T10:00:00Z"))
+                .masterSiteTs(Instant.parse("2026-10-03T10:00:00Z")).build();
+        final var receipt = TupleWithTimestampsDto.builder().replicationKey(key)
+                .insertedAt(Instant.parse("2026-10-03T10:04:00Z")).masterSiteTs(tuple.getMasterSiteTs()).build();
         final var request = DataReplicationDto.builder()
                 .database(DatabaseDto.builder().id(databaseId).replicaUrls(databases).build())
                 .table(TableDto.builder().id(tableId).replicaUrls(Map.of("http://b.test", tableB, "http://c.test", tableC)).build())
@@ -67,7 +70,7 @@ public class ReplicationServiceImplUnitTest {
         when(metadata.exchange(eq("/api/v1/database/" + databaseId + "/table/" + tableId), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(TableDto.class)))
                 .thenReturn(ResponseEntity.ok(request.getTable()));
         when(external.exchange(eq("http://b.test/api/v1/database/" + databaseB + "/table/" + tableB + "/data/replicate"),
-                eq(HttpMethod.POST), any(HttpEntity.class), eq(TupleWithTimestampsDto.class))).thenReturn(ResponseEntity.ok(tuple));
+                eq(HttpMethod.POST), any(HttpEntity.class), eq(TupleWithTimestampsDto.class))).thenReturn(ResponseEntity.ok(receipt));
         when(external.exchange(eq("http://c.test/api/v1/database/" + databaseC + "/table/" + tableC + "/data/replicate"),
                 eq(HttpMethod.POST), any(HttpEntity.class), eq(TupleWithTimestampsDto.class)))
                 .thenThrow(new ResourceAccessException("tuple delivery unavailable"));
@@ -84,10 +87,16 @@ public class ReplicationServiceImplUnitTest {
             assertEquals(2, ((List<?>) entity.getValue().getBody()).size());
             org.junit.jupiter.api.Assertions.assertTrue(((List<?>) entity.getValue().getBody()).stream()
                     .map(value -> (TupleReplicationTimestampDto) value).anyMatch(value -> value.getSiteUrl().equals("http://b.test")));
+            for (Object entry : (List<?>) entity.getValue().getBody()) {
+                final var timestamp = (TupleReplicationTimestampDto) entry;
+                assertEquals(tuple.getMasterSiteTs(),timestamp.getMasterSiteTs());
+                if (timestamp.getSiteUrl().equals("http://b.test")) assertEquals(receipt.getInsertedAt(),timestamp.getRowStart());
+            }
         } else {
             verify(outbox).enqueue(eq(ReplicationOutboxOperationType.TIMESTAMP_SYNC), eq("http://c.test"), eq(HttpMethod.POST),
                     body.capture(), eq(databaseId), eq(tableId), eq(databaseC), eq(tableC), any());
             assertEquals(2, body.getValue().size());
+            for (Object entry : body.getValue()) assertEquals(tuple.getMasterSiteTs(),((TupleReplicationTimestampDto) entry).getMasterSiteTs());
         }
     }
 

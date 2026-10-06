@@ -8,25 +8,37 @@ the origin database/table IDs, a committed local visibility sequence, the view
 definitions used for execution, and a hash/count of the visible tuple-version
 identities for each referenced table.
 
-The replication key identifies a tuple. A version ID identifies one immutable set
-of tuple values. Insert and update events use their retained event UUID as version
-ID. Delete closes the existing version's visibility interval.
+The replication key identifies a tuple and stays unchanged on updates. Within a
+source table, `(replication_key, master_site_ts)` identifies its values version.
+`master_site_ts` is the original native `ROW_START` (`TS_added`) on the writing site,
+preserved in UTC with microsecond precision on every recipient. It is not the local
+arrival time or the subset selection time. Event UUIDs remain transport identities
+for idempotency and retry; they do not identify values versions. Delete closes the
+existing version's visibility interval without allocating a new version key.
 
-`tuple_replication_timestamps` records each site's visibility intervals.
-`tuple_replication_versions` maps version IDs to local native MariaDB history rows.
+`tuple_replication_timestamps` records each site's visibility intervals and their
+master timestamps. `tuple_replication_versions` keeps the proven local mapping from
+tuple key and master timestamp to native MariaDB `ROW_START`. Its uniqueness rules
+include table identity and tuple key: different tuples may share a master timestamp.
 Imported versions absent from native history use a typed internal relation named
 `_dbrepo_versions_<table UUID without hyphens>`. Table-history transfer remains
 available; these are base-data versions, not stored subset results.
 
 The query parser replaces table references with relations joining tuple keys and
-version IDs to the original execution site's intervals. Local arrival times on the
-site performing re-execution do not select the result. Aliases, joins, nested selects
+master timestamps to the original execution site's intervals. The local mapping
+selects the native history row even when that row arrived later. Local arrival times
+on the site performing re-execution do not select the result. Aliases, joins, nested selects
 and recorded view definitions use the same rewrite. Technical replication columns
 are excluded from these relations.
 
 For example, A updates a tuple at 10:02, creates a subset at 10:03, and B receives the
 update at 10:04. Re-execution on B selects the updated version visible on A at 10:03.
 A subset originally created on B at 10:03 selects B's older version.
+
+On B the version `(K, 10:02)` maps to native history `(K, 10:04)`. Re-executing A's
+query selects A's interval for `(K, 10:02)` and reads that exact local historical row.
+If B never applied this version, its transferred typed history supplies the values;
+no local visibility interval is invented for it. The query never connects to A.
 
 The visibility sequence excludes changes committed after the original observation
 even if a transaction's native timestamp precedes the selection time. Table proofs
@@ -90,6 +102,19 @@ The normal dispatch interval is 30 seconds.
    must remain incomplete; never infer them from equal values or version order.
 7. Resume writers and dispatchers together. Verify actual re-execution across all
    sites before accepting the rollout.
+
+The master-timestamp protocol uses history artifact format 3 and subset execution
+context format 2. Re-export old format-2 table-history artifacts; do not relabel their
+UUIDs as timestamps. Old subset context format 1 remains stored but returns the
+incomplete-history error instead of treating its UUID-based proof as a timestamp
+proof. New subsets use the new proof format. Existing query IDs and fixity remain.
+
+Schema upgrades preserve old UUID mapping columns and historical values for recovery,
+but new writes and queries do not use them. Native source rows establish their own
+master timestamp; replica bindings can be recovered from retained source events and
+applied receipts. Unknown old bindings remain incomplete. Imported history without a
+proven master timestamp must be re-transferred from the source in format 3. Migration
+does not infer matching versions from equal values, ordering or local arrival times.
 
 DDL is not transactional. If migration is interrupted, keep writers paused and rerun
 the maintenance endpoint. The retired `/subset/{id}/result` and child routes return

@@ -149,10 +149,10 @@ public class ReplicationTimestampServiceMariaDbImpl extends DataConnector implem
 
     private void ensureVersionColumns(Connection connection) throws SQLException {
         try (var columns = connection.getMetaData().getColumns(connection.getCatalog(), null,
-                "tuple_replication_timestamps", "version_id")) {
+                "tuple_replication_timestamps", "master_site_ts")) {
             if (!columns.next()) {
                 try (var ddl = connection.createStatement()) {
-                    ddl.execute("ALTER TABLE tuple_replication_timestamps ADD COLUMN IF NOT EXISTS version_id VARCHAR(36),"
+                    ddl.execute("ALTER TABLE tuple_replication_timestamps ADD COLUMN IF NOT EXISTS master_site_ts TIMESTAMP(6) NULL,"
                             + " ADD COLUMN IF NOT EXISTS visibility_start BIGINT, ADD COLUMN IF NOT EXISTS visibility_end BIGINT");
                 }
             }
@@ -241,10 +241,10 @@ public class ReplicationTimestampServiceMariaDbImpl extends DataConnector implem
         final String statement = """
                 INSERT INTO tuple_replication_timestamps
                     (site_url, replication_id, database_id, table_id, row_start, row_end,
-                     version_id, visibility_start, visibility_end)
+                     master_site_ts, visibility_start, visibility_end)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON DUPLICATE KEY UPDATE
-                    version_id = COALESCE(version_id, VALUES(version_id)),
+                    master_site_ts = COALESCE(master_site_ts, VALUES(master_site_ts)),
                     visibility_start = COALESCE(visibility_start, VALUES(visibility_start)),
                     visibility_end = CASE
                         WHEN row_end IS NULL OR VALUES(row_end) < row_end THEN VALUES(visibility_end)
@@ -260,12 +260,13 @@ public class ReplicationTimestampServiceMariaDbImpl extends DataConnector implem
             bindTimestamp(preparedStatement, timestamp);
             if (end == null) preparedStatement.setNull(6, Types.TIMESTAMP);
             else preparedStatement.setTimestamp(6, toTimestamp(end), Calendar.getInstance(TimeZone.getTimeZone("UTC")));
-            preparedStatement.setString(7, timestamp.getVersionId() == null ? null : timestamp.getVersionId().toString());
+            if (timestamp.getMasterSiteTs() == null) preparedStatement.setNull(7, Types.TIMESTAMP);
+            else preparedStatement.setTimestamp(7, Timestamp.from(TupleVersionHistory.requireMasterTimestamp(timestamp.getMasterSiteTs())), TupleVersionHistory.utc());
             preparedStatement.setObject(8, timestamp.getVisibilityStart());
             preparedStatement.setObject(9, endSequence);
             preparedStatement.executeUpdate();
         }
-        try (var check = connection.prepareStatement("SELECT version_id,visibility_start,row_end,visibility_end FROM tuple_replication_timestamps"
+        try (var check = connection.prepareStatement("SELECT master_site_ts,visibility_start,row_end,visibility_end FROM tuple_replication_timestamps"
                 + " WHERE site_url=? AND replication_id=? AND database_id=? AND table_id=? AND row_start=? FOR UPDATE")) {
             check.setString(1, timestamp.getSiteUrl());
             check.setString(2, timestamp.getReplicationId());
@@ -274,8 +275,8 @@ public class ReplicationTimestampServiceMariaDbImpl extends DataConnector implem
             check.setTimestamp(5, toTimestamp(timestamp), Calendar.getInstance(TimeZone.getTimeZone("UTC")));
             try (var row = check.executeQuery()) {
                 if (row.next()) {
-                    if (row.getString(1) != null && timestamp.getVersionId() != null
-                            && !row.getString(1).equals(timestamp.getVersionId().toString())) {
+                    if (row.getTimestamp(1, TupleVersionHistory.utc()) != null && timestamp.getMasterSiteTs() != null
+                            && !row.getTimestamp(1, TupleVersionHistory.utc()).toInstant().equals(timestamp.getMasterSiteTs())) {
                         throw new SQLException("Timestamp interval belongs to a different tuple version");
                     }
                     if (row.getObject(2) != null && timestamp.getVisibilityStart() != null
