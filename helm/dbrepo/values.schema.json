@@ -782,21 +782,8 @@
                         },
                         "user": {
                             "type": "string"
-                        }
-                    }
-                },
-                "dashboardsProvider": {
-                    "type": "object",
-                    "properties": {
-                        "enabled": {
-                            "type": "boolean"
-                        }
-                    }
-                },
-                "datasources": {
-                    "type": "object",
-                    "properties": {
-                        "secretName": {
+                        },
+                        "existingSecret": {
                             "type": "string"
                         }
                     }
@@ -810,38 +797,14 @@
                 "fullnameOverride": {
                     "type": "string"
                 },
-                "grafana": {
-                    "type": "object",
-                    "properties": {
-                        "extraEnvVarsSecret": {
-                            "type": "string"
-                        },
-                        "replicaCount": {
-                            "type": "integer"
-                        },
-                        "updateStrategy": {
-                            "type": "object",
-                            "properties": {
-                                "type": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    }
-                },
                 "image": {
                     "type": "object",
                     "properties": {
                         "repository": {
                             "type": "string"
-                        }
-                    }
-                },
-                "metrics": {
-                    "type": "object",
-                    "properties": {
-                        "enabled": {
-                            "type": "boolean"
+                        },
+                        "tag": {
+                            "type": "string"
                         }
                     }
                 },
@@ -852,6 +815,9 @@
                             "type": "boolean"
                         }
                     }
+                },
+                "replicas": {
+                    "type": "integer"
                 }
             }
         },

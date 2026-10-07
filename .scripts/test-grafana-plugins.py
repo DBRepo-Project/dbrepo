@@ -4,6 +4,7 @@
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 
 
@@ -34,7 +35,15 @@ def check():
         for volume in service["volumes"]:
             if volume["source"].endswith((".ini", ".yaml")):
                 assert volume["target"].startswith("/etc/grafana/"), (compose, volume["target"])
-    print("PASS: all Compose files pin Grafana plugins and mount config for the official image")
+    # The chart's default values do not render on their own, so read the dashboardui block directly.
+    values = (ROOT / "helm/dbrepo/values.yaml").read_text()
+    dashboardui = re.search(r"^dashboardui:\n(.*?)^\S", values, re.M | re.S).group(1)
+    plugins = re.search(r"^  plugins:\n((?:    - .*\n)+)", dashboardui, re.M).group(1)
+    for plugin in plugins.splitlines():
+        assert len(plugin.split()) == 3, ("helm", plugin)
+    assert re.search(r'^    GF_PLUGINS_PREINSTALL_DISABLED: "true"$', dashboardui, re.M), "helm"
+    assert re.search(r"^    repository: grafana/grafana$", dashboardui, re.M), "helm"
+    print("PASS: all Compose files and the Helm chart pin Grafana plugins for the official image")
 
 
 if __name__ == "__main__":
