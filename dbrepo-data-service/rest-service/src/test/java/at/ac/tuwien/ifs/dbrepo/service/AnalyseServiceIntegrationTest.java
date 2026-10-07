@@ -2,6 +2,7 @@ package at.ac.tuwien.ifs.dbrepo.service;
 
 import at.ac.tuwien.ifs.dbrepo.config.MariaDbContainerConfig;
 import at.ac.tuwien.ifs.dbrepo.config.S3Config;
+import at.ac.tuwien.ifs.dbrepo.config.SeaweedFsContainerConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.analyse.ColumnAnalysisResultDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.analyse.SchemaAnalysisResultDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnTypeDto;
@@ -25,7 +26,7 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.containers.MariaDBContainer;
-import org.testcontainers.containers.MinIOContainer;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -95,11 +96,11 @@ public class AnalyseServiceIntegrationTest extends BaseTest {
     private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
 
     @Container
-    private static final MinIOContainer minIOContainer = new MinIOContainer(MINIO_IMAGE);
+    private static final GenericContainer<?> seaweedfsContainer = SeaweedFsContainerConfig.getContainer();
 
     @DynamicPropertySource
     static void dynamicProperties(DynamicPropertyRegistry registry) {
-        registry.add("dbrepo.spark.hadoop.fs.s3a.endpoint", minIOContainer::getS3URL);
+        registry.add("dbrepo.spark.hadoop.fs.s3a.endpoint", () -> SeaweedFsContainerConfig.getEndpoint(seaweedfsContainer));
     }
 
     @BeforeAll
