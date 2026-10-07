@@ -68,6 +68,23 @@ class SubsetHistoryIntegrationTest {
         return values;
     }
 
+    @Test void emptyReplicaNeedsNoPriorTupleDeliveryAndMissingEvidenceStillFailsClosed() throws Exception {
+        try (var a=connection("subset_history_a"); var b=connection("subset_history_b"); var ddl=b.createStatement()) {
+            final var empty=SubsetHistory.capture(a,database("subset_history_a",aId,aTable),A,"select value from measurements",T);
+            ddl.execute("DROP TABLE tuple_replication_versions,tuple_replication_timestamps,tuple_visibility_counter,"
+                    +TupleVersionHistory.importedName(bTable));
+            assertEquals(List.of(),values(b,SubsetHistory.replay(b,database("subset_history_b",bId,bTable),
+                    A,T,empty.context(),"select value from measurements",B)));
+            a.setAutoCommit(false);
+            retain(a,aTable,T.minusSeconds(60),1,20);
+            interval(a,A,aId,aTable,T.minusSeconds(60),1,T.minusSeconds(60),null,1,null);
+            a.commit();a.setAutoCommit(true);
+            final var nonempty=SubsetHistory.capture(a,database("subset_history_a",aId,aTable),A,"select value from measurements",T);
+            assertThrows(SubsetHistoryIncompleteException.class,()->SubsetHistory.replay(b,database("subset_history_b",bId,bTable),
+                    A,T,nonempty.context(),"select value from measurements",B));
+        }
+    }
+
     @Test void delayedInsertReproducesTheActualExecutionSiteNotTheTargetsOldState() throws Exception {
         final List<Instant> versions=Collections.nCopies(5,T.minusSeconds(60));
         try(var a=connection("subset_history_a");var b=connection("subset_history_b")) {

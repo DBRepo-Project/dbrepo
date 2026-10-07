@@ -73,8 +73,15 @@ public final class SubsetHistory {
         if (context == null) throw incomplete("This subset has no proven historical version mapping");
         final Execution execution = decode(context);
         try (var s = c.createStatement()) { s.execute("SET time_zone='+00:00'"); }
+        if (execution.tables().values().stream().anyMatch(binding -> !binding.nativeOnly())) {
+            TupleVersionHistory.prepare(c, null);
+        }
         for (Binding binding : execution.tables().values()) {
-            if (!binding.nativeOnly()) prepareDomains(c, table(db, origin, execution, binding));
+            if (!binding.nativeOnly()) {
+                final Table table = table(db, origin, execution, binding);
+                TupleVersionHistory.prepareImported(c, table);
+                prepareDomains(c, table);
+            }
         }
         return execute(c, db, origin, selected, execution, query, localSite);
     }
