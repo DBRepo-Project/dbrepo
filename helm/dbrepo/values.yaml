@@ -1172,41 +1172,47 @@ dashboardui:
   fullnameOverride: dashboard-ui
   image:
     ## @skip dashboardui.image.repository
-    repository: bitnamilegacy/grafana
-  ## @skip dashboardui.admin
+    repository: grafana/grafana
+    ## @skip dashboardui.image.tag
+    tag: 11.6.16
   admin:
-    ## @param dashboardui.admin.existingSecret The existing secret with the Grafana admin credentials.
-    existingSecret: dashboard-service-secret
-    ## @param dashboardui.admin.userKey The key in the existing secret that contains the Grafana admin username.
-    userKey: admin-user
-    ## @param dashboardui.admin.passwordKey The key in the existing secret that contains the Grafana admin password.
-    passwordKey: admin-password
-  ## @skip dashboardui.smtp
-  smtp:
-    ## @param dashboardui.smtp.existingSecret The existing secret containing SMTP credentials.
-    existingSecret: dashboard-service-secret
-  ## @skip dashboardui.plugins
-  plugins: []
-  ## @skip dashboardui.dashboardProviders
-  dashboardProviders: {}
-  ## @skip dashboardui.dashboardsConfigMaps
-  dashboardsConfigMaps:
-    - configMapName: dashboard-service-config
-      fileName: dashboards.json
-  ## @skip dashboardui.notifiers
-  notifiers: {}
-  ## @skip dashboardui.datasources
-  datasources:
-    datasources.yaml:
-      apiVersion: 1
-      datasources:
-        - name: Prometheus
-          type: prometheus
-          url: http://metric-db-kube-prometheus-prometheus:9090
-          access: proxy
-          isDefault: true
-  ## @param dashboardui.replicaCount The number of replicas.
-  replicaCount: 2
+    ## @skip dashboardui.admin.user
+    user: "admin"
+    ## @skip dashboardui.admin.password
+    password: "admin"
+    ## @skip dashboardui.admin.existingSecret
+    existingSecret: dashboard-ui-secret
+  ## @param dashboardui.endpoint The endpoint for the microservices.
+  endpoint: http://dashboard-ui:3000
+  service:
+    ## @skip dashboardui.service.port
+    port: 3000
+  ## @skip dashboardui.plugins Plugin versions must be compatible with the Grafana image.
+  plugins:
+    - yesoreyeram-infinity-datasource 4.0.0
+    - grafana-opensearch-datasource 2.34.4
+  env:
+    ## @skip dashboardui.env.GF_PLUGINS_PREINSTALL_DISABLED Do not install unpinned default plugins.
+    GF_PLUGINS_PREINSTALL_DISABLED: "true"
+  ## @skip dashboardui.envFromSecret
+  envFromSecret: dashboard-ui-secret
+  ## @skip dashboardui.extraSecretMounts
+  extraSecretMounts:
+    - name: datasources
+      mountPath: /etc/grafana/provisioning/datasources
+      secretName: dashboard-ui-datasources-secret
+      readOnly: true
+  deploymentStrategy:
+    ## @skip dashboardui.deploymentStrategy.type
+    type: Recreate
+  ## @param dashboardui.replicas The number of replicas.
+  replicas: 2
+  persistence:
+    ## @skip dashboardui.persistence.enabled
+    enabled: false
+  testFramework:
+    ## @skip dashboardui.testFramework.enabled
+    enabled: false
 
 ## @section Metric Database
 
