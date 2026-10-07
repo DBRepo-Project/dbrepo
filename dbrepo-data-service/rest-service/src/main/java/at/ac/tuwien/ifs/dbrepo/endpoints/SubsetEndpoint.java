@@ -1,7 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
 import at.ac.tuwien.ifs.dbrepo.api.SubsetMetadata;
-import at.ac.tuwien.ifs.dbrepo.core.api.analyse.ColumnAnalysisResultDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryPersistDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.SubsetDto;
@@ -14,7 +13,6 @@ import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import at.ac.tuwien.ifs.dbrepo.service.AnalyseService;
 import at.ac.tuwien.ifs.dbrepo.service.DataService;
 import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
 import at.ac.tuwien.ifs.dbrepo.service.SubsetService;
@@ -58,7 +56,6 @@ public class SubsetEndpoint {
     private final DataService dataService;
     private final MariaDbMapper mariaDbMapper;
     private final SubsetService subsetService;
-    private final AnalyseService analyseService;
     private final MetadataMapper metadataMapper;
     private final MetadataService metadataService;
     private final EndpointValidator endpointValidator;
@@ -67,14 +64,13 @@ public class SubsetEndpoint {
 
     @Autowired
     public SubsetEndpoint(DataMapper dataMapper, DataService dataService, MariaDbMapper mariaDbMapper,
-                          SubsetService subsetService, AnalyseService analyseService, MetadataMapper metadataMapper,
+                          SubsetService subsetService, MetadataMapper metadataMapper,
                           MetadataService metadataService, EndpointValidator endpointValidator,
                           MetadataServiceGateway metadataServiceGateway, ObjectMapper objectMapper) {
         this.dataMapper = dataMapper;
         this.dataService = dataService;
         this.mariaDbMapper = mariaDbMapper;
         this.subsetService = subsetService;
-        this.analyseService = analyseService;
         this.metadataMapper = metadataMapper;
         this.metadataService = metadataService;
         this.endpointValidator = endpointValidator;
@@ -410,15 +406,11 @@ public class SubsetEndpoint {
                         .headers(headers)
                         .build();
             }
-            final QueryDto query = metadataMapper.subsetToQueryDto(subset);
-            query.setQueryNormalized(executionQuery);
-            query.setIdentifiers(metadataServiceGateway.getIdentifiers(database.getId(), subset.getId()));
             final String paginatedStatement = mariaDbMapper.paginateSubset(executionQuery,
                     accept.equals("text/csv") ? null : page,
                     accept.equals("text/csv") ? null : size);
             headers.set("Access-Control-Expose-Headers", "X-Count X-Result-Hash X-Id X-Headers X-Integrity X-Result-Mode");
-            final Map<String, ColumnAnalysisResultDto> schema = analyseService.determineDataTypes(database, query);
-            final List<String> responseColumns = List.copyOf(schema.keySet());
+            final List<String> responseColumns = subsetService.columns(database, executionQuery);
             headers.set("X-Headers", String.join(",", responseColumns));
             final HttpStatusCode statusCode = request.getMethod().equals("POST") ? HttpStatus.CREATED : HttpStatus.OK;
             switch (accept) {

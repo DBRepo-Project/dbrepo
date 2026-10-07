@@ -63,6 +63,22 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
     }
 
     @Override
+    public List<String> columns(Database database, String executionQuery) throws SQLException {
+        final ComboPooledDataSource pool = getDataSource(database);
+        try (Connection connection = pool.getConnection(); Statement statement = connection.createStatement()) {
+            statement.execute("SET time_zone='+00:00'");
+            try (ResultSet result = statement.executeQuery("SELECT * FROM (" + executionQuery + ") subset_columns LIMIT 0")) {
+                final ResultSetMetaData metadata = result.getMetaData();
+                final List<String> columns = new java.util.ArrayList<>();
+                for (int i = 1; i <= metadata.getColumnCount(); i++) columns.add(metadata.getColumnLabel(i));
+                return columns;
+            }
+        } finally {
+            pool.close();
+        }
+    }
+
+    @Override
     public void upgradeQueryStore(Database database) throws SQLException {
         final ComboPooledDataSource dataSource = getDataSource(database);
         try (Connection connection = dataSource.getConnection(); Statement statement = connection.createStatement()) {

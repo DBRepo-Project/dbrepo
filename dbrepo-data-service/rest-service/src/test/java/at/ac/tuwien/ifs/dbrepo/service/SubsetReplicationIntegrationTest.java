@@ -266,6 +266,37 @@ class SubsetReplicationIntegrationTest {
     }
 
     @Test
+    void replayUsesExecutedProjectionForHeadersIncludingEmptyResults() throws Exception {
+        final UUID id = service.storeQuery(database, "SELECT 1 AS original_value WHERE FALSE",
+                "SELECT 1 AS original_value WHERE FALSE", SELECTED, "alice");
+        final var metadata = mock(MetadataService.class);
+        final var data = mock(DataService.class);
+        final var analyse = mock(AnalyseService.class);
+        final var dataMapper = mock(DataMapper.class);
+        final var metadataMapper = mock(at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper.class);
+        final var gateway = mock(at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway.class);
+        final var request = mock(HttpServletRequest.class);
+        database.setIsPublic(true);
+        when(metadata.getDatabase(A_ID)).thenReturn(database);
+        when(request.getMethod()).thenReturn("GET");
+        when(metadataMapper.subsetToQueryDto(any())).thenReturn(
+                at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto.builder()
+                        .query("SELECT origin_database.sample_data.original_value FROM sample_data").build());
+        when(analyse.determineDataTypes(eq(database), any(at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto.class)))
+                .thenThrow(new at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseUnavailableException("Origin schema is not local"));
+        when(dataMapper.datasetToCsv(any(), anyList())).thenReturn("original_value\n");
+        final var endpoint = new SubsetEndpoint(dataMapper, data, mapper, service, metadataMapper, metadata,
+                mock(EndpointValidator.class), gateway, json);
+        for (String format : List.of("application/json", "text/csv")) {
+            final var response = endpoint.getData(A_ID, id, null, format, request, null, null, null);
+            assertEquals(200, response.getStatusCode().value());
+            assertEquals("original_value", response.getHeaders().getFirst("X-Headers"));
+            assertEquals("0", response.getHeaders().getFirst("X-Count"));
+        }
+        verifyNoInteractions(analyse);
+    }
+
+    @Test
     void remoteReplayFailsClosedWithoutHistoricalIdentitiesBeforeDataOrSchemaIsReturned() throws Exception {
         sql("CREATE TABLE sample_data (a VARCHAR(32)) WITH SYSTEM VERSIONING");
         sql("INSERT INTO sample_data VALUES ('original')");
@@ -284,7 +315,7 @@ class SubsetReplicationIntegrationTest {
         final var request = mock(HttpServletRequest.class);
         database.setIsPublic(true);
         when(metadata.getDatabase(B_ID)).thenReturn(database);
-        final var endpoint = new SubsetEndpoint(null, data, mapper, reader, analyse, null, metadata,
+        final var endpoint = new SubsetEndpoint(null, data, mapper, reader, null, metadata,
                 mock(EndpointValidator.class), null, new com.fasterxml.jackson.databind.ObjectMapper());
         for (String method : List.of("GET", "HEAD")) {
             when(request.getMethod()).thenReturn(method);

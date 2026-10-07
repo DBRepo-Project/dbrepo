@@ -17,6 +17,8 @@ public interface SubsetService {
 
     String executionQuery(Database database, Subset subset) throws SQLException;
 
+    List<String> columns(Database database, String executionQuery) throws SQLException;
+
     void upgradeQueryStore(Database database) throws SQLException;
 
     void replicate(Database database, SubsetReplicationDto subset) throws SQLException;
