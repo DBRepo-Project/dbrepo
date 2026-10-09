@@ -4,6 +4,8 @@ author: Martin Weise
 
 ## TL;DR
 
+Install the [MariaDB Community Operator](https://github.com/mariadb-operator/mariadb-operator/).
+
 To install DBRepo in your existing cluster, download the
 sample [
 `values.yaml`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/release-1.11/helm/dbrepo/values.yaml)
@@ -25,6 +27,13 @@ helm upgrade --install dbrepo \
 
      * Kubernetes 1.30+ (tested on 1.31.5)
      * PV provisioner support in the underlying infrastructure
+
+Install the MariaDB Community Operator and CRDs (in this order):
+
+```shell
+helm install mariadb-operator-crds oci://ghcr.io/mariadb-operator/charts/mariadb-operator-crds
+helm install mariadb-operator oci://ghcr.io/mariadb-operator/charts/mariadb-operator
+```
 
 ### Resource Quota
 
