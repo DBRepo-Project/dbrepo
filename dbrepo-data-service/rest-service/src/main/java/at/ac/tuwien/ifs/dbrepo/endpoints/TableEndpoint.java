@@ -287,6 +287,7 @@ public class TableEndpoint {
             switch (accept) {
                 case MediaType.APPLICATION_JSON_VALUE:
                     final QueryResultStream result1 = dataService.query(database, query);
+                    result1.closeOnCompletion(request);
                     headers.set("X-Headers", String.join(",", result1.getColumns()));
                     return ResponseEntity.ok()
                             .contentType(MediaType.APPLICATION_JSON)
@@ -294,6 +295,7 @@ public class TableEndpoint {
                             .body(result1::writeJson);
                 case MEDIA_TYPE_TEXT_CSV:
                     final QueryResultStream result2 = dataService.query(database, query);
+                    result2.closeOnCompletion(request);
                     headers.set("Content-Disposition", "attachment; filename=\"dataset.csv\"");
                     headers.set("X-Headers", String.join(",", result2.getColumns()));
                     return ResponseEntity.status(HttpStatus.OK)

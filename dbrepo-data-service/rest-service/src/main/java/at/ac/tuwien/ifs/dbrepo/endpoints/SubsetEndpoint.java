@@ -386,12 +386,14 @@ public class SubsetEndpoint {
             switch (accept) {
                 case MediaType.APPLICATION_JSON_VALUE:
                     final QueryResultStream result1 = dataService.query(database, paginatedStatement);
+                    result1.closeOnCompletion(request);
                     return ResponseEntity.status(statusCode)
                             .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                             .headers(headers)
                             .body(result1::writeJson);
                 case "text/csv":
                     final QueryResultStream result2 = dataService.query(database, paginatedStatement);
+                    result2.closeOnCompletion(request);
                     headers.add("Content-Disposition", "attachment; filename=\"dataset.csv\"");
                     return ResponseEntity.status(statusCode)
                             .contentType(org.springframework.http.MediaType.parseMediaType("text/csv"))

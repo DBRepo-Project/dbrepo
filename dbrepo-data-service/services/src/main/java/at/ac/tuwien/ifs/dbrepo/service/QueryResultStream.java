@@ -2,8 +2,12 @@ package at.ac.tuwien.ifs.dbrepo.service;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
+import jakarta.servlet.ServletRequest;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.context.request.NativeWebRequest;
+import org.springframework.web.context.request.async.CallableProcessingInterceptor;
+import org.springframework.web.context.request.async.WebAsyncUtils;
 
 import java.io.*;
 import java.math.BigDecimal;
@@ -15,6 +19,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 /**
@@ -110,6 +115,21 @@ public class QueryResultStream implements AutoCloseable {
         } finally {
             close();
         }
+    }
+
+    /**
+     * Also closes the result when the async request completes. The response body that writes this result runs on the
+     * task executor, which may reject or cancel it before it runs, and then nothing else closes the connection.
+     *
+     * @param request The request whose response body writes this result.
+     */
+    public void closeOnCompletion(ServletRequest request) {
+        WebAsyncUtils.getAsyncManager(request).registerCallableInterceptor(this, new CallableProcessingInterceptor() {
+            @Override
+            public <T> void afterCompletion(NativeWebRequest webRequest, Callable<T> task) {
+                close();
+            }
+        });
     }
 
     @Override
