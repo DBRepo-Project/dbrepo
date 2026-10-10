@@ -1,7 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
 import at.ac.tuwien.ifs.dbrepo.api.SubsetMetadata;
-import at.ac.tuwien.ifs.dbrepo.core.api.analyse.ColumnAnalysisResultDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryPersistDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.SubsetDto;
@@ -11,7 +10,6 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
-import at.ac.tuwien.ifs.dbrepo.service.AnalyseService;
 import at.ac.tuwien.ifs.dbrepo.service.DataService;
 import at.ac.tuwien.ifs.dbrepo.service.QueryResultStream;
 import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
@@ -53,7 +51,6 @@ public class SubsetEndpoint {
     private final DataService dataService;
     private final MariaDbMapper mariaDbMapper;
     private final SubsetService subsetService;
-    private final AnalyseService analyseService;
     private final MetadataMapper metadataMapper;
     private final MetadataService metadataService;
     private final EndpointValidator endpointValidator;
@@ -61,13 +58,12 @@ public class SubsetEndpoint {
 
     @Autowired
     public SubsetEndpoint(DataService dataService, MariaDbMapper mariaDbMapper,
-                          SubsetService subsetService, AnalyseService analyseService, MetadataMapper metadataMapper,
+                          SubsetService subsetService, MetadataMapper metadataMapper,
                           MetadataService metadataService, EndpointValidator endpointValidator,
                           MetadataServiceGateway metadataServiceGateway) {
         this.dataService = dataService;
         this.mariaDbMapper = mariaDbMapper;
         this.subsetService = subsetService;
-        this.analyseService = analyseService;
         this.metadataMapper = metadataMapper;
         this.metadataService = metadataService;
         this.endpointValidator = endpointValidator;
@@ -373,20 +369,16 @@ public class SubsetEndpoint {
                         .headers(headers)
                         .build();
             }
-            final QueryDto query = metadataMapper.subsetToQueryDto(subset);
-            query.setIdentifiers(metadataServiceGateway.getIdentifiers(database.getId(), subset.getId()));
             final String paginatedStatement = mariaDbMapper.paginateSubset(subset.getQueryNormalized(),
                     accept.equals("text/csv") ? null : page,
                     accept.equals("text/csv") ? null : size);
             headers.set("Access-Control-Expose-Headers", "X-Count X-Result-Hash X-Id X-Headers");
-            final Map<String, ColumnAnalysisResultDto> schema = analyseService.determineDataTypes(database, query);
-            final List<String> responseColumns = List.copyOf(schema.keySet());
-            headers.set("X-Headers", String.join(",", responseColumns));
             final HttpStatusCode statusCode = request.getMethod().equals("POST") ? HttpStatus.CREATED : HttpStatus.OK;
             switch (accept) {
                 case MediaType.APPLICATION_JSON_VALUE:
                     final QueryResultStream result1 = dataService.query(database, paginatedStatement);
                     result1.closeOnCompletion(request);
+                    headers.set("X-Headers", String.join(",", result1.getColumns()));
                     return ResponseEntity.status(statusCode)
                             .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                             .headers(headers)
@@ -394,6 +386,7 @@ public class SubsetEndpoint {
                 case "text/csv":
                     final QueryResultStream result2 = dataService.query(database, paginatedStatement);
                     result2.closeOnCompletion(request);
+                    headers.set("X-Headers", String.join(",", result2.getColumns()));
                     headers.add("Content-Disposition", "attachment; filename=\"dataset.csv\"");
                     return ResponseEntity.status(statusCode)
                             .contentType(org.springframework.http.MediaType.parseMediaType("text/csv"))
