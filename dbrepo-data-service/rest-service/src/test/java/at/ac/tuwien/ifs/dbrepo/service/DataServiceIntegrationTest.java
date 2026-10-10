@@ -120,6 +120,26 @@ public class DataServiceIntegrationTest extends BaseTest {
     }
 
     @Test
+    public void query_bitBeyondSignedLong_succeeds() throws Exception {
+        execute("CREATE TABLE bits (id INT PRIMARY KEY, b1 BIT(1), b8 BIT(8), b64 BIT(64)) WITH SYSTEM VERSIONING",
+                "INSERT INTO bits VALUES (1, b'1', b'10101010', x'FFFFFFFFFFFFFFFF'), (2, b'0', b'0', x'8000000000000000')");
+        final String query = "SELECT * FROM `weather`.`bits` ORDER BY `id`";
+
+        /* test */
+        final ByteArrayOutputStream json = new ByteArrayOutputStream();
+        dataService.query(DATABASE_1_CACHE, query)
+                .writeJson(json);
+        assertEquals("[{\"id\":1,\"b1\":true,\"b8\":170,\"b64\":18446744073709551615}," +
+                "{\"id\":2,\"b1\":false,\"b8\":0,\"b64\":9223372036854775808}]", json.toString(StandardCharsets.UTF_8));
+        final ByteArrayOutputStream csv = new ByteArrayOutputStream();
+        dataService.query(DATABASE_1_CACHE, query)
+                .writeCsv(csv);
+        final String nl = System.lineSeparator();
+        assertEquals("id,b1,b8,b64" + nl + "1,true,170,18446744073709551615" + nl + "2,false,0,9223372036854775808" + nl,
+                csv.toString(StandardCharsets.UTF_8));
+    }
+
+    @Test
     public void query_tableNotFound_fails() {
 
         /* test */

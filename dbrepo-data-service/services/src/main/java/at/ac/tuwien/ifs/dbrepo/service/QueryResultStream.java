@@ -148,7 +148,15 @@ public class QueryResultStream implements AutoCloseable {
         final int column = i + 1;
         final Object value;
         switch (types[i]) {
-            case Types.BIT -> value = precisions[i] > 1 ? (Object) resultSet.getLong(column) : resultSet.getBoolean(column);
+            case Types.BIT -> {
+                if (precisions[i] > 1) {
+                    /* unsigned, BIT(64) does not fit a long */
+                    final byte[] bytes = resultSet.getBytes(column);
+                    value = bytes == null ? null : new BigInteger(1, bytes);
+                } else {
+                    value = resultSet.getBoolean(column);
+                }
+            }
             case Types.BOOLEAN -> value = resultSet.getBoolean(column);
             case Types.DECIMAL, Types.NUMERIC -> value = resultSet.getBigDecimal(column);
             case Types.DATE -> value = "YEAR".equalsIgnoreCase(typeNames[i]) ? (Object) resultSet.getInt(column) : resultSet.getString(column);
