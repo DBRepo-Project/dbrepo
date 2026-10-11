@@ -1202,13 +1202,20 @@ dashboardui:
       mountPath: /etc/grafana/provisioning/datasources
       secretName: dashboard-ui-datasources-secret
       readOnly: true
-  deploymentStrategy:
-    ## @skip dashboardui.deploymentStrategy.type
-    type: Recreate
+  ## @skip dashboardui.useStatefulSet The Deployment of the Bitnami chart used before 1.14.2 has a selector that cannot be changed in place, so Helm replaces it with a StatefulSet on upgrade.
+  useStatefulSet: true
+  ## @skip dashboardui.headlessService
+  headlessService: true
+  rbac:
+    ## @skip dashboardui.rbac.create No sidecars are used, so Grafana needs no cluster-wide permissions.
+    create: false
   ## @param dashboardui.replicas The number of replicas.
   replicas: 2
+  podDisruptionBudget:
+    ## @skip dashboardui.podDisruptionBudget.maxUnavailable
+    maxUnavailable: 1
   persistence:
-    ## @skip dashboardui.persistence.enabled
+    ## @skip dashboardui.persistence.enabled Grafana stores its data in the dashboard database.
     enabled: false
   testFramework:
     ## @skip dashboardui.testFramework.enabled
