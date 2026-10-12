@@ -27,6 +27,26 @@ env:
   GHCR_HELM_PREFIX: 'ghcr.io/dbrepo-project/helm'
 
 jobs:
+  release-compose:
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Build Docker Compose distribution
+        run: make package-config
+      - name: Publish Docker Compose distribution
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$GITHUB_REF_NAME" .docker/dist.tar.gz --clobber
+      - name: Verify released installer
+        run: |
+          install_dir="$(mktemp -d)"
+          cd "$install_dir"
+          APP_VERSION="${GITHUB_REF_NAME#v}" DOWNLOAD_ONLY=1 bash "$GITHUB_WORKSPACE/.scripts/install.sh"
+          test -f docker-compose.yml
+          test -f config/gen-secrets.sh
+          test -f config/dbrepo.conf
+
   release-images:
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
@@ -124,13 +144,21 @@ jobs:
   verify-install-script:
     if: startsWith(github.ref_name, 'release-')
     runs-on: ubuntu-latest
-    env:
-      SKIP_CHECKS: '1'
     steps:
-      - name: Resolve release line
-        run: echo "DOC_VERSION=${GITHUB_REF_NAME#release-}" >> "$GITHUB_ENV"
-      - name: Verify install script
-        run: curl -sSL https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/release-${DOC_VERSION}/.scripts/install.sh | bash | grep 'Success!'
+      - uses: actions/checkout@v5
+      - name: Build Docker Compose distribution
+        run: make package-config
+      - name: Verify Docker Compose distribution
+        run: |
+          install_dir="$(mktemp -d)"
+          tar xzf .docker/dist.tar.gz -C "$install_dir"
+          cd "$install_dir"
+          test -f docker-compose.yml
+          test -f config/gen-secrets.sh
+          test -f config/dbrepo.conf
+          INSTALL_SCRIPT=1 bash ./config/gen-secrets.sh
+          grep -q '^user default on >' config/valkey.conf
+          docker compose config --quiet
 
   verify-images:
     if: startsWith(github.ref_name, 'release-')

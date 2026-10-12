@@ -61,11 +61,11 @@ S3_ADMIN_ACCESS_KEY_ID=$S3_ADMIN_ACCESS_KEY_ID
 S3_ADMIN_SECRET_ACCESS_KEY=$S3_ADMIN_SECRET_ACCESS_KEY
 SYSTEM_PASSWORD=$(gen_pw)
 EOF
-SECRET_PATH="./dbrepo-cache-db"
+SECRET_PATH="./dbrepo-cache-db/valkey.conf"
 if [[ $INSTALL_SCRIPT -eq 1 ]]; then
-  SECRET_PATH="./config"
+  SECRET_PATH="./config/valkey.conf"
 fi
-cat <<EOF > $SECRET_PATH
+cat <<EOF > "$SECRET_PATH"
 user default on >$CACHE_DB_PASSWORD sanitize-payload ~* &* +@all
 EOF
 SECRET_PATH="./dbrepo-storage-service"
