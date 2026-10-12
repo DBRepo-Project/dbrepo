@@ -74,7 +74,7 @@ services:
       POSTGRESQL_PASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
       PGPASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
     healthcheck:
-      test: "psql -U ${AUTH_DB_USERNAME:-keycloak} -h 127.0.0.1 -p 5432 -d ${AUTH_DB_NAME:-keycloak} -c 'select version();'"
+      test: "pg_isready -U ${AUTH_DB_USERNAME:-keycloak} -h 127.0.0.1 -p 5432 -d ${AUTH_DB_NAME:-keycloak}"
       <<: *healthcheck-params
     logging:
       driver: json-file
@@ -91,7 +91,7 @@ services:
       POSTGRESQL_USERNAME: "${DASHBOARD_DB_USERNAME:-grafana}"
       POSTGRESQL_PASSWORD: "${DASHBOARD_DB_PASSWORD:-dbrepo}"
     healthcheck:
-      test: "psql -U ${DASHBOARD_DB_USERNAME:-grafana} -h 127.0.0.1 -p 5432 -d ${DASHBOARD_DB_NAME:-grafana} -c 'select version();'"
+      test: "pg_isready -U ${DASHBOARD_DB_USERNAME:-grafana} -h 127.0.0.1 -p 5432 -d ${DASHBOARD_DB_NAME:-grafana}"
       <<: *healthcheck-params
     logging:
       driver: json-file
@@ -402,7 +402,7 @@ services:
       dbrepo-ui:
         condition: service_healthy
     healthcheck:
-      test: curl -sSL 127.0.0.1:8080/health | grep 'UP' | exit
+      test: curl -fsS 127.0.0.1:8080/health | grep -q 'UP'
       <<: *healthcheck-params
     logging:
       driver: json-file

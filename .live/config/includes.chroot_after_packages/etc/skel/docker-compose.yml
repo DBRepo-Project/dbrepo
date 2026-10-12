@@ -50,7 +50,7 @@ services:
     volumes:
       - ./config/metrics.cnf:/.my.cnf
     healthcheck:
-      test: -h
+      test: bash -c 'exec 3<>/dev/tcp/127.0.0.1/9104 && printf "GET /metrics HTTP/1.0\r\n\r\n" >&3 && grep -q "^mysql_up 1" <&3'
       <<: *healthcheck-params
     depends_on:
       dbrepo-metadata-db:
@@ -91,7 +91,7 @@ services:
     volumes:
       - ./config/metrics.cnf:/.my.cnf
     healthcheck:
-      test: -h
+      test: bash -c 'exec 3<>/dev/tcp/127.0.0.1/9104 && printf "GET /metrics HTTP/1.0\r\n\r\n" >&3 && grep -q "^mysql_up 1" <&3'
       <<: *healthcheck-params
     depends_on:
       dbrepo-data-db:
@@ -112,7 +112,7 @@ services:
       POSTGRESQL_PASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
       PGPASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
     healthcheck:
-      test: "psql -U ${AUTH_DB_USERNAME:-keycloak} -h 127.0.0.1 -p 5432 -d ${AUTH_DB_NAME:-keycloak} -c 'select version();'"
+      test: "pg_isready -U ${AUTH_DB_USERNAME:-keycloak} -h 127.0.0.1 -p 5432 -d ${AUTH_DB_NAME:-keycloak}"
       <<: *healthcheck-params
     logging:
       driver: json-file
@@ -129,7 +129,7 @@ services:
       POSTGRESQL_USERNAME: "${DASHBOARD_DB_USERNAME:-grafana}"
       POSTGRESQL_PASSWORD: "${DASHBOARD_DB_PASSWORD:-dbrepo}"
     healthcheck:
-      test: "psql -U ${DASHBOARD_DB_USERNAME:-grafana} -h 127.0.0.1 -p 5432 -d ${DASHBOARD_DB_NAME:-grafana} -c 'select version();'"
+      test: "pg_isready -U ${DASHBOARD_DB_USERNAME:-grafana} -h 127.0.0.1 -p 5432 -d ${DASHBOARD_DB_NAME:-grafana}"
       <<: *healthcheck-params
     logging:
       driver: json-file
