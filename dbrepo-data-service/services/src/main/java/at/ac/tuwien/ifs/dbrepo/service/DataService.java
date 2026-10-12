@@ -23,12 +23,15 @@ public interface DataService {
     Dataset<Row> getCsv(List<String> columns, String key, String delimiter, Boolean withHeader)
             throws StorageNotFoundException, StorageUnavailableException, MalformedException, TableMalformedException;
 
-    Dataset<Row> getSubset(Database database, String query) throws QueryMalformedException, TableNotFoundException;
-
-    Dataset<Row> getSubsetAsJson(Database database, String query) throws QueryMalformedException, TableNotFoundException;
-
-    Dataset<Row> getSubsetAsJson(Database database, String query, List<String> columns)
-            throws QueryMalformedException, TableNotFoundException;
-
-    Dataset<Row> getSubsetAsCsv(Database database, String query) throws QueryMalformedException, TableNotFoundException;
+    /**
+     * Executes a query in the database. The rows are fetched while the result is written, so the result must be
+     * written or closed by the caller.
+     *
+     * @param database The database.
+     * @param query    The query.
+     * @return The executed query.
+     * @throws QueryMalformedException The query is malformed.
+     * @throws TableNotFoundException  The query references a table or view that does not exist.
+     */
+    QueryResultStream query(Database database, String query) throws QueryMalformedException, TableNotFoundException;
 }
