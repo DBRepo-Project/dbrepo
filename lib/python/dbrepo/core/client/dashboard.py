@@ -1,4 +1,5 @@
 import logging
+import os
 from typing import List
 
 import requests
@@ -99,13 +100,13 @@ def map_preview_image_panel(database_id: str, w: int = 4, h: int = 4, x: int = 2
 
 class DashboardServiceClient:
 
-    def __init__(self, endpoint: str, username: str, password: str, base_url: str = 'http://localhost',
+    def __init__(self, endpoint: str, username: str, password: str, base_url: str | None = None,
                  datasource_uid: str = 'dbrepojson0'):
         self.client: GrafanaApi = GrafanaApi.from_url(url=f'{endpoint}', credential=(username, password))
         self.endpoint = endpoint
         self.username = username
         self.password = password
-        self.base_url = base_url
+        self.base_url = base_url or os.getenv('BASE_URL', 'http://localhost')
         self.datasource_uid = datasource_uid
 
     def get_client(self):
@@ -496,7 +497,7 @@ class DashboardServiceClient:
         return self._map_number_panel(database_id, view_id, 'Variables', 'total_columns', x, y)
 
     def get_panels(self, dashboard: dict, database: Database) -> [dict]:
-        panels = dashboard['panels']
+        panels = list(dashboard['panels'])
         managed_offset = 1
         try:
             managed_offset = _get_managed_offset_y(dashboard)
@@ -505,12 +506,14 @@ class DashboardServiceClient:
             panels = panels[:end_index]
         except ValueError:
             logging.warning(f'No managed panels found')
+            managed_offset = max((p.get('gridPos', {}).get('y', 0) +
+                                  p.get('gridPos', {}).get('h', 0) for p in panels), default=0)
         original_panels_size = len(panels)
         panels.append(map_row(statistics_row_title, 0, managed_offset + 0))
-        panels.append(self.map_data_sources_panel(database.id, y=managed_offset))
+        panels.append(self.map_data_sources_panel(database.id, y=managed_offset + 1))
         if database.preview_image is not None:
             panels.append(map_preview_image_panel(database.id, y=managed_offset))
-        for i, view in enumerate(database.views):
+        for i, view in enumerate(v for v in database.views if v.archived_at is None):
             # section
             panels.append(map_row(view.name, 0, y=i * section_height + managed_offset + 4))
             panels.append(self.map_overview_panel(database.id, view.id, 0, y=i * section_height + managed_offset + 8))
