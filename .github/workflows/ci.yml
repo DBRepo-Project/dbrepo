@@ -60,6 +60,8 @@ jobs:
           cmp dbrepo-metadata-db/1_setup-schema.sql helm/dbrepo/files/01-setup-schema.sql
           test "$(yq '.services.dbrepo-replication-service.volumes[0]' .docker/docker-compose.yml)" = 'replication-service-outbox:/var/lib/dbrepo/replication'
           test "$(yq '.services.dbrepo-replication-service.environment.REPLICATION_OUTBOX_PATH' .docker/docker-compose.yml)" = '${REPLICATION_OUTBOX_PATH:-/var/lib/dbrepo/replication/outbox.json}'
+      - name: Check Grafana plugin pins
+        run: python3 .scripts/test-grafana-plugins.py
 
   java-services:
     runs-on: ubuntu-latest

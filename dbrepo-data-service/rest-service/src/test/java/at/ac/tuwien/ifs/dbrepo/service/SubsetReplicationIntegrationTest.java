@@ -272,7 +272,6 @@ class SubsetReplicationIntegrationTest {
         final var metadata = mock(MetadataService.class);
         final var data = mock(DataService.class);
         final var analyse = mock(AnalyseService.class);
-        final var dataMapper = mock(DataMapper.class);
         final var metadataMapper = mock(at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper.class);
         final var gateway = mock(at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway.class);
         final var request = mock(HttpServletRequest.class);
@@ -284,14 +283,21 @@ class SubsetReplicationIntegrationTest {
                         .query("SELECT origin_database.sample_data.original_value FROM sample_data").build());
         when(analyse.determineDataTypes(eq(database), any(at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto.class)))
                 .thenThrow(new at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseUnavailableException("Origin schema is not local"));
-        when(dataMapper.datasetToCsv(any(), anyList())).thenReturn("original_value\n");
-        final var endpoint = new SubsetEndpoint(dataMapper, data, mapper, service, metadataMapper, metadata,
-                mock(EndpointValidator.class), gateway, json);
+        when(data.query(eq(database), anyString())).thenAnswer(call -> {
+            final Connection connection = connect();
+            return new QueryResultStream(connection, connection.createStatement().executeQuery(call.getArgument(1)));
+        });
+        final var endpoint = new SubsetEndpoint(data, mapper, service, metadataMapper, metadata,
+                mock(EndpointValidator.class), gateway);
         for (String format : List.of("application/json", "text/csv")) {
             final var response = endpoint.getData(A_ID, id, null, format, request, null, null, null);
             assertEquals(200, response.getStatusCode().value());
             assertEquals("original_value", response.getHeaders().getFirst("X-Headers"));
             assertEquals("0", response.getHeaders().getFirst("X-Count"));
+            final var output = new java.io.ByteArrayOutputStream();
+            response.getBody().writeTo(output);
+            assertEquals(format.equals("text/csv") ? "original_value" + System.lineSeparator() : "[]",
+                    output.toString(java.nio.charset.StandardCharsets.UTF_8));
         }
         verifyNoInteractions(analyse);
     }
@@ -315,8 +321,8 @@ class SubsetReplicationIntegrationTest {
         final var request = mock(HttpServletRequest.class);
         database.setIsPublic(true);
         when(metadata.getDatabase(B_ID)).thenReturn(database);
-        final var endpoint = new SubsetEndpoint(null, data, mapper, reader, null, metadata,
-                mock(EndpointValidator.class), null, new com.fasterxml.jackson.databind.ObjectMapper());
+        final var endpoint = new SubsetEndpoint(data, mapper, reader, null, metadata,
+                mock(EndpointValidator.class), null);
         for (String method : List.of("GET", "HEAD")) {
             when(request.getMethod()).thenReturn(method);
             assertThrows(at.ac.tuwien.ifs.dbrepo.core.exception.SubsetHistoryIncompleteException.class, () -> endpoint.getData(B_ID, id, null, "application/json",

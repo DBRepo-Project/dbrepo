@@ -39,6 +39,16 @@ spring:
           jwk-set-uri: "${OAUTH_JWK_SET_URI:http://auth-service:8080/realms/dbrepo/protocol/openid-connect/certs}"
   application:
     name: data-service
+  mvc:
+    async:
+      # data is streamed to the client for as long as the client reads it
+      request-timeout: -1
+  task:
+    execution:
+      pool:
+        # streamed data responses run on this pool, start threads like the servlet container instead of queueing
+        max-size: 200
+        queue-capacity: 0
   servlet:
     multipart:
       max-file-size: "${MAX_UPLOAD_SIZE:2GB}"

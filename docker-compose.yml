@@ -102,7 +102,7 @@ services:
       POSTGRESQL_PASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
       PGPASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
     healthcheck:
-      test: "psql -U ${AUTH_DB_USERNAME:-keycloak} -h 127.0.0.1 -p 5432 -d ${AUTH_DB_NAME:-keycloak} -c 'select version();'"
+      test: "pg_isready -U ${AUTH_DB_USERNAME:-keycloak} -h 127.0.0.1 -p 5432 -d ${AUTH_DB_NAME:-keycloak}"
       <<: *healthcheck-params
     logging:
       driver: json-file
@@ -120,7 +120,7 @@ services:
       POSTGRESQL_PASSWORD: "${DASHBOARD_DB_PASSWORD:-dbrepo}"
       PGPASSWORD: "${DASHBOARD_DB_PASSWORD:-dbrepo}"
     healthcheck:
-      test: "psql -U ${DASHBOARD_DB_USERNAME:-grafana} -h 127.0.0.1 -p 5432 -d ${DASHBOARD_DB_NAME:-grafana} -c 'select version();'"
+      test: "pg_isready -U ${DASHBOARD_DB_USERNAME:-grafana} -h 127.0.0.1 -p 5432 -d ${DASHBOARD_DB_NAME:-grafana}"
       <<: *healthcheck-params
     logging:
       driver: json-file
@@ -485,7 +485,7 @@ services:
       dbrepo-ui:
         condition: service_healthy
     healthcheck:
-      test: curl -sSL 127.0.0.1:8080/health | grep 'UP' | exit
+      test: curl -fsS 127.0.0.1:8080/health | grep -q 'UP'
       <<: *healthcheck-params
     logging:
       driver: json-file
@@ -672,14 +672,14 @@ services:
     restart: "${RESTART_POLICY:-no}"
     container_name: dbrepo-dashboard-ui
     hostname: dashboard-ui
-    image: docker.io/bitnamilegacy/grafana:11.4.0
+    image: docker.io/grafana/grafana:11.6.16
     volumes:
       - ./dbrepo-dashboard-ui/dashboards:/app/dashboards
-      - ./dbrepo-dashboard-ui/grafana.ini:/opt/bitnami/grafana/conf/grafana.ini
-      - ./dbrepo-dashboard-ui/provisioning/dashboards/provider.yaml:/opt/bitnami/grafana/conf/provisioning/dashboards/provider.yaml
-      - ./dbrepo-dashboard-ui/provisioning/datasources/infinity.yaml:/opt/bitnami/grafana/conf/provisioning/datasources/infinity.yaml
-      - ./dbrepo-dashboard-ui/provisioning/datasources/prometheus.yaml:/opt/bitnami/grafana/conf/provisioning/datasources/prometheus.yaml
-      - ./dbrepo-dashboard-ui/provisioning/datasources/opensearch.yaml:/opt/bitnami/grafana/conf/provisioning/datasources/opensearch.yaml
+      - ./dbrepo-dashboard-ui/grafana.ini:/etc/grafana/grafana.ini
+      - ./dbrepo-dashboard-ui/provisioning/dashboards/provider.yaml:/etc/grafana/provisioning/dashboards/provider.yaml
+      - ./dbrepo-dashboard-ui/provisioning/datasources/infinity.yaml:/etc/grafana/provisioning/datasources/infinity.yaml
+      - ./dbrepo-dashboard-ui/provisioning/datasources/prometheus.yaml:/etc/grafana/provisioning/datasources/prometheus.yaml
+      - ./dbrepo-dashboard-ui/provisioning/datasources/opensearch.yaml:/etc/grafana/provisioning/datasources/opensearch.yaml
     environment:
       BASE_URL: "${BASE_URL:-http://localhost}"
       DASHBOARD_DB_NAME: "${DASHBOARD_DB_NAME:-grafana}"
@@ -688,7 +688,8 @@ services:
       GF_SERVER_ROOT_URL: http://dashboard-ui:3000/dashboard/
       GF_SECURITY_ADMIN_USER: "${DASHBOARD_UI_USERNAME:-admin}"
       GF_SECURITY_ADMIN_PASSWORD: "${DASHBOARD_UI_PASSWORD:-admin}"
-      GF_INSTALL_PLUGINS: "yesoreyeram-infinity-datasource,grafana-opensearch-datasource"
+      GF_INSTALL_PLUGINS: "yesoreyeram-infinity-datasource 4.0.0,grafana-opensearch-datasource 2.34.4"
+      GF_PLUGINS_PREINSTALL_DISABLED: "true"
       READONLY_USERNAME: "${READONLY_USERNAME:-readonly}"
       READONLY_PASSWORD: "${READONLY_PASSWORD:-readonly}"
     healthcheck:

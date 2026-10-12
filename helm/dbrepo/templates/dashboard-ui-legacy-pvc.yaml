@@ -1,0 +1,29 @@
+{{- if .Values.dashboardui.enabled }}
+{{- /*
+The Bitnami Grafana chart used before 1.14.2 kept a SQLite database on this claim. Grafana now uses the dashboard
+database, so Helm would delete the claim on upgrade. Keep it instead, rendering only the fields the Bitnami chart
+rendered, so that neither upgrades nor rollbacks touch its immutable spec.
+lookup returns nothing in helm template, helm diff, plain --dry-run and Argo CD, so their output shows the claim as deleted.
+*/}}
+{{- with lookup "v1" "PersistentVolumeClaim" (include "common.names.namespace" $) "dashboard-ui" }}
+{{- if eq (index (.metadata.annotations | default dict) "meta.helm.sh/release-name" | default "") $.Release.Name }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: dashboard-ui
+  namespace: {{ .metadata.namespace | quote }}
+  annotations:
+    helm.sh/resource-policy: keep
+spec:
+  accessModes: {{- toYaml .spec.accessModes | nindent 4 }}
+  resources:
+    requests:
+      storage: {{ .spec.resources.requests.storage | quote }}
+  {{- /* The same values the Bitnami chart read; copying the live class unconditionally breaks rollbacks. */}}
+  {{- if or $.Values.global.storageClass $.Values.dashboardui.persistence.storageClass $.Values.global.defaultStorageClass }}
+  storageClassName: {{ .spec.storageClassName | quote }}
+  {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

@@ -4,6 +4,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.task.TaskRejectedException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -454,6 +455,15 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(TableNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handle(TableNotFoundException e) {
         return generic_handle(e.getClass(), e.getLocalizedMessage());
+    }
+
+    /* streamed data responses are rejected when all task executor threads are busy */
+    @Hidden
+    @ResponseStatus(code = HttpStatus.SERVICE_UNAVAILABLE)
+    @ExceptionHandler(TaskRejectedException.class)
+    public ResponseEntity<ApiErrorDto> handle(TaskRejectedException e) {
+        log.warn("Rejected data response: too many concurrent data responses");
+        return generic_handle(DataServiceException.class, "Too many concurrent data responses, try again later");
     }
 
     @Hidden

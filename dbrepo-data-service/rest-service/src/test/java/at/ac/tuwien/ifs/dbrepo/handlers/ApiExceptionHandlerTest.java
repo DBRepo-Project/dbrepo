@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.task.TaskRejectedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -61,6 +62,17 @@ public class ApiExceptionHandlerTest extends BaseTest {
 
         /* test */
         apiExceptionHandler.generic_handle(DatabaseNotFoundException.class, "msg");
+    }
+
+    @Test
+    public void handle_TaskRejectedException_succeeds() {
+        final TaskRejectedException request = new TaskRejectedException("msg");
+
+        /* test */
+        final ResponseEntity<ApiErrorDto> response = apiExceptionHandler.handle(request);
+        assertEquals(HttpStatus.SERVICE_UNAVAILABLE, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("error.data.invalid", response.getBody().getCode());
     }
 
     @Test

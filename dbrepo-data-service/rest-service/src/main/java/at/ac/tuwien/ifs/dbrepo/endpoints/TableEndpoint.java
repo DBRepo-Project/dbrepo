@@ -10,10 +10,10 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
-import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.AnalyseService;
 import at.ac.tuwien.ifs.dbrepo.service.DataService;
+import at.ac.tuwien.ifs.dbrepo.service.QueryResultStream;
 import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationTimestampService;
@@ -34,8 +34,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.classic.Dataset;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -44,6 +42,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.security.Principal;
 import java.sql.SQLException;
@@ -58,7 +57,6 @@ import java.util.UUID;
 @RequestMapping(path = "/api/v1/database/{databaseId}/table")
 public class TableEndpoint {
 
-    private final DataMapper dataMapper;
     private final DataService dataService;
     private final TableService tableService;
     private final MariaDbMapper mariaDbMapper;
@@ -76,12 +74,11 @@ public class TableEndpoint {
     private String baseUrl;
 
     @Autowired
-    public TableEndpoint(DataMapper dataMapper, DataService dataService, TableService tableService,
+    public TableEndpoint(DataService dataService, TableService tableService,
                          MariaDbMapper mariaDbMapper, AnalyseService analyseService, MetadataService metadataService,
                          ReplicationService replicationService, ReplicationTimestampService replicationTimestampService,
                          ReplicationInboxService replicationInboxService,
                          EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway) {
-        this.dataMapper = dataMapper;
         this.dataService = dataService;
         this.tableService = tableService;
         this.mariaDbMapper = mariaDbMapper;
@@ -247,7 +244,7 @@ public class TableEndpoint {
                     description = "Failed to establish connection with the metadata service",
                     content = {@Content}),
     })
-    public ResponseEntity<?> getData(@NotNull @PathVariable("databaseId") UUID databaseId,
+    public ResponseEntity<StreamingResponseBody> getData(@NotNull @PathVariable("databaseId") UUID databaseId,
                                      @NotNull @PathVariable("tableId") UUID tableId,
                                      @RequestParam(required = false) Instant timestamp,
                                      @RequestParam(required = false) Long page,
@@ -307,25 +304,22 @@ public class TableEndpoint {
             headers.set("Access-Control-Expose-Headers", "X-Headers");
             switch (accept) {
                 case MediaType.APPLICATION_JSON_VALUE:
-                    final Dataset<Row> dataset1 = dataService.getSubsetAsJson(database, query,
-                            table.getColumns().stream()
-                                    .map(Column::getInternalName)
-                                    .toList());
-                    headers.set("X-Headers", dataMapper.datasetToColumnNameHeader(dataset1));
+                    final QueryResultStream result1 = dataService.query(database, query);
+                    result1.closeOnCompletion(request);
+                    headers.set("X-Headers", String.join(",", result1.getColumns()));
                     return ResponseEntity.ok()
+                            .contentType(MediaType.APPLICATION_JSON)
                             .headers(headers)
-                            .body(dataMapper.datasetToJson(dataset1));
+                            .body(result1::writeJson);
                 case MEDIA_TYPE_TEXT_CSV:
-                    final List<String> responseColumns = table.getColumns().stream()
-                            .map(Column::getInternalName)
-                            .toList();
-                    final Dataset<Row> dataset2 = dataService.getSubsetAsCsv(database, query);
+                    final QueryResultStream result2 = dataService.query(database, query);
+                    result2.closeOnCompletion(request);
                     headers.set("Content-Disposition", "attachment; filename=\"dataset.csv\"");
-                    headers.set("X-Headers", String.join(",", responseColumns));
+                    headers.set("X-Headers", String.join(",", result2.getColumns()));
                     return ResponseEntity.status(HttpStatus.OK)
                             .contentType(MediaType.parseMediaType(MEDIA_TYPE_TEXT_CSV))
                             .headers(headers)
-                            .body(dataMapper.datasetToCsv(dataset2, responseColumns));
+                            .body(result2::writeCsv);
                 default:
                     log.atError()
                             .setMessage("Invalid data format " + accept + " accepted")

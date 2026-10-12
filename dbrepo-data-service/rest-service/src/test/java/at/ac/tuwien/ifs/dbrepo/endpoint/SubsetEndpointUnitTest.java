@@ -10,12 +10,10 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.endpoints.SubsetEndpoint;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
-import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.service.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.classic.Dataset;
+import at.ac.tuwien.ifs.dbrepo.service.QueryResultStream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -67,13 +65,8 @@ public class SubsetEndpointUnitTest extends BaseTest {
     private MetadataServiceGateway metadataServiceGateway;
 
     @MockitoBean
-    private AnalyseService analyseService;
-
-    @MockitoBean
     private DataService dataService;
 
-    @MockitoBean
-    private DataMapper dataMapper;
 
     @Autowired
     private SubsetEndpoint subsetEndpoint;
@@ -96,7 +89,38 @@ public class SubsetEndpointUnitTest extends BaseTest {
             assertThrows(SubsetIntegrityMismatchException.class, () -> subsetEndpoint.getData(DATABASE_3_ID, QUERY_5_ID,
                     null, "application/json", httpServletRequest, null, null, null));
         }
-        verifyNoInteractions(dataService, analyseService);
+        verifyNoInteractions(dataService);
+    }
+
+    @Test
+    void replayStreamsHistoricalQueryWithIntegrityAndResultColumnHeaders() throws Exception {
+        final String executionQuery = "SELECT 20 AS historical_value";
+        QUERY_5_CACHE.setResultHash("v2:reference");
+        when(metadataService.getDatabase(DATABASE_3_ID)).thenReturn(DATABASE_3_CACHE);
+        when(subsetService.findById(DATABASE_3_CACHE, QUERY_5_ID)).thenReturn(QUERY_5_CACHE);
+        when(subsetService.executionQuery(DATABASE_3_CACHE, QUERY_5_CACHE)).thenReturn(executionQuery);
+        when(subsetService.getMetadata(DATABASE_3_CACHE, executionQuery))
+                .thenReturn(SubsetMetadata.builder().resultHash("v2:reference").resultCount(QUERY_5_RESULT_NUMBER).build());
+        when(httpServletRequest.getMethod()).thenReturn("GET");
+        for (String format : List.of("application/json", "text/csv")) {
+            final QueryResultStream stream = mock(QueryResultStream.class);
+            when(stream.getColumns()).thenReturn(List.of("historical_value"));
+            when(dataService.query(eq(DATABASE_3_CACHE), anyString())).thenReturn(stream);
+            final var response = subsetEndpoint.getData(DATABASE_3_ID, QUERY_5_ID, null, format,
+                    httpServletRequest, null, 0L, 10L);
+            assertEquals("historical_value", response.getHeaders().getFirst("X-Headers"));
+            assertEquals("verified", response.getHeaders().getFirst("X-Integrity"));
+            assertEquals("historical-re-execution", response.getHeaders().getFirst("X-Result-Mode"));
+            final var output = new java.io.ByteArrayOutputStream();
+            response.getBody().writeTo(output);
+            verify(stream).closeOnCompletion(httpServletRequest);
+            if (format.equals("text/csv")) {
+                verify(stream).writeCsv(output);
+            } else {
+                verify(stream).writeJson(output);
+            }
+        }
+        verify(dataService, times(2)).query(eq(DATABASE_3_CACHE), contains(executionQuery));
     }
 
     @Test
@@ -356,6 +380,8 @@ public class SubsetEndpointUnitTest extends BaseTest {
             QueryExecutionException, MalformedException {
 
         /* mock */
+        when(dataService.query(any(Database.class), anyString()))
+                .thenReturn(mock(QueryResultStream.class));
         when(metadataService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
         when(metadataService.getDatabase(DATABASE_3_ID))
@@ -366,12 +392,8 @@ public class SubsetEndpointUnitTest extends BaseTest {
                 .thenReturn(QUERY_5_ID);
         when(viewService.inspect(any(Database.class), anyString()))
                 .thenReturn(QUERY_5_VIEW_DTO);
-        when(metadataServiceGateway.getIdentifiers(DATABASE_3_ID, QUERY_5_ID))
-                .thenReturn(List.of());
         when(httpServletRequest.getMethod())
                 .thenReturn("POST");
-        when(analyseService.determineDataTypes(DATABASE_3_CACHE, QUERY_5_DTO))
-                .thenReturn(QUERY_5_ANALYSIS_MAP_DTO);
 
         /* test */
         final ResponseEntity<?> response = subsetEndpoint.create(DATABASE_3_ID, QUERY_5_SUBSET_DTO, USER_1_PRINCIPAL, httpServletRequest, null, 0L, 10L);
@@ -388,7 +410,6 @@ public class SubsetEndpointUnitTest extends BaseTest {
             SQLException, MetadataServiceException, TableNotFoundException, ViewMalformedException,
             ViewNotFoundException, ImageNotFoundException, FormatNotAvailableException, ColumnNotFoundException,
             AnalyseDataTypesException, QueryExecutionException, MalformedException, DatabaseMalformedException {
-        final Dataset<Row> mockDataset = Mockito.mock(Dataset.class);
 
         /* mock */
         when(metadataService.getDatabase(DATABASE_3_ID))
@@ -399,20 +420,14 @@ public class SubsetEndpointUnitTest extends BaseTest {
                 .thenReturn(QUERY_5_ID);
         when(subsetService.findById(any(Database.class), eq(QUERY_5_ID)))
                 .thenReturn(QUERY_5_CACHE);
-        when(dataService.getSubsetAsJson(any(Database.class), anyString()))
-                .thenReturn(mockDataset);
         when(viewService.create(any(Database.class), anyString(), anyString()))
                 .thenReturn(QUERY_5_VIEW_DTO);
         when(viewService.inspect(any(Database.class), anyString()))
                 .thenReturn(QUERY_5_VIEW_DTO);
-        when(metadataServiceGateway.getIdentifiers(DATABASE_3_ID, QUERY_5_ID))
-                .thenReturn(List.of());
         when(httpServletRequest.getMethod())
                 .thenReturn("POST");
-        when(analyseService.determineDataTypes(DATABASE_3_CACHE, QUERY_5_DTO))
-                .thenReturn(QUERY_5_ANALYSIS_MAP_DTO);
-        when(dataMapper.datasetToColumnNameHeader(any(Dataset.class)))
-                .thenReturn("id,date,location,mintemp,rainfall");
+        when(dataService.query(any(Database.class), anyString()))
+                .thenReturn(mock(QueryResultStream.class));
 
         /* test */
         final ResponseEntity<?> response = subsetEndpoint.create(DATABASE_3_ID, QUERY_5_SUBSET_DTO, USER_1_PRINCIPAL, httpServletRequest, null, null, null);
@@ -449,6 +464,8 @@ public class SubsetEndpointUnitTest extends BaseTest {
             AnalyseDataTypesException, QueryExecutionException, MalformedException, DatabaseMalformedException {
 
         /* mock */
+        when(dataService.query(any(Database.class), anyString()))
+                .thenReturn(mock(QueryResultStream.class));
         when(metadataService.getDatabase(DATABASE_4_ID))
                 .thenReturn(DATABASE_4_CACHE);
         when(subsetService.findById(eq(DATABASE_4_CACHE), any(UUID.class)))
@@ -459,8 +476,6 @@ public class SubsetEndpointUnitTest extends BaseTest {
                 .thenReturn(QUERY_9_VIEW_DTO);
         when(httpServletRequest.getMethod())
                 .thenReturn("POST");
-        when(analyseService.determineDataTypes(DATABASE_3_CACHE, QUERY_9_DTO))
-                .thenReturn(QUERY_9_ANALYSIS_MAP_DTO);
 
         /* test */
         final ResponseEntity<?> response = subsetEndpoint.create(DATABASE_4_ID, QUERY_9_SUBSET_DTO, null, httpServletRequest, null, null, null);
@@ -479,6 +494,8 @@ public class SubsetEndpointUnitTest extends BaseTest {
             QueryExecutionException, MalformedException, DatabaseMalformedException {
 
         /* mock */
+        when(dataService.query(any(Database.class), anyString()))
+                .thenReturn(mock(QueryResultStream.class));
         when(metadataService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
         when(metadataService.getDatabase(DATABASE_1_ID))
@@ -489,12 +506,8 @@ public class SubsetEndpointUnitTest extends BaseTest {
                 .thenReturn(QUERY_1_ID);
         when(viewService.inspect(any(Database.class), anyString()))
                 .thenReturn(QUERY_1_VIEW_DTO);
-        when(metadataServiceGateway.getIdentifiers(DATABASE_1_ID, QUERY_1_ID))
-                .thenReturn(List.of(IDENTIFIER_1_BRIEF_DTO, IDENTIFIER_2_BRIEF_DTO));
         when(httpServletRequest.getMethod())
                 .thenReturn("POST");
-        when(analyseService.determineDataTypes(DATABASE_1_CACHE, QUERY_1_DTO))
-                .thenReturn(QUERY_1_ANALYSIS_MAP_DTO);
 
         /* test */
         final ResponseEntity<?> response = subsetEndpoint.create(DATABASE_1_ID, QUERY_1_SUBSET_DTO, USER_1_PRINCIPAL, httpServletRequest, null, null, null);
@@ -520,8 +533,6 @@ public class SubsetEndpointUnitTest extends BaseTest {
                 .thenReturn(DATABASE_2_CACHE);
         when(subsetService.findById(eq(DATABASE_2_CACHE), any(UUID.class)))
                 .thenReturn(QUERY_8_CACHE);
-        when(metadataServiceGateway.getIdentifiers(DATABASE_2_ID, QUERY_8_ID))
-                .thenReturn(List.of());
         when(httpServletRequest.getMethod())
                 .thenReturn("POST");
 
@@ -539,6 +550,11 @@ public class SubsetEndpointUnitTest extends BaseTest {
             QueryExecutionException, MalformedException, DatabaseMalformedException {
 
         /* mock */
+        final QueryResultStream result = mock(QueryResultStream.class);
+        when(result.getColumns())
+                .thenReturn(List.of("location", "id", "date"));
+        when(dataService.query(any(Database.class), anyString()))
+                .thenReturn(result);
         when(metadataService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
         when(subsetService.findById(DATABASE_3_CACHE, QUERY_5_ID))
@@ -549,18 +565,16 @@ public class SubsetEndpointUnitTest extends BaseTest {
                         .build());
         when(viewService.inspect(any(Database.class), anyString()))
                 .thenReturn(QUERY_5_VIEW_DTO);
-        when(metadataServiceGateway.getIdentifiers(DATABASE_3_ID, QUERY_5_ID))
-                .thenReturn(List.of());
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
-        when(analyseService.determineDataTypes(DATABASE_3_CACHE, QUERY_5_DTO))
-                .thenReturn(QUERY_5_ANALYSIS_MAP_DTO);
 
         /* test */
         final ResponseEntity<?> response = subsetEndpoint.getData(DATABASE_3_ID, QUERY_5_ID,
                 null, "application/json", httpServletRequest, null, null, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
+        /* same order as the rows */
+        assertEquals("location,id,date", response.getHeaders().getFirst("X-Headers"));
     }
 
     @Test
@@ -600,6 +614,8 @@ public class SubsetEndpointUnitTest extends BaseTest {
             AnalyseDataTypesException, QueryExecutionException, MalformedException, DatabaseMalformedException {
 
         /* mock */
+        when(dataService.query(any(Database.class), anyString()))
+                .thenReturn(mock(QueryResultStream.class));
         when(metadataService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
         when(subsetService.findById(DATABASE_1_CACHE, QUERY_1_ID))
@@ -610,12 +626,8 @@ public class SubsetEndpointUnitTest extends BaseTest {
                         .build());
         when(viewService.inspect(any(Database.class), anyString()))
                 .thenReturn(QUERY_1_VIEW_DTO);
-        when(metadataServiceGateway.getIdentifiers(DATABASE_1_ID, QUERY_1_ID))
-                .thenReturn(List.of(IDENTIFIER_1_BRIEF_DTO, IDENTIFIER_2_BRIEF_DTO));
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
-        when(analyseService.determineDataTypes(DATABASE_1_CACHE, QUERY_1_DTO))
-                .thenReturn(QUERY_1_ANALYSIS_MAP_DTO);
 
         /* test */
         final ResponseEntity<?> response = subsetEndpoint.getData(DATABASE_1_ID, QUERY_1_ID, USER_1_PRINCIPAL,

@@ -12,13 +12,12 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.endpoints.TableEndpoint;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
-import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.service.*;
 import at.ac.tuwien.ifs.dbrepo.service.impl.ReplicationInboxService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.core.MediaType;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.spark.sql.classic.Dataset;
+import at.ac.tuwien.ifs.dbrepo.service.QueryResultStream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -78,8 +77,6 @@ public class TableEndpointUnitTest extends BaseTest {
     @MockitoBean
     private DataService dataService;
 
-    @MockitoBean
-    private DataMapper dataMapper;
 
     public static Stream<Arguments> size_arguments() {
         return Stream.of(
@@ -353,7 +350,7 @@ public class TableEndpointUnitTest extends BaseTest {
     public void getData_publicDataPrivateSchema_succeeds() throws DatabaseUnavailableException, TableNotFoundException,
             RemoteUnavailableException, PaginationException, MetadataServiceException, NotAllowedException,
             DatabaseNotFoundException, FormatNotAvailableException, MalformedException, ColumnNotFoundException,
-            StorageNotFoundException, ImageInvalidException, AnalyseDataTypesException, SQLException {
+            StorageNotFoundException, ImageInvalidException, AnalyseDataTypesException, SQLException, QueryMalformedException {
 
         /* mock */
         when(metadataService.getTable(DATABASE_2_ID, TABLE_6_ID))
@@ -364,8 +361,8 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_6_DTO);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
-        when(dataMapper.datasetToColumnNameHeader(any(Dataset.class)))
-                .thenReturn("id,firstname,lastname,birth,reminder");
+        when(dataService.query(any(Database.class), anyString()))
+                .thenReturn(mock(QueryResultStream.class));
 
         /* test */
         final ResponseEntity<?> response = tableEndpoint.getData(DATABASE_2_ID, TABLE_6_ID, null, null, null, null, null, MediaType.APPLICATION_JSON, httpServletRequest, null);
@@ -477,7 +474,7 @@ public class TableEndpointUnitTest extends BaseTest {
             TableNotFoundException, RemoteUnavailableException, PaginationException, MetadataServiceException,
             NotAllowedException, DatabaseNotFoundException, FormatNotAvailableException, MalformedException,
             ColumnNotFoundException, StorageNotFoundException, ImageInvalidException, AnalyseDataTypesException,
-            SQLException {
+            SQLException, QueryMalformedException {
 
         /* mock */
         when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
@@ -488,8 +485,8 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_1_DTO);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
-        when(dataMapper.datasetToColumnNameHeader(any(Dataset.class)))
-                .thenReturn("id,date,location,mintemp,rainfall");
+        when(dataService.query(any(Database.class), anyString()))
+                .thenReturn(mock(QueryResultStream.class));
 
         /* test */
         final ResponseEntity<?> response = tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, null, null, MediaType.APPLICATION_JSON, httpServletRequest, USER_2_PRINCIPAL);
@@ -513,20 +510,15 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_1_DTO);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
-        when(dataMapper.datasetToColumnNameHeader(any(Dataset.class)))
-                .thenReturn("id,date,location,mintemp,rainfall");
-        final List<String> expectedColumns = TABLE_1_CACHE.getColumns()
-                .stream()
-                .map(at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column::getInternalName)
-                .toList();
+        when(dataService.query(any(Database.class), anyString()))
+                .thenReturn(mock(QueryResultStream.class));
 
         /* test */
         final ResponseEntity<?> response = tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, null, null, MediaType.APPLICATION_JSON, httpServletRequest, USER_2_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         verify(tableService).inspect(DATABASE_1_CACHE, TABLE_1_CACHE.getInternalName());
-        verify(dataService).getSubsetAsJson(eq(DATABASE_1_CACHE),
-                contains("ORDER BY `tbl2`.`id` ASC"),
-                eq(expectedColumns));
+        verify(dataService).query(eq(DATABASE_1_CACHE),
+                contains("ORDER BY `tbl2`.`id` ASC"));
     }
 
     @Test
@@ -544,20 +536,15 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(DATABASE_1_CACHE);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
-        when(dataMapper.datasetToColumnNameHeader(any(Dataset.class)))
-                .thenReturn("id,date,location,mintemp,rainfall");
-        final List<String> expectedColumns = TABLE_1_CACHE.getColumns()
-                .stream()
-                .map(at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column::getInternalName)
-                .toList();
+        when(dataService.query(any(Database.class), anyString()))
+                .thenReturn(mock(QueryResultStream.class));
 
         /* test */
         final ResponseEntity<?> response = tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, "date", "desc", MediaType.APPLICATION_JSON, httpServletRequest, USER_2_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         verify(tableService, never()).inspect(any(Database.class), anyString());
-        verify(dataService).getSubsetAsJson(eq(DATABASE_1_CACHE),
-                contains("ORDER BY `tbl2`.`date` DESC"),
-                eq(expectedColumns));
+        verify(dataService).query(eq(DATABASE_1_CACHE),
+                contains("ORDER BY `tbl2`.`date` DESC"));
     }
 
     @Test
@@ -578,8 +565,7 @@ public class TableEndpointUnitTest extends BaseTest {
             tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, "missing_column", "asc", MediaType.APPLICATION_JSON, httpServletRequest, USER_2_PRINCIPAL);
         });
         verify(tableService, never()).inspect(any(Database.class), anyString());
-        verify(dataService, never()).getSubsetAsJson(any(Database.class), anyString());
-        verify(dataService, never()).getSubsetAsJson(any(Database.class), anyString(), anyList());
+        verify(dataService, never()).query(any(Database.class), anyString());
     }
 
     @Test
@@ -1583,7 +1569,7 @@ public class TableEndpointUnitTest extends BaseTest {
             RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException,
             DatabaseUnavailableException, FormatNotAvailableException, PaginationException, MalformedException,
             ColumnNotFoundException, StorageNotFoundException, ImageInvalidException, AnalyseDataTypesException,
-            SQLException {
+            SQLException, QueryMalformedException {
 
         /* mock */
         when(metadataService.getTable(DATABASE_2_ID, TABLE_6_ID))
@@ -1594,8 +1580,8 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_6_DTO);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
-        when(dataMapper.datasetToColumnNameHeader(any(Dataset.class)))
-                .thenReturn("id,firstname,lastname,birth,reminder");
+        when(dataService.query(any(Database.class), anyString()))
+                .thenReturn(mock(QueryResultStream.class));
 
         /* test */
         final ResponseEntity<?> response = tableEndpoint.getData(DATABASE_2_ID, TABLE_6_ID, null, null, null, null, null, "text/csv", httpServletRequest, null);
@@ -1609,7 +1595,7 @@ public class TableEndpointUnitTest extends BaseTest {
             throws TableNotFoundException, NotAllowedException, RemoteUnavailableException, MetadataServiceException,
             DatabaseNotFoundException, DatabaseUnavailableException, FormatNotAvailableException, PaginationException,
             MalformedException, ColumnNotFoundException, StorageNotFoundException, ImageInvalidException,
-            AnalyseDataTypesException, SQLException {
+            AnalyseDataTypesException, SQLException, QueryMalformedException {
 
         /* mock */
         when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
@@ -1620,8 +1606,8 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_1_DTO);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
-        when(dataMapper.datasetToColumnNameHeader(any(Dataset.class)))
-                .thenReturn("id,date,location,mintemp,rainfall");
+        when(dataService.query(any(Database.class), anyString()))
+                .thenReturn(mock(QueryResultStream.class));
 
         /* test */
         final ResponseEntity<?> response = tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, null, null, "text/csv", httpServletRequest, USER_2_PRINCIPAL);
