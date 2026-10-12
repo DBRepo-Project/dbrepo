@@ -594,14 +594,14 @@ services:
     restart: "no"
     container_name: dbrepo-dashboard-ui
     hostname: dashboard-ui
-    image: docker.io/bitnamilegacy/grafana:11.4.0
+    image: docker.io/grafana/grafana:11.6.16
     volumes:
       - ./config/dashboards:/app/dashboards
-      - ./config/grafana.ini:/opt/bitnami/grafana/conf/grafana.ini
-      - ./config/provisioning/dashboards/provider.yaml:/opt/bitnami/grafana/conf/provisioning/dashboards/provider.yaml
-      - ./config/provisioning/datasources/infinity.yaml:/opt/bitnami/grafana/conf/provisioning/datasources/infinity.yaml
-      - ./config/provisioning/datasources/prometheus.yaml:/opt/bitnami/grafana/conf/provisioning/datasources/prometheus.yaml
-      - ./config/provisioning/datasources/opensearch.yaml:/opt/bitnami/grafana/conf/provisioning/datasources/opensearch.yaml
+      - ./config/grafana.ini:/etc/grafana/grafana.ini
+      - ./config/provisioning/dashboards/provider.yaml:/etc/grafana/provisioning/dashboards/provider.yaml
+      - ./config/provisioning/datasources/infinity.yaml:/etc/grafana/provisioning/datasources/infinity.yaml
+      - ./config/provisioning/datasources/prometheus.yaml:/etc/grafana/provisioning/datasources/prometheus.yaml
+      - ./config/provisioning/datasources/opensearch.yaml:/etc/grafana/provisioning/datasources/opensearch.yaml
     environment:
       BASE_URL: "${BASE_URL:-http://localhost}"
       DASHBOARD_DB_NAME: "${DASHBOARD_DB_NAME:-grafana}"
@@ -610,7 +610,8 @@ services:
       GF_SERVER_ROOT_URL: http://dashboard-ui:3000/dashboard/
       GF_SECURITY_ADMIN_USER: "${DASHBOARD_UI_USERNAME:-admin}"
       GF_SECURITY_ADMIN_PASSWORD: "${DASHBOARD_UI_PASSWORD:-admin}"
-      GF_INSTALL_PLUGINS: "yesoreyeram-infinity-datasource,grafana-opensearch-datasource"
+      GF_INSTALL_PLUGINS: "yesoreyeram-infinity-datasource 4.0.0,grafana-opensearch-datasource 2.34.4"
+      GF_PLUGINS_PREINSTALL_DISABLED: "true"
       READONLY_USERNAME: "${READONLY_USERNAME:-readonly}"
       READONLY_PASSWORD: "${READONLY_PASSWORD:-readonly}"
     healthcheck:
