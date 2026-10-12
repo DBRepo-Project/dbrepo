@@ -458,8 +458,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "dbrepometrics0"
+        "type": "grafana-opensearch-datasource",
+        "uid": "dbrepoopensearch0"
       },
       "description": "Top 10 by number of accesses",
       "fieldConfig": {
@@ -513,16 +513,34 @@
       "pluginVersion": "11.3.1",
       "targets": [
         {
+          "refId": "A",
           "datasource": {
-            "type": "prometheus",
-            "uid": "dbrepometrics0"
+            "type": "grafana-opensearch-datasource",
+            "uid": "dbrepoopensearch0"
           },
-          "editorMode": "code",
-          "expr": "topk(10, dbrepo_datasource_data_get_total)",
-          "instant": false,
-          "legendFormat": "{{uri}}",
-          "range": true,
-          "refId": "A"
+          "queryType": "lucene",
+          "luceneQueryType": "Metric",
+          "query": "method:GET AND status:[200 TO 299] AND uri:*\\/data",
+          "timeField": "@timestamp",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "bucketAggs": [
+            {
+              "id": "2",
+              "type": "terms",
+              "field": "uri",
+              "settings": {
+                "size": "10",
+                "order": "desc",
+                "orderBy": "1",
+                "min_doc_count": "1"
+              }
+            }
+          ]
         }
       ],
       "title": "Popular Data Sources",
@@ -2581,7 +2599,7 @@
               "type": "count"
             }
           ],
-          "query": "status: (>=200 AND <300)",
+          "query": "status:[200 TO 299]",
           "queryType": "lucene",
           "refId": "200",
           "timeField": "@timestamp"
@@ -2612,7 +2630,7 @@
               "type": "count"
             }
           ],
-          "query": "status: (>=300 AND <400)",
+          "query": "status:[300 TO 399]",
           "queryType": "lucene",
           "refId": "300",
           "timeField": "@timestamp"
@@ -2643,7 +2661,7 @@
               "type": "count"
             }
           ],
-          "query": "status: (>=400 AND <500)",
+          "query": "status:[400 TO 499]",
           "queryType": "lucene",
           "refId": "400",
           "timeField": "@timestamp"

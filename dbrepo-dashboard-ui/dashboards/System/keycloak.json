@@ -15,9 +15,9 @@
     },
     {
       "type": "panel",
-      "id": "grafana-piechart-panel",
-      "name": "Pie Chart",
-      "version": "1.6.1"
+      "id": "piechart",
+      "name": "Pie chart",
+      "version": ""
     },
     {
       "type": "panel",
@@ -201,7 +201,7 @@
       "span": 0,
       "targets": [
         {
-          "expr": "sum(jvm_memory_bytes_used{area=\"heap\"})*100/sum(jvm_memory_bytes_max{area=\"heap\"})",
+          "expr": "sum(jvm_memory_used_bytes{instance=\"auth-service:9000\",area=\"heap\"})*100/sum(jvm_memory_max_bytes{instance=\"auth-service:9000\",area=\"heap\"})",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -334,7 +334,7 @@
       "span": 0,
       "targets": [
         {
-          "expr": "sum(jvm_memory_bytes_used{area=\"nonheap\"})*100/sum(jvm_memory_bytes_max{area=\"nonheap\"})",
+          "expr": "sum(jvm_memory_used_bytes{instance=\"auth-service:9000\",area=\"nonheap\"})*100/sum(jvm_memory_max_bytes{instance=\"auth-service:9000\",area=\"nonheap\"})",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -401,7 +401,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(jvm_memory_bytes_max)",
+          "expr": "sum(jvm_memory_max_bytes{instance=\"auth-service:9000\"})",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -409,7 +409,7 @@
           "refId": "A"
         },
         {
-          "expr": "sum(jvm_memory_bytes_committed)",
+          "expr": "sum(jvm_memory_committed_bytes{instance=\"auth-service:9000\"})",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -417,7 +417,7 @@
           "refId": "C"
         },
         {
-          "expr": "sum(jvm_memory_bytes_used)",
+          "expr": "sum(jvm_memory_used_bytes{instance=\"auth-service:9000\"})",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -557,15 +557,32 @@
       "strokeWidth": 1,
       "targets": [
         {
-          "expr": "sum by (realm)(increase(keycloak_logins[24h]))",
+          "expr": "sum by (realm)(increase(keycloak_user_events_total{instance=\"auth-service:9000\",event=\"login\",error=\"\"}[24h]))",
           "interval": "",
           "legendFormat": "{{realm}}",
           "refId": "A"
         }
       ],
       "title": "Logins Per REALM for past 24h",
-      "type": "grafana-piechart-panel",
-      "valueName": "current"
+      "type": "piechart",
+      "valueName": "current",
+      "options": {
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "values": false
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      }
     },
     {
       "aliasColors": {},
@@ -605,7 +622,7 @@
       "strokeWidth": 1,
       "targets": [
         {
-          "expr": "sum by (realm)(increase(keycloak_registrations[24h]))",
+          "expr": "sum by (realm)(increase(keycloak_user_events_total{instance=\"auth-service:9000\",event=\"register\",error=\"\"}[24h]))",
           "interval": "",
           "legendFormat": "{{realm}}",
           "refId": "A"
@@ -614,8 +631,25 @@
       "timeFrom": null,
       "timeShift": null,
       "title": "Registrations Per REALM for past 24h",
-      "type": "grafana-piechart-panel",
-      "valueName": "current"
+      "type": "piechart",
+      "valueName": "current",
+      "options": {
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "values": false
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      }
     },
     {
       "CustomPanel": {
@@ -711,15 +745,32 @@
       "strokeWidth": 1,
       "targets": [
         {
-          "expr": "sum by (client_id)(increase(keycloak_logins[24h]))",
+          "expr": "sum by (client_id)(increase(keycloak_user_events_total{instance=\"auth-service:9000\",event=\"login\",error=\"\"}[24h]))",
           "interval": "",
           "legendFormat": "{{client_id}}",
           "refId": "A"
         }
       ],
       "title": "Logins Per CLIENT for past 24h",
-      "type": "grafana-piechart-panel",
-      "valueName": "current"
+      "type": "piechart",
+      "valueName": "current",
+      "options": {
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "values": false
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      }
     },
     {
       "CustomPanel": {
@@ -817,15 +868,32 @@
       "strokeWidth": 1,
       "targets": [
         {
-          "expr": "sum by (client_id)(increase(keycloak_registrations[24h]))",
+          "expr": "sum by (client_id)(increase(keycloak_user_events_total{instance=\"auth-service:9000\",event=\"register\",error=\"\"}[24h]))",
           "interval": "",
           "legendFormat": "{{client_id}}",
           "refId": "A"
         }
       ],
       "title": "Registrations Per CLIENT for past 24h",
-      "type": "grafana-piechart-panel",
-      "valueName": "current"
+      "type": "piechart",
+      "valueName": "current",
+      "options": {
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "values": false
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      }
     },
     {
       "aliasColors": {},
@@ -875,9 +943,9 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum by (code)(increase(keycloak_response_errors_total[30m]))",
+          "expr": "sum by (status)(increase(http_server_requests_seconds_count{instance=\"auth-service:9000\",status=~\"4..|5..\"}[30m]))",
           "interval": "",
-          "legendFormat": "{{code}}",
+          "legendFormat": "{{status}}",
           "refId": "A"
         }
       ],
@@ -982,7 +1050,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum by (realm)(increase(keycloak_logins[30m]))",
+          "expr": "sum by (realm)(increase(keycloak_user_events_total{instance=\"auth-service:9000\",event=\"login\",error=\"\"}[30m]))",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -1087,7 +1155,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum by (error) (increase(keycloak_failed_login_attempts{provider=\"keycloak\",realm=\"dbrepo\"}[30m]))",
+          "expr": "sum by (error) (increase(keycloak_user_events_total{instance=\"auth-service:9000\",event=\"login\",error!=\"\",realm=\"dbrepo\"}[30m]))",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -1095,7 +1163,7 @@
           "refId": "A"
         },
         {
-          "expr": "sum by (realm) (increase(keycloak_failed_login_attempts{provider=\"keycloak\",realm=\"dialog-test\"} [30m]))",
+          "expr": "sum by (realm) (increase(keycloak_user_events_total{instance=\"auth-service:9000\",event=\"login\",error!=\"\",realm=\"dbrepo\"} [30m]))",
           "interval": "",
           "legendFormat": "{{sum by dbrepo}}",
           "refId": "B"
@@ -1197,7 +1265,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum by (client_id)(increase(keycloak_logins{realm=\"dbrepo\",provider=\"keycloak\"}[30m]))",
+          "expr": "sum by (client_id)(increase(keycloak_user_events_total{instance=\"auth-service:9000\",event=\"login\",error=\"\",realm=\"dbrepo\"}[30m]))",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
@@ -1300,7 +1368,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum by (realm) (increase(keycloak_registrations_errors{provider=\"keycloak\",realm=\"dbrepo\"} [30m]))",
+          "expr": "sum by (realm) (increase(keycloak_user_events_total{instance=\"auth-service:9000\",event=\"register\",error!=\"\",realm=\"dbrepo\"} [30m]))",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
@@ -1308,7 +1376,7 @@
           "refId": "A"
         },
         {
-          "expr": "sum by (error) (increase(keycloak_registrations_errors{provider=\"keycloak\",realm=\"dbrepo\"} [30m]))",
+          "expr": "sum by (error) (increase(keycloak_user_events_total{instance=\"auth-service:9000\",event=\"register\",error!=\"\",realm=\"dbrepo\"} [30m]))",
           "interval": "",
           "legendFormat": "{{error}}",
           "refId": "B"
@@ -1411,7 +1479,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum by (realm)(increase(keycloak_registrations[30m]))",
+          "expr": "sum by (realm)(increase(keycloak_user_events_total{instance=\"auth-service:9000\",event=\"register\",error=\"\"}[30m]))",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -1515,7 +1583,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum by (error) (increase(keycloak_failed_login_attempts{provider=\"keycloak\",realm=\"dbrepo\",client_id=\"dbrepo-client\"}[30m]))",
+          "expr": "sum by (error) (increase(keycloak_user_events_total{instance=\"auth-service:9000\",event=\"login\",error!=\"\",realm=\"dbrepo\",client_id=\"dbrepo-client\"}[30m]))",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
@@ -1619,7 +1687,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum by (client_id)(increase(keycloak_registrations{realm=\"dbrepo\",provider=\"keycloak\"}[30m]))",
+          "expr": "sum by (client_id)(increase(keycloak_user_events_total{instance=\"auth-service:9000\",event=\"register\",error=\"\",realm=\"dbrepo\"}[30m]))",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
@@ -1627,7 +1695,7 @@
           "refId": "A"
         },
         {
-          "expr": "sum by (realm)(increase(keycloak_registrations{provider=\"keycloak\",realm=\"dbrepo\"} [30m]))",
+          "expr": "sum by (realm)(increase(keycloak_user_events_total{instance=\"auth-service:9000\",event=\"register\",error=\"\",realm=\"dbrepo\"} [30m]))",
           "interval": "",
           "legendFormat": "Sum by {{realm}}",
           "refId": "B"
@@ -1728,7 +1796,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum by (error) (increase(keycloak_registrations_errors{provider=\"keycloak\",realm=\"dbrepo\",client_id=\"dbrepo-client\"}[30m]))",
+          "expr": "sum by (error) (increase(keycloak_user_events_total{instance=\"auth-service:9000\",event=\"register\",error!=\"\",realm=\"dbrepo\",client_id=\"dbrepo-client\"}[30m]))",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
@@ -1814,7 +1882,7 @@
       "reverseYBuckets": false,
       "targets": [
         {
-          "expr": "sum(increase(keycloak_request_duration_bucket{method=\"GET\"}[30m])) by (le)",
+          "expr": "sum(increase(http_server_requests_seconds_bucket{instance=\"auth-service:9000\",method=\"GET\"}[30m])) by (le)",
           "format": "heatmap",
           "interval": "",
           "intervalFactor": 4,
@@ -1837,7 +1905,7 @@
       "xBucketSize": null,
       "yAxis": {
         "decimals": null,
-        "format": "ms",
+        "format": "s",
         "logBase": 1,
         "max": null,
         "min": null,
@@ -1902,7 +1970,7 @@
       "pluginVersion": "7.2.0",
       "targets": [
         {
-          "expr": "sum(rate(keycloak_request_duration_bucket{method=\"GET\", le=\"100.0\"}[30m])) / sum(rate(keycloak_request_duration_count{method=\"GET\"}[30m])) * 100",
+          "expr": "sum(rate(http_server_requests_seconds_bucket{instance=\"auth-service:9000\",method=\"GET\", le=\"0.1\"}[30m])) / sum(rate(http_server_requests_seconds_count{instance=\"auth-service:9000\",method=\"GET\"}[30m])) * 100",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
@@ -1955,7 +2023,7 @@
       "reverseYBuckets": false,
       "targets": [
         {
-          "expr": "sum(increase(keycloak_request_duration_bucket{method=\"POST\"}[30m])) by (le)",
+          "expr": "sum(increase(http_server_requests_seconds_bucket{instance=\"auth-service:9000\",method=\"POST\"}[30m])) by (le)",
           "format": "heatmap",
           "interval": "",
           "intervalFactor": 4,
@@ -1978,7 +2046,7 @@
       "xBucketSize": null,
       "yAxis": {
         "decimals": null,
-        "format": "ms",
+        "format": "s",
         "logBase": 1,
         "max": null,
         "min": null,
@@ -2043,7 +2111,7 @@
       "pluginVersion": "7.2.0",
       "targets": [
         {
-          "expr": "sum(rate(keycloak_request_duration_bucket{method=\"POST\", le=\"100.0\"}[30m])) / sum(rate(keycloak_request_duration_count{method=\"POST\"}[30m])) * 100",
+          "expr": "sum(rate(http_server_requests_seconds_bucket{instance=\"auth-service:9000\",method=\"POST\", le=\"0.1\"}[30m])) / sum(rate(http_server_requests_seconds_count{instance=\"auth-service:9000\",method=\"POST\"}[30m])) * 100",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
@@ -2096,7 +2164,7 @@
       "reverseYBuckets": false,
       "targets": [
         {
-          "expr": "sum(increase(keycloak_request_duration_bucket{method=\"HEAD\"}[30m])) by (le)",
+          "expr": "sum(increase(http_server_requests_seconds_bucket{instance=\"auth-service:9000\",method=\"HEAD\"}[30m])) by (le)",
           "format": "heatmap",
           "interval": "",
           "intervalFactor": 4,
@@ -2119,7 +2187,7 @@
       "xBucketSize": null,
       "yAxis": {
         "decimals": null,
-        "format": "ms",
+        "format": "s",
         "logBase": 1,
         "max": null,
         "min": null,
@@ -2184,7 +2252,7 @@
       "pluginVersion": "7.2.0",
       "targets": [
         {
-          "expr": "sum(rate(keycloak_request_duration_bucket{method=\"HEAD\", le=\"100.0\"}[30m])) / sum(rate(keycloak_request_duration_count{method=\"HEAD\"}[30m])) * 100",
+          "expr": "sum(rate(http_server_requests_seconds_bucket{instance=\"auth-service:9000\",method=\"HEAD\", le=\"0.1\"}[30m])) / sum(rate(http_server_requests_seconds_count{instance=\"auth-service:9000\",method=\"HEAD\"}[30m])) * 100",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
@@ -2237,7 +2305,7 @@
       "reverseYBuckets": false,
       "targets": [
         {
-          "expr": "sum(increase(keycloak_request_duration_bucket{method=\"PUT\"}[30m])) by (le)",
+          "expr": "sum(increase(http_server_requests_seconds_bucket{instance=\"auth-service:9000\",method=\"PUT\"}[30m])) by (le)",
           "format": "heatmap",
           "interval": "",
           "intervalFactor": 4,
@@ -2260,7 +2328,7 @@
       "xBucketSize": null,
       "yAxis": {
         "decimals": null,
-        "format": "ms",
+        "format": "s",
         "logBase": 1,
         "max": null,
         "min": null,
@@ -2325,7 +2393,7 @@
       "pluginVersion": "7.2.0",
       "targets": [
         {
-          "expr": "sum(rate(keycloak_request_duration_bucket{method=\"PUT\", le=\"100.0\"}[30m])) / sum(rate(keycloak_request_duration_count{method=\"PUT\"}[30m])) * 100",
+          "expr": "sum(rate(http_server_requests_seconds_bucket{instance=\"auth-service:9000\",method=\"PUT\", le=\"0.1\"}[30m])) / sum(rate(http_server_requests_seconds_count{instance=\"auth-service:9000\",method=\"PUT\"}[30m])) * 100",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
@@ -2342,11 +2410,17 @@
   "refresh": "5m",
   "schemaVersion": 26,
   "style": "dark",
-  "tags": ["provisioned", "auth"],
+  "tags": [
+    "provisioned",
+    "auth"
+  ],
   "templating": {
     "list": [
       {
-        "datasource": "prometheus",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "dbrepometrics0"
+        },
         "filters": [],
         "hide": 0,
         "label": "",

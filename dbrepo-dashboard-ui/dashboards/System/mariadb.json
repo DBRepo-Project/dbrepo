@@ -1355,7 +1355,10 @@
   "templating": {
     "list": [
       {
-        "datasource": "prometheus",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "dbrepometrics0"
+        },
         "filters": [],
         "hide": 0,
         "label": "",
