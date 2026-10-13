@@ -8,7 +8,7 @@
       dense>
       <v-col
         cols="12"
-        md="4">
+        md="3">
         <v-combobox
           :model-value="foreignKey.columns"
           multiple
@@ -25,7 +25,7 @@
       </v-col>
       <v-col
         cols="12"
-        md="4">
+        md="3">
         <v-select
           :model-value="selectedReference(foreignKey)"
           :items="referenceOptions(foreignKey)"
@@ -41,7 +41,37 @@
       </v-col>
       <v-col
         cols="12"
-        md="3">
+        md="2">
+        <v-select
+          :model-value="foreignKey.on_delete"
+          :items="actionOptions"
+          item-title="title"
+          item-value="value"
+          :disabled="disabled"
+          :variant="inputVariant"
+          :label="$t('pages.table.subpages.schema.foreign_keys.on_delete.label')"
+          :rules="[v => !!v || $t('validation.required')]"
+          persistent-hint
+          @update:modelValue="updateAction(index, 'on_delete', $event)" />
+      </v-col>
+      <v-col
+        cols="12"
+        md="2">
+        <v-select
+          :model-value="foreignKey.on_update"
+          :items="actionOptions"
+          item-title="title"
+          item-value="value"
+          :disabled="disabled"
+          :variant="inputVariant"
+          :label="$t('pages.table.subpages.schema.foreign_keys.on_update.label')"
+          :rules="[v => !!v || $t('validation.required')]"
+          persistent-hint
+          @update:modelValue="updateAction(index, 'on_update', $event)" />
+      </v-col>
+      <v-col
+        cols="12"
+        md="2">
         <div class="text-caption mb-1">
           {{ $t('pages.table.subpages.schema.foreign_keys.selected.label') }}
         </div>
@@ -175,6 +205,15 @@ export default {
         .map(column => column.name)
         .filter(column => !!column)
     },
+    actionOptions () {
+      return ['restrict', 'cascade', 'set_null', 'no_action']
+        .map(value => {
+          return {
+            value,
+            title: value.replaceAll('_', ' ').toUpperCase()
+          }
+        })
+    },
     selfPrimaryKeyColumns () {
       return this.columns
         .filter(column => column.primary_key)
@@ -235,6 +274,10 @@ export default {
       }
       foreignKey.referenced_table = reference.referenced_table
       foreignKey.referenced_columns = reference.referenced_columns
+      this.emitForeignKeys()
+    },
+    updateAction (index, field, action) {
+      this.localForeignKeys[index][field] = action
       this.emitForeignKeys()
     },
     moveColumn (foreignKeyIndex, columnIndex, direction) {

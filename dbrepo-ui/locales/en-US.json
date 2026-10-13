@@ -562,6 +562,12 @@
               "label": "Referenced Primary Key",
               "empty": "No eligible primary keys"
             },
+            "on_update": {
+              "label": "On Update"
+            },
+            "on_delete": {
+              "label": "On Delete"
+            },
             "move": {
               "up": "Move selected column up",
               "down": "Move selected column down"
