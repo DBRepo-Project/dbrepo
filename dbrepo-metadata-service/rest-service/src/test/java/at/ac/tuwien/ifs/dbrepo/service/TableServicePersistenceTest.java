@@ -101,7 +101,7 @@ public class TableServicePersistenceTest extends BaseTest {
                         .checks(Set.of())
                         .uniques(List.of(List.of("date")))
                         .foreignKeys(List.of())
-                        .primaryKey(Set.of("id"))
+                        .primaryKey(List.of("id"))
                         .build())
                 .build();
 
