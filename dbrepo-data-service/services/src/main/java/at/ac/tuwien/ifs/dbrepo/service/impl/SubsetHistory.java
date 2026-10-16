@@ -185,7 +185,10 @@ public final class SubsetHistory {
     /** Visit named table declarations, including those inside joins and nested selects. */
     static String rewrite(String query, String database, Function<String, String> relation) {
         final DSLContext parser = DSL.using(SQLDialect.MARIADB);
-        final var select = parser.parser().parseSelect(query);
+        final var select = parser.parser().parseQuery(query);
+        if (!(select instanceof Select<?>)) {
+            throw new org.jooq.impl.ParserException("Historical subsets require a read-only SELECT or VALUES query");
+        }
         final var config = parser.configuration().derive(new DefaultVisitListener() {
             @Override public void visitStart(VisitContext ctx) {
                 if (ctx.queryPart() instanceof org.jooq.Table<?> table && ctx.renderContext().declareTables()

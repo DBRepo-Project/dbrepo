@@ -5,6 +5,23 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class SubsetHistoryParserTest {
+    @Test void valuesQueriesAreReadOnlySelectionsWithoutTableBindings() {
+        final String sql = SubsetHistory.rewrite("VALUES (1, 2, 3)", "example", name -> {
+            fail("VALUES must not reference a table: " + name);
+            return "";
+        });
+        assertTrue(sql.startsWith("select "), sql);
+        assertTrue(sql.contains("1 as"), sql);
+    }
+
+    @Test void writeStatementsCannotEnterTheHistoricalReadPath() {
+        for (String sql : List.of("DELETE FROM example.first", "UPDATE example.first SET value=0",
+                "DROP TABLE example.first", "INSERT INTO example.first(value) VALUES(1)")) {
+            assertThrows(org.jooq.impl.ParserException.class,
+                    () -> SubsetHistory.rewrite(sql, "example", name -> "select 1"), sql);
+        }
+    }
+
     @Test void rewritesJoinsAliasesAndQualifiedColumnsWithoutEditingLiterals() {
         final List<String> visited = new ArrayList<>();
         final String sql = SubsetHistory.rewrite("select a.value,b.value from example.first a join example.second b"

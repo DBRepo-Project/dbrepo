@@ -289,7 +289,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
             log.info("Stored query with id {} in database with name {}", queryId, database.getInternalName());
             connection.commit();
             return queryId;
-        } catch (SQLException e) {
+        } catch (SQLException | org.jooq.impl.ParserException e) {
             connection.rollback();
             log.error("Failed to store query: {}", e.getMessage());
             throw new QueryStoreInsertException("Failed to store query: " + e.getMessage(), e);

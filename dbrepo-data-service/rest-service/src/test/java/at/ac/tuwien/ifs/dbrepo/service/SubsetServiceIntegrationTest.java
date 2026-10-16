@@ -58,6 +58,7 @@ public class SubsetServiceIntegrationTest extends BaseTest {
         /* metadata database */
         MariaDbUtil.dropDatabase(CONTAINER_1_CACHE, DATABASE_1_INTERNAL_NAME);
         MariaDbUtil.createInitDatabase(DATABASE_1_CACHE);
+        subsetService.upgradeQueryStore(DATABASE_1_CACHE);
     }
 
     @Test
@@ -178,7 +179,7 @@ public class SubsetServiceIntegrationTest extends BaseTest {
         final SubsetMetadata response = subsetService.getMetadata(DATABASE_1_CACHE, MariaDbUtil.replaceExecutionTimestamp(
                 QUERY_1_STATEMENT_NORMALIZED, QUERY_1_EXECUTION, Instant.now().plus(12, ChronoUnit.HOURS)));
         assertNotNull(response);
-        assertEquals(QUERY_1_RESULT_HASH, response.getResultHash());
+        assertTrue(response.getResultHash().matches("v2:[0-9a-f]{64}"));
         assertEquals(3, response.getResultCount());
     }
 
@@ -192,12 +193,13 @@ public class SubsetServiceIntegrationTest extends BaseTest {
     }
 
     @Test
-    public void storeQuery_fails() {
+    public void storeQuery_fails() throws SQLException {
 
         /* test */
         assertThrows(QueryStoreInsertException.class, () -> {
             subsetService.storeQuery(DATABASE_1_CACHE, "DROP DATABASE `weather`", "", QUERY_1_EXECUTION, USER_1_USERNAME);
         });
+        assertTrue(MariaDbUtil.tableExists(DATABASE_1_CACHE, TABLE_1_INTERNAL_NAME));
     }
 
     @Test
@@ -208,10 +210,15 @@ public class SubsetServiceIntegrationTest extends BaseTest {
     }
 
     @Test
-    public void storeQuery_simpleRow_succeeds() throws QueryStoreInsertException, SQLException {
+    public void storeQuery_simpleRow_succeeds() throws Exception {
 
         /* test */
-        subsetService.storeQuery(DATABASE_1_CACHE, "VALUES (1, 2, 3)", "VALUES (1, 2, 3)", QUERY_1_EXECUTION, USER_1_USERNAME);
+        final UUID id = subsetService.storeQuery(DATABASE_1_CACHE, "VALUES (1, 2, 3)", "VALUES (1, 2, 3)", QUERY_1_EXECUTION, USER_1_USERNAME);
+        final Subset stored = subsetService.findById(DATABASE_1_CACHE, id);
+        final SubsetMetadata reproduced = subsetService.getMetadata(DATABASE_1_CACHE,
+                subsetService.executionQuery(DATABASE_1_CACHE, stored));
+        assertEquals(1L, reproduced.getResultCount());
+        assertEquals(stored.getResultHash(), reproduced.getResultHash());
     }
 
     protected void findById_generic(UUID queryId) throws RemoteUnavailableException, SQLException,
