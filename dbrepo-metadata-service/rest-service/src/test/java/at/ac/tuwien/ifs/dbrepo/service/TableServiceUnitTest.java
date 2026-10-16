@@ -450,7 +450,7 @@ public class TableServiceUnitTest extends BaseTest {
                         .checks(Set.of())
                         .uniques(List.of(List.of("I Am Späshül")))
                         .foreignKeys(List.of())
-                        .primaryKey(Set.of())
+                        .primaryKey(List.of())
                         .build())
                 .build();
 
@@ -512,7 +512,7 @@ public class TableServiceUnitTest extends BaseTest {
                         .checks(Set.of())
                         .uniques(List.of())
                         .foreignKeys(List.of())
-                        .primaryKey(Set.of())
+                        .primaryKey(List.of())
                         .build())
                 .build();
 
@@ -557,7 +557,7 @@ public class TableServiceUnitTest extends BaseTest {
                         .checks(Set.of())
                         .uniques(List.of(List.of("date")))
                         .foreignKeys(List.of())
-                        .primaryKey(Set.of("id"))
+                        .primaryKey(List.of("id"))
                         .build())
                 .build();
 
@@ -656,7 +656,7 @@ public class TableServiceUnitTest extends BaseTest {
                 .constraints(CreateTableConstraintsDto.builder()
                         .foreignKeys(new LinkedList<>())
                         .checks(new LinkedHashSet<>())
-                        .primaryKey(Set.of("i_do_not_exist"))
+                        .primaryKey(List.of("i_do_not_exist"))
                         .uniques(new LinkedList<>())
                         .build())
                 .build();
@@ -680,7 +680,7 @@ public class TableServiceUnitTest extends BaseTest {
                 .constraints(CreateTableConstraintsDto.builder()
                         .foreignKeys(new LinkedList<>())
                         .checks(new LinkedHashSet<>())
-                        .primaryKey(new LinkedHashSet<>())
+                        .primaryKey(List.of())
                         .uniques(List.of(List.of("i_do_not_exist")))
                         .build())
                 .build();
@@ -711,7 +711,7 @@ public class TableServiceUnitTest extends BaseTest {
                                 .referencedTable("i_do_not_exist")
                                 .build()))
                         .checks(new LinkedHashSet<>())
-                        .primaryKey(new LinkedHashSet<>())
+                        .primaryKey(List.of())
                         .uniques(new LinkedList<>())
                         .build())
                 .build();

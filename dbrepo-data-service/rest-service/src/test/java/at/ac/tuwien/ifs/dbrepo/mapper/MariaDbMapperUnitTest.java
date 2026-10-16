@@ -77,7 +77,7 @@ public class MariaDbMapperUnitTest extends BaseTest {
                                 .nullAllowed(false)
                                 .build()))
                 .constraints(CreateTableConstraintsDto.builder()
-                        .primaryKey(Set.of("measurement_id"))
+                        .primaryKey(List.of("measurement_id"))
                         .foreignKeys(List.of(CreateForeignKeyDto.builder()
                                 .columns(List.of("station_id"))
                                 .referencedTable("Station")

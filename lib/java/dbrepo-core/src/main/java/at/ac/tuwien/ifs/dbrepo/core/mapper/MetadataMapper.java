@@ -893,7 +893,7 @@ public interface MetadataMapper {
                 .primaryKey(data.getPrimaryKey()
                         .stream()
                         .map(this::primaryKeyToPrimaryKeyDto)
-                        .collect(Collectors.toSet()))
+                        .toList())
                 .build();
     }
 
