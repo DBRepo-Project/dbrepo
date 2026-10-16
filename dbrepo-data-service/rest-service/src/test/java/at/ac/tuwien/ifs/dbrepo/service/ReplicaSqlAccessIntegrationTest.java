@@ -86,6 +86,32 @@ class ReplicaSqlAccessIntegrationTest {
     }
 
     @Test
+    void updatingAnExistingUserWithoutDatabaseGrantsIsRepeatable() throws Exception {
+        try (Connection root = DriverManager.getConnection(url, "root", password)) {
+            root.createStatement().execute("CREATE USER replica_access_reader@'%' IDENTIFIED BY 'test-reader'");
+        }
+        service.update(database, user, AccessTypeDto.READ);
+        assertReadOnly();
+        service.update(database, user, AccessTypeDto.READ);
+        assertReadOnly();
+    }
+
+    @Test
+    void insufficientGrantAuthorityIsNotTreatedAsAnAbsentGrant() throws Exception {
+        service.create(database, user, AccessTypeDto.READ);
+        try (Connection root = DriverManager.getConnection(url, "root", password)) {
+            root.createStatement().execute("DROP USER IF EXISTS replica_access_operator@'%'");
+            root.createStatement().execute("CREATE USER replica_access_operator@'%' IDENTIFIED BY 'test-operator'");
+            root.createStatement().execute("GRANT SELECT ON replica_access_test.* TO replica_access_operator@'%'");
+        }
+        database.getContainer().setUsername("replica_access_operator");
+        database.getContainer().setPassword("test-operator");
+        assertThrows(at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseMalformedException.class,
+                () -> service.update(database, user, AccessTypeDto.READ));
+        assertReadOnly();
+    }
+
+    @Test
     void primarySqlCannotBypassTheJournalAndRepairPreservesApiWriteAccess() throws Exception {
         database.setCreationLocation(null);
         service.create(database, user, AccessTypeDto.WRITE_ALL);

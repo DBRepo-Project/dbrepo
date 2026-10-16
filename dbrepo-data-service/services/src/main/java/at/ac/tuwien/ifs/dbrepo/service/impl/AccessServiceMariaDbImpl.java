@@ -115,8 +115,15 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
         final Connection connection = dataSource.getConnection();
         try {
             // GRANT is additive; a downgrade must revoke the previous database privileges first.
-            connection.prepareStatement(mariaDbMapper.databaseRevokePrivilegesQuery(database.getInternalName(), user.getUsername()))
-                    .execute();
+            try (PreparedStatement revoke = connection.prepareStatement(
+                    mariaDbMapper.databaseRevokePrivilegesQuery(database.getInternalName(), user.getUsername()))) {
+                try {
+                    revoke.execute();
+                } catch (SQLException e) {
+                    // ER_NONEXISTING_GRANT: nothing to revoke. Permission and other SQL errors must still fail.
+                    if (e.getErrorCode() != 1141 || !"42000".equals(e.getSQLState())) throw e;
+                }
+            }
             if (isReplicatedDatabase(database) && !isServiceUser(database, user)) {
                 revokeQueryStore(connection, database, user);
             }
