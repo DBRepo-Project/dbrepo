@@ -5,13 +5,16 @@ import at.ac.tuwien.ifs.dbrepo.core.api.replication.SubsetReplicationDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Container;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Image;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Subset;
 import at.ac.tuwien.ifs.dbrepo.core.exception.QueryStoreInsertException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.QueryStorePersistException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.QueryExecutionException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.SubsetHistoryIncompleteException;
 import at.ac.tuwien.ifs.dbrepo.core.replication.ReplicationPeers;
 import at.ac.tuwien.ifs.dbrepo.endpoints.SubsetEndpoint;
 import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
+import at.ac.tuwien.ifs.dbrepo.service.impl.DataServiceSparkImpl;
 import at.ac.tuwien.ifs.dbrepo.service.impl.SubsetServiceMariaDbImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Validation;
@@ -33,6 +36,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -223,11 +227,7 @@ class SubsetReplicationIntegrationTest {
 
     @Test
     void repeatedUpgradePreservesLegacyRowsWithoutInventingOriginOrFixity() throws Exception {
-        sql("DROP TABLE qs_queries");
-        sql("CREATE TABLE qs_queries (id VARCHAR(36) PRIMARY KEY, created DATETIME NOT NULL DEFAULT NOW(), "
-                + "executed DATETIME NOT NULL DEFAULT NOW(), created_by VARCHAR(36), query TEXT NOT NULL, "
-                + "query_normalized TEXT NOT NULL, is_persisted BOOLEAN NOT NULL, query_hash VARCHAR(255) NOT NULL, "
-                + "result_hash VARCHAR(255), result_number BIGINT) WITH SYSTEM VERSIONING");
+        legacyQueryStore();
         final UUID id = UUID.randomUUID();
         sql("INSERT INTO qs_queries VALUES ('" + id + "','2020-01-01','2020-01-02','legacy', 'SELECT 1', "
                 + "'SELECT 1', TRUE, 'old-query-hash','old-result-hash', 1)");
@@ -241,6 +241,118 @@ class SubsetReplicationIntegrationTest {
         assertEquals(Instant.parse("2020-01-02T00:00:00Z"), read(id).selectedAt());
         assertEquals(0, count("qs_subset_outbox"));
         assertNotNull(create());
+    }
+
+    @Test
+    void upgradedLegacySubsetStreamsOriginalRowsAfterUpdateAndDelete() throws Exception {
+        final UUID id = legacyHistoricalSubset();
+        final var metadata = mock(MetadataService.class);
+        final var data = new DataServiceSparkImpl(null, null);
+        final var request = mock(HttpServletRequest.class);
+        database.setIsPublic(true);
+        when(metadata.getDatabase(A_ID)).thenReturn(database);
+        final var endpoint = new SubsetEndpoint(data, mapper, service, null, metadata,
+                mock(EndpointValidator.class), null);
+        when(request.getMethod()).thenReturn("GET");
+        final var paginated = endpoint.getData(A_ID, id, null, "application/json", request, null, 1L, 1L);
+        final var output = new java.io.ByteArrayOutputStream();
+        paginated.getBody().writeTo(output);
+        assertEquals("[{\"id\":2,\"value\":\"Original_B\"}]", output.toString(java.nio.charset.StandardCharsets.UTF_8));
+        assertEquals("legacy-unverified", paginated.getHeaders().getFirst("X-Integrity"));
+        assertEquals("historical-re-execution", paginated.getHeaders().getFirst("X-Result-Mode"));
+
+        final var csv = endpoint.getData(A_ID, id, null, "text/csv", request, null, 1L, 1L);
+        output.reset();
+        csv.getBody().writeTo(output);
+        assertEquals(String.join(System.lineSeparator(), "id,value", "1,Original_A", "2,Original_B", ""),
+                output.toString(java.nio.charset.StandardCharsets.UTF_8));
+        when(request.getMethod()).thenReturn("HEAD");
+        final var head = endpoint.getData(A_ID, id, null, "application/json", request, null, null, null);
+        assertEquals("2", head.getHeaders().getFirst("X-Count"));
+        assertEquals("legacy-unverified", head.getHeaders().getFirst("X-Integrity"));
+        assertNull(head.getBody());
+        assertEquals(1, count("legacy_data"));
+        assertEquals(3, count("legacy_data FOR SYSTEM_TIME ALL"));
+        assertEquals(1, count("qs_queries FOR SYSTEM_TIME ALL"));
+        assertEquals("old-result-hash", read(id).resultHash());
+        assertEquals("legacy-user", service.findById(database, id).getOwnedBy());
+        assertEquals(Instant.parse("2021-01-01T00:00:10Z"), read(id).selectedAt());
+        assertNull(read(id).originSite());
+        assertNull(service.findById(database, id).getExecutionContext());
+        assertEquals(0, read(id).revision());
+        assertEquals(0, count("qs_subset_outbox"));
+    }
+
+    @Test
+    void legacyReplayRemainsLocalWhenReplicationIsEnabledLater() throws Exception {
+        final UUID id = legacyHistoricalSubset();
+        database.setCreationLocation("https://A.example:443/");
+        database.setReplicaUrls(Map.of(B, B_ID));
+        final String query = service.executionQuery(database, service.findById(database, id));
+        assertEquals(2, service.getMetadata(database, query).getResultCount());
+        replication.backfill(database, B);
+        assertEquals(0, count("qs_subset_outbox"));
+        database.setCreationLocation(B);
+        assertThrows(SubsetHistoryIncompleteException.class,
+                () -> service.executionQuery(database, service.findById(database, id)));
+    }
+
+    @Test
+    void missingOrInvalidModernEvidenceNeverUsesLegacyReplay() throws Exception {
+        final UUID id = legacyHistoricalSubset();
+        final List<Consumer<Subset>> invalid = List.of(
+                subset -> subset.setCreationLocation(B),
+                subset -> subset.setCreationLocation(A),
+                subset -> subset.setReplicationRevision(1L),
+                subset -> subset.setReplicationRevision(null),
+                subset -> subset.setResultHash("v2:" + "0".repeat(64)),
+                subset -> subset.setExecutionContext("{}"),
+                subset -> subset.setExecutionContext("{\"format\":1}"),
+                subset -> subset.setQueryNormalized(null),
+                subset -> subset.setQueryNormalized(" "),
+                subset -> subset.setDatabaseId(B_ID));
+        for (var change : invalid) {
+            final var subset = service.findById(database, id);
+            change.accept(subset);
+            assertThrows(SubsetHistoryIncompleteException.class, () -> service.executionQuery(database, subset));
+        }
+    }
+
+    @Test
+    void legacyJoinsViewsAndEmptyResultsUseNativeHistoryWithoutRewritingOldHashes() throws Exception {
+        legacyHistoricalSubset();
+        final String selected = " FOR SYSTEM_TIME AS OF TIMESTAMP '2021-01-01 00:00:10.123456'";
+        try (Connection connection = connect(); Statement statement = connection.createStatement()) {
+            statement.execute("CREATE TABLE legacy_labels(id INT PRIMARY KEY) WITH SYSTEM VERSIONING");
+            statement.execute("SET timestamp=1609459201");
+            statement.execute("INSERT INTO legacy_labels VALUES(1),(2)");
+            statement.execute("CREATE VIEW legacy_join AS SELECT d.id,d.value FROM legacy_data d JOIN legacy_labels l USING(id)");
+        }
+        final List<String> queries = List.of(
+                "SELECT d.id,d.value FROM legacy_data" + selected + " d JOIN legacy_labels" + selected + " l USING(id) ORDER BY d.id",
+                "SELECT id,value FROM legacy_join" + selected + " ORDER BY id",
+                "SELECT id,value FROM legacy_data" + selected + " WHERE id=99");
+        for (int i = 0; i < queries.size(); i++) {
+            final UUID id = UUID.randomUUID();
+            try (Connection connection = connect(); var insert = connection.prepareStatement("""
+                    INSERT INTO qs_queries(id,query,query_normalized,is_persisted,query_hash,result_hash,result_number)
+                    VALUES(?, 'SELECT id,value FROM legacy_data', ?, TRUE, 'legacy', NULL, ?)
+                    """)) {
+                insert.setString(1, id.toString());
+                insert.setString(2, queries.get(i));
+                insert.setLong(3, i == 2 ? 0 : 2);
+                insert.executeUpdate();
+            }
+            final String query = service.executionQuery(database, service.findById(database, id));
+            assertEquals(i == 2 ? 0 : 2, service.getMetadata(database, query).getResultCount());
+            final var output = new java.io.ByteArrayOutputStream();
+            final Connection connection = connect();
+            new QueryResultStream(connection, connection.createStatement().executeQuery(query)).writeJson(output);
+            assertEquals(i == 2 ? "[]" : "[{\"id\":1,\"value\":\"Original_A\"},{\"id\":2,\"value\":\"Original_B\"}]",
+                    output.toString(java.nio.charset.StandardCharsets.UTF_8));
+            assertNull(read(id).resultHash());
+        }
+        assertEquals(0, count("qs_subset_outbox"));
     }
 
     @Test
@@ -478,6 +590,42 @@ class SubsetReplicationIntegrationTest {
     private SubsetReplicationService replication(String site) {
         return new SubsetReplicationService(mapper, json, new ReplicationPeers(A + "," + B + "," + C),
                 Validation.buildDefaultValidatorFactory().getValidator(), site);
+    }
+
+    private void legacyQueryStore() throws Exception {
+        sql("DROP TABLE qs_queries");
+        sql("CREATE TABLE qs_queries (id VARCHAR(36) PRIMARY KEY DEFAULT UUID(), created DATETIME NOT NULL DEFAULT NOW(), "
+                + "executed DATETIME NOT NULL DEFAULT NOW(), created_by VARCHAR(36), query TEXT NOT NULL, "
+                + "query_normalized TEXT NOT NULL, is_persisted BOOLEAN NOT NULL, query_hash VARCHAR(255) NOT NULL, "
+                + "result_hash VARCHAR(255), result_number BIGINT) WITH SYSTEM VERSIONING");
+    }
+
+    private UUID legacyHistoricalSubset() throws Exception {
+        database.setCreationLocation(null);
+        database.setReplicaUrls(Map.of());
+        legacyQueryStore();
+        final UUID id = UUID.randomUUID();
+        try (Connection connection = connect(); Statement statement = connection.createStatement()) {
+            statement.execute("CREATE TABLE legacy_data(id INT PRIMARY KEY,value VARCHAR(32)) WITH SYSTEM VERSIONING");
+            statement.execute("SET timestamp=1609459200");
+            statement.execute("INSERT INTO legacy_data VALUES(1,'Original_A')");
+            statement.execute("SET timestamp=1609459210.100000");
+            statement.execute("INSERT INTO legacy_data VALUES(2,'Original_B')");
+            // The old DATETIME column lost fractions; query_normalized still records the actual selection time.
+            try (var insert = connection.prepareStatement("INSERT INTO qs_queries VALUES "
+                    + "(?, '2021-01-01 00:00:10', '2021-01-01 00:00:10', 'legacy-user', ?, ?, TRUE, 'old-query-hash', 'old-result-hash', 2)")) {
+                insert.setString(1, id.toString());
+                insert.setString(2, "SELECT id,value FROM legacy_data ORDER BY id");
+                insert.setString(3, "SELECT id,value FROM legacy_data FOR SYSTEM_TIME AS OF TIMESTAMP '2021-01-01 00:00:10.123456' ORDER BY id");
+                insert.executeUpdate();
+            }
+            statement.execute("SET timestamp=1609459211");
+            statement.execute("UPDATE legacy_data SET value='Changed' WHERE id=1");
+            statement.execute("DELETE FROM legacy_data WHERE id=2");
+        }
+        service.upgradeQueryStore(database);
+        service.upgradeQueryStore(database);
+        return id;
     }
 
 

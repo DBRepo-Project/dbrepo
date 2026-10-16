@@ -14,6 +14,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.SubsetType;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
+import at.ac.tuwien.ifs.dbrepo.core.replication.ReplicationSites;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
@@ -342,6 +343,15 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
 
     @Override
     public String executionQuery(Database database, Subset subset) throws SQLException {
+        // Pre-replication subsets can still use their original native history, but only on the local primary.
+        if (subset.getExecutionContext() == null && subset.getCreationLocation() == null
+                && Long.valueOf(0).equals(subset.getReplicationRevision())
+                && database.getId().equals(subset.getDatabaseId())
+                && !ReplicationSites.isReplica(database.getCreationLocation(), subsetReplication.localSite())
+                && (subset.getResultHash() == null || !subset.getResultHash().startsWith("v2:"))
+                && subset.getQueryNormalized() != null && !subset.getQueryNormalized().isBlank()) {
+            return subset.getQueryNormalized();
+        }
         final var pool = getDataSource(database);
         try (Connection c = pool.getConnection()) {
             return SubsetHistory.replay(c, database, subset.getCreationLocation(), subset.getExecution(),
