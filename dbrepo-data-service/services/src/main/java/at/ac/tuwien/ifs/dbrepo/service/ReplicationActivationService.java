@@ -150,16 +150,32 @@ public class ReplicationActivationService extends DataConnector {
     }
 
     private Mutation lock(Database database, Table table, boolean exclusive) throws SQLException {
+        try {
+            return lockOnce(database, table, exclusive, false);
+        } catch (SQLException e) {
+            if (e.getErrorCode() != 1146 || !"42S02".equals(e.getSQLState())) throw e;
+            final Database refreshed;
+            try {
+                refreshed = metadata.refreshDatabase(database.getId());
+            } catch (Exception unavailable) {
+                throw new SQLException("Cannot recover activation state without current replication metadata", unavailable);
+            }
+            return lockOnce(refreshed, table, exclusive, true);
+        }
+    }
+
+    private Mutation lockOnce(Database database, Table table, boolean exclusive, boolean repair) throws SQLException {
         Connection connection = null;
         try {
             final var container = database.getContainer();
             connection = DriverManager.getConnection(getJdbcUrl(container, database.getInternalName()),
                     container.getUsername(), container.getPassword());
-            if (!initialized.contains(database.getId())) {
+            if (repair || !initialized.contains(database.getId())) {
                 try (Statement statement = connection.createStatement()) {
                     statement.execute("CREATE TABLE IF NOT EXISTS replication_activation "
                             + "(id TINYINT PRIMARY KEY, enabled BOOLEAN NOT NULL DEFAULT FALSE) ENGINE=InnoDB");
-                    statement.executeUpdate("INSERT IGNORE INTO replication_activation (id) VALUES (1)");
+                    statement.executeUpdate("INSERT IGNORE INTO replication_activation (id, enabled) VALUES (1, "
+                            + (database.getReplicaUrls() != null && !database.getReplicaUrls().isEmpty()) + ")");
                 }
                 initialized.add(database.getId());
             }

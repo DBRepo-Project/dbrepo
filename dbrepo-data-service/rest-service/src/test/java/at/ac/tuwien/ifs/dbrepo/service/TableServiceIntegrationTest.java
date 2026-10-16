@@ -51,6 +51,9 @@ public class TableServiceIntegrationTest extends BaseTest {
     @MockitoBean
     private StorageService storageService;
 
+    @MockitoBean
+    private MetadataService metadataService;
+
     @Autowired
     private TableService tableService;
 
@@ -58,7 +61,10 @@ public class TableServiceIntegrationTest extends BaseTest {
     private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
 
     @BeforeEach
-    public void beforeEach() throws SQLException {
+    public void beforeEach() throws Exception {
+        when(metadataService.refreshDatabase(DATABASE_1_ID)).thenReturn(DATABASE_1_CACHE);
+        when(metadataService.refreshDatabase(DATABASE_2_ID)).thenReturn(DATABASE_2_CACHE);
+        when(metadataService.refreshDatabase(DATABASE_3_ID)).thenReturn(DATABASE_3_CACHE);
         /* metadata database */
         MariaDbUtil.dropDatabase(CONTAINER_1_CACHE, DATABASE_1_INTERNAL_NAME);
         MariaDbUtil.dropDatabase(CONTAINER_1_CACHE, DATABASE_2_INTERNAL_NAME);

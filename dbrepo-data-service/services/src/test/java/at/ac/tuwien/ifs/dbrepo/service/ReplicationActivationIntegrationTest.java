@@ -112,6 +112,53 @@ class ReplicationActivationIntegrationTest {
     }
 
     @Test
+    void sameServiceRecoversWhenAnUnreplicatedDatabaseIsRecreated() throws Exception {
+        try (var mutation = activation.beginMutation(staleDatabase, staleTable)) {
+            assertEquals(staleDatabase.getId(), mutation.database().getId());
+        }
+        try (Connection connection = connection(); Statement sql = connection.createStatement()) {
+            sql.execute("DROP DATABASE " + SCHEMA);
+            sql.execute("CREATE DATABASE " + SCHEMA);
+        }
+        try (var mutation = activation.beginMutation(staleDatabase, staleTable)) {
+            assertEquals(staleDatabase.getId(), mutation.database().getId());
+        }
+    }
+
+    @Test
+    void recoveringTheActivationTableKeepsReplicationEnabledAndReloadsStaleMetadata() throws Exception {
+        activation.activate(staleDatabase.getId(), TARGET);
+        try (Connection connection = connection(); Statement sql = connection.createStatement()) {
+            sql.execute("DROP TABLE replication_activation");
+        }
+        try (var mutation = activation.beginMutation(staleDatabase, staleTable)) {
+            assertEquals(currentTable.get().getColumns(), mutation.table().getColumns());
+        }
+        try (Connection connection = connection(); Statement sql = connection.createStatement();
+             ResultSet row = sql.executeQuery("SELECT enabled FROM replication_activation WHERE id=1")) {
+            assertTrue(row.next());
+            assertTrue(row.getBoolean(1));
+        }
+    }
+
+    @Test
+    void missingActivationStateAndUnavailableMetadataCannotEnableRawWrites() throws Exception {
+        activation.activate(staleDatabase.getId(), TARGET);
+        try (Connection connection = connection(); Statement sql = connection.createStatement()) {
+            sql.execute("DROP TABLE replication_activation");
+        }
+        when(metadata.refreshDatabase(staleDatabase.getId()))
+                .thenThrow(new at.ac.tuwien.ifs.dbrepo.core.exception.RemoteUnavailableException("offline"));
+        final var before = history(true);
+        for (int attempt = 0; attempt < 2; attempt++) {
+            assertThrows(SQLException.class, () -> tables.createTuple(staleDatabase, staleTable,
+                    TupleDto.builder().data(new LinkedHashMap<>(Map.of("sample_value", 99))).build()));
+        }
+        assertEquals(before, history(true));
+        verifyNoInteractions(dispatcher);
+    }
+
+    @Test
     void activationWaitsForInFlightCsvAndStaleCrudRequestsJournalEveryChangedTuple() throws Exception {
         final CountDownLatch parsing = new CountDownLatch(1), finishParsing = new CountDownLatch(1);
         final Dataset<Row> dataset = mock(Dataset.class);
