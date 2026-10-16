@@ -7,14 +7,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.Instant;
 import java.util.Calendar;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -38,7 +41,21 @@ class ReplicationTimestampServiceMariaDbUnitTest {
     void setup() throws Exception {
         doReturn(pool).when(service).getDataSource(any(Database.class));
         when(pool.getConnection()).thenReturn(connection);
-        when(connection.getAutoCommit()).thenReturn(true);
+        final var autoCommit = new AtomicBoolean(true);
+        when(connection.getAutoCommit()).thenAnswer(ignored -> autoCommit.get());
+        doAnswer(invocation -> {
+            autoCommit.set(invocation.getArgument(0));
+            return null;
+        }).when(connection).setAutoCommit(anyBoolean());
+        when(connection.getCatalog()).thenReturn("test");
+        final var metadata = mock(DatabaseMetaData.class);
+        when(connection.getMetaData()).thenReturn(metadata);
+        when(metadata.getColumns("test", null, "tuple_replication_timestamps", "master_site_ts"))
+                .thenAnswer(ignored -> {
+                    final var columns = mock(ResultSet.class);
+                    when(columns.next()).thenReturn(true, false);
+                    return columns;
+                });
         when(connection.prepareStatement(anyString())).thenAnswer(invocation -> {
             final String sql = invocation.getArgument(0);
             if (sql.startsWith("CREATE")) {
@@ -50,18 +67,31 @@ class ReplicationTimestampServiceMariaDbUnitTest {
             if (sql.startsWith("SELECT")) {
                 final PreparedStatement query = mock(PreparedStatement.class);
                 final ResultSet result = mock(ResultSet.class);
-                final List<String> names = List.of("site_url", "replication_id", "database_id", "table_id", "row_start");
-                final int[] row = {-1};
-                when(result.next()).thenAnswer(ignored -> ++row[0] < names.size());
-                when(result.getString("COLUMN_NAME")).thenAnswer(ignored -> names.get(row[0]));
-                when(result.getString("ENGINE")).thenReturn("InnoDB");
-                when(result.getString("COLUMN_TYPE")).thenReturn("varchar(512)");
-                when(result.getString("CHARACTER_SET_NAME")).thenReturn("ascii");
-                when(result.getString("COLLATION_NAME")).thenReturn("ascii_bin");
+                if (sql.startsWith("SELECT GET_LOCK(") || sql.startsWith("SELECT RELEASE_LOCK(")) {
+                    when(result.next()).thenReturn(true, false);
+                    when(result.getInt(1)).thenReturn(1);
+                } else if (sql.contains("FROM information_schema.STATISTICS")) {
+                    final List<String> names = List.of("site_url", "replication_id", "database_id", "table_id", "row_start");
+                    final int[] row = {-1};
+                    when(result.next()).thenAnswer(ignored -> ++row[0] < names.size());
+                    when(result.getString("COLUMN_NAME")).thenAnswer(ignored -> names.get(row[0]));
+                    when(result.getString("ENGINE")).thenReturn("InnoDB");
+                    when(result.getString("COLUMN_TYPE")).thenReturn("varchar(512)");
+                    when(result.getString("CHARACTER_SET_NAME")).thenReturn("ascii");
+                    when(result.getString("COLLATION_NAME")).thenReturn("ascii_bin");
+                } else if (sql.startsWith("SELECT master_site_ts,visibility_start,row_end,visibility_end")) {
+                    when(result.next()).thenReturn(true, false);
+                    when(result.getTimestamp(eq(3), any(Calendar.class))).thenAnswer(ignored ->
+                            timestamp.getRowEnd() == null ? null : Timestamp.from(timestamp.getRowEnd()));
+                } else if (!sql.startsWith("SELECT row_start,visibility_start FROM tuple_replication_timestamps")) {
+                    throw new SQLException("Unexpected test query: " + sql);
+                }
                 when(query.executeQuery()).thenReturn(result);
                 return query;
             }
-            return sql.startsWith("UPDATE") ? close : merge;
+            if (sql.startsWith("UPDATE tuple_replication_timestamps")) return close;
+            if (sql.startsWith("INSERT INTO tuple_replication_timestamps")) return merge;
+            throw new SQLException("Unexpected test statement: " + sql);
         });
     }
 
@@ -80,13 +110,21 @@ class ReplicationTimestampServiceMariaDbUnitTest {
         verify(connection, never()).rollback();
         verify(connection).prepareStatement("SET SESSION time_zone = '+00:00'");
         verify(close).setTimestamp(eq(1), any(), argThat(ReplicationTimestampServiceMariaDbUnitTest::isUtc));
-        verify(close).setTimestamp(eq(6), any(), argThat(ReplicationTimestampServiceMariaDbUnitTest::isUtc));
         verify(close).setTimestamp(eq(7), any(), argThat(ReplicationTimestampServiceMariaDbUnitTest::isUtc));
+        verify(close).setTimestamp(eq(8), any(), argThat(ReplicationTimestampServiceMariaDbUnitTest::isUtc));
+        verify(close).setString(6, timestamp.getTableId().toString());
         verify(merge).setTimestamp(eq(5), any(), argThat(ReplicationTimestampServiceMariaDbUnitTest::isUtc));
-        verify(merge).setNull(6, Types.TIMESTAMP);
+        verify(merge, atLeastOnce()).setNull(6, Types.TIMESTAMP);
+    }
+
+    @Test
+    void rowEndUpdatesBindUtcWithoutClosingOtherIntervals() throws Exception {
         timestamp.setRowEnd(timestamp.getRowStart().plusSeconds(1));
         service.updateTimestampRowEnds(database, List.of(timestamp));
-        verify(merge).setTimestamp(eq(6), any(), argThat(ReplicationTimestampServiceMariaDbUnitTest::isUtc));
+        verify(merge, atLeastOnce()).setTimestamp(eq(6), eq(Timestamp.from(timestamp.getRowEnd())),
+                argThat(ReplicationTimestampServiceMariaDbUnitTest::isUtc));
+        verify(close, never()).executeUpdate();
+        verify(connection).commit();
     }
 
     @Test
@@ -122,6 +160,22 @@ class ReplicationTimestampServiceMariaDbUnitTest {
         verify(connection, never()).prepareStatement(anyString());
         verify(connection, never()).setAutoCommit(false);
         verify(connection, never()).commit();
+    }
+
+    @Test
+    void unavailableSchemaLockPreventsDdlAndDataChanges() throws Exception {
+        final var lock = mock(PreparedStatement.class);
+        final var result = mock(ResultSet.class);
+        when(result.next()).thenReturn(true);
+        when(result.getInt(1)).thenReturn(0);
+        when(lock.executeQuery()).thenReturn(result);
+        doReturn(lock).when(connection).prepareStatement(startsWith("SELECT GET_LOCK("));
+        assertThrows(SQLException.class, () -> service.saveTimestamps(database, List.of(timestamp)));
+        verifyNoInteractions(ddl, merge, close);
+        verify(connection, never()).setAutoCommit(false);
+        verify(connection, never()).commit();
+        verify(connection).close();
+        verify(pool).close();
     }
 
     @Test

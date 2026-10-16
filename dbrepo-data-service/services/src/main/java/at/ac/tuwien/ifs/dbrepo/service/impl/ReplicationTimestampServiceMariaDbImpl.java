@@ -92,6 +92,25 @@ public class ReplicationTimestampServiceMariaDbImpl extends DataConnector implem
         if (!connection.getAutoCommit()) {
             throw new SQLException("Timestamp schema initialization requires an auto-commit connection");
         }
+        // Keep concurrent initializers on this server out of Galera DDL during a schema upgrade.
+        try (var lock = connection.prepareStatement(
+                "SELECT GET_LOCK(SHA2(CONCAT(DATABASE(), ':timestamp-schema'),256),10)");
+             var row = lock.executeQuery()) {
+            if (!row.next() || row.getInt(1) != 1) {
+                throw new SQLException("Timed out locking timestamp schema initialization");
+            }
+        }
+        try {
+            initializeSchema(connection);
+        } finally {
+            try (var unlock = connection.prepareStatement(
+                    "SELECT RELEASE_LOCK(SHA2(CONCAT(DATABASE(), ':timestamp-schema'),256))")) {
+                unlock.execute();
+            }
+        }
+    }
+
+    private void initializeSchema(Connection connection) throws SQLException {
         final String statement = """
                 CREATE TABLE IF NOT EXISTS tuple_replication_timestamps (
                     site_url       VARCHAR(512) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,

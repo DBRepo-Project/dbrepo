@@ -230,6 +230,62 @@ class ReplicationTimestampServiceMariaDbIntegrationTest {
     }
 
     @Test
+    void concurrentSchemaInitializersWaitBeforeIssuingDdl() throws Exception {
+        sql(LEGACY_SCHEMA.replace("site_url TEXT", "site_url VARCHAR(512) CHARACTER SET ascii COLLATE ascii_bin")
+                .replace("site_url(255), replication_id, row_start", "site_url, replication_id, database_id, table_id, row_start"));
+        final var altering = new CountDownLatch(1);
+        final var finish = new CountDownLatch(1);
+        final var attempting = new CountDownLatch(1);
+        try (var first = connection(); var second = connection(); var executor = Executors.newFixedThreadPool(2)) {
+            final var migrating = spy(first);
+            final var statement = spy(first.createStatement());
+            doReturn(statement).when(migrating).createStatement();
+            doAnswer(invocation -> {
+                altering.countDown();
+                assertTrue(finish.await(10, TimeUnit.SECONDS));
+                return invocation.callRealMethod();
+            }).when(statement).execute(startsWith("ALTER TABLE tuple_replication_timestamps ADD COLUMN"));
+            final var initial = executor.submit(() -> {
+                service.ensureTableExists(migrating);
+                return null;
+            });
+            try {
+                assertTrue(altering.await(10, TimeUnit.SECONDS));
+                final var concurrent = executor.submit(() -> {
+                    attempting.countDown();
+                    service.ensureTableExists(second);
+                    return null;
+                });
+                try {
+                    assertTrue(attempting.await(5, TimeUnit.SECONDS));
+                    assertThrows(java.util.concurrent.TimeoutException.class,
+                            () -> concurrent.get(250, TimeUnit.MILLISECONDS));
+                } finally {
+                    finish.countDown();
+                    concurrent.get(10, TimeUnit.SECONDS);
+                }
+            } finally {
+                finish.countDown();
+                initial.get(10, TimeUnit.SECONDS);
+            }
+        }
+        service.saveTimestamps(database, List.of(timestamp("after-migration", START, END)));
+        assertEquals(END, end("after-migration", START));
+    }
+
+    @Test
+    void failedSchemaInitializationDoesNotBlockAnotherConnection() throws Exception {
+        sql(LEGACY_SCHEMA.replace("site_url(255), replication_id, row_start", "replication_id"));
+        try (var failed = connection()) {
+            assertThrows(SQLException.class, () -> service.ensureTableExists(failed));
+            sql("DROP TABLE tuple_replication_timestamps");
+            sql(LEGACY_SCHEMA);
+            service.saveTimestamps(database, List.of(timestamp("after-failure", START, END)));
+            assertEquals(END, end("after-failure", START));
+        }
+    }
+
+    @Test
     void migratesFiveColumnPrefixKeyAndDistinguishesLongOriginsWithIdenticalPrefixes() throws Exception {
         sql(LEGACY_SCHEMA.replace("replication_id, row_start", "replication_id, database_id, table_id, row_start"));
         // Four valid DNS labels totaling 253 characters; both origins share their first 255 characters.
