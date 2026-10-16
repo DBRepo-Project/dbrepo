@@ -50,6 +50,8 @@ import java.util.UUID;
 @RequestMapping(path = "/api/v1/database/{databaseId}/table")
 public class TableEndpoint {
 
+    public static final String AMQP_USER_HEADER = "X-DBRepo-AMQP-User";
+
     private final DataService dataService;
     private final TableService tableService;
     private final MariaDbMapper mariaDbMapper;
@@ -344,7 +346,7 @@ public class TableEndpoint {
     }
 
     @PostMapping("/{tableId}/data")
-    @PreAuthorize("hasAuthority('insert-table-data')")
+    @PreAuthorize("hasAuthority('insert-table-data') or hasAuthority('system')")
     @Observed(name = "dbrepo_table_data_create")
     @Operation(summary = "Insert tuple",
             description = "Inserts a data tuple into a table, then the table statistics are updated. The user needs to have at least *WRITE_OWN* access to the associated database. Requires role `insert-table-data`.",
@@ -368,6 +370,7 @@ public class TableEndpoint {
     public ResponseEntity<Void> insertRawTuple(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                @NotNull @PathVariable("tableId") UUID tableId,
                                                @Valid @RequestBody TupleDto data,
+                                               @RequestHeader(value = AMQP_USER_HEADER, required = false) String amqpUsername,
                                                Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             TableMalformedException, QueryMalformedException, NotAllowedException, StorageUnavailableException,
@@ -375,7 +378,15 @@ public class TableEndpoint {
         log.debug("endpoint insert raw table data, databaseId={}, tableId={}", databaseId, tableId);
         final Table table = metadataService.getTable(databaseId, tableId);
         final Database database = metadataService.getDatabase(databaseId);
-        endpointValidator.validateOnlyWriteAccess(database, table, principal);
+        if (AuthUtil.isSystem(principal)) {
+            if (amqpUsername == null || amqpUsername.isBlank()) {
+                log.error("Failed to insert raw table data: missing {}", AMQP_USER_HEADER);
+                throw new NotAllowedException("Missing AMQP user");
+            }
+            endpointValidator.validateOnlyWriteAccess(database, table, amqpUsername);
+        } else {
+            endpointValidator.validateOnlyWriteAccess(database, table, principal);
+        }
         try {
             tableService.createTuple(database, table, data);
             return ResponseEntity.status(HttpStatus.CREATED)
