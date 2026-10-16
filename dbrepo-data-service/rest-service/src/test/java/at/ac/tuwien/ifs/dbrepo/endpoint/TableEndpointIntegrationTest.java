@@ -33,6 +33,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -106,9 +107,9 @@ public class TableEndpointIntegrationTest extends BaseTest {
         assertNotNull(body);
         assertEquals(3, body.size());
         assertEquals(List.of(1, 2, 3), body.stream().map(row -> (Integer) row.get("id")).toList());
-        assertEquals(Map.of("id", 1, "date", "2008-12-01", "location", "Albury", "mintemp", 13.4, "rainfall", 0.6), body.get(0));
-        assertEquals(Map.of("id", 2, "date", "2008-12-02", "location", "Albury", "mintemp", 7.4, "rainfall", 0.0), body.get(1));
-        assertEquals(Map.of("id", 3, "date", "2008-12-03", "location", "Albury", "mintemp", 12.9, "rainfall", 0.0), body.get(2));
+        assertEquals(Map.of("id", 1, "date", "2008-12-01", "location", "Albury", "mintemp", new BigDecimal("13.4"), "rainfall", new BigDecimal("0.6")), body.get(0));
+        assertEquals(Map.of("id", 2, "date", "2008-12-02", "location", "Albury", "mintemp", new BigDecimal("7.4"), "rainfall", new BigDecimal("0.0")), body.get(1));
+        assertEquals(Map.of("id", 3, "date", "2008-12-03", "location", "Albury", "mintemp", new BigDecimal("12.9"), "rainfall", new BigDecimal("0.0")), body.get(2));
     }
 
     @Test
@@ -131,9 +132,9 @@ public class TableEndpointIntegrationTest extends BaseTest {
         assertNotNull(body);
         assertEquals(3, body.size());
         assertEquals(List.of(3, 2, 1), body.stream().map(row -> (Integer) row.get("id")).toList());
-        assertEquals(Map.of("id", 3, "date", "2008-12-03", "location", "Albury", "mintemp", 12.9, "rainfall", 0.0), body.get(0));
-        assertEquals(Map.of("id", 2, "date", "2008-12-02", "location", "Albury", "mintemp", 7.4, "rainfall", 0.0), body.get(1));
-        assertEquals(Map.of("id", 1, "date", "2008-12-01", "location", "Albury", "mintemp", 13.4, "rainfall", 0.6), body.get(2));
+        assertEquals(Map.of("id", 3, "date", "2008-12-03", "location", "Albury", "mintemp", new BigDecimal("12.9"), "rainfall", new BigDecimal("0.0")), body.get(0));
+        assertEquals(Map.of("id", 2, "date", "2008-12-02", "location", "Albury", "mintemp", new BigDecimal("7.4"), "rainfall", new BigDecimal("0.0")), body.get(1));
+        assertEquals(Map.of("id", 1, "date", "2008-12-01", "location", "Albury", "mintemp", new BigDecimal("13.4"), "rainfall", new BigDecimal("0.6")), body.get(2));
     }
 
     @Test
