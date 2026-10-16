@@ -328,6 +328,54 @@ class TupleReplicationJournalIntegrationTest {
         return c;
     }
 
+    @Test
+    void concurrentJournalInitializersWaitBeforeIssuingDdl() throws Exception {
+        final var creating = new CountDownLatch(1);
+        final var finish = new CountDownLatch(1);
+        final var attempting = new CountDownLatch(1);
+        try (var first = connection(); var second = connection(); var executor = Executors.newFixedThreadPool(2)) {
+            final var migrating = spy(first);
+            doAnswer(invocation -> {
+                final var statement = spy(first.prepareStatement(invocation.getArgument(0)));
+                doAnswer(execution -> {
+                    creating.countDown();
+                    assertTrue(finish.await(10, TimeUnit.SECONDS));
+                    return execution.callRealMethod();
+                }).when(statement).executeUpdate();
+                return statement;
+            }).when(migrating).prepareStatement(startsWith("CREATE TABLE IF NOT EXISTS " + OUTBOX));
+            final var initial = executor.submit(() -> {
+                service.ensureTableExists(migrating);
+                return null;
+            });
+            try {
+                assertTrue(creating.await(10, TimeUnit.SECONDS));
+                final var concurrent = executor.submit(() -> {
+                    attempting.countDown();
+                    service.ensureTableExists(second);
+                    return null;
+                });
+                try {
+                    assertTrue(attempting.await(5, TimeUnit.SECONDS));
+                    assertThrows(TimeoutException.class, () -> concurrent.get(250, TimeUnit.MILLISECONDS));
+                } finally {
+                    finish.countDown();
+                    concurrent.get(10, TimeUnit.SECONDS);
+                }
+            } finally {
+                finish.countDown();
+                initial.get(10, TimeUnit.SECONDS);
+            }
+        }
+        try (var connection = prepared()) {
+            assertEquals(0, service.readJournalState(connection).committedThrough());
+            connection.setAutoCommit(false);
+            enqueue(connection);
+            connection.commit();
+            assertEquals(1, service.readJournalState(connection).committedThrough());
+        }
+    }
+
     private Connection connection() throws SQLException {
         final Connection c = DriverManager.getConnection(URL + SCHEMA, "root", password());
         sql(c, "SET SESSION innodb_lock_wait_timeout=5");

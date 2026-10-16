@@ -350,7 +350,7 @@ class IngestReplicationMariaDbIntegrationTest {
         assertNoStagingTables();
     }
 
-    @Test
+    @RepeatedTest(5)
     void concurrentImportsOfTheSameUniqueKeyRetainOneIdentity() throws Exception {
         importConcurrently(csv("sample_value,payload,amount\n1,first,1\n"),
                 csv("sample_value,payload,amount\n1,second,2\n"));

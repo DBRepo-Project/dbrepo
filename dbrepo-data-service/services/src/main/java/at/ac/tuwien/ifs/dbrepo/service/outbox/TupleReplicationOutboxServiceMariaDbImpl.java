@@ -418,7 +418,30 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
         if (!connection.getAutoCommit()) {
             throw new SQLException("Prepare source journal schema before starting a transaction");
         }
-        if ("MariaDB".equals(connection.getMetaData().getDatabaseProductName())) TupleVersionHistory.prepare(connection, null);
+        final boolean mariaDb = "MariaDB".equals(connection.getMetaData().getDatabaseProductName());
+        if (!mariaDb) {
+            initializeSchema(connection, false);
+            return;
+        }
+        try (var lock = connection.prepareStatement(
+                "SELECT GET_LOCK(SHA2(CONCAT(DATABASE(), ':journal-schema'),256),10)");
+             var row = lock.executeQuery()) {
+            if (!row.next() || row.getInt(1) != 1) {
+                throw new SQLException("Timed out locking source journal schema initialization");
+            }
+        }
+        try {
+            initializeSchema(connection, true);
+        } finally {
+            try (var unlock = connection.prepareStatement(
+                    "SELECT RELEASE_LOCK(SHA2(CONCAT(DATABASE(), ':journal-schema'),256))")) {
+                unlock.execute();
+            }
+        }
+    }
+
+    private void initializeSchema(Connection connection, boolean mariaDb) throws SQLException {
+        if (mariaDb) TupleVersionHistory.prepare(connection, null);
         try (ResultSet tables = connection.getMetaData().getTables(connection.getCatalog(), null, COUNTER_TABLE, null)) {
             if (tables.next()) {
                 try (PreparedStatement ready = connection.prepareStatement("SELECT initialized FROM " + COUNTER_TABLE
@@ -473,7 +496,7 @@ public class TupleReplicationOutboxServiceMariaDbImpl extends DataConnector impl
                 + " initialized BOOLEAN NOT NULL) ENGINE=InnoDB")) {
             counter.executeUpdate();
         }
-        if ("MariaDB".equals(connection.getMetaData().getDatabaseProductName())) {
+        if (mariaDb) {
             try (PreparedStatement engines = connection.prepareStatement("SELECT TABLE_NAME, ENGINE FROM information_schema.TABLES"
                     + " WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME IN (?, ?)")) {
                 engines.setString(1, TABLE_NAME);
