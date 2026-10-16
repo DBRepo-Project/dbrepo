@@ -25,8 +25,8 @@
                 item-title="qualified_name"
                 single-line
                 persistent-hint
-                :label="$t('pages.database.subpages.access.username.label')"
-                :hint="$t('pages.database.subpages.access.username.hint')" />
+                :label="$t('pages.database.subpages.access.qualifiedname.label')"
+                :hint="$t('pages.database.subpages.access.qualifiedname.hint')" />
             </v-col>
           </v-row>
           <v-row>

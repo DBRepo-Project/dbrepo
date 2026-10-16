@@ -704,8 +704,8 @@
           "revoke": "No access",
           "action": "Action",
           "grants": "Grants",
-          "username": {
-            "label": "Username",
+          "qualifiedname": {
+            "label": "Qualified Name",
             "hint": "Required"
           },
           "type": {
