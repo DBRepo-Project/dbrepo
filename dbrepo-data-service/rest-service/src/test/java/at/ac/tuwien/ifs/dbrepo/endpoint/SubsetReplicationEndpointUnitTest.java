@@ -19,9 +19,11 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.Instant;
+import java.sql.SQLException;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -57,6 +59,10 @@ class SubsetReplicationEndpointUnitTest {
                 .andExpect(status().isNoContent());
         verify(service).replicate(database, state);
         assertThrows(AccessDeniedException.class, () -> endpoint.upgradeQueryStore(id));
+        final var failure = new SQLException("receive failed");
+        doThrow(failure).when(service).replicate(database, state);
+        assertSame(failure, assertThrows(at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseUnavailableException.class,
+                () -> endpoint.replicate(id, state)).getCause());
     }
 
     @Test

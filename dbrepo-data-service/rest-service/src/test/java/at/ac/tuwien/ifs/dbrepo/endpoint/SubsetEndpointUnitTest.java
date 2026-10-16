@@ -150,6 +150,16 @@ public class SubsetEndpointUnitTest extends BaseTest {
     }
 
     @Test
+    @WithMockUser(authorities = "system")
+    void queryStoreUpgradeTranslatesSqlFailuresWithoutHidingTheirCause() throws Exception {
+        when(metadataService.getDatabase(DATABASE_3_ID)).thenReturn(DATABASE_3_CACHE);
+        final var failure = new SQLException("upgrade failed");
+        doThrow(failure).when(subsetService).upgradeQueryStore(DATABASE_3_CACHE);
+        assertSame(failure, assertThrows(DatabaseUnavailableException.class,
+                () -> subsetEndpoint.upgradeQueryStore(DATABASE_3_ID)).getCause());
+    }
+
+    @Test
     @WithMockUser(authorities = "replication")
     void replicationCredentialCannotUpgradeQueryStores() {
         assertThrows(org.springframework.security.access.AccessDeniedException.class,

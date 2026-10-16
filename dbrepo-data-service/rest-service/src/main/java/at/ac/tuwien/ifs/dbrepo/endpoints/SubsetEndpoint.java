@@ -74,19 +74,37 @@ public class SubsetEndpoint {
     @PostMapping("/maintenance/upgrade")
     @PreAuthorize("hasAuthority('system')")
     @Operation(summary = "Upgrade query-store schema and routines", hidden = true)
-    public ResponseEntity<Void> upgradeQueryStore(@PathVariable UUID databaseId) throws SQLException,
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Upgraded query store"),
+            @ApiResponse(responseCode = "404", description = "Database not found", content = {@Content}),
+            @ApiResponse(responseCode = "503", description = "Metadata service or data database unavailable", content = {@Content})
+    })
+    public ResponseEntity<Void> upgradeQueryStore(@PathVariable UUID databaseId) throws DatabaseUnavailableException,
             DatabaseNotFoundException, RemoteUnavailableException, MetadataServiceException {
-        subsetService.upgradeQueryStore(metadataService.getDatabase(databaseId));
+        try {
+            subsetService.upgradeQueryStore(metadataService.getDatabase(databaseId));
+        } catch (SQLException e) {
+            throw new DatabaseUnavailableException("Failed to upgrade query store", e);
+        }
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/replicate")
     @PreAuthorize("hasAuthority('replication')")
     @Operation(summary = "Receive canonical subset state", hidden = true)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Received canonical subset state"),
+            @ApiResponse(responseCode = "404", description = "Database not found", content = {@Content}),
+            @ApiResponse(responseCode = "503", description = "Metadata service or data database unavailable", content = {@Content})
+    })
     public ResponseEntity<Void> replicate(@PathVariable UUID databaseId,
-                                           @Valid @RequestBody SubsetReplicationDto subset) throws SQLException,
+                                           @Valid @RequestBody SubsetReplicationDto subset) throws DatabaseUnavailableException,
             DatabaseNotFoundException, RemoteUnavailableException, MetadataServiceException {
-        subsetService.replicate(metadataService.getDatabase(databaseId), subset);
+        try {
+            subsetService.replicate(metadataService.getDatabase(databaseId), subset);
+        } catch (SQLException e) {
+            throw new DatabaseUnavailableException("Failed to receive canonical subset state", e);
+        }
         return ResponseEntity.noContent().build();
     }
 
