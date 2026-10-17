@@ -4,6 +4,7 @@ import at.ac.tuwien.ifs.dbrepo.config.RedisContainerConfig;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.service.SubsetService;
+import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,6 +23,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @Slf4j
 @ExtendWith(SpringExtension.class)
@@ -33,6 +35,9 @@ public class SubsetEndpointMvcTest extends BaseTest {
 
     @MockitoBean
     private MetadataServiceGateway metadataServiceGateway;
+
+    @MockitoBean
+    private MetadataService metadataService;
 
     @MockitoBean
     private SubsetService subsetService;
@@ -47,7 +52,7 @@ public class SubsetEndpointMvcTest extends BaseTest {
     public void findById_privateDataPublicSchema_jsonAcceptHeader_succeeds() throws Exception {
 
         /* mock */
-        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
+        when(metadataService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
         when(subsetService.findById(DATABASE_3_CACHE, QUERY_5_ID))
                 .thenReturn(QUERY_5_CACHE);
@@ -63,7 +68,9 @@ public class SubsetEndpointMvcTest extends BaseTest {
     public void findById_publicDataPublicSchema_jsonAcceptHeader_succeeds() throws Exception {
 
         /* mock */
-        when(metadataServiceGateway.getDatabaseById(DATABASE_4_ID))
+        QUERY_5_CACHE.setId(QUERY_7_ID);
+        QUERY_5_CACHE.setDatabaseId(DATABASE_4_ID);
+        when(metadataService.getDatabase(DATABASE_4_ID))
                 .thenReturn(DATABASE_4_CACHE);
         when(subsetService.findById(DATABASE_4_CACHE, QUERY_7_ID))
                 .thenReturn(QUERY_5_CACHE);
@@ -72,7 +79,9 @@ public class SubsetEndpointMvcTest extends BaseTest {
         this.mockMvc.perform(get("/api/v1/database/" + DATABASE_4_ID + "/subset/" + QUERY_7_ID)
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(QUERY_7_ID.toString()))
+                .andExpect(jsonPath("$.database_id").value(DATABASE_4_ID.toString()));
     }
 
 }
