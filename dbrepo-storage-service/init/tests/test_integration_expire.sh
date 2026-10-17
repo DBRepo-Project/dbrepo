@@ -49,12 +49,13 @@ function clean () {
 
 function run_init () {
   echo "[DEBUG] Starting storage init container ..."
-  docker $DOCKER_OPTS compose up -d --build --force-recreate dbrepo-storage-service-init
+  docker $DOCKER_OPTS compose up -d --no-build --force-recreate dbrepo-storage-service-init || exit 1
   wait_for_init
 }
 
 # BeforeAll
 clean
+docker buildx bake -f docker-compose.yml --allow=network.host --load dbrepo-storage-service-init || exit 1
 cat <<EOF > .s3cfg
 access_key = ${S3_ACCESS_KEY_ID}
 secret_key = ${S3_SECRET_ACCESS_KEY}

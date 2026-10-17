@@ -3,7 +3,7 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [main, master, dev, 'release-*']
+    branches: [main, master, dev, 'release-*', 'integration/replication']
 
 permissions:
   contents: read
@@ -31,7 +31,8 @@ jobs:
           sudo chmod +x /usr/local/bin/yq
       - name: Check compose parity
         run: |
-          diff <(yq '.volumes' docker-compose.yml) <(yq '.volumes' .docker/docker-compose.yml)
+          # The optional local TLS proxy is not part of the packaged distribution.
+          diff <(yq '.volumes | del(.edge-service-data, .edge-service-config)' docker-compose.yml) <(yq '.volumes' .docker/docker-compose.yml)
           IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-auth-db
           IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-auth-service
           IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh dbrepo-broker-service
@@ -151,7 +152,7 @@ jobs:
           bun run --cwd ./dbrepo-ui build
       - name: Run UI smoke test
         run: |
-          docker compose build dbrepo-ui
+          docker buildx bake -f docker-compose.yml --allow=network.host --load dbrepo-ui
           docker run --name dbrepo-ui -e NODE_OPTIONS=--max_old_space_size=256 -p 3000:3000 -d dbrepo-ui:latest
           sleep 30
           ENDPOINT=http://localhost:3000 bash ./dbrepo-ui/tests/test_heap.sh
@@ -205,7 +206,7 @@ jobs:
           bash ./.scripts/build-java-lib.sh
           bash ./.scripts/build-python-lib.sh
           bash ./.scripts/prepare-duckdb-extensions.sh
-          docker compose build
+          docker buildx bake -f docker-compose.yml --allow=network.host --load
           make build-jupyter-image
       - name: Push SHA-tagged images to GHCR
         run: |
