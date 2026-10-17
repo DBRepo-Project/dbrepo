@@ -73,8 +73,8 @@ dependencies:
     condition: storageservice.enabled
   - name: grafana
     alias: dashboardui
-    version: 11.4.2
-    repository: oci://registry-1.docker.io/bitnamicharts
+    version: 8.15.0
+    repository: https://grafana-community.github.io/helm-charts
     condition: dashboardui.enabled
   - name: prometheus
     alias: metricdb

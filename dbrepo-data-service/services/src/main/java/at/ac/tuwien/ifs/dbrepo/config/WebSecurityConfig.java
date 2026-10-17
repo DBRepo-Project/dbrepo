@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.ObjectPostProcessor;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -18,6 +19,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.server.resource.authentication.ExpressionJwtGrantedAuthoritiesConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.header.HeaderWriterFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 
@@ -58,6 +60,15 @@ public class WebSecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable);
         /* set session management to stateless */
         http.sessionManagement(configurer -> configurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        /* write security headers before the request is handled, streamed data responses are committed on another
+           thread while this filter returns */
+        http.headers(configurer -> configurer.addObjectPostProcessor(new ObjectPostProcessor<HeaderWriterFilter>() {
+            @Override
+            public <O extends HeaderWriterFilter> O postProcess(O filter) {
+                filter.setShouldWriteHeadersEagerly(true);
+                return filter;
+            }
+        }));
         /* set unauthorized requests exception handler */
         http.exceptionHandling(configurer -> configurer.authenticationEntryPoint((request, response, ex) -> {
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED,

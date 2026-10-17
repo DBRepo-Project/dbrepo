@@ -458,12 +458,11 @@ mqtt.prefetch = 10
 
 ### Dashboard UI
 
-| Name                               | Description                         | Value                      |
-| ---------------------------------- | ----------------------------------- | -------------------------- |
-| `dashboardui.enabled`              | Enable the Dashboard UI.            | `true`                     |
-| `dashboardui.metrics.enabled`      | Enable the metrics sidecar.         | `true`                     |
-| `dashboardui.endpoint`             | The endpoint for the microservices. | `http://dashboard-ui:3000` |
-| `dashboardui.grafana.replicaCount` | The number of replicas.             | `2`                        |
+| Name                   | Description                         | Value                      |
+| ---------------------- | ----------------------------------- | -------------------------- |
+| `dashboardui.enabled`  | Enable the Dashboard UI.            | `true`                     |
+| `dashboardui.endpoint` | The endpoint for the microservices. | `http://dashboard-ui:3000` |
+| `dashboardui.replicas` | The number of replicas.             | `2`                        |
 
 ### Metric Service
 
