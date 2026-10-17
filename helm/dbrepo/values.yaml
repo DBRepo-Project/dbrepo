@@ -1140,6 +1140,10 @@ ui:
   ##     memory: 1024Mi
   ## @skip ui.resources
   public:
+    ## @param ui.public.version Override the version label embedded in the UI image.
+    version: ""
+    ## @param ui.public.commit Override the commit label embedded in the UI image.
+    commit: ""
     about:
       ## @param ui.public.about.content The content of the /about page. If not empty, the page will be displayed and markdown content will be rendered.
       content: ""
