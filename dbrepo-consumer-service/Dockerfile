@@ -1,5 +1,6 @@
 ###### FIRST STAGE ######
-FROM --platform=$BUILDPLATFORM maven:3-amazoncorretto-21 AS build
+# Keep the Boot classpath order verified by the packaged logging smoke test.
+FROM --platform=$BUILDPLATFORM maven:3.9.9-amazoncorretto-21 AS build
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
 COPY ./pom.xml ./
