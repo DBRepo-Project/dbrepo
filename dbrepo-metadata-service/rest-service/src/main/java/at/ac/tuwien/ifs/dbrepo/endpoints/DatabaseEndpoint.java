@@ -657,6 +657,13 @@ public class DatabaseEndpoint extends RestEndpoint {
     @PreAuthorize("hasAuthority('system')")
     @Operation(summary = "Reconcile replica read-only access",
             description = "Revoke legacy local write privileges without changing owner mappings.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Reconciled replica access"),
+            @ApiResponse(responseCode = "403", description = "Replica access reconciliation is not allowed", content = {@Content}),
+            @ApiResponse(responseCode = "404", description = "Database not found", content = {@Content}),
+            @ApiResponse(responseCode = "502", description = "Connection to data or search service failed", content = {@Content}),
+            @ApiResponse(responseCode = "503", description = "Data or search service returned an error", content = {@Content})
+    })
     public ResponseEntity<Void> reconcileReplicationAccess(@PathVariable UUID databaseId) throws NotAllowedException,
             DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
@@ -669,6 +676,13 @@ public class DatabaseEndpoint extends RestEndpoint {
     @PreAuthorize("hasAuthority('system')")
     @Operation(summary = "Map a target replica owner to a local user",
             security = {@SecurityRequirement(name = "bearerAuth")})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202", description = "Mapped replica owner"),
+            @ApiResponse(responseCode = "403", description = "Replica owner mapping is not allowed", content = {@Content}),
+            @ApiResponse(responseCode = "404", description = "Database or local user not found", content = {@Content}),
+            @ApiResponse(responseCode = "502", description = "Connection to data or search service failed", content = {@Content}),
+            @ApiResponse(responseCode = "503", description = "Data or search service returned an error", content = {@Content})
+    })
     public ResponseEntity<ReplicationAccessDto> mapReplicationAccess(
             @NotNull @PathVariable("databaseId") UUID databaseId,
             @Valid @RequestBody ReplicationAccessMappingDto data) throws DatabaseNotFoundException,

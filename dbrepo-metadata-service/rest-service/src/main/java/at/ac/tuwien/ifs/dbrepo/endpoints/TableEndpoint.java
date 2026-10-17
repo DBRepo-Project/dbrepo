@@ -515,6 +515,13 @@ public class TableEndpoint extends RestEndpoint {
     @Observed(name = "dbrepo_table_delete_replica")
     @Operation(summary = "Delete replicated table", hidden = true,
             security = {@SecurityRequirement(name = "basicAuth")})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202", description = "Deleted replicated table"),
+            @ApiResponse(responseCode = "204", description = "Replica table was already deleted"),
+            @ApiResponse(responseCode = "404", description = "Database not found", content = {@Content}),
+            @ApiResponse(responseCode = "502", description = "Connection to a dependent service failed", content = {@Content}),
+            @ApiResponse(responseCode = "503", description = "A dependent service returned an error", content = {@Content})
+    })
     public ResponseEntity<Void> deleteReplica(@NotNull @PathVariable("databaseId") UUID databaseId,
                                               @NotNull @PathVariable("tableId") UUID tableId,
                                               @RequestParam(required = false) Instant archivedAt)
