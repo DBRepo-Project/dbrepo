@@ -18,5 +18,6 @@ if [ -z "$IGNORE_VOLUMES" ]; then
   compare "services.$1.volumes"
 fi
 if [ -z "$IGNORE_PORTS" ]; then
-  compare "services.$1.ports"
+  diff <(yq ".services.$1.ports // [] | map(envsubst)" docker-compose.yml) \
+       <(yq ".services.$1.ports // [] | map(envsubst)" .docker/docker-compose.yml)
 fi
