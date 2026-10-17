@@ -7,7 +7,7 @@ COPY ./bun.lockb ./bun.lockb
 COPY ./package.json ./package.json
 COPY ./patches ./patches
 
-RUN bun install
+RUN bun install --frozen-lockfile
 
 ENV NODE_ENV="production"
 
