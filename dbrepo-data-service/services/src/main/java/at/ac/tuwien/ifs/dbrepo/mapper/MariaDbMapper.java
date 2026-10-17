@@ -996,19 +996,9 @@ public interface MariaDbMapper {
     }
 
     default String paginateSubset(String normalizedQuery, Long page, Long size) {
-        /* query check (this is enforced by the db also) */
-        final StringBuilder statement = new StringBuilder(normalizedQuery);
-        /* pagination */
-        if (size != null && page != null) {
-            log.trace("pagination size/limit of {}", size);
-            statement.append(" LIMIT ")
-                    .append(size);
-            log.trace("pagination page/offset of {}", page);
-            statement.append(" OFFSET ")
-                    .append(page * size);
-        }
+        final String statement = SubsetPagination.paginate(normalizedQuery, page, size);
         log.trace("mapped select query: {}", statement);
-        return statement.toString();
+        return statement;
     }
 
     default String defaultRawSelectQuery(String databaseName, String tableOrViewName, Instant timestamp, Long page,

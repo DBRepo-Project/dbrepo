@@ -23,6 +23,8 @@ import at.ac.tuwien.ifs.dbrepo.validation.EndpointValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mapstruct.factory.Mappers;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -295,6 +297,87 @@ class SubsetReplicationIntegrationTest {
         database.setCreationLocation(B);
         assertThrows(SubsetHistoryIncompleteException.class,
                 () -> service.executionQuery(database, service.findById(database, id)));
+    }
+
+    @Test
+    void boundedLegacySubsetKeepsJsonCsvAndHeadConsistent() throws Exception {
+        final UUID id = legacyHistoricalSubset();
+        sql("UPDATE qs_queries SET query_normalized=CONCAT(query_normalized,' LIMIT 1 OFFSET 1'),"
+                + "result_number=1 WHERE id='" + id + "'");
+        final var metadata = mock(MetadataService.class);
+        database.setIsPublic(true);
+        when(metadata.getDatabase(A_ID)).thenReturn(database);
+        final var endpoint = new SubsetEndpoint(new DataServiceSparkImpl(null, null), mapper, service, null,
+                metadata, mock(EndpointValidator.class), null);
+        final var request = mock(HttpServletRequest.class);
+        when(request.getMethod()).thenReturn("GET");
+        final var output = new java.io.ByteArrayOutputStream();
+        endpoint.getData(A_ID, id, null, "application/json", request, null, 0L, 10L).getBody().writeTo(output);
+        assertEquals("[{\"id\":2,\"value\":\"Original_B\"}]", output.toString(java.nio.charset.StandardCharsets.UTF_8));
+        output.reset();
+        endpoint.getData(A_ID, id, null, "application/json", request, null, 1L, 1L).getBody().writeTo(output);
+        assertEquals("[]", output.toString(java.nio.charset.StandardCharsets.UTF_8));
+        output.reset();
+        endpoint.getData(A_ID, id, null, "text/csv", request, null, 1L, 1L).getBody().writeTo(output);
+        assertEquals(String.join(System.lineSeparator(), "id,value", "2,Original_B", ""),
+                output.toString(java.nio.charset.StandardCharsets.UTF_8));
+        when(request.getMethod()).thenReturn("HEAD");
+        assertEquals("1", endpoint.getData(A_ID, id, null, "application/json", request, null, null, null)
+                .getHeaders().getFirst("X-Count"));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "'ORDER BY id LIMIT 1', 0, 10, 1",
+            "'ORDER BY id LIMIT 1', 1, 1, 0",
+            "'ORDER BY id LIMIT 2 OFFSET 1', 0, 10, 2",
+            "'ORDER BY id LIMIT 1, 2', 0, 1, 2",
+            "'ORDER BY id DESC LIMIT 2', 1, 1, 1",
+            "'ORDER BY id DESC', 0, 1, 2",
+            "'ORDER BY id LIMIT 0', 0, 10, 0",
+            "'ORDER BY id LIMIT 2', 20, 1, 0"
+    })
+    void legacyPaginationRespectsStoredLimitOffsetAndHistory(String suffix, long page, long size, int expectedId)
+            throws Exception {
+        final UUID id = legacyHistoricalSubset();
+        final String query = "SELECT id,value FROM legacy_data FOR SYSTEM_TIME AS OF TIMESTAMP "
+                + "'2021-01-01 00:00:10.123456' " + suffix;
+        try (Connection connection = connect(); var update = connection.prepareStatement(
+                "UPDATE qs_queries SET query_normalized=? WHERE id=?")) {
+            update.setString(1, query);
+            update.setString(2, id.toString());
+            update.executeUpdate();
+        }
+        final String stored = service.executionQuery(database, service.findById(database, id));
+        try (Connection connection = connect(); Statement statement = connection.createStatement();
+             ResultSet rows = statement.executeQuery(mapper.paginateSubset(stored, page, size))) {
+            assertEquals(expectedId != 0, rows.next());
+            if (expectedId != 0) {
+                assertEquals(expectedId, rows.getInt("id"));
+                assertEquals(expectedId == 1 ? "Original_A" : "Original_B", rows.getString("value"));
+                assertFalse(rows.next());
+            }
+        }
+        assertEquals(query, service.findById(database, id).getQueryNormalized());
+    }
+
+    @Test
+    void ctePaginationKeepsNestedBoundsAndHistoricalOrdering() throws Exception {
+        legacyHistoricalSubset();
+        final String query = "WITH s AS (SELECT id,value FROM legacy_data FOR SYSTEM_TIME AS OF TIMESTAMP "
+                + "'2021-01-01 00:00:10.123456' ORDER BY id LIMIT 2) "
+                + "SELECT id,value FROM s ORDER BY id DESC LIMIT 1 OFFSET 1";
+        try (Connection connection = connect(); Statement statement = connection.createStatement();
+             ResultSet rows = statement.executeQuery(mapper.paginateSubset(query, 0L, 10L))) {
+            assertTrue(rows.next());
+            assertEquals(1, rows.getInt("id"));
+            assertEquals("Original_A", rows.getString("value"));
+            assertFalse(rows.next());
+        }
+        try (Connection connection = connect(); Statement statement = connection.createStatement();
+             ResultSet rows = statement.executeQuery(mapper.paginateSubset(query, 1L, 1L))) {
+            assertFalse(rows.next());
+        }
     }
 
     @Test
