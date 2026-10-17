@@ -302,6 +302,7 @@ export default {
       valid: false,
       loading: false,
       oldTuple: null,
+      draft: null,
       error: false,
       menu: false,
       loadContainer: false,
@@ -316,7 +317,11 @@ export default {
   mounted () {
     this.fetchContainer()
     this.oldTuple = Object.assign({}, this.tuple)
-    this.restoreDraft()
+    this.draft = useTupleDraft(this.$route.params.database_id, this.$route.params.table_id, this.edit ? this.primaryKeyColumns.map(pk => this.oldTuple[pk.internal_name]) : 'new')
+    const saved = this.draft.restore()
+    if (saved) {
+      Object.assign(this.tuple, saved)
+    }
     this.validate()
   },
   computed: {
@@ -338,10 +343,6 @@ export default {
       }
       return this.table.constraints.primary_key.map(pk => pk.column)
     },
-    draftKey () {
-      const row = this.edit ? this.primaryKeyColumns.map(pk => this.oldTuple[pk.internal_name]) : 'new'
-      return `dbrepo-tuple-draft:${this.$route.params.database_id}:${this.$route.params.table_id}:${JSON.stringify(row)}`
-    },
     title () {
       return (this.edit ? this.$t('toolbars.table.data.edit') : this.$t('toolbars.table.data.add')) + ' ' + this.$t('toolbars.table.data.tuple')
     },
@@ -357,7 +358,7 @@ export default {
   watch: {
     tuple: {
       handler () {
-        this.saveDraft()
+        this.draft?.save(this.tuple)
         this.validate()
       },
       deep: true
@@ -368,35 +369,9 @@ export default {
       console.debug('validate form')
       this.$refs.form.validate()
     },
-    /* keep unsaved input in this tab so it survives the dialog closing when the session expires and the sign-in redirect */
-    saveDraft () {
-      try {
-        sessionStorage.setItem(this.draftKey, JSON.stringify(this.tuple))
-      } catch (error) {
-        console.warn('Failed to save tuple draft', error)
-      }
-    },
-    restoreDraft () {
-      try {
-        const draft = sessionStorage.getItem(this.draftKey)
-        if (draft) {
-          console.debug('restore tuple draft', this.draftKey)
-          Object.assign(this.tuple, JSON.parse(draft))
-        }
-      } catch (error) {
-        console.warn('Failed to restore tuple draft', error)
-      }
-    },
-    clearDraft () {
-      try {
-        sessionStorage.removeItem(this.draftKey)
-      } catch (error) {
-        console.warn('Failed to clear tuple draft', error)
-      }
-    },
     cancel () {
       this.menu = false
-      this.clearDraft()
+      this.draft.clear()
       this.$emit('close', { success: false })
     },
     hint (column) {
@@ -480,7 +455,7 @@ export default {
         .then(() => {
           const toast = useToastInstance()
           toast.success(this.$t('success.data.update'))
-          this.clearDraft()
+          this.draft.clear()
           this.$emit('close', { success: true })
           this.loading = false
         })
@@ -514,7 +489,7 @@ export default {
         .then(() => {
           const toast = useToastInstance()
           toast.success(this.$t('success.data.add'))
-          this.clearDraft()
+          this.draft.clear()
           this.$emit('close', { success: true })
           this.loading = false
         })
