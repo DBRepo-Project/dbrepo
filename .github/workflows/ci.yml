@@ -147,6 +147,8 @@ jobs:
         run: |
           bun install --cwd ./dbrepo-ui
           bun run --cwd ./dbrepo-ui build
+      - name: Run UI regression tests
+        run: node --test ./dbrepo-ui/test/*.test.mjs
       - name: Run UI smoke test
         run: |
           docker buildx bake -f docker-compose.yml --allow=network.host --load dbrepo-ui

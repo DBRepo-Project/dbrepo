@@ -1,0 +1,13 @@
+diff --git a/dist/runtime/server/utils/session.js b/dist/runtime/server/utils/session.js
+index 39be2dcd3606cd4ccedcd0f6338f46fefda5bac8..efcbb530b36f77b9295e89590ef94b1a7da83adc 100644
+--- a/dist/runtime/server/utils/session.js
++++ b/dist/runtime/server/utils/session.js
+@@ -100,7 +100,7 @@ export async function requireUserSession(event, options = {}) {
+ export async function getUserSession(event, options = {}) {
+   const logger = useOidcLogger();
+   const session = await _useSession(event);
+-  const userSession = session.data;
++  const userSession = { ...session.data };
+   if (Object.keys(userSession).length === 0) {
+     return await handleSessionError(event, "Unauthorized", options);
+   }
