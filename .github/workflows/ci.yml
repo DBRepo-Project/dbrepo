@@ -205,6 +205,17 @@ jobs:
           bash ./.scripts/prepare-duckdb-extensions.sh
           docker buildx bake -f docker-compose.yml --allow=network.host --load
           make build-jupyter-image
+      - name: Check logging in packaged Java images
+        run: |
+          for service in consumer data; do
+            container=$(docker create "dbrepo-${service}-service:latest")
+            trap 'docker rm "$container"' EXIT
+            docker cp "$container:/app/${service}-service.jar" "$RUNNER_TEMP/logging-check.jar"
+            docker rm "$container"
+            trap - EXIT
+            python3 .scripts/test-boot-logging.py "$RUNNER_TEMP/logging-check.jar"
+            rm "$RUNNER_TEMP/logging-check.jar"
+          done
       - name: Push SHA-tagged images to GHCR
         run: |
           SHA_TAG="sha-${GITHUB_SHA}"

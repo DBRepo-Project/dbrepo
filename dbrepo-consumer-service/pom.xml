@@ -95,6 +95,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-logging</artifactId>
+        </dependency>
+        <dependency>
             <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
             <artifactId>dbrepo-core</artifactId>
             <version>1.14.1</version>
