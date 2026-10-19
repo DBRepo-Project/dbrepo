@@ -10,13 +10,13 @@ const require = createRequire(import.meta.url)
 const entry = require.resolve('nuxt-oidc-auth/package.json')
 const source = readFileSync(new URL('./dist/runtime/server/utils/session.js', `file://${entry}`), 'utf8')
 
-test('refresh keeps exposed tokens out of the sealed session cookie', async () => {
+function context () {
   const sealed = []
   const session = {
     id: 'test-session',
     data: {
       provider: 'keycloak', canRefresh: true, expireAt: Date.now() / 1000 + 3600,
-      userInfo: { preferred_username: 'researcher' }, claims: { realm_access: { roles: ['researcher'] } }
+      userInfo: { preferred_username: 'researcher' }, claims: { realm_access: { roles: ['researcher', 'revoked'] } }
     },
     async update (data) {
       Object.assign(this.data, data)
@@ -38,7 +38,8 @@ test('refresh keeps exposed tokens out of the sealed session cookie', async () =
     '../../providers/index.js': { keycloak: {} },
     './oidc.js': { configMerger: defu, useOidcLogger: () => log,
       refreshAccessToken: async () => ({
-        user: { canRefresh: true, expireAt: Date.now() / 1000 + 3600 },
+        user: { canRefresh: true, expireAt: Date.now() / 1000 + 3600,
+          claims: { realm_access: { roles: ['researcher'] } } },
         tokens: { accessToken: 'new-access-token', refreshToken: 'new-refresh-token', idToken: 'new-id-token' },
         parsedAccessToken: { exp: Date.now() / 1000 + 3600, iat: Date.now() / 1000 }, expiresIn: 3600
       }) },
@@ -58,14 +59,51 @@ test('refresh keeps exposed tokens out of the sealed session cookie', async () =
     }
   })
   const event = { context: { sessions: { 'nuxt-oidc-auth': { createdAt: Date.now() } } } }
-  const exposed = await exported.exports.getUserSession(event)
+  return { api: exported.exports, event, session, sealed }
+}
+
+test('refresh keeps exposed tokens out of the sealed session cookie', async () => {
+  const { api, event, sealed } = context()
+  const exposed = await api.getUserSession(event)
   assert.equal(exposed.accessToken, 'original-access-token')
   assert.equal(exposed.idToken, 'original-id-token')
-  const refreshed = await exported.exports.refreshUserSession(event)
+  const refreshed = await api.refreshUserSession(event)
   assert.equal(refreshed.accessToken, 'new-access-token')
   assert.equal(refreshed.userInfo.preferred_username, 'researcher')
   assert.equal(sealed.length, 1)
   assert.equal('accessToken' in sealed[0], false)
   assert.equal('idToken' in sealed[0], false)
   assert.equal('refreshToken' in sealed[0], false)
+})
+
+test('refresh replaces claims and removes revoked roles while preserving the profile', async () => {
+  const { api, event, session, sealed } = context()
+  const refreshed = await api.refreshUserSession(event)
+  assert.deepEqual(structuredClone(refreshed.claims), { realm_access: { roles: ['researcher'] } })
+  assert.deepEqual(sealed[0].claims, structuredClone(refreshed.claims))
+  assert.equal(session.data.provider, 'keycloak')
+  assert.equal(session.data.userInfo.preferred_username, 'researcher')
+})
+
+test('repeated refreshes keep the cookie payload bounded', async () => {
+  const { api, event, sealed } = context()
+  for (let i = 0; i < 20; i++) {
+    await api.getUserSession(event)
+    await api.refreshUserSession(event)
+  }
+  assert.equal(sealed.length, 20)
+  for (const data of sealed) {
+    assert.deepEqual(data.claims.realm_access.roles, ['researcher'])
+    assert.equal('accessToken' in data, false)
+    assert.equal('idToken' in data, false)
+  }
+})
+
+test('refresh removes tokens left in a legacy cookie', async () => {
+  const { api, event, session, sealed } = context()
+  session.data.accessToken = 'legacy-access-token'
+  session.data.idToken = 'legacy-id-token'
+  await api.refreshUserSession(event)
+  assert.equal('accessToken' in sealed[0], false)
+  assert.equal('idToken' in sealed[0], false)
 })

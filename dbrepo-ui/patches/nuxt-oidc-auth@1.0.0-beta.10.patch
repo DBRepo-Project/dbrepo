@@ -1,8 +1,19 @@
 diff --git a/dist/runtime/server/utils/session.js b/dist/runtime/server/utils/session.js
-index 39be2dcd3606cd4ccedcd0f6338f46fefda5bac8..efcbb530b36f77b9295e89590ef94b1a7da83adc 100644
+index 39be2dcd3606cd4ccedcd0f6338f46fefda5bac8..9f960f03d68abff053e6b95db819865f81916cf9 100644
 --- a/dist/runtime/server/utils/session.js
 +++ b/dist/runtime/server/utils/session.js
-@@ -100,7 +100,7 @@ export async function requireUserSession(event, options = {}) {
+@@ -87,7 +87,9 @@ export async function refreshUserSession(event, options = {}) {
+   };
+   await useStorage("oidc").setItem(session.id, updatedPersistentSession);
+   const { accessToken: _accessToken, idToken: _idToken, ...userWithoutToken } = user;
+-  await session.update(defu(userWithoutToken, session.data));
++  delete session.data.accessToken;
++  delete session.data.idToken;
++  await session.update(userWithoutToken);
+   return {
+     ...session.data,
+     ...tokens.accessToken && (useRuntimeConfig(event).oidc.providers[provider]?.exposeAccessToken || providerPresets[provider]?.exposeAccessToken) && { accessToken: tokens.accessToken },
+@@ -100,7 +102,7 @@ export async function requireUserSession(event, options = {}) {
  export async function getUserSession(event, options = {}) {
    const logger = useOidcLogger();
    const session = await _useSession(event);
