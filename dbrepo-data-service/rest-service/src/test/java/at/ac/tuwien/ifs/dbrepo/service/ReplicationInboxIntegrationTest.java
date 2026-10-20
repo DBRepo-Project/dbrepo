@@ -339,6 +339,86 @@ class ReplicationInboxIntegrationTest {
     }
 
     @Test
+    void booleanPayloadsPreserveNumericAndJdbcByteRepresentations() throws Exception {
+        addBooleanColumn();
+        final var values = java.util.Arrays.asList(true, false, "true", "false", 1, 0, "1", "0",
+                new byte[]{'1'}, new byte[]{'0'}, 2, null);
+        final Integer[] expected = {1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 2, null};
+        for (int index = 0; index < values.size(); index++) {
+            final var event = event(index + 1, "a", "1");
+            event.getTuple().getData().put("injured", values.get(index));
+            apply(event, index == 0 ? HttpMethod.POST : HttpMethod.PUT);
+            try (var c = connection(); var row = c.createStatement().executeQuery("SELECT injured+0 FROM samples")) {
+                assertTrue(row.next());
+                assertEquals(expected[index], row.getObject(1), "Boolean representation at index " + index);
+            }
+        }
+    }
+
+    @Test
+    void typedHistoryImportReconcilesTinyintBooleansWithoutLosingTrueValues() throws Exception {
+        addBooleanColumn();
+        try (var c = connection(); var s = c.createStatement()) {
+            s.execute("CREATE TABLE source_samples LIKE samples");
+            s.execute("INSERT INTO source_samples VALUES ('a',1,NULL,1),('b',2,NULL,0),('c',3,NULL,NULL)");
+        }
+        final var source = Database.builder().id(sourceDatabase).internalName(database.getInternalName())
+                .creationLocation("https://origin.example").container(database.getContainer()).build();
+        final var sourceRelation = Table.builder().id(sourceTable).internalName("source_samples").build();
+        final var journal = new at.ac.tuwien.ifs.dbrepo.service.outbox.TupleReplicationOutboxServiceMariaDbImpl(json);
+        final var exporter = new HistorySnapshotService(journal, "https://origin.example");
+        final var importer = new HistorySnapshotService(journal, "https://replica.example");
+        database.setReplicaUrls(Map.of("https://origin.example", sourceDatabase));
+        table.setReplicaUrls(Map.of("https://origin.example", sourceTable));
+        final UUID id = UUID.randomUUID();
+        final var envelope = exporter.create(source, sourceRelation, new HistorySnapshotDto.Create(id, sourceTable, null));
+        final var chunk = exporter.readChunk(source, id, 0);
+        final var trueRow = HistorySnapshotCodec.rows(chunk, envelope.manifest().columns()).stream()
+                .filter(row -> row.replicationKey().equals("a")).findFirst().orElseThrow();
+        final Object transported = HistorySnapshotCodec.data(envelope.manifest(), trueRow).get("injured");
+        assertEquals("1", transported instanceof byte[] bytes
+                ? new String(bytes, java.nio.charset.StandardCharsets.US_ASCII) : transported);
+        // Simulated peers share one SQL schema, so move the immutable transport artifact between them.
+        try (var c = connection()) {
+            for (String name : List.of("replication_history_current_keys", "replication_history_chunks", "replication_history_snapshots")) {
+                try (var s = c.prepareStatement("DELETE FROM " + name + " WHERE snapshot_id=?")) {
+                    s.setString(1, id.toString()); s.executeUpdate();
+                }
+            }
+        }
+        importer.beginImport(database, table, new HistorySnapshotDto.Import(table.getId(), envelope));
+        importer.putChunk(database, id, chunk);
+        importer.verifyImport(database, table, id);
+        assertTrue(receiver.reconcile(database, table, id, importer).currentReconciled());
+        assertTrue(receiver.reconcile(database, table, id, importer).currentReconciled());
+        assertEquals(1, count("samples WHERE injured=1"));
+        assertEquals(1, count("samples WHERE injured=0"));
+        assertEquals(1, count("samples WHERE injured IS NULL"));
+        assertEquals(3, count("samples FOR SYSTEM_TIME ALL"));
+    }
+
+    @Test
+    void silentlyCoercedValuesRollBackInsteadOfPublishingAReceipt() throws Exception {
+        try (var c = connection(); var s = c.createStatement()) {
+            s.execute("CREATE TRIGGER coerce_value BEFORE INSERT ON samples FOR EACH ROW SET NEW.sample_value=0");
+        }
+        assertThrows(SQLException.class, () -> apply(event(1, "a", "1"), HttpMethod.POST));
+        assertEquals(0, count("samples FOR SYSTEM_TIME ALL"));
+        assertEquals(0, count("tuple_replication_inbox"));
+        assertEquals(0, count("tuple_replication_heads WHERE event_sequence<>0"));
+        assertEquals(0, count("tuple_replication_timestamps"));
+    }
+
+    private void addBooleanColumn() throws SQLException {
+        final var columns = new java.util.ArrayList<>(table.getColumns());
+        columns.add(Column.builder().internalName("injured").columnType(ColumnType.BOOL).build());
+        table.setColumns(columns);
+        try (var c = connection(); var s = c.createStatement()) {
+            s.execute("SET STATEMENT system_versioning_alter_history=KEEP FOR ALTER TABLE samples ADD injured TINYINT(1)");
+        }
+    }
+
+    @Test
     void mismatchedTargetAndChangedOriginGenerationAreRejected() throws Exception {
         final var first = event(1, "a", "1");
         first.getTable().setReplicaUrls(Map.of("https://replica.example", UUID.randomUUID()));

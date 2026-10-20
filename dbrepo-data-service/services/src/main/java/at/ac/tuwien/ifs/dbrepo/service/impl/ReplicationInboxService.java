@@ -521,6 +521,9 @@ public class ReplicationInboxService extends DataConnector {
         if (result == null) {
             throw new SQLException("Replicated mutation has no retained local version");
         }
+        if (!HttpMethod.DELETE.equals(method) && !matchesCurrent(connection, table, event.getTuple().getData())) {
+            throw new SQLException("Replicated values differ from the retained source payload");
+        }
         result.setApplied(true);
         return result;
     }
@@ -535,6 +538,17 @@ public class ReplicationInboxService extends DataConnector {
                     // Replication transports the bytes themselves, never source-local object-store keys.
                     statement.setBytes(index, value instanceof byte[] bytes ? bytes
                             : Base64.getDecoder().decode(String.valueOf(value)));
+                }
+            }
+            case BOOL -> {
+                // TINYINT(1) history arrives as JDBC bytes; Boolean.parseBoolean loses numeric truth values.
+                if (value instanceof byte[] bytes) {
+                    statement.setBytes(index, bytes);
+                } else if (value instanceof String text
+                        && ("true".equalsIgnoreCase(text) || "false".equalsIgnoreCase(text))) {
+                    statement.setBoolean(index, Boolean.parseBoolean(text));
+                } else {
+                    statement.setObject(index, value);
                 }
             }
             case DECIMAL -> statement.setBigDecimal(index, value == null ? null : new java.math.BigDecimal(value.toString()));
