@@ -271,8 +271,10 @@ public final class TupleVersionHistory {
             insert.setTimestamp(index, Timestamp.from(version), utc()); insert.executeUpdate();
         }
         try (var check = c.prepareStatement("SELECT 1 FROM " + quote(importedName(table))
-                + " WHERE " + predicates + " AND _master_site_ts=?")) {
-            int index = bindValues(check, columns, values); check.setTimestamp(index, Timestamp.from(version), utc());
+                + " WHERE " + predicates + " AND replication_key=? AND _master_site_ts=?")) {
+            int index = bindValues(check, columns, values);
+            check.setObject(index++, values.get("replication_key"));
+            check.setTimestamp(index, Timestamp.from(version), utc());
             try (var r = check.executeQuery()) { if (!r.next()) throw new SQLException("Historical values version conflict"); }
         }
     }

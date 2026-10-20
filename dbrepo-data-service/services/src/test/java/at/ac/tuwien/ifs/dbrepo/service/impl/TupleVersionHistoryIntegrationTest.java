@@ -2,6 +2,7 @@ package at.ac.tuwien.ifs.dbrepo.service.impl;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleWithTimestampsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleReplicationTimestampDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
@@ -10,8 +11,12 @@ import org.springframework.http.HttpMethod;
 import java.sql.*;
 import java.time.Instant;
 import java.util.UUID;
+import java.util.Map;
+import java.util.Set;
+import org.mockito.ArgumentCaptor;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @EnabledIfEnvironmentVariable(named = "TUPLE_VERSION_SQL_PORT", matches = "[0-9]+")
 class TupleVersionHistoryIntegrationTest {
@@ -76,6 +81,38 @@ class TupleVersionHistoryIntegrationTest {
     @Test
     void sourceTimestampPrecisionIsNotSilentlyRounded() {
         assertThrows(SQLException.class,()->TupleVersionHistory.requireMasterTimestamp(START.plusNanos(1)));
+    }
+
+    @Test
+    void importedValuesUseAnIndexedVersionLookupAndStillRejectByteDifferences() throws Exception {
+        final var metadata = Table.builder().id(table).internalName("samples").build();
+        try (var real = connection(); var c = spy(real); var s = c.createStatement()) {
+            s.execute("CREATE TABLE samples(value VARCHAR(30),replication_key VARCHAR(36) NOT NULL) ENGINE=InnoDB");
+            TupleVersionHistory.prepareImported(c, metadata);
+            final var values = Map.<String,Object>of("value", "value", "replication_key", "K");
+            TupleVersionHistory.retain(c, metadata, START, values);
+            TupleVersionHistory.retain(c, metadata, START, Map.of("value", "other", "replication_key", "other"));
+            final var statements = ArgumentCaptor.forClass(String.class);
+            verify(c, atLeastOnce()).prepareStatement(statements.capture());
+            final String check = statements.getAllValues().stream()
+                    .filter(sql -> sql.startsWith("SELECT 1 FROM `_dbrepo_versions_"))
+                    .reduce((first, last) -> last).orElseThrow();
+            try (var plan = c.prepareStatement("EXPLAIN " + check)) {
+                final int parameters = plan.getParameterMetaData().getParameterCount();
+                plan.setString(1, "other"); plan.setString(2, "other");
+                if (parameters == 4) plan.setString(3, "other");
+                plan.setTimestamp(parameters, Timestamp.from(START), TupleVersionHistory.utc());
+                try (var result = plan.executeQuery()) {
+                    assertTrue(result.next());
+                    assertTrue(Set.of("const", "ref").contains(result.getString("type")),
+                            "Version validation must not scan the imported history relation");
+                    assertEquals("imported_master_version", result.getString("key"));
+                }
+            }
+            TupleVersionHistory.retain(c, metadata, START, values);
+            assertThrows(SQLException.class, () -> TupleVersionHistory.retain(c, metadata, START,
+                    Map.of("value", "VALUE", "replication_key", "K")));
+        }
     }
 
     @Test
