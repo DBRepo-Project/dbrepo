@@ -1036,7 +1036,7 @@ ui:
     touch: "/apple-touch-icon.png"
     broker:
       ## @param ui.public.broker.host The displayed broker hostname.
-      host: dbrepo.ulb.tu-darmstadt.de
+      host: example.com
       ## @skip ui.public.broker.connections The array of connections that should be displayed in the frontend.
       connections:
         - protocol: "amqp"
@@ -1053,7 +1053,7 @@ ui:
     pid:
       default:
         ## @param ui.public.pid.default.publisher The default dataset publisher for persisted identifiers.
-        publisher: "Universitäts- und Landesbibliothek Darmstadt"
+        publisher: "Example University"
     doi:
       ## @param ui.public.doi.enabled Enable the display that DOIs are minted.
       enabled: false
@@ -1096,7 +1096,7 @@ dashboardservice:
     ## @param dashboardservice.podSecurityContext.supplementalGroups Set filesystem extra groups
     supplementalGroups: [ ]
     ## @param dashboardservice.podSecurityContext.fsGroup Set RabbitMQ pod's Security Context fsGroup
-    fsGroup: 1001
+    fsGroup: 0
   containerSecurityContext:
     ## @param dashboardservice.containerSecurityContext.enabled Enable containers' Security Context
     enabled: true
@@ -1128,38 +1128,23 @@ dashboardservice:
   ##   limits:
   ##     cpu: 500m
   ##     memory: 1024Mi
-  ## @skip dashboardservice.resources
-  grafana:
-    ## @param dashboardservice.grafana.adminPassword The Grafana admin password.
-    adminPassword: dbrepo
-    ## @param dashboardservice.grafana.plugins The Grafana plugins that should be preloaded.
-    plugins: ""
-    ## @param dashboardservice.grafana.notifiers The Grafana notifiers that should be configured.
-    notifiers: ""
-    ## @param dashboardservice.grafana.dashboardsConfigMaps The list of ConfigMaps that contain dashboard definitions.
-    dashboardsConfigMaps: dashboard-service-config
-    ## @param dashboardservice.grafana.smtpHost The Grafana SMTP host.
-    smtpHost: ""
-    ## @param dashboardservice.grafana.smtpUser The Grafana SMTP user.
-    smtpUser: ""
-    ## @param dashboardservice.grafana.smtpPassword The Grafana SMTP password.
-    smtpPassword: ""
-    ## @param dashboardservice.grafana.smtpSkipVerify The Grafana SMTP skip verify.
-    smtpSkipVerify: true
-    ## @param dashboardservice.grafana.fromAddress The Grafana SMTP from address.
-    fromAddress: ""
-    ## @param dashboardservice.grafana.fromName The Grafana SMTP from name.
-    fromName: ""
-  initContainer:
+  ## @param dashboardservice.replicaCount The number of replicas.
+  setupJob:
+    ## @param dashboardservice.setupJob.enabled Enable the setup job that creates dashboards for existing databases in the Dashboard UI.
+    enabled: true
     image:
-      ## @skip dashboardservice.initContainer.image.name
+      ## @skip dashboardservice.setupJob.image.name
       name: ghcr.io/dbrepo-project/dbrepo/dashboard-service-init:1.14.1
-    ## @param dashboardservice.initContainer.resourcesPreset The container resource preset
+    ## @param dashboardservice.setupJob.resourcesPreset The container resource preset
     resourcesPreset: "nano"
-    ## @param dashboardservice.initContainer.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+    ## @param dashboardservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
     resources: { }
-  ## @param dashboardservice.datasource The Grafana datasource.
-  datasource: prometheus
+    ##   requests:
+    ##     cpu: 250m
+    ##     memory: 64Mi
+    ##   limits:
+    ##     cpu: 500m
+    ##     memory: 1024Mi
   ## @param dashboardservice.replicaCount The number of replicas.
   replicaCount: 2
 
@@ -1221,94 +1206,107 @@ dashboardui:
     ## @skip dashboardui.testFramework.enabled
     enabled: false
 
-## @section Metric Database
+## @section Metric Service
 
 metricdb:
-  ## @param metricdb.enabled Enable the Metric Database.
+  ## @param metricdb.enabled Enable the Metric Service.
   enabled: true
   ## @skip metricdb.fullnameOverride
   fullnameOverride: metric-db
-  ## @skip metricdb.kube-state-metrics
-  kube-state-metrics:
+  ## @param metricdb.endpoint The endpoint for microservices.
+  endpoint: http://metric-db-server
+  alertmanager:
+    ## @skip metricdb.alertmanager.enabled
     enabled: false
-  ## @skip metricdb.prometheus-node-exporter
-  prometheus-node-exporter:
-    enabled: false
-  ## @skip metricdb.prometheus-pushgateway
-  prometheus-pushgateway:
-    enabled: false
-  ## @skip metricdb.networkPolicy
-  networkPolicy:
-    enabled: false
-  ## @param metricdb.replicaCount The number of replicas.
-  replicaCount: 1
+  server:
+    image:
+      ## @skip metricdb.server.image.repository
+      repository: bitnamilegacy/prometheus
+    rbac:
+      ## @skip metricdb.server.rbac.create
+      create: true
+    updateStrategy:
+      ## @skip metricdb.server.updateStrategy.type
+      type: Recreate
+    service:
+      ## @skip metricdb.server.service.type
+      type: ClusterIP
+    persistence:
+      ## @skip metricdb.server.persistence.enabled
+      enabled: true
+    ## @skip metricdb.server.extraScrapeConfigs
+    extraScrapeConfigs:
+      - job_name: 'actuator scrape'
+        metrics_path: '/actuator/prometheus'
+        static_configs:
+          - targets:
+              - data-service
+              - metadata-service
+      - job_name: 'metrics scrape'
+        metrics_path: '/metrics'
+        static_configs:
+          - targets:
+              - auth-service-metrics:9000
+              - broker-service:9419
+              - dashboard-db-metrics:9187
+              - dashboard-service
+              - data-db-metrics:9104
+              - metadata-db-metrics:9104
+              - search-service
+              - storage-service-master-metrics:9327
+              - ui:3000
 
 ## @section Gateway Service
 
 gatewayservice:
-  ## @param gatewayservice.enabled Enable the Gateway Service.
+  ## @param gatewayservice.enabled Enable the Gateway Service. If disabled, you need to configure the Ingress routes yourself.
   enabled: true
   ## @skip gatewayservice.fullnameOverride
   fullnameOverride: gateway-service
   image:
     ## @skip gatewayservice.image.repository
     repository: bitnamilegacy/nginx
-  ## @param gatewayservice.corsAllowOrigin The allowed CORS origins.
-  corsAllowOrigin: ""
-  ## @param gatewayservice.corsAllowMethods The allowed CORS request methods.
-  corsAllowMethods: "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-  ## @param gatewayservice.corsAllowHeaders The allowed CORS request headers.
-  corsAllowHeaders: "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization"
-  ## @param gatewayservice.extraEnv The extra Nginx environment variable
-  extraEnv: ""
-  ## @param gatewayservice.extraEnvValue The extra Nginx environment value
-  extraEnvValue: ""
-  tls:
-    ## @param gatewayservice.tls.enabled Enable TLS support
+  service:
+    ## @param gatewayservice.service.type The service type.
+    type: ClusterIP
+  metrics:
+    ## @param gatewayservice.metrics.enabled Enable the Prometheus metrics sidecar.
     enabled: false
-    ## @param gatewayservice.tls.auto Generated certificates
-    auto: false
-    ## @param gatewayservice.tls.existingSecret Existing secret with certificate content
-    existingSecret: ingress-cert
-  ## @skip gatewayservice.resourcesPreset
-  resourcesPreset: "nano"
-  ## @param gatewayservice.replicaCount The number of replicas.
-  replicaCount: 2
-  ## @skip gatewayservice.containerPorts
-  containerPorts:
-    - name: http
-      containerPort: 8080
-    - name: https
-      containerPort: 8443
+  ## @param gatewayservice.existingServerBlockConfigmap The extra configuration for the reverse proxy
+  existingServerBlockConfigmap: gateway-service-setup
+  ## @skip gatewayservice.extraVolumes
+  extraVolumes:
+    - name: logging
+      emptyDir: { }
+  ## @skip gatewayservice.extraVolumeMounts
+  extraVolumeMounts:
+    - name: logging
+      mountPath: /var/log/nginx
+  ## @param gatewayservice.replicaCount The number of replicas.gatewayservice
+  replicaCount: 3
 
-## @section Compute Service
+## @section Analytics Service
 
 computeservice:
-  ## @param computeservice.enabled Enable the Compute Service.
-  enabled: true
-  ## @skip computeservice.fullnameOverride
-  fullnameOverride: compute-service
-  image:
-    ## @skip computeservice.image.repository
-    repository: bitnamilegacy/nginx
-  ## @param computeservice.extraEnv The extra Nginx environment variable
-  extraEnv: ""
-  ## @param computeservice.extraEnvValue The extra Nginx environment value
-  extraEnvValue: ""
+  ## @param computeservice.endpoint Configure the number of parallel workers with local[n]
+  endpoint: local[*]
+
+
+## @section Ingress
+
+ingress:
+  ## @param ingress.enabled Enable the ingress.
+  enabled: false
+  ## @param ingress.className The ingress class name.
+  className: nginx
   tls:
-    ## @param computeservice.tls.enabled Enable TLS support
-    enabled: false
-    ## @param computeservice.tls.auto Generated certificates
-    auto: false
-    ## @param computeservice.tls.existingSecret Existing secret with certificate content
-    existingSecret: ingress-cert
-  ## @param computeservice.resourcesPreset The container resource preset
-  resourcesPreset: "nano"
-  ## @param computeservice.serverName The server name for the compute cluster.
-  serverName: compute
-  ## @param computeservice.replicaCount The number of replicas.
-  replicaCount: 2
-  ## @skip computeservice.containerPorts
-  containerPorts:
-    - name: http
-      containerPort: 8081
+    ## @param ingress.tls.enabled Enable the ingress.
+    enabled: true
+    ## @param ingress.tls.secretName The secret holding the SSL/TLS certificate. Needs to have keys `tls.crt` and `tls.key` and optionally `ca.crt`.
+    secretName: ingress-cert
+  ## @skip ingress.annotations The ingress rules for proxying requests directly to services.
+  ## @example
+  ## annotations:
+  ##   cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
+  ##   nginx.ingress.kubernetes.io/proxy-body-size: 2G
+  annotations: { }
