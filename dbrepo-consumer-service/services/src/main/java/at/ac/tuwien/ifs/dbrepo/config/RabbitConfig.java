@@ -113,8 +113,9 @@ public class RabbitConfig {
                 final TupleDto payload = TupleDto.builder()
                         .data(objectMapper.readValue(message.getBody(), typeRef))
                         .build();
+                final String amqpUsername = properties.getReceivedUserId();
                 log.trace("received message of {} bytes with keys: {}", message.getMessageProperties().getContentLength(), payload.getData().keySet());
-                dataServiceGateway.insertRawTuple(UUID.fromString(parts[1]), UUID.fromString(parts[2]), payload);
+                dataServiceGateway.insertRawTuple(UUID.fromString(parts[1]), UUID.fromString(parts[2]), payload, amqpUsername);
             } catch (IOException e) {
                 log.error("Failed to read object: {}", e.getMessage());
             } catch (TableNotFoundException | DataServiceException | RemoteUnavailableException e) {

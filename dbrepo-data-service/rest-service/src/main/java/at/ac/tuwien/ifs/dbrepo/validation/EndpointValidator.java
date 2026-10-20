@@ -132,18 +132,30 @@ public class EndpointValidator {
     public void validateOnlyWriteAccess(Database database, Table table, Principal principal)
             throws NotAllowedException {
         validateOnlyAccess(database, principal);
+        if (AuthUtil.isSystem(principal)) {
+            log.trace("user {} is internal: no write access needed", AuthUtil.getUsername(principal));
+            return;
+        }
+        validateOnlyWriteAccess(database, table, AuthUtil.getUsername(principal));
+    }
+
+    public void validateOnlyWriteAccess(Database database, Table table, String username)
+            throws NotAllowedException {
+        if (username == null || username.isBlank()) {
+            throw new NotAllowedException("No username provided");
+        }
         if (database.getAccesses()
                 .stream()
                 .anyMatch(a -> a.getType().equals(AccessType.WRITE_OWN) &&
-                        table.getOwnedBy().equals(AuthUtil.getUsername(principal)) &&
-                        a.getUsername().equals(AuthUtil.getUsername(principal)))) {
+                        table.getOwnedBy().equals(username) &&
+                        a.getUsername().equals(username))) {
             return;
         }
         if (database.getAccesses()
                 .stream()
                 .noneMatch(a -> a.getType().equals(AccessType.WRITE_ALL) &&
-                        a.getUsername().equals(AuthUtil.getUsername(principal)))) {
-            log.error("No write access found for user {} to database: {}", AuthUtil.getUsername(principal), database.getInternalName());
+                        a.getUsername().equals(username))) {
+            log.error("No write access found for user {} to database: {}", username, database.getInternalName());
             throw new NotAllowedException("No write access found");
         }
     }
