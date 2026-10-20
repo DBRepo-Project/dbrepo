@@ -13,6 +13,7 @@ import java.time.Instant;
 import java.util.UUID;
 import java.util.Map;
 import java.util.Set;
+import java.util.List;
 import org.mockito.ArgumentCaptor;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -112,6 +113,41 @@ class TupleVersionHistoryIntegrationTest {
             TupleVersionHistory.retain(c, metadata, START, values);
             assertThrows(SQLException.class, () -> TupleVersionHistory.retain(c, metadata, START,
                     Map.of("value", "VALUE", "replication_key", "K")));
+        }
+    }
+
+    @Test
+    void floatingHistoryAcceptsEquivalentNumbersButRejectsEveryChangedDecimalDigit() throws Exception {
+        final var metadata = Table.builder().id(table).internalName("samples").build();
+        try (var c = connection(); var s = c.createStatement()) {
+            s.execute("CREATE TABLE samples(replication_key VARCHAR(36) PRIMARY KEY,"
+                    + "scaled DOUBLE(12,3),approximate FLOAT,precise DOUBLE) ENGINE=InnoDB");
+            TupleVersionHistory.prepareImported(c, metadata);
+            final var values = new java.util.LinkedHashMap<String, Object>();
+            values.put("replication_key", "K");
+            values.put("scaled", "-0.200");
+            values.put("approximate", "0.1");
+            values.put("precise", Double.toString(Math.nextUp(0.2)));
+            TupleVersionHistory.retain(c, metadata, START, values);
+            values.put("scaled", new java.math.BigDecimal("-0.2"));
+            values.put("approximate", 0.1f);
+            values.put("precise", Math.nextUp(0.2));
+            TupleVersionHistory.retain(c, metadata, START, values);
+            for (String difference : List.of("-0.201", "-0.2001", "-0.20000000000000001")) {
+                values.put("scaled", difference);
+                assertThrows(SQLException.class, () -> TupleVersionHistory.retain(c, metadata, START, values));
+            }
+            values.put("scaled", "-0.200");
+            values.put("precise", 0.2);
+            assertThrows(SQLException.class, () -> TupleVersionHistory.retain(c, metadata, START, values));
+            values.put("precise", Math.nextUp(0.2));
+            values.put("approximate", Math.nextUp(0.1f));
+            assertThrows(SQLException.class, () -> TupleVersionHistory.retain(c, metadata, START, values));
+            values.put("approximate", null);
+            assertThrows(SQLException.class, () -> TupleVersionHistory.retain(c, metadata, START, values));
+            values.replaceAll((key, value) -> key.equals("replication_key") ? "nulls" : null);
+            TupleVersionHistory.retain(c, metadata, START, values);
+            TupleVersionHistory.retain(c, metadata, START, values);
         }
     }
 

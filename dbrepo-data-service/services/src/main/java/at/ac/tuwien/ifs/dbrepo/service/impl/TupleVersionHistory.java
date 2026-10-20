@@ -6,6 +6,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpMethod;
 
+import java.math.BigDecimal;
 import java.sql.*;
 import java.time.Instant;
 import java.util.*;
@@ -260,7 +261,13 @@ public final class TupleVersionHistory {
         final Map<String,String> columns = columns(c, table);
         final String names = String.join(",", columns.keySet().stream().map(TupleVersionHistory::quote).toList());
         final String placeholders = String.join(",", Collections.nCopies(columns.size(), "?"));
-        final String predicates = String.join(" AND ", columns.entrySet().stream().map(x -> {
+        final Map<String,String> compared = new LinkedHashMap<>(columns);
+        final List<String> floating = columns.entrySet().stream()
+                .filter(column -> column.getValue().startsWith("float") || column.getValue().startsWith("double"))
+                .map(Map.Entry::getKey).toList();
+        floating.forEach(compared::remove);
+        final String selected = floating.isEmpty() ? "1" : String.join(",", floating.stream().map(TupleVersionHistory::quote).toList());
+        final String predicates = String.join(" AND ", compared.entrySet().stream().map(x -> {
             final boolean text = x.getValue().contains("char") || x.getValue().contains("text")
                     || x.getValue().startsWith("enum") || x.getValue().startsWith("set");
             return (text ? "BINARY " : "") + quote(x.getKey()) + " <=> " + (text ? "BINARY " : "") + "?";
@@ -270,13 +277,35 @@ public final class TupleVersionHistory {
             int index = bindValues(insert, columns, values);
             insert.setTimestamp(index, Timestamp.from(version), utc()); insert.executeUpdate();
         }
-        try (var check = c.prepareStatement("SELECT 1 FROM " + quote(importedName(table))
+        try (var check = c.prepareStatement("SELECT " + selected + " FROM " + quote(importedName(table))
                 + " WHERE " + predicates + " AND replication_key=? AND _master_site_ts=?")) {
-            int index = bindValues(check, columns, values);
+            int index = bindValues(check, compared, values);
             check.setObject(index++, values.get("replication_key"));
             check.setTimestamp(index, Timestamp.from(version), utc());
-            try (var r = check.executeQuery()) { if (!r.next()) throw new SQLException("Historical values version conflict"); }
+            try (var r = check.executeQuery()) {
+                if (!r.next() || !matchesFloatingValues(r, floating, values)) {
+                    throw new SQLException("Historical values version conflict");
+                }
+            }
         }
+    }
+
+    static boolean matchesFloatingValues(ResultSet row, List<String> columns, Map<String,Object> values) throws SQLException {
+        for (String column : columns) {
+            final String actual = row.getString(column);
+            final Object expected = values.get(column);
+            if (actual == null || expected == null) {
+                if (actual != null || expected != null) return false;
+                continue;
+            }
+            // Compare the JDBC decimal representations without another SQL floating-point conversion or an epsilon.
+            try {
+                if (new BigDecimal(actual).compareTo(new BigDecimal(expected.toString())) != 0) return false;
+            } catch (NumberFormatException e) {
+                throw new SQLException("Invalid replicated floating-point value for column " + column, e);
+            }
+        }
+        return true;
     }
 
     private static Map<String,String> columns(Connection c, Table table) throws SQLException {

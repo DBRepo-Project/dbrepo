@@ -6,6 +6,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleWithTimestampsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.DataReplicationDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.HistorySnapshotDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.ColumnType;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import at.ac.tuwien.ifs.dbrepo.core.exception.StorageNotFoundException;
@@ -237,18 +238,27 @@ public class ReplicationInboxService extends DataConnector {
 
     private boolean matchesCurrent(Connection connection, Table table, Map<String, Object> values)
             throws SQLException, StorageUnavailableException, StorageNotFoundException {
-        final String predicates = table.getColumns().stream().map(column -> switch (column.getColumnType()) {
+        final List<String> floating = table.getColumns().stream()
+                .filter(column -> column.getColumnType() == ColumnType.FLOAT || column.getColumnType() == ColumnType.DOUBLE)
+                .map(Column::getInternalName).toList();
+        final var compared = table.getColumns().stream()
+                .filter(column -> !floating.contains(column.getInternalName())).toList();
+        final String selected = floating.isEmpty() ? "1" : floating.stream().map(this::quote)
+                .collect(java.util.stream.Collectors.joining(","));
+        final String predicates = compared.stream().map(column -> switch (column.getColumnType()) {
                     case CHAR, VARCHAR, TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT, ENUM, SET ->
                             "BINARY " + quote(column.getInternalName()) + " <=> BINARY ?";
                     default -> quote(column.getInternalName()) + " <=> ?";
                 })
                 .collect(java.util.stream.Collectors.joining(" AND "));
-        try (var statement = connection.prepareStatement("SELECT 1 FROM " + quote(table.getInternalName()) + " WHERE " + predicates)) {
+        try (var statement = connection.prepareStatement("SELECT " + selected + " FROM " + quote(table.getInternalName()) + " WHERE " + predicates)) {
             int index = 1;
-            for (Column column : table.getColumns()) {
+            for (Column column : compared) {
                 bind(statement, index++, column, values.get(column.getInternalName()));
             }
-            try (var row = statement.executeQuery()) { return row.next(); }
+            try (var row = statement.executeQuery()) {
+                return row.next() && TupleVersionHistory.matchesFloatingValues(row, floating, values);
+            }
         }
     }
 

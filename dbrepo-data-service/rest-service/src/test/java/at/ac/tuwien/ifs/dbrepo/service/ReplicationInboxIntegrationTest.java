@@ -409,6 +409,82 @@ class ReplicationInboxIntegrationTest {
         assertEquals(0, count("tuple_replication_timestamps"));
     }
 
+    @Test
+    void floatingMutationsPreserveHistoryAndRejectLossyWrites() throws Exception {
+        addFloatingColumn();
+        final var first = event(1, "a", "1");
+        first.getTuple().getData().put("floating_value", "-0.200");
+        final var receipt = apply(first, HttpMethod.POST);
+        final var second = event(2, "a", "2");
+        second.getTuple().getData().put("floating_value", -0.3);
+        apply(second, HttpMethod.PUT);
+        assertEquals(json.valueToTree(receipt), json.valueToTree(apply(first, HttpMethod.POST)));
+        assertEquals(2, count("samples FOR SYSTEM_TIME ALL"));
+        final var lossy = event(3, "a", "3");
+        lossy.getTuple().getData().put("floating_value", "-0.3001");
+        assertThrows(SQLException.class, () -> apply(lossy, HttpMethod.PUT));
+        assertEquals(2, count("samples FOR SYSTEM_TIME ALL"));
+        assertEquals(2, count("tuple_replication_inbox"));
+        try (var c = connection(); var row = c.createStatement().executeQuery("SELECT floating_value FROM samples")) {
+            assertTrue(row.next());
+            assertEquals("-0.300", row.getString(1));
+        }
+    }
+
+    @Test
+    void typedFloatingHistoryReconcilesWithoutChangingSourcePeriodsOrDuplicatingTargetHistory() throws Exception {
+        addFloatingColumn();
+        try (var c = connection(); var s = c.createStatement()) {
+            s.execute("CREATE TABLE source_samples LIKE samples");
+            s.execute("SET timestamp=1700000000.123456");
+            s.execute("INSERT INTO source_samples VALUES ('a',1,NULL,-0.200),('b',2,NULL,-0.300),('c',3,NULL,NULL)");
+            s.execute("SET timestamp=1700000010.654321");
+            s.execute("UPDATE source_samples SET floating_value=-0.300 WHERE replication_key='a'");
+        }
+        final var source = Database.builder().id(sourceDatabase).internalName(database.getInternalName())
+                .creationLocation("https://origin.example").container(database.getContainer()).build();
+        final var sourceRelation = Table.builder().id(sourceTable).internalName("source_samples").build();
+        final var journal = new at.ac.tuwien.ifs.dbrepo.service.outbox.TupleReplicationOutboxServiceMariaDbImpl(json);
+        final var exporter = new HistorySnapshotService(journal, "https://origin.example");
+        final var importer = new HistorySnapshotService(journal, "https://replica.example");
+        database.setReplicaUrls(Map.of("https://origin.example", sourceDatabase));
+        table.setReplicaUrls(Map.of("https://origin.example", sourceTable));
+        final UUID id = UUID.randomUUID();
+        final var envelope = exporter.create(source, sourceRelation, new HistorySnapshotDto.Create(id, sourceTable, null));
+        final var chunk = exporter.readChunk(source, id, 0);
+        assertEquals(4, envelope.manifest().rows());
+        try (var c = connection()) {
+            for (String name : List.of("replication_history_current_keys", "replication_history_chunks", "replication_history_snapshots")) {
+                try (var s = c.prepareStatement("DELETE FROM " + name + " WHERE snapshot_id=?")) {
+                    s.setString(1, id.toString()); s.executeUpdate();
+                }
+            }
+        }
+        importer.beginImport(database, table, new HistorySnapshotDto.Import(table.getId(), envelope));
+        importer.putChunk(database, id, chunk);
+        assertTrue(receiver.reconcile(database, table, id, importer).currentReconciled());
+        assertTrue(receiver.reconcile(database, table, id, importer).currentReconciled());
+        assertEquals(3, count("samples FOR SYSTEM_TIME ALL"));
+        assertEquals(4, count(at.ac.tuwien.ifs.dbrepo.service.impl.TupleVersionHistory.importedName(table)));
+        try (var c = connection(); var row = c.createStatement().executeQuery(
+                "SELECT COUNT(*) FROM source_samples FOR SYSTEM_TIME ALL s JOIN "
+                        + at.ac.tuwien.ifs.dbrepo.service.impl.TupleVersionHistory.importedName(table)
+                        + " h ON h.replication_key=s.replication_key AND h._master_site_ts=s.ROW_START"
+                        + " WHERE BINARY h.floating_value <=> BINARY s.floating_value")) {
+            assertTrue(row.next());
+            assertEquals(4, row.getInt(1));
+        }
+    }
+
+    private void addFloatingColumn() throws SQLException {
+        final var columns = new java.util.ArrayList<>(table.getColumns());
+        columns.add(Column.builder().internalName("floating_value").columnType(ColumnType.DOUBLE).build());
+        table.setColumns(columns);
+        try (var c = connection(); var s = c.createStatement()) {
+            s.execute("SET STATEMENT system_versioning_alter_history=KEEP FOR ALTER TABLE samples ADD floating_value DOUBLE(12,3)");
+        }
+    }
+
     private void addBooleanColumn() throws SQLException {
         final var columns = new java.util.ArrayList<>(table.getColumns());
         columns.add(Column.builder().internalName("injured").columnType(ColumnType.BOOL).build());
