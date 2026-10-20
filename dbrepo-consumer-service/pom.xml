@@ -157,6 +157,13 @@
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-aws</artifactId>
             <version>${hadoop.version}</version>
+            <exclusions>
+                <!-- the bundle repackages slf4j 1.x, which breaks Logback; S3A is not used here -->
+                <exclusion>
+                    <groupId>software.amazon.awssdk</groupId>
+                    <artifactId>bundle</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- Data Guess -->
         <dependency>
