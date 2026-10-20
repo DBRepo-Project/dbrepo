@@ -347,6 +347,14 @@
           </v-icon>
           <v-spacer />
           <v-btn
+            icon="mdi-refresh"
+            variant="text"
+            :aria-label="$t('replication.actions.refresh')"
+            :loading="loadingOutboxes"
+            @click="refreshOutbox">
+            <v-tooltip activator="parent">{{ $t('replication.actions.refresh') }}</v-tooltip>
+          </v-btn>
+          <v-btn
             icon="mdi-replay"
             variant="text"
             :loading="retryingAll"
@@ -460,6 +468,7 @@ export default {
       loading: false,
       loadingDatabases: false,
       loadingOutboxes: false,
+      outboxRequestId: 0,
       loadingAccess: false,
       synchronisingDatabase: false,
       synchronisingTable: false,
@@ -567,21 +576,30 @@ export default {
     }
   },
   watch: {
+    activeOutbox () {
+      this.refreshOutbox()
+    },
     selectedDatabaseId (databaseId) {
       this.selectedTableId = null
+      this.selectedDatabase = null
       this.synchronisationResult = null
       this.dataOutbox = []
+      if (this.activeOutbox === 'data') {
+        this.refreshOutbox()
+      }
       if (!databaseId) {
-        this.selectedDatabase = null
         return
       }
       const databaseService = useDatabaseService()
       databaseService.findOne(databaseId)
         .then(database => {
-          this.selectedDatabase = database
-          return this.loadDataOutbox()
+          if (this.selectedDatabaseId === databaseId) {
+            this.selectedDatabase = database
+          }
         })
-        .catch(error => this.showError(error))
+        .catch(error => {
+          if (this.selectedDatabaseId === databaseId) this.showError(error)
+        })
     }
   },
   mounted () {
@@ -645,52 +663,80 @@ export default {
       toast.error(error?.message || this.$t('replication.error'))
     },
     async refreshAll () {
+      if (!this.canManageReplication || this.loading) {
+        return
+      }
       this.loading = true
-      this.loadingDatabases = true
-      this.loadingOutboxes = true
-      this.loadingAccess = true
-      const replicationService = useReplicationService()
-      const databaseService = useDatabaseService()
       try {
-        const [status, databases, replicationOutbox, metadataOutbox, replicaAccess, users] = await Promise.all([
-          replicationService.findStatus(),
-          databaseService.findAll(),
-          replicationService.findReplicationOutbox(),
-          replicationService.findMetadataOutbox(),
-          replicationService.findAccess(),
+        await Promise.all([
+          this.loadStatus(),
+          this.loadDatabases(),
+          this.loadAccess(),
+          this.refreshOutbox()
+        ])
+      } finally {
+        this.loading = false
+      }
+    },
+    async loadStatus () {
+      try {
+        this.status = await useReplicationService().findStatus()
+        this.lastUpdated = new Date()
+      } catch (error) {
+        this.showError(error)
+      }
+    },
+    async loadDatabases () {
+      this.loadingDatabases = true
+      try {
+        this.databases = await useDatabaseService().findAll()
+      } catch (error) {
+        this.showError(error)
+      } finally {
+        this.loadingDatabases = false
+      }
+    },
+    async loadAccess () {
+      this.loadingAccess = true
+      try {
+        const [replicaAccess, users] = await Promise.all([
+          useReplicationService().findAccess(),
           useUserService().findAll()
         ])
-        this.status = status
-        this.databases = databases
-        this.replicationOutbox = replicationOutbox
-        this.metadataOutbox = metadataOutbox
         this.replicaAccess = replicaAccess
         this.users = users
         this.accessMappings = Object.fromEntries(
           replicaAccess.map(access => [access.database_id, access.local_username])
         )
-        if (this.selectedDatabaseId) {
-          await this.loadDataOutbox()
-        }
-        this.lastUpdated = new Date()
       } catch (error) {
         this.showError(error)
       } finally {
-        this.loading = false
-        this.loadingDatabases = false
-        this.loadingOutboxes = false
         this.loadingAccess = false
       }
     },
-    async loadDataOutbox () {
-      if (!this.selectedDatabaseId) {
+    async refreshOutbox () {
+      if (!this.canManageReplication) {
         return
       }
+      const requestId = ++this.outboxRequestId
+      const source = this.activeOutbox
+      const databaseId = this.selectedDatabaseId
+      const service = useReplicationService()
       this.loadingOutboxes = true
       try {
-        this.dataOutbox = await useReplicationService().findDataOutbox(this.selectedDatabaseId)
+        const entries = source === 'replication'
+          ? await service.findReplicationOutbox()
+          : source === 'metadata'
+            ? await service.findMetadataOutbox()
+            : databaseId ? await service.findDataOutbox(databaseId) : []
+        if (requestId === this.outboxRequestId && source === this.activeOutbox &&
+          (source !== 'data' || databaseId === this.selectedDatabaseId)) {
+          this[`${source}Outbox`] = entries
+        }
+      } catch (error) {
+        if (requestId === this.outboxRequestId) this.showError(error)
       } finally {
-        this.loadingOutboxes = false
+        if (requestId === this.outboxRequestId) this.loadingOutboxes = false
       }
     },
     async synchroniseDatabase () {
@@ -733,7 +779,7 @@ export default {
           await service.retryDataOutbox(this.selectedDatabaseId)
         }
         useToastInstance().success(this.$t('replication.retryQueued'))
-        await this.refreshAll()
+        await Promise.all([this.refreshOutbox(), this.loadStatus()])
       } catch (error) {
         this.showError(error)
       } finally {
@@ -751,7 +797,7 @@ export default {
           await service.retryDataOutboxEntry(this.selectedDatabaseId, id)
         }
         useToastInstance().success(this.$t('replication.retryQueued'))
-        await this.refreshAll()
+        await Promise.all([this.refreshOutbox(), this.loadStatus()])
       } catch (error) {
         this.showError(error)
       }
