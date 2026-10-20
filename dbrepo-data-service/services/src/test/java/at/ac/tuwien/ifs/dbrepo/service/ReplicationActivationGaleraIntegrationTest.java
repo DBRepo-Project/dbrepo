@@ -89,6 +89,22 @@ class ReplicationActivationGaleraIntegrationTest {
     }
 
     @Test
+    void decimalPrimaryKeysKeepTheirFractionalIdentityDuringBackfill() throws Exception {
+        create("id DECIMAL(12,6) PRIMARY KEY,value INT");
+        execute(0, "INSERT INTO samples VALUES(1.1,10),(1.2,20)");
+        final var before = rows(0, false);
+        try (var c = connect(0)) { activation.prepareTable(c, "samples"); }
+        for (int node = 0; node < 3; node++) {
+            assertEquals(before, rows(node, false));
+            assertEquals(rows(0, true), rows(node, true));
+            try (var c = connect(node); var s = c.createStatement(); var r = s.executeQuery(
+                    "SELECT COUNT(DISTINCT replication_key) FROM samples")) {
+                assertTrue(r.next()); assertEquals(2, r.getInt(1));
+            }
+        }
+    }
+
+    @Test
     void populatedTablesWithoutAProvenUniqueIdentityAreRejectedBeforeAltering() throws Exception {
         create("id INT NULL UNIQUE,value INT");
         execute(0, "INSERT INTO samples VALUES(NULL,10),(NULL,10)");

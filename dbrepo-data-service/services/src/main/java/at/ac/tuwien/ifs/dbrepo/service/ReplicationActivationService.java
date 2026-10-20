@@ -196,7 +196,7 @@ public class ReplicationActivationService extends DataConnector {
         final String namespace = UUID.nameUUIDFromBytes((localSite + "/" + connection.getCatalog() + "/" + name)
                 .getBytes(StandardCharsets.UTF_8)).toString();
         final String values = String.join(",", columns.get().stream()
-                .map(column -> "HEX(`" + column.replace("`", "``") + "`)").toList());
+                .map(column -> "HEX(CAST(`" + column.replace("`", "``") + "` AS BINARY))").toList());
         return "INSERT(INSERT(INSERT(INSERT(LEFT(SHA2(JSON_ARRAY('" + namespace + "'," + values
                 + "),256),32),9,0,'-'),14,0,'-'),19,0,'-'),24,0,'-')";
     }
