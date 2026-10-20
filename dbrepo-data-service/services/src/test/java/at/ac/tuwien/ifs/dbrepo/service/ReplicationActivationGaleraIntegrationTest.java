@@ -1,15 +1,23 @@
 package at.ac.tuwien.ifs.dbrepo.service;
 
 import at.ac.tuwien.ifs.dbrepo.service.outbox.TupleReplicationOutboxService;
+import at.ac.tuwien.ifs.dbrepo.service.outbox.TupleReplicationOutboxServiceMariaDbImpl;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.HistorySnapshotDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mchange.v2.c3p0.ComboPooledDataSource;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.springframework.web.client.RestTemplate;
 
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.*;
 
 @EnabledIfEnvironmentVariable(named = "REPLICATION_ACTIVATION_GALERA_SQL_PORTS", matches = "[0-9]+,[0-9]+,[0-9]+")
 class ReplicationActivationGaleraIntegrationTest {
@@ -126,6 +134,53 @@ class ReplicationActivationGaleraIntegrationTest {
         for (int node = 0; node < 3; node++) assertEquals(before, rows(node, true));
         execute(2, "INSERT INTO samples(id,value) VALUES(2,20),(3,30)");
         for (int node = 0; node < 3; node++) assertEquals(rows(2, true), rows(node, true));
+    }
+
+    @Test
+    void historyExportWaitsForVersionBindingsOnItsSeparateGaleraReader() throws Exception {
+        create("id INT PRIMARY KEY,value INT");
+        execute(1, "INSERT INTO samples VALUES(1,10)");
+        try (var c = connect(1)) { activation.prepareTable(c, "samples"); }
+        final var database = Database.builder().id(UUID.randomUUID()).internalName(SCHEMA)
+                .creationLocation("https://source.example").build();
+        final var table = Table.builder().id(UUID.randomUUID()).internalName("samples")
+                .creationLocation("https://source.example").build();
+        final var pool = mock(ComboPooledDataSource.class);
+        final var journal = new TupleReplicationOutboxServiceMariaDbImpl(new ObjectMapper().findAndRegisterModules());
+        final var service = new HistorySnapshotService(journal, "https://source.example") {
+            @Override public ComboPooledDataSource getDataSource(Database ignored) { return pool; }
+        };
+        final var committed = new CountDownLatch(1);
+        final var firstCommit = new AtomicBoolean(true);
+        try (var lock = connect(0); var locker = lock.createStatement();
+             var reader = connect(0); var writer = spy(connect(1));
+             var executor = Executors.newSingleThreadExecutor()) {
+            // Only this isolated reader's applier is paused, after all TOI schema preparation.
+            try (var s = reader.createStatement()) { s.execute("SET wsrep_sync_wait=0"); }
+            when(pool.getConnection()).thenReturn(reader, writer);
+            doAnswer(call -> {
+                if (firstCommit.getAndSet(false)) {
+                    locker.execute("FLUSH TABLES WITH READ LOCK");
+                    call.callRealMethod();
+                    committed.countDown();
+                    return null;
+                }
+                return call.callRealMethod();
+            }).when(writer).commit();
+            final var export = executor.submit(() -> service.create(database, table,
+                    new HistorySnapshotDto.Create(UUID.randomUUID(), table.getId(), null)));
+            try {
+                assertTrue(committed.await(20, TimeUnit.SECONDS));
+                assertThrows(TimeoutException.class, () -> export.get(2, TimeUnit.SECONDS),
+                        "Export must not read a stale view before the committed version bindings arrive");
+            } finally {
+                locker.execute("UNLOCK TABLES");
+            }
+            assertEquals(1, export.get(20, TimeUnit.SECONDS).manifest().rows());
+            try (var s = connect(2); var sql = s.createStatement(); var r = sql.executeQuery("SELECT @@global.wsrep_sync_wait")) {
+                assertTrue(r.next()); assertEquals(0, r.getInt(1), "Causal read policy must not become global");
+            }
+        }
     }
 
     private Connection connect(int node) throws SQLException {

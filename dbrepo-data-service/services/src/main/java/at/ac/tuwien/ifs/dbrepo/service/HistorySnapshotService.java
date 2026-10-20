@@ -78,6 +78,10 @@ public class HistorySnapshotService extends DataConnector {
                     execute(writer, "INSERT INTO " + LINEAGE + " (binding, epoch, boundary, event_id) VALUES ('source', ?, 0, NULL)"
                             + " ON DUPLICATE KEY UPDATE binding=binding", UUID.randomUUID().toString());
                     final Checkpoint observed = checkpoint(writer, "source", true);
+                    // This pooled connection may use another Galera node; wait before fixing its read view.
+                    try (var sync = reader.createStatement()) {
+                        sync.execute("SET STATEMENT wsrep_sync_wait=1 FOR SELECT 1");
+                    }
                     reader.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
                     reader.setAutoCommit(false);
                     execute(reader, "START TRANSACTION WITH CONSISTENT SNAPSHOT");
