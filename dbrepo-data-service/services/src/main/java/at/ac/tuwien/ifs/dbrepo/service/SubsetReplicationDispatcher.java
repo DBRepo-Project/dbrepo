@@ -141,29 +141,42 @@ public class SubsetReplicationDispatcher extends DataConnector {
             if (targetTable == null) throw new IllegalStateException("Waiting for subset history table mapping");
             final String url = site + "/api/v1/database/" + targetId + "/table/" + targetTable + "/timestamps";
             // ponytail: resend relevant interval history; add per-peer checkpoints if this scan dominates delivery.
-            try (var s = c.prepareStatement("SELECT * FROM tuple_replication_timestamps WHERE site_url=?"
-                    + " AND database_id=? AND table_id=? AND row_start<=? ORDER BY replication_id,row_start")) {
-                s.setString(1, query.originSite()); s.setString(2, execution.databaseId().toString());
-                s.setString(3, binding.tableId().toString());
-                s.setTimestamp(4, Timestamp.from(query.selectedAt()), TupleVersionHistory.utc());
-                s.setFetchSize(256);
+            String afterKey = null;
+            Timestamp afterStart = null;
+            while (true) {
                 final var batch = new ArrayList<TupleReplicationTimestampDto>(256);
-                try (var rows = s.executeQuery()) {
-                    while (rows.next()) {
-                        final Timestamp end = rows.getTimestamp("row_end", TupleVersionHistory.utc());
-                        final Timestamp version = rows.getTimestamp("master_site_ts", TupleVersionHistory.utc());
-                        batch.add(TupleReplicationTimestampDto.builder().siteUrl(query.originSite())
-                                .databaseId(execution.databaseId()).tableId(binding.tableId())
-                                .replicationId(rows.getString("replication_id"))
-                                .masterSiteTs(version == null ? null : version.toInstant())
-                                .rowStart(rows.getTimestamp("row_start", TupleVersionHistory.utc()).toInstant())
-                                .rowEnd(end == null ? null : end.toInstant())
-                                .visibilityStart((Long) rows.getObject("visibility_start"))
-                                .visibilityEnd((Long) rows.getObject("visibility_end")).build());
-                        if (batch.size() == 256) { sendEvidenceBatch(url, batch); batch.clear(); }
+                // Finish each bounded read before HTTP delivery consumes the SQL query's time budget.
+                try (var s = c.prepareStatement("SELECT * FROM tuple_replication_timestamps WHERE site_url=?"
+                        + " AND database_id=? AND table_id=? AND row_start<=?"
+                        + (afterKey == null ? "" : " AND (replication_id > ? OR (replication_id = ? AND row_start > ?))")
+                        + " ORDER BY replication_id,row_start LIMIT 256")) {
+                    s.setString(1, query.originSite()); s.setString(2, execution.databaseId().toString());
+                    s.setString(3, binding.tableId().toString());
+                    s.setTimestamp(4, Timestamp.from(query.selectedAt()), TupleVersionHistory.utc());
+                    if (afterKey != null) {
+                        s.setString(5, afterKey); s.setString(6, afterKey);
+                        s.setTimestamp(7, afterStart, TupleVersionHistory.utc());
                     }
-                    if (!batch.isEmpty()) sendEvidenceBatch(url, batch);
+                    try (var rows = s.executeQuery()) {
+                        while (rows.next()) {
+                            final Timestamp end = rows.getTimestamp("row_end", TupleVersionHistory.utc());
+                            final Timestamp version = rows.getTimestamp("master_site_ts", TupleVersionHistory.utc());
+                            batch.add(TupleReplicationTimestampDto.builder().siteUrl(query.originSite())
+                                    .databaseId(execution.databaseId()).tableId(binding.tableId())
+                                    .replicationId(rows.getString("replication_id"))
+                                    .masterSiteTs(version == null ? null : version.toInstant())
+                                    .rowStart(rows.getTimestamp("row_start", TupleVersionHistory.utc()).toInstant())
+                                    .rowEnd(end == null ? null : end.toInstant())
+                                    .visibilityStart((Long) rows.getObject("visibility_start"))
+                                    .visibilityEnd((Long) rows.getObject("visibility_end")).build());
+                        }
+                    }
                 }
+                if (batch.isEmpty()) break;
+                sendEvidenceBatch(url, batch);
+                if (batch.size() < 256) break;
+                afterKey = batch.getLast().getReplicationId();
+                afterStart = Timestamp.from(batch.getLast().getRowStart());
             }
         }
     }
