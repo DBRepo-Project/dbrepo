@@ -67,6 +67,18 @@ class HistorySnapshotIntegrationTest {
     }
 
     @Test
+    void repeatingAReadyExportDoesNotBackfillHistoryAgain() throws Exception {
+        final Artifact artifact = export(null);
+        try (Connection c = connection()) {
+            sql(c, "CREATE TRIGGER reject_repeated_backfill BEFORE INSERT ON tuple_replication_versions "
+                    + "FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='unexpected repeated source backfill'");
+        }
+        assertEquals(artifact.envelope(), source.create(database, sourceTable,
+                new Create(artifact.id(), sourceTable.getId(), null)));
+        assertEquals(artifact.envelope(), source.manifest(database, artifact.id()));
+    }
+
+    @Test
     void transferredHistoryCarriesMasterTimestampAndSourceVisibility() throws Exception {
         final Artifact artifact = export(null);
         assertEquals(3, artifact.envelope().manifest().format());

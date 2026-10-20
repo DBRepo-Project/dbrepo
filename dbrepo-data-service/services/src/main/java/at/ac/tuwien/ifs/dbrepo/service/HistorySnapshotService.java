@@ -45,12 +45,6 @@ public class HistorySnapshotService extends DataConnector {
         try (var pool = getDataSource(database); Connection reader = pool.getConnection(); Connection writer = pool.getConnection()) {
             prepare(writer);
             journal.ensureTableExists(writer);
-            writer.setAutoCommit(false);
-            try {
-                TupleVersionHistory.backfillSource(writer, baseUrl, database.getId(), table);
-                writer.commit();
-            } catch (SQLException | RuntimeException failure) { writer.rollback(); throw failure; }
-            finally { writer.setAutoCommit(true); }
             require(transactionalTables(writer, List.of("tuple_replication_notification_outbox", "tuple_replication_journal_counter")) == 2,
                     HttpStatus.CONFLICT, "Source journal must use transactional storage");
             final String exportLock = "dbrepo-history:" + request.snapshotId();
@@ -71,6 +65,12 @@ public class HistorySnapshotService extends DataConnector {
                     require(existing.status().equals("BUILDING") && requestDigest.equals(existing.digest()),
                             HttpStatus.CONFLICT, "Unpublished snapshot request changed");
                 }
+                writer.setAutoCommit(false);
+                try {
+                    TupleVersionHistory.backfillSource(writer, baseUrl, database.getId(), table);
+                    writer.commit();
+                } catch (SQLException | RuntimeException failure) { writer.rollback(); throw failure; }
+                finally { writer.setAutoCommit(true); }
                 utc(reader);
                 writer.setAutoCommit(false);
                 try {
