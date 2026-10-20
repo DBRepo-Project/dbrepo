@@ -383,8 +383,25 @@
               </template>
               <template #item.nextAttemptAt="{item}">{{ formatDate(item.nextAttemptAt) }}</template>
               <template #item.actions="{item}">
-                <v-btn icon="mdi-replay" size="small" variant="text" @click="retryEntry('replication', item.id)">
+                <v-btn
+                  icon="mdi-replay"
+                  size="small"
+                  variant="text"
+                  :disabled="item.status === 'CANCELLED' || cancellingEntryId !== null"
+                  @click="retryEntry('replication', item.id)">
                   <v-tooltip activator="parent">{{ $t('replication.actions.retry') }}</v-tooltip>
+                </v-btn>
+                <v-btn
+                  v-if="canCancelEntry(item)"
+                  icon="mdi-cancel"
+                  size="small"
+                  variant="text"
+                  color="error"
+                  :aria-label="$t('replication.actions.cancel')"
+                  :loading="cancellingEntryId === item.id"
+                  :disabled="cancellingEntryId !== null"
+                  @click="cancelEntry(item)">
+                  <v-tooltip activator="parent">{{ $t('replication.actions.cancel') }}</v-tooltip>
                 </v-btn>
               </template>
             </v-data-table>
@@ -473,6 +490,7 @@ export default {
       synchronisingDatabase: false,
       synchronisingTable: false,
       retryingAll: false,
+      cancellingEntryId: null,
       lastUpdated: null
     }
   },
@@ -800,6 +818,29 @@ export default {
         await Promise.all([this.refreshOutbox(), this.loadStatus()])
       } catch (error) {
         this.showError(error)
+      }
+    },
+    canCancelEntry (item) {
+      return this.canManageReplication && ['PENDING', 'FAILED'].includes(item.status)
+    },
+    async cancelEntry (item) {
+      if (!this.canCancelEntry(item) || this.cancellingEntryId !== null ||
+        !confirm(this.$t('replication.outboxes.cancelConfirm', {
+          id: item.id, operation: item.operationType, target: item.targetSiteUrl
+        }))) {
+        return
+      }
+      this.cancellingEntryId = item.id
+      try {
+        await useReplicationService().cancelReplicationOutboxEntry(item.id, this.$t('replication.outboxes.cancelReason'))
+        item.status = 'CANCELLED'
+        item.nextAttemptAt = null
+        useToastInstance().success(this.$t('replication.outboxes.cancelled'))
+        await Promise.all([this.refreshOutbox(), this.loadStatus()])
+      } catch (error) {
+        this.showError(error)
+      } finally {
+        this.cancellingEntryId = null
       }
     },
     async mapReplicationAccess (item) {

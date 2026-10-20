@@ -37,6 +37,11 @@ export const useReplicationService = (): any => {
     return request(() => axios.post<ReplicationRetryResultDto>(`/api/replication/outbox/${id}/retry`))
   }
 
+  async function cancelReplicationOutboxEntry (id: string, reason: string): Promise<ReplicationOutboxEntryDto> {
+    const axios = useAxiosInstance()
+    return request(() => axios.post<ReplicationOutboxEntryDto>(`/api/replication/outbox/${id}/cancel`, {reason}))
+  }
+
   async function findMetadataOutbox (): Promise<MetadataReplicationOutboxEntryDto[]> {
     const axios = useAxiosInstance()
     return request(() => axios.get<MetadataReplicationOutboxEntryDto[]>('/api/metadata/replication/outbox'))
@@ -105,6 +110,7 @@ export const useReplicationService = (): any => {
     findReplicationOutbox,
     retryReplicationOutbox,
     retryReplicationOutboxEntry,
+    cancelReplicationOutboxEntry,
     findMetadataOutbox,
     retryMetadataOutbox,
     retryMetadataOutboxEntry,

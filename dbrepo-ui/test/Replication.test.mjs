@@ -61,6 +61,61 @@ const deferred = () => {
   return { promise, resolve, reject }
 }
 
+const pendingJob = () => ({ id: 'job', status: 'PENDING', operationType: 'HISTORY_SYNC', targetSiteUrl: 'https://peer.example' })
+
+test('cancelling an outbox job requires confirmation and sends an audited cancellation', async () => {
+  const { state, sandbox, calls, notifications } = context()
+  let confirmation
+  sandbox.confirm = message => { confirmation = message; return false }
+  await state.cancelEntry(pendingJob())
+  assert.equal(calls.length, 0)
+  assert.match(confirmation, /HISTORY_SYNC/)
+  assert.match(confirmation, /https:\/\/peer.example/)
+  assert.match(confirmation, /job/)
+  sandbox.confirm = () => true
+  let refreshed = 0
+  state.refreshOutbox = async () => { refreshed++ }
+  state.loadStatus = async () => {}
+  await state.cancelEntry(pendingJob())
+  assert.equal(calls.length, 1)
+  assert.equal(calls[0].path, '/api/replication/outbox/job/cancel')
+  assert.equal(calls[0].body.reason, 'replication.outboxes.cancelReason')
+  assert.deepEqual(notifications, ['replication.outboxes.cancelled'])
+  assert.equal(refreshed, 1)
+  assert.equal(state.cancellingEntryId, null)
+})
+
+test('only administrators can cancel pending or failed replication jobs', async () => {
+  const { state, sandbox, calls } = context()
+  sandbox.confirm = () => { throw new Error('Must not ask for confirmation') }
+  for (const status of ['SUCCEEDED', 'CANCELLED', 'PROCESSING']) {
+    assert.equal(state.canCancelEntry({ status }), false)
+    await state.cancelEntry({ ...pendingJob(), status })
+  }
+  assert.equal(state.canCancelEntry({ status: 'FAILED' }), true)
+  state.cacheStore = { getRoles: [] }
+  await state.cancelEntry(pendingJob())
+  assert.equal(calls.length, 0)
+})
+
+test('cancellation prevents duplicate requests and reports failures without claiming success', async () => {
+  const { state, sandbox, notifications, failures } = context()
+  const request = deferred()
+  let attempts = 0
+  sandbox.confirm = () => true
+  sandbox.useReplicationService = () => ({ cancelReplicationOutboxEntry: () => { attempts++; return request.promise } })
+  const cancellation = state.cancelEntry(pendingJob())
+  assert.equal(state.cancellingEntryId, 'job')
+  await state.cancelEntry(pendingJob())
+  assert.equal(attempts, 1)
+  const error = new Error('Job already completed')
+  request.reject(error)
+  await cancellation
+  assert.deepEqual(failures, [error])
+  assert.deepEqual(notifications, [])
+  assert.equal(state.cancellingEntryId, null)
+})
+
 test('slow status checks do not hold back databases, access or the visible outbox', async () => {
   const { state, sandbox } = context({ stubRefresh: false })
   const status = deferred()

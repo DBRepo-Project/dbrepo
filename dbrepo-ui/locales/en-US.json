@@ -1690,12 +1690,16 @@
     "outboxes": {
       "title": "Outbox entries",
       "help": "Inspect durable replication operations and retry entries that did not complete automatically.",
-      "selectDatabase": "Select a replicated database to inspect its data outbox."
+      "selectDatabase": "Select a replicated database to inspect its data outbox.",
+      "cancelConfirm": "Cancel job {id} ({operation}) targeting {target}? Future retries will stop. Requests already sent and existing data are not undone. Dependent jobs must be cancelled separately.",
+      "cancelReason": "Cancelled by administrator from the replication page.",
+      "cancelled": "Job cancelled. Future retries are stopped."
     },
     "actions": {
       "refresh": "Refresh",
       "retry": "Retry entry",
       "retryAll": "Retry pending entries",
+      "cancel": "Cancel job",
       "synchroniseDatabase": "Synchronise database",
       "synchroniseTable": "Synchronise table",
       "assignAccess": "Assign owner",
