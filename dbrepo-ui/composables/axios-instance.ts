@@ -1,24 +1,10 @@
 import axios, {type AxiosInstance} from 'axios'
 
+/* refresh this many seconds before the access token expires to tolerate clock skew and request latency */
+const EXPIRY_MARGIN_SECONDS = 30
+
 let instance: AxiosInstance | null = null;
-
-function tokenToExpiryDate(token: string): number {
-  if (!token) {
-    return -1
-  }
-  const exp: number = jwtDecode<Token>(token).exp
-  if (exp) {
-    return exp * 1000
-  }
-  return -1
-}
-
-function isExpiredToken(token: string): boolean {
-  if (!token) {
-    return false
-  }
-  return tokenToExpiryDate(token) < Date.now()
-}
+let pendingRefresh: Promise<void> | null = null;
 
 export const useAxiosInstance = () => {
   const config = useRuntimeConfig()
@@ -34,14 +20,24 @@ export const useAxiosInstance = () => {
       baseURL: config.public.api.client
     });
     instance.interceptors.request.use(async (config) => {
-      const { loggedIn, user, canRefresh, refresh } = useOidcAuth()
-      if (!loggedIn) {
+      const { loggedIn, user, fetch } = useOidcAuth()
+      if (!loggedIn.value) {
         return config
       }
-      if (canRefresh) {
-        await refresh()
+      if (user.value!.expireAt - EXPIRY_MARGIN_SECONDS <= Date.now() / 1000) {
+        /* the session endpoint refreshes the token server-side, or clears the session when it cannot; concurrent requests share one call */
+        pendingRefresh ??= fetch()
+          .then(() => {
+            if (!loggedIn.value) {
+              useToastInstance().error(useNuxtApp().$i18n.t('error.auth.expired'))
+            }
+          })
+          .finally(() => {
+            pendingRefresh = null
+          })
+        await pendingRefresh
       }
-      const { accessToken } = user.value
+      const accessToken = user.value?.accessToken
       if (!accessToken) {
         return config
       }
