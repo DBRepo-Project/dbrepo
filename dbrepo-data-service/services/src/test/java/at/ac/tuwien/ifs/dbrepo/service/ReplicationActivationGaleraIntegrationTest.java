@@ -5,6 +5,7 @@ import at.ac.tuwien.ifs.dbrepo.service.outbox.TupleReplicationOutboxServiceMaria
 import at.ac.tuwien.ifs.dbrepo.core.api.replication.HistorySnapshotDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
+import at.ac.tuwien.ifs.dbrepo.service.impl.ReplicationTimestampServiceMariaDbImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import org.junit.jupiter.api.*;
@@ -179,6 +180,35 @@ class ReplicationActivationGaleraIntegrationTest {
             assertEquals(1, export.get(20, TimeUnit.SECONDS).manifest().rows());
             try (var s = connect(2); var sql = s.createStatement(); var r = sql.executeQuery("SELECT @@global.wsrep_sync_wait")) {
                 assertTrue(r.next()); assertEquals(0, r.getInt(1), "Causal read policy must not become global");
+            }
+        }
+    }
+
+    @Test
+    void timestampSchemaIndexesVersionLookupsOnEveryNodeWithoutChangingStoredEvidence() throws Exception {
+        final var timestamps = new ReplicationTimestampServiceMariaDbImpl();
+        try (var c = connect(0)) {
+            timestamps.ensureTableExists(c);
+            try (var s = c.createStatement()) {
+                s.execute("INSERT INTO tuple_replication_timestamps(site_url,replication_id,database_id,table_id,row_start,master_site_ts)"
+                        + " VALUES('https://source.example','key','database','table','2025-01-02 03:04:05.123456','2025-01-02 03:04:05.123456')");
+            }
+            timestamps.ensureTableExists(c);
+        }
+        for (int node = 0; node < 3; node++) {
+            try (var c = connect(node); var indexes = c.getMetaData().getIndexInfo(SCHEMA, null,
+                    "tuple_replication_timestamps", false, false)) {
+                final List<String> columns = new ArrayList<>();
+                while (indexes.next()) {
+                    if ("history_version".equals(indexes.getString("INDEX_NAME"))) columns.add(indexes.getString("COLUMN_NAME"));
+                }
+                assertEquals(List.of("table_id", "replication_id", "master_site_ts"), columns);
+                try (var s = c.createStatement(); var r = s.executeQuery("SELECT row_start,master_site_ts FROM tuple_replication_timestamps")) {
+                    assertTrue(r.next());
+                    assertEquals("2025-01-02 03:04:05.123456", r.getString(1));
+                    assertEquals(r.getString(1), r.getString(2));
+                    assertFalse(r.next());
+                }
             }
         }
     }

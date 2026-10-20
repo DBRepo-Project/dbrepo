@@ -176,6 +176,16 @@ public class ReplicationTimestampServiceMariaDbImpl extends DataConnector implem
                 }
             }
         }
+        try (var index = connection.prepareStatement("SELECT 1 FROM information_schema.STATISTICS"
+                + " WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='tuple_replication_timestamps'"
+                + " AND INDEX_NAME='history_version' LIMIT 1"); var rows = index.executeQuery()) {
+            if (!rows.next()) {
+                try (var ddl = connection.prepareStatement("CREATE INDEX IF NOT EXISTS history_version"
+                        + " ON tuple_replication_timestamps(table_id,replication_id,master_site_ts)")) {
+                    ddl.executeUpdate();
+                }
+            }
+        }
     }
 
     private boolean hasCurrentSchema(Connection connection) throws SQLException {
