@@ -140,7 +140,10 @@
               <strong
                 class="text-uppercase"
                 v-text="$t('pages.table.subpages.schema.foreign_key.label')" />
-              <span>{{ foreignKey.name }}</span> (<i>{{ foreignKeyColumns(foreignKey) }}</i>) <strong>REFERENCES</strong> <a :href="`/database/${database.id}/table/${foreignKey.referenced_table.id}/schema`">{{ foreignKeyReferencedTable(foreignKey) }}</a> (<i>{{ foreignKeyReferencedColumns(foreignKey) }}</i>)
+              <span class="ml-1">{{ foreignKey.name }}</span> (<i>{{ foreignKeyColumns(foreignKey) }}</i>) 
+              <strong>REFERENCES</strong> <a :href="`/database/${database.id}/table/${foreignKey.referenced_table.id}/schema`">{{ foreignKeyReferencedTable(foreignKey) }}</a> (<i>{{ foreignKeyReferencedColumns(foreignKey) }}</i>) 
+              <strong>ON DELETE</strong> <span v-if="!!foreignKey.on_delete">{{ foreignKey.on_delete.replaceAll("_"," ").toUpperCase() }}</span> <span v-else>NO ACTION</span> 
+              <strong class="ml-1">ON UPDATE</strong> <span v-if="!!foreignKey.on_update">{{ foreignKey.on_update.replaceAll("_"," ").toUpperCase() }}</span> <span v-else>NO ACTION</span> 
             </li>
             <li v-for="(uniqueConstraint, i) in table.constraints.uniques" :key="`uk-${i}`">
               <strong

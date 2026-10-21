@@ -136,6 +136,7 @@
                 submit-text="Create"
                 :disabled="!valid || table"
                 :columns="tableCreate.columns"
+                :current-table-name="generatedTableName"
                 :loading="loading"
                 @close="schemaClose" />
             </v-container>

@@ -211,6 +211,16 @@
             @click="addColumn()" />
         </v-col>
       </v-row>
+      <TableForeignKeys
+        v-model="foreignKeys"
+        :columns="columns"
+        :tables="database && database.tables ? database.tables : []"
+        :current-table-name="currentTableName"
+        :disabled="disabled"
+        :frozen="frozen"
+        :loading="loadForeignKey"
+        :input-variant="inputVariant"
+        :button-variant="buttonVariant" />
       <v-row>
         <v-col>
           <v-btn
@@ -228,9 +238,13 @@
 </template>
 
 <script>
+import TableForeignKeys from '@/components/table/TableForeignKeys.vue'
 import { useCacheStore } from '@/stores/cache.js'
 
 export default {
+  components: {
+    TableForeignKeys
+  },
   props: {
     columns: {
       type: Array,
@@ -261,6 +275,12 @@ export default {
       default () {
         return false
       }
+    },
+    currentTableName: {
+      type: String,
+      default () {
+        return null
+      }
     }
   },
   data () {
@@ -268,6 +288,8 @@ export default {
       valid: false,
       columnTypes: [],
       loadColumn: false,
+      loadForeignKey: false,
+      foreignKeys: [],
       loadingColumnTypes: false,
       tableColumns: [],
       cacheStore: useCacheStore()
@@ -297,7 +319,13 @@ export default {
       this.$emit('schema-valid', { valid: this.valid })
     },
     columns () {
+      this.$refs.form.validate()
+    },
+    foreignKeys: {
+      deep: true,
+      handler () {
         this.$refs.form.validate()
+      }
     }
   },
   mounted () {
@@ -335,7 +363,7 @@ export default {
     },
     submit () {
       const tableService = useTableService()
-      this.$emit('close', { success: true, columns: tableService.prepareColumns(this.columns), constraints: tableService.prepareConstraints(this.columns) })
+      this.$emit('close', { success: true, columns: tableService.prepareColumns(this.columns), constraints: tableService.prepareConstraints(this.columns, this.foreignKeys) })
     },
     setOthers (column) {
       column.null_allowed = false
