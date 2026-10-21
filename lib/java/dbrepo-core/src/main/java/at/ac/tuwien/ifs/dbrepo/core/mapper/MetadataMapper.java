@@ -1036,10 +1036,10 @@ public interface MetadataMapper {
                 .foreignKeys(data.getForeignKeys()
                         .stream()
                         .map(fk -> {
-                            final Optional<Table> optional = database.getTables()
+                            final Optional<Table> optional = fk.getReferencedTable().equals(table.getInternalName()) ? Optional.of(table) : database.getTables()
                                     .stream()
                                     .filter(t -> t.getInternalName().equals(fk.getReferencedTable()))
-                                    .findFirst().or(() -> Optional.of(table));
+                                    .findFirst();
                             if (optional.isEmpty()) {
                                 log.error("Failed to find foreign key referenced table {} in tables: {}", fk.getReferencedTable(), database.getTables().stream().map(Table::getInternalName).toList());
                                 throw new IllegalArgumentException("Failed to find foreign key referenced table");
