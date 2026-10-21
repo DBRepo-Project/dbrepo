@@ -10,6 +10,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.CreateTableColumn
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.CreateTableConstraintsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.CreateForeignKeyDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.ReferenceTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.ColumnEnum;
@@ -17,6 +18,9 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.ColumnSet;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumn;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumnType;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.Constraints;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.foreignKey.ForeignKey;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.foreignKey.ForeignKeyReference;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.foreignKey.ReferenceType;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
@@ -30,6 +34,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -44,6 +49,7 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.Mockito.*;
 
 @Slf4j
@@ -488,6 +494,84 @@ public class TableServiceUnitTest extends BaseTest {
         assertEquals(column0.getInternalName(), constraints.getUniques().get(0).getColumns().get(0).getInternalName());
         assertEquals(0, constraints.getChecks().size());
         assertEquals(0, constraints.getForeignKeys().size());
+    }
+
+    @Test
+    public void createTable_foreignKeyWithNonStandardColumnName_succeeds() throws DataServiceException,
+            DataServiceConnectionException, UserNotFoundException, TableNotFoundException, DatabaseNotFoundException,
+            TableExistsException, SearchServiceException, SearchServiceConnectionException, MalformedException,
+            OntologyNotFoundException, SemanticEntityNotFoundException, NotAllowedException {
+        final CreateTableDto request = CreateTableDto.builder()
+                .name("Station Observation")
+                .description("A wonderful table")
+                .columns(List.of(CreateTableColumnDto.builder()
+                                .name("Station ID")
+                                .nullAllowed(false)
+                                .type(ColumnTypeDto.BIGINT)
+                                .build(),
+                        CreateTableColumnDto.builder()
+                                .name("Observed At")
+                                .nullAllowed(true)
+                                .type(ColumnTypeDto.DATETIME)
+                                .build()))
+                .constraints(CreateTableConstraintsDto.builder()
+                        .checks(Set.of())
+                        .uniques(List.of())
+                        .foreignKeys(List.of(CreateForeignKeyDto.builder()
+                                .columns(List.of("Station ID"))
+                                .referencedTable(TABLE_1_INTERNAL_NAME)
+                                .referencedColumns(List.of("id"))
+                                .onUpdate(ReferenceTypeDto.CASCADE)
+                                .onDelete(ReferenceTypeDto.NO_ACTION)
+                                .build()))
+                        .primaryKey(List.of())
+                        .build())
+                .build();
+        final ArgumentCaptor<CreateTableDto> requestCaptor = forClass(CreateTableDto.class);
+
+        /* mock */
+        when(userService.findByUsername(USER_1_USERNAME))
+                .thenReturn(USER_1_DTO);
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
+        doNothing()
+                .when(dataServiceGateway)
+                .createTable(eq(DATABASE_1_ID), requestCaptor.capture());
+        when(databaseRepository.save(any(Database.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(searchServiceGateway.update(any(Database.class)))
+                .thenReturn(DATABASE_1_BRIEF_DTO);
+
+        /* test */
+        final Table response = tableService.createTable(DATABASE_1, request, USER_1_PRINCIPAL);
+        assertEquals("Station Observation", response.getName());
+        assertEquals("station_observation", response.getInternalName());
+        assertEquals(2, response.getColumns().size());
+        final TableColumn stationId = response.getColumns().get(0);
+        assertEquals("Station ID", stationId.getName());
+        assertEquals("station_id", stationId.getInternalName());
+        assertEquals(TableColumnType.BIGINT, stationId.getColumnType());
+
+        final Constraints constraints = response.getConstraints();
+        assertEquals(1, constraints.getForeignKeys().size());
+        final ForeignKey foreignKey = constraints.getForeignKeys().get(0);
+        assertEquals("fk_station_observation_0", foreignKey.getName());
+        assertEquals(response, foreignKey.getTable());
+        assertEquals(TABLE_1, foreignKey.getReferencedTable());
+        assertEquals(ReferenceType.CASCADE, foreignKey.getOnUpdate());
+        assertEquals(ReferenceType.NO_ACTION, foreignKey.getOnDelete());
+        assertEquals(1, foreignKey.getReferences().size());
+        final ForeignKeyReference reference = foreignKey.getReferences().get(0);
+        assertEquals(foreignKey, reference.getForeignKey());
+        assertEquals("Station ID", reference.getColumn().getName());
+        assertEquals("station_id", reference.getColumn().getInternalName());
+        assertEquals("id", reference.getReferencedColumn().getInternalName());
+
+        verify(dataServiceGateway)
+                .createTable(eq(DATABASE_1_ID), any(CreateTableDto.class));
+        assertSame(request, requestCaptor.getValue());
+        assertEquals(List.of("Station ID"), requestCaptor.getValue().getConstraints().getForeignKeys().get(0).getColumns());
     }
 
     @Test

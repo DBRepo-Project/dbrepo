@@ -1049,7 +1049,7 @@ public interface MetadataMapper {
                                 final int k = i;
                                 final Optional<TableColumn> column = table.getColumns()
                                         .stream()
-                                        .filter(cc -> cc.getInternalName().equals(fk.getColumns().get(k)))
+                                        .filter(cc -> cc.getInternalName().equals(nameToInternalName(fk.getColumns().get(k))))
                                         .findFirst();
                                 if (column.isEmpty()) {
                                     log.error("Failed to find foreign key column {}.{} in columns: {}", table.getInternalName(), fk.getColumns().get(k), optional.get().getColumns().stream().map(TableColumn::getInternalName).toList());
