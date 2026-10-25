@@ -56,7 +56,8 @@
         <jackson.version>2.15.2</jackson.version>
         <c3p0.version>0.10.2</c3p0.version>
         <c3p0-hibernate.version>6.2.2.Final</c3p0-hibernate.version>
-        <aws-sdk.version>2.20.18</aws-sdk.version>
+        <!-- SDK version hadoop-aws is built against -->
+        <aws-sdk.version>2.23.19</aws-sdk.version>
         <guava.version>33.3.0-jre</guava.version>
         <spark.version>4.0.0</spark.version>
         <keycloak.version>26.0.4</keycloak.version>
@@ -168,6 +169,13 @@
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-aws</artifactId>
             <version>${hadoop.version}</version>
+            <exclusions>
+                <!-- the bundle repackages every SDK module and slf4j 1.x, which clash with the SDK modules below and with Logback -->
+                <exclusion>
+                    <groupId>software.amazon.awssdk</groupId>
+                    <artifactId>bundle</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- Data Guess -->
         <dependency>
@@ -212,6 +220,17 @@
                     <artifactId>commons-logging</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <!-- used by hadoop-aws (S3A) in place of the bundle -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3-transfer-manager</artifactId>
+            <version>${aws-sdk.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>sts</artifactId>
+            <version>${aws-sdk.version}</version>
         </dependency>
         <!-- Monitoring -->
         <dependency>

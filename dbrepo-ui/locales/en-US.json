@@ -1237,7 +1237,8 @@
     },
     "auth": {
       "connection": "Failed to contact auth service",
-      "invalid": "Failed to authenticate in auth service"
+      "invalid": "Failed to authenticate in auth service",
+      "expired": "Your session has expired. Please sign in again."
     },
     "analyse": {
       "invalid": "Failed to analyse dataset",

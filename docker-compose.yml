@@ -174,7 +174,6 @@ services:
       - 9099:8080
     build:
       context: ./dbrepo-metadata-service
-      network: host
     environment:
       ADMIN_EMAIL: "${ADMIN_EMAIL:-noreply@localhost}"
       AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-admin}
@@ -294,7 +293,6 @@ services:
     image: dbrepo-consumer-service:latest
     build:
       context: ./dbrepo-consumer-service
-      network: host
     environment:
       AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-admin}
       AUTH_SERVICE_ADMIN_PASSWORD: ${AUTH_SERVICE_ADMIN_PASSWORD:-admin}
@@ -398,7 +396,6 @@ services:
     image: dbrepo-search-service:latest
     build:
       context: ./dbrepo-search-service
-      network: host
     environment:
       AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
       AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT_SECRET:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
@@ -426,7 +423,6 @@ services:
       args:
         APP_VERSION: ${APP_VERSION:-latest}
         COMMIT: ${CI_COMMIT_SHORT_SHA:-}
-      network: host
     environment:
       NUXT_STORAGE_OIDC_HOST: "${CACHE_DB_HOST:-cache-db}"
       NUXT_STORAGE_OIDC_USERNAME: "${CACHE_DB_USERNAME:-default}"
@@ -523,7 +519,6 @@ services:
     build:
       context: ./dbrepo-search-service
       dockerfile: init.Dockerfile
-      network: host
     environment:
       LOG_APPLICATION_LEVEL: ${LOG_APPLICATION_LEVEL:-info}
       METADATA_SERVICE_ENDPOINT: ${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}
@@ -547,7 +542,6 @@ services:
     build:
       context: ./dbrepo-dashboard-service
       dockerfile: init.Dockerfile
-      network: host
     environment:
       LOG_APPLICATION_LEVEL: ${LOG_APPLICATION_LEVEL:-info}
       DASHBOARD_UI_ENDPOINT: "${DASHBOARD_UI_ENDPOINT:-http://dashboard-ui:3000}"
@@ -589,7 +583,6 @@ services:
     image: dbrepo-storage-service-init:latest
     build:
       context: ./dbrepo-storage-service/init
-      network: host
     environment:
       S3_BUCKET: "${S3_BUCKET:-dbrepo}"
       S3_ACCESS_KEY_ID: "${S3_ADMIN_ACCESS_KEY_ID:-seaweedfsadmin}"
@@ -608,7 +601,6 @@ services:
     image: dbrepo-data-service:latest
     build:
       context: ./dbrepo-data-service
-      network: host
     environment:
       AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-admin}
       AUTH_SERVICE_ADMIN_PASSWORD: ${AUTH_SERVICE_ADMIN_PASSWORD:-admin}
@@ -707,7 +699,6 @@ services:
     image: dbrepo-dashboard-service:latest
     build:
       context: ./dbrepo-dashboard-service
-      network: host
     environment:
       AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
       BASE_URL: "${BASE_URL:-http://localhost}"

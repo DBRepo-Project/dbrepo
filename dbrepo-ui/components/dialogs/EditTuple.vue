@@ -302,6 +302,7 @@ export default {
       valid: false,
       loading: false,
       oldTuple: null,
+      draft: null,
       error: false,
       menu: false,
       loadContainer: false,
@@ -316,6 +317,11 @@ export default {
   mounted () {
     this.fetchContainer()
     this.oldTuple = Object.assign({}, this.tuple)
+    this.draft = useTupleDraft(this.$route.params.database_id, this.$route.params.table_id, this.edit ? this.primaryKeyColumns.map(pk => this.oldTuple[pk.internal_name]) : 'new')
+    const saved = this.draft.restore()
+    if (saved) {
+      Object.assign(this.tuple, saved)
+    }
     this.validate()
   },
   computed: {
@@ -359,6 +365,7 @@ export default {
   watch: {
     tuple: {
       handler () {
+        this.draft?.save(this.tuple)
         this.validate()
       },
       deep: true
@@ -371,6 +378,7 @@ export default {
     },
     cancel () {
       this.menu = false
+      this.draft.clear()
       this.$emit('close', { success: false })
     },
     hint (column) {
@@ -458,6 +466,7 @@ export default {
         .then(() => {
           const toast = useToastInstance()
           toast.success(this.$t('success.data.update'))
+          this.draft.clear()
           this.$emit('close', { success: true })
           this.loading = false
         })
@@ -489,6 +498,7 @@ export default {
         .then(() => {
           const toast = useToastInstance()
           toast.success(this.$t('success.data.add'))
+          this.draft.clear()
           this.$emit('close', { success: true })
           this.loading = false
         })
