@@ -101,6 +101,9 @@ jobs:
           gunzip -rf ./dbrepo-data-service/lib
           mv ./dbrepo-data-service/lib/* ~/.duckdb/extensions/$DUCKDB_VERSION/linux_amd64
       - name: Run tests
+        env:
+          # Hosted Docker runners reject Testcontainers' default API 1.32.
+          JAVA_TOOL_OPTIONS: -Dapi.version=1.40
         run: mvn -f ${{ matrix.pom }} clean test verify
 
   python-services:
