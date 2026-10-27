@@ -26,6 +26,8 @@ import java.util.UUID;
 public class DataServiceGatewayImpl implements DataServiceGateway {
 
     public static final String AMQP_USER_HEADER = "X-DBRepo-AMQP-User";
+    public static final String DELEGATED_CONTEXT_HEADER = "X-DBRepo-Delegated-Context";
+    public static final String AMQP_DELEGATED_CONTEXT = "amqp";
 
     private final RestTemplate restTemplate;
 
@@ -41,6 +43,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
         final ResponseEntity<Void> response;
         final String url = "/api/v1/database/" + databaseId + "/table/" + tableId + "/data";
         final HttpHeaders headers = new HttpHeaders();
+        headers.set(DELEGATED_CONTEXT_HEADER, AMQP_DELEGATED_CONTEXT);
         if (amqpUsername != null && !amqpUsername.isBlank()) {
             headers.set(AMQP_USER_HEADER, amqpUsername);
         }

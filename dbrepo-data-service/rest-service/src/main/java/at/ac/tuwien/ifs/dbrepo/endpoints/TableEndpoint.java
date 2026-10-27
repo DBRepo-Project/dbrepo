@@ -51,6 +51,9 @@ import java.util.UUID;
 public class TableEndpoint {
 
     public static final String AMQP_USER_HEADER = "X-DBRepo-AMQP-User";
+    public static final String DELEGATED_CONTEXT_HEADER = "X-DBRepo-Delegated-Context";
+    public static final String AMQP_DELEGATED_CONTEXT = "amqp";
+    public static final String SYSTEM_AUTHORITY = "system";
     public static final String INSERT_TABLE_DATA_AUTHORITY = "insert-table-data";
 
     private final DataService dataService;
@@ -372,6 +375,7 @@ public class TableEndpoint {
                                                @NotNull @PathVariable("tableId") UUID tableId,
                                                @Valid @RequestBody TupleDto data,
                                                @RequestHeader(value = AMQP_USER_HEADER, required = false) String amqpUsername,
+                                               @RequestHeader(value = DELEGATED_CONTEXT_HEADER, required = false) String delegatedContext,
                                                Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             TableMalformedException, QueryMalformedException, NotAllowedException, StorageUnavailableException,
@@ -379,13 +383,19 @@ public class TableEndpoint {
         log.debug("endpoint insert raw table data, databaseId={}, tableId={}", databaseId, tableId);
         final Table table = metadataService.getTable(databaseId, tableId);
         final Database database = metadataService.getDatabase(databaseId);
-        if (AuthUtil.isSystem(principal)) {
+        if (AMQP_DELEGATED_CONTEXT.equalsIgnoreCase(delegatedContext)) {
+            if (!AuthUtil.isSystem(principal)) {
+                log.error("Failed to insert raw table data: delegated AMQP insert requires system user");
+                throw new NotAllowedException("Delegated AMQP insert requires system user");
+            }
             if (amqpUsername == null || amqpUsername.isBlank()) {
                 log.error("Failed to insert raw table data: missing {}", AMQP_USER_HEADER);
                 throw new NotAllowedException("Missing AMQP user");
             }
-            metadataServiceGateway.checkUserAuthority(amqpUsername, INSERT_TABLE_DATA_AUTHORITY);
-            endpointValidator.validateOnlyWriteAccess(database, table, amqpUsername);
+            if (!hasUserAuthority(amqpUsername, SYSTEM_AUTHORITY)) {
+                metadataServiceGateway.checkUserAuthority(amqpUsername, INSERT_TABLE_DATA_AUTHORITY);
+                endpointValidator.validateOnlyWriteAccess(database, table, amqpUsername);
+            }
         } else {
             endpointValidator.validateOnlyWriteAccess(database, table, principal);
         }
@@ -440,6 +450,16 @@ public class TableEndpoint {
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
+        }
+    }
+
+    private boolean hasUserAuthority(String username, String authority) throws RemoteUnavailableException,
+            UserNotFoundException, MetadataServiceException {
+        try {
+            metadataServiceGateway.checkUserAuthority(username, authority);
+            return true;
+        } catch (NotAllowedException e) {
+            return false;
         }
     }
 

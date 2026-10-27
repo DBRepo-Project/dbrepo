@@ -44,7 +44,7 @@ public interface UserService {
      * @param username  The username.
      * @param authority The authority.
      * @throws UserNotFoundException The user was not found.
-     * @throws NotAllowedException   The user is internal or the authority was not found for the user.
+     * @throws NotAllowedException   The authority was not found for the user.
      */
     void checkAuthority(String username, String authority) throws UserNotFoundException, NotAllowedException;
 
