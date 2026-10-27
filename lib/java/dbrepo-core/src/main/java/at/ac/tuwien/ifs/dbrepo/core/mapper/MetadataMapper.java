@@ -1058,7 +1058,7 @@ public interface MetadataMapper {
                                 final Optional<TableColumn> referencedColumn = optional.get()
                                         .getColumns()
                                         .stream()
-                                        .filter(cc -> cc.getInternalName().equals(fk.getReferencedColumns().get(k)))
+                                        .filter(cc -> cc.getInternalName().equals(nameToInternalName(fk.getReferencedColumns().get(k))))
                                         .findFirst();
                                 if (referencedColumn.isEmpty()) {
                                     log.error("Failed to find foreign key referenced column {} in referenced columns: {}", fk.getReferencedColumns().get(k), database.getTables().stream().filter(t -> t.getInternalName().equals(fk.getReferencedTable())).map(Table::getColumns).flatMap(List::stream).map(TableColumn::getInternalName).toList());

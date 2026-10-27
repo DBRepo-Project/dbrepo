@@ -636,6 +636,67 @@ public class TableServiceUnitTest extends BaseTest {
     }
 
     @Test
+    public void createTable_selfReferencingForeignKeyToNonStandardPrimaryKey_succeeds() throws DataServiceException,
+            DataServiceConnectionException, UserNotFoundException, TableNotFoundException, DatabaseNotFoundException,
+            TableExistsException, SearchServiceException, SearchServiceConnectionException, MalformedException,
+            OntologyNotFoundException, SemanticEntityNotFoundException, NotAllowedException {
+        final CreateTableDto request = CreateTableDto.builder()
+                .name("Station")
+                .description("A wonderful table")
+                .columns(List.of(CreateTableColumnDto.builder()
+                                .name("Station ID")
+                                .nullAllowed(false)
+                                .type(ColumnTypeDto.BIGINT)
+                                .build(),
+                        CreateTableColumnDto.builder()
+                                .name("Parent ID")
+                                .nullAllowed(true)
+                                .type(ColumnTypeDto.BIGINT)
+                                .build()))
+                .constraints(CreateTableConstraintsDto.builder()
+                        .checks(Set.of())
+                        .uniques(List.of())
+                        .foreignKeys(List.of(CreateForeignKeyDto.builder()
+                                .columns(List.of("Parent ID"))
+                                .referencedTable("station")
+                                .referencedColumns(List.of("Station ID"))
+                                .onUpdate(ReferenceTypeDto.NO_ACTION)
+                                .onDelete(ReferenceTypeDto.NO_ACTION)
+                                .build()))
+                        .primaryKey(List.of("Station ID"))
+                        .build())
+                .build();
+
+        /* mock */
+        when(userService.findByUsername(USER_1_USERNAME))
+                .thenReturn(USER_1_DTO);
+        doNothing()
+                .when(databaseCacheRepository)
+                .deleteById(DATABASE_1_ID);
+        doNothing()
+                .when(dataServiceGateway)
+                .createTable(eq(DATABASE_1_ID), any(CreateTableDto.class));
+        when(databaseRepository.save(any(Database.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(searchServiceGateway.update(any(Database.class)))
+                .thenReturn(DATABASE_1_BRIEF_DTO);
+
+        /* test */
+        final Table response = tableService.createTable(DATABASE_1, request, USER_1_PRINCIPAL);
+        assertNotNull(response);
+        final ForeignKey foreignKey = response.getConstraints().getForeignKeys().get(0);
+        assertEquals("fk_station_0", foreignKey.getName());
+        assertEquals(response, foreignKey.getTable());
+        assertEquals(response, foreignKey.getReferencedTable());
+        assertEquals(ReferenceType.NO_ACTION, foreignKey.getOnUpdate());
+        assertEquals(ReferenceType.NO_ACTION, foreignKey.getOnDelete());
+        assertEquals(1, foreignKey.getReferences().size());
+        final ForeignKeyReference reference = foreignKey.getReferences().get(0);
+        assertEquals("parent_id", reference.getColumn().getInternalName());
+        assertEquals("station_id", reference.getReferencedColumn().getInternalName());
+    }
+
+    @Test
     public void createTable_enumsSets_succeeds() throws DataServiceException,
             DataServiceConnectionException, UserNotFoundException, TableNotFoundException, DatabaseNotFoundException,
             TableExistsException, SearchServiceException, SearchServiceConnectionException, MalformedException,
