@@ -446,7 +446,7 @@ public interface DataMapper {
                         .build())
                 .constraints(ConstraintsDto.builder()
                         .foreignKeys(new LinkedList<>())
-                        .primaryKey(new LinkedHashSet<>())
+                        .primaryKey(new LinkedList<>())
                         .uniques(new LinkedList<>())
                         .checks(new LinkedHashSet<>())
                         .build())

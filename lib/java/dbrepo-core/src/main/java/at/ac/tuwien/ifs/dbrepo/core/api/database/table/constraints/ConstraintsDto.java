@@ -29,5 +29,5 @@ public class ConstraintsDto {
     private Set<String> checks;
 
     @JsonProperty("primary_key")
-    private Set<PrimaryKeyDto> primaryKey;
+    private List<PrimaryKeyDto> primaryKey;
 }

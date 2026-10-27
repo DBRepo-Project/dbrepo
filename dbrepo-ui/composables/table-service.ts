@@ -253,13 +253,21 @@ export const useTableService = (): any => {
     })
   }
 
-  function prepareConstraints(columns: InternalColumnDto[]): ConstraintsCreateDto {
+  function prepareConstraints(columns: InternalColumnDto[], foreignKeys: ForeignKeyCreateDto[] = []): ConstraintsCreateDto {
     const primaryKeyColumns = columns.filter(column => column.primary_key)
     const uniqueColumns = columns.filter(column => column.unique).filter(column => !column.primary_key)
     return {
       primary_key: primaryKeyColumns.length > 0 ? primaryKeyColumns.map(column => column.name) : [],
       uniques: uniqueColumns.length > 0 ? columns.filter(column => column.unique).map(c => [c.name]) : [],
-      foreign_keys: [],
+      foreign_keys: foreignKeys.map(foreignKey => {
+        return {
+          columns: foreignKey.columns,
+          referenced_table: foreignKey.referenced_table,
+          referenced_columns: foreignKey.referenced_columns,
+          on_update: foreignKey.on_update || 'no_action',
+          on_delete: foreignKey.on_delete || 'no_action'
+        }
+      }),
       checks: []
     }
   }
