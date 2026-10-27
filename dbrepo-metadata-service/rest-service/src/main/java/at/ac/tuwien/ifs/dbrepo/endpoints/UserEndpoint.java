@@ -122,6 +122,33 @@ public class UserEndpoint extends RestEndpoint {
                 .body(user);
     }
 
+    @GetMapping("/{username}/authority/{authority}")
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasAuthority('system')")
+    @Operation(summary = "Check user authority",
+            description = "Checks whether a user has a given authority. Requires role `system`.",
+            security = {@SecurityRequirement(name = "basicAuth")},
+            hidden = true)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204",
+                    description = "User has authority",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "403",
+                    description = "User does not have authority",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "404",
+                    description = "User was not found",
+                    content = {@Content}),
+    })
+    public ResponseEntity<Void> checkAuthority(@NotNull @PathVariable("username") String username,
+                                               @NotNull @PathVariable("authority") String authority)
+            throws NotAllowedException, UserNotFoundException {
+        log.debug("endpoint check user authority, username={}, authority={}", username, authority);
+        userService.checkAuthority(username, authority);
+        return ResponseEntity.noContent()
+                .build();
+    }
+
     @PutMapping("/{username}")
     @Transactional
     @PreAuthorize("hasAuthority('modify-user-information')")

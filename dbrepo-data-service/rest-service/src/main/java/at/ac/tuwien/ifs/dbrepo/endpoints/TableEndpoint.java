@@ -50,6 +50,12 @@ import java.util.UUID;
 @RequestMapping(path = "/api/v1/database/{databaseId}/table")
 public class TableEndpoint {
 
+    public static final String AMQP_USER_HEADER = "X-DBRepo-AMQP-User";
+    public static final String DELEGATED_CONTEXT_HEADER = "X-DBRepo-Delegated-Context";
+    public static final String AMQP_DELEGATED_CONTEXT = "amqp";
+    public static final String SYSTEM_AUTHORITY = "system";
+    public static final String INSERT_TABLE_DATA_AUTHORITY = "insert-table-data";
+
     private final DataService dataService;
     private final TableService tableService;
     private final MariaDbMapper mariaDbMapper;
@@ -344,7 +350,7 @@ public class TableEndpoint {
     }
 
     @PostMapping("/{tableId}/data")
-    @PreAuthorize("hasAuthority('insert-table-data')")
+    @PreAuthorize("hasAuthority('insert-table-data') or hasAuthority('system')")
     @Observed(name = "dbrepo_table_data_create")
     @Operation(summary = "Insert tuple",
             description = "Inserts a data tuple into a table, then the table statistics are updated. The user needs to have at least *WRITE_OWN* access to the associated database. Requires role `insert-table-data`.",
@@ -368,14 +374,35 @@ public class TableEndpoint {
     public ResponseEntity<Void> insertRawTuple(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                @NotNull @PathVariable("tableId") UUID tableId,
                                                @Valid @RequestBody TupleDto data,
+                                               @RequestHeader(value = AMQP_USER_HEADER, required = false) String amqpUsername,
+                                               @RequestHeader(value = DELEGATED_CONTEXT_HEADER, required = false) String delegatedContext,
                                                Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             TableMalformedException, QueryMalformedException, NotAllowedException, StorageUnavailableException,
-            StorageNotFoundException, MetadataServiceException, DatabaseNotFoundException {
+            StorageNotFoundException, MetadataServiceException, DatabaseNotFoundException, UserNotFoundException {
         log.debug("endpoint insert raw table data, databaseId={}, tableId={}", databaseId, tableId);
         final Table table = metadataService.getTable(databaseId, tableId);
         final Database database = metadataService.getDatabase(databaseId);
-        endpointValidator.validateOnlyWriteAccess(database, table, principal);
+        if (AMQP_DELEGATED_CONTEXT.equalsIgnoreCase(delegatedContext)) {
+            if (!AuthUtil.isSystem(principal)) {
+                log.error("Failed to insert raw table data: delegated AMQP insert requires system user");
+                throw new NotAllowedException("Delegated AMQP insert requires system user");
+            }
+            if (amqpUsername == null || amqpUsername.isBlank()) {
+                log.error("Failed to insert raw table data: missing {}", AMQP_USER_HEADER);
+                throw new NotAllowedException("Missing AMQP user");
+            }
+            metadataServiceGateway.checkUserAuthority(amqpUsername, INSERT_TABLE_DATA_AUTHORITY);
+            if (!hasUserAuthority(amqpUsername, SYSTEM_AUTHORITY)) {
+                endpointValidator.validateOnlyWriteAccess(database, table, amqpUsername);
+            }
+        } else {
+            if (AuthUtil.isSystem(principal) && !AuthUtil.hasRole(principal, INSERT_TABLE_DATA_AUTHORITY)) {
+                log.error("Failed to insert raw table data: missing authority {}", INSERT_TABLE_DATA_AUTHORITY);
+                throw new NotAllowedException("Missing insert table data authority");
+            }
+            endpointValidator.validateOnlyWriteAccess(database, table, principal);
+        }
         try {
             tableService.createTuple(database, table, data);
             return ResponseEntity.status(HttpStatus.CREATED)
@@ -427,6 +454,16 @@ public class TableEndpoint {
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
+        }
+    }
+
+    private boolean hasUserAuthority(String username, String authority) throws RemoteUnavailableException,
+            UserNotFoundException, MetadataServiceException {
+        try {
+            metadataServiceGateway.checkUserAuthority(username, authority);
+            return true;
+        } catch (NotAllowedException e) {
+            return false;
         }
     }
 
