@@ -392,11 +392,15 @@ public class TableEndpoint {
                 log.error("Failed to insert raw table data: missing {}", AMQP_USER_HEADER);
                 throw new NotAllowedException("Missing AMQP user");
             }
+            metadataServiceGateway.checkUserAuthority(amqpUsername, INSERT_TABLE_DATA_AUTHORITY);
             if (!hasUserAuthority(amqpUsername, SYSTEM_AUTHORITY)) {
-                metadataServiceGateway.checkUserAuthority(amqpUsername, INSERT_TABLE_DATA_AUTHORITY);
                 endpointValidator.validateOnlyWriteAccess(database, table, amqpUsername);
             }
         } else {
+            if (AuthUtil.isSystem(principal) && !AuthUtil.hasRole(principal, INSERT_TABLE_DATA_AUTHORITY)) {
+                log.error("Failed to insert raw table data: missing authority {}", INSERT_TABLE_DATA_AUTHORITY);
+                throw new NotAllowedException("Missing insert table data authority");
+            }
             endpointValidator.validateOnlyWriteAccess(database, table, principal);
         }
         try {
