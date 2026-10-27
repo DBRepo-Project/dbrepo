@@ -69,7 +69,7 @@ public class UserServiceImpl implements UserService {
         final UserRepresentation user = keycloakGateway.findByUsername(username);
         final List<String> realmRoles = user.getRealmRoles() == null ? List.of() : user.getRealmRoles();
         if (!realmRoles.contains(authority)) {
-            log.error("Authority {} not found for user {}", authority, username);
+            log.debug("Authority {} not found for user {}", authority, username);
             throw new NotAllowedException("Authority not found");
         }
     }

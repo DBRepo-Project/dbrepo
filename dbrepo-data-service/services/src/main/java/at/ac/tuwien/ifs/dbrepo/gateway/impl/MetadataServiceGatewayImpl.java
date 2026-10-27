@@ -252,7 +252,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
             log.error("Failed to check authority {} for user {}: user not found: {}", authority, username, e.getMessage());
             throw new UserNotFoundException("Failed to check user authority: user not found", e);
         } catch (HttpClientErrorException.Forbidden e) {
-            log.error("Failed to check authority {} for user {}: forbidden: {}", authority, username, e.getMessage());
+            log.debug("Authority {} not found for user {}: {}", authority, username, e.getMessage());
             throw new NotAllowedException("Failed to check user authority: forbidden", e);
         }
         if (!response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
