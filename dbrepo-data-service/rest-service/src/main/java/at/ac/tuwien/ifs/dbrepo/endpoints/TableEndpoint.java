@@ -51,6 +51,7 @@ import java.util.UUID;
 public class TableEndpoint {
 
     public static final String AMQP_USER_HEADER = "X-DBRepo-AMQP-User";
+    public static final String INSERT_TABLE_DATA_AUTHORITY = "insert-table-data";
 
     private final DataService dataService;
     private final TableService tableService;
@@ -374,7 +375,7 @@ public class TableEndpoint {
                                                Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             TableMalformedException, QueryMalformedException, NotAllowedException, StorageUnavailableException,
-            StorageNotFoundException, MetadataServiceException, DatabaseNotFoundException {
+            StorageNotFoundException, MetadataServiceException, DatabaseNotFoundException, UserNotFoundException {
         log.debug("endpoint insert raw table data, databaseId={}, tableId={}", databaseId, tableId);
         final Table table = metadataService.getTable(databaseId, tableId);
         final Database database = metadataService.getDatabase(databaseId);
@@ -383,6 +384,7 @@ public class TableEndpoint {
                 log.error("Failed to insert raw table data: missing {}", AMQP_USER_HEADER);
                 throw new NotAllowedException("Missing AMQP user");
             }
+            metadataServiceGateway.checkUserAuthority(amqpUsername, INSERT_TABLE_DATA_AUTHORITY);
             endpointValidator.validateOnlyWriteAccess(database, table, amqpUsername);
         } else {
             endpointValidator.validateOnlyWriteAccess(database, table, principal);

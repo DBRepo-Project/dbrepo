@@ -517,6 +517,61 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
     }
 
     @Test
+    public void checkUserAuthority_succeeds() throws RemoteUnavailableException, UserNotFoundException,
+            MetadataServiceException, NotAllowedException {
+
+        /* mock */
+        when(metadataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(Void.class)))
+                .thenReturn(ResponseEntity.noContent()
+                        .build());
+
+        /* test */
+        metadataServiceGateway.checkUserAuthority(USER_1_USERNAME, "insert-table-data");
+    }
+
+    @Test
+    public void checkUserAuthority_notFound_fails() {
+
+        /* mock */
+        doThrow(HttpClientErrorException.NotFound.class)
+                .when(metadataServiceRestTemplate)
+                .exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(Void.class));
+
+        /* test */
+        assertThrows(UserNotFoundException.class, () -> {
+            metadataServiceGateway.checkUserAuthority(USER_1_USERNAME, "insert-table-data");
+        });
+    }
+
+    @Test
+    public void checkUserAuthority_forbidden_fails() {
+
+        /* mock */
+        doThrow(HttpClientErrorException.Forbidden.class)
+                .when(metadataServiceRestTemplate)
+                .exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(Void.class));
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            metadataServiceGateway.checkUserAuthority(USER_1_USERNAME, "insert-table-data");
+        });
+    }
+
+    @Test
+    public void checkUserAuthority_statusCode_fails() {
+
+        /* mock */
+        when(metadataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(Void.class)))
+                .thenReturn(ResponseEntity.ok()
+                        .build());
+
+        /* test */
+        assertThrows(MetadataServiceException.class, () -> {
+            metadataServiceGateway.checkUserAuthority(USER_1_USERNAME, "insert-table-data");
+        });
+    }
+
+    @Test
     public void getIdentifiers_witSubset_succeeds() throws RemoteUnavailableException, DatabaseNotFoundException, MetadataServiceException {
 
         /* mock */

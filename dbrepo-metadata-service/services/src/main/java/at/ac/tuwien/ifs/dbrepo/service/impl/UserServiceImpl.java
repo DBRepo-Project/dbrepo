@@ -64,6 +64,21 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public void checkAuthority(String username, String authority) throws UserNotFoundException, NotAllowedException {
+        final UserRepresentation user = keycloakGateway.findByUsername(username);
+        final List<String> realmRoles = user.getRealmRoles() == null ? List.of() : user.getRealmRoles();
+        if (realmRoles.contains("system")) {
+            log.error("Not allowed to check authority for system user: {}", user.getUsername());
+            throw new NotAllowedException("Not allowed to check authority for system user");
+        }
+        if (!realmRoles.contains(authority)) {
+            log.error("Authority {} not found for user {}", authority, username);
+            throw new NotAllowedException("Authority not found");
+        }
+    }
+
+    @Override
     @Transactional
     public UserDto modify(UserDto user, UserUpdateDto data) throws UserNotFoundException, AuthServiceException {
         user.setFirstname(data.getFirstname());

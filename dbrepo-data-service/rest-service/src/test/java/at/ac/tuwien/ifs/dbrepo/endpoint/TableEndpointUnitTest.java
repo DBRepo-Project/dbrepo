@@ -546,7 +546,7 @@ public class TableEndpointUnitTest extends BaseTest {
     public void insertRawTuple_succeeds() throws DatabaseUnavailableException, TableNotFoundException,
             TableMalformedException, NotAllowedException, QueryMalformedException, RemoteUnavailableException,
             SQLException, StorageUnavailableException, StorageNotFoundException, MetadataServiceException,
-            DatabaseNotFoundException {
+            DatabaseNotFoundException, UserNotFoundException {
         final TupleDto request = TupleDto.builder()
                 .data(new HashMap<>() {{
                     put(COLUMN_8_1_INTERNAL_NAME, 7L);
@@ -670,7 +670,8 @@ public class TableEndpointUnitTest extends BaseTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data"})
     public void insertRawTuple_writeOwnAccess_succeeds() throws TableNotFoundException, RemoteUnavailableException,
             NotAllowedException, DatabaseUnavailableException, TableMalformedException, QueryMalformedException,
-            StorageUnavailableException, StorageNotFoundException, MetadataServiceException, DatabaseNotFoundException {
+            StorageUnavailableException, StorageNotFoundException, MetadataServiceException, DatabaseNotFoundException,
+            UserNotFoundException {
         final TupleDto request = TupleDto.builder()
                 .data(new HashMap<>() {{
                     put(COLUMN_8_1_INTERNAL_NAME, 7L);
@@ -716,7 +717,7 @@ public class TableEndpointUnitTest extends BaseTest {
     public void insertRawTuple_writeAllAccessForeign_succeeds() throws TableNotFoundException,
             RemoteUnavailableException, NotAllowedException, DatabaseUnavailableException, TableMalformedException,
             QueryMalformedException, StorageUnavailableException, StorageNotFoundException, MetadataServiceException,
-            DatabaseNotFoundException {
+            DatabaseNotFoundException, UserNotFoundException {
         final TupleDto request = TupleDto.builder()
                 .data(new HashMap<>() {{
                     put(COLUMN_8_1_INTERNAL_NAME, 7L);
@@ -762,7 +763,7 @@ public class TableEndpointUnitTest extends BaseTest {
     public void insertRawTuple_systemAmqpUserWriteAccess_succeeds() throws TableNotFoundException,
             RemoteUnavailableException, NotAllowedException, DatabaseUnavailableException, TableMalformedException,
             QueryMalformedException, StorageUnavailableException, StorageNotFoundException, MetadataServiceException,
-            DatabaseNotFoundException {
+            DatabaseNotFoundException, UserNotFoundException {
         final TupleDto request = TupleDto.builder()
                 .data(new HashMap<>() {{
                     put(COLUMN_8_1_INTERNAL_NAME, 7L);
@@ -778,6 +779,36 @@ public class TableEndpointUnitTest extends BaseTest {
 
         /* test */
         tableEndpoint.insertRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_USERNAME, USER_LOCAL_ADMIN_PRINCIPAL);
+    }
+
+    @Test
+    @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
+    public void insertRawTuple_systemAmqpUserWithoutInsertAuthority_fails() throws TableNotFoundException,
+            RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException, UserNotFoundException,
+            NotAllowedException, SQLException, QueryMalformedException, TableMalformedException,
+            StorageUnavailableException, StorageNotFoundException {
+        final TupleDto request = TupleDto.builder()
+                .data(new HashMap<>() {{
+                    put(COLUMN_8_1_INTERNAL_NAME, 7L);
+                    put(COLUMN_8_2_INTERNAL_NAME, 23.0);
+                }})
+                .build();
+
+        /* mock */
+        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8_CACHE);
+        when(metadataService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_CACHE);
+        doThrow(NotAllowedException.class)
+                .when(metadataServiceGateway)
+                .checkUserAuthority(USER_1_USERNAME, TableEndpoint.INSERT_TABLE_DATA_AUTHORITY);
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            tableEndpoint.insertRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_USERNAME,
+                    USER_LOCAL_ADMIN_PRINCIPAL);
+        });
+        verify(tableService, never()).createTuple(any(Database.class), any(Table.class), any(TupleDto.class));
     }
 
     @Test
