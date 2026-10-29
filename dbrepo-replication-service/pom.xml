@@ -47,6 +47,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.rabbitmq</groupId>
+            <artifactId>amqp-client</artifactId>
+        </dependency>
+        <dependency>
             <groupId>at.ac.tuwien.ifs.dbrepo</groupId>
             <artifactId>dbrepo-core</artifactId>
             <version>1.14.1</version>

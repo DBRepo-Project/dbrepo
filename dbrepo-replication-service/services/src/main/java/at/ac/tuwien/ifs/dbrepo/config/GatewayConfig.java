@@ -2,6 +2,8 @@ package at.ac.tuwien.ifs.dbrepo.config;
 
 import at.ac.tuwien.ifs.dbrepo.auth.BasicRequestInterceptor;
 import at.ac.tuwien.ifs.dbrepo.core.replication.ReplicationPeers;
+import at.ac.tuwien.ifs.dbrepo.service.transport.ReplicationPeerTransport;
+import org.springframework.beans.factory.annotation.Autowired;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +23,9 @@ import java.time.Duration;
 @Getter
 @Configuration
 public class GatewayConfig {
+
+    @Autowired
+    private ReplicationPeerTransport peerTransport;
 
     @Value("${dbrepo.endpoints.dataService}")
     private String dataServiceEndpoint;
@@ -83,6 +88,7 @@ public class GatewayConfig {
         });
         restTemplate.getInterceptors()
                 .add(new BasicRequestInterceptor(replicationUsername, replicationPassword));
+        if (peerTransport != null) restTemplate.getInterceptors().add(peerTransport);
         return restTemplate;
     }
 
