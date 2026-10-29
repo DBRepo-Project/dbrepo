@@ -9,7 +9,18 @@ export const useReplicationService = (): any => {
     }
   }
 
-  async function addReplica (databaseId: string, replicaUrl: string): Promise<{ status: 'queued' }> {
+  async function findTransports (): Promise<any> {
+    const axios = useAxiosInstance()
+    return request(() => axios.get('/api/replication/transports'))
+  }
+
+  async function saveTransport (databaseId: string, site: string, transport: string): Promise<void> {
+    const axios = useAxiosInstance()
+    return request(() => axios.put(`/api/replication/transports/${databaseId}`, {site, transport}))
+  }
+
+  async function addReplica (databaseId: string, replicaUrl: string, transport = 'REST'): Promise<{ status: 'queued' }> {
+    await saveTransport(databaseId, replicaUrl, transport)
     const axios = useAxiosInstance()
     return request(() => axios.post<{ status: 'queued' }>(
       `/api/v1/database/${databaseId}/replicas`,
@@ -105,6 +116,8 @@ export const useReplicationService = (): any => {
   }
 
   return {
+    findTransports,
+    saveTransport,
     addReplica,
     findStatus,
     findReplicationOutbox,

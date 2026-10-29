@@ -1619,6 +1619,13 @@
     }
   },
   "replication": {
+    "transport": {
+      "title": "Replication connections",
+      "label": "Transport",
+      "save": "Save transport",
+      "saved": "Replication transport saved",
+      "confirm": "Change the transport for {site}? Subsequent attempts use the new transport. Messages already in flight cannot be recalled."
+    },
     "title": "Replication",
     "updated": "Updated {time}",
     "forbidden": "Administrator access is required",

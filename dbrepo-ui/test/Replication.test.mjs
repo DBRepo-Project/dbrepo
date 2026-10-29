@@ -19,6 +19,10 @@ function context ({ stubRefresh = true } = {}) {
     useCacheStore: () => ({ getRoles: ['system'] }),
     useToastInstance: () => ({ success: message => notifications.push(message) }),
     useAxiosInstance: () => ({
+      put: async (path, body) => {
+        calls.push({ path, body })
+        return { status: 200, data: null }
+      },
       post: async (path, body) => {
         calls.push({ path, body })
         return { status: 202, data: { status: 'queued' } }
@@ -120,6 +124,7 @@ test('slow status checks do not hold back databases, access or the visible outbo
   const { state, sandbox } = context({ stubRefresh: false })
   const status = deferred()
   sandbox.useReplicationService = () => ({
+    findTransports: async () => ({routes: [], sites: [], rabbitmqSites: []}),
     findStatus: () => status.promise,
     findReplicationOutbox: async () => [{ id: 'job' }],
     findAccess: async () => [{ database_id: 'replica', local_username: 'owner' }]
@@ -144,6 +149,7 @@ test('slow status checks do not hold back databases, access or the visible outbo
 test('a failed status check leaves successful sections available', async () => {
   const { state, sandbox, failures } = context({ stubRefresh: false })
   sandbox.useReplicationService = () => ({
+    findTransports: async () => ({routes: [], sites: [], rabbitmqSites: []}),
     findStatus: async () => { throw new Error('Health check unavailable') },
     findReplicationOutbox: async () => [{ id: 'job' }],
     findAccess: async () => []
@@ -249,9 +255,11 @@ test('submission uses the shared API service, reports queued and refreshes witho
   state.replicaDatabaseId = 'first'
   state.replicaUrl = ' https://NEW.example:443/ '
   await state.addReplica()
-  assert.equal(calls.length, 1)
-  assert.equal(calls[0].path, '/api/v1/database/first/replicas')
-  assert.equal(JSON.stringify(calls[0].body), JSON.stringify({ replica_url: 'https://new.example' }))
+  assert.equal(calls.length, 2)
+  assert.equal(calls[0].path, '/api/replication/transports/first')
+  assert.equal(JSON.stringify(calls[0].body), JSON.stringify({ site: 'https://new.example', transport: 'REST' }))
+  assert.equal(calls[1].path, '/api/v1/database/first/replicas')
+  assert.equal(JSON.stringify(calls[1].body), JSON.stringify({ replica_url: 'https://new.example' }))
   assert.match(state.replicaQueued, /^replication.add.queued:/)
   assert.match(state.replicaQueued, /First replica/)
   assert.deepEqual(notifications, [state.replicaQueued])
@@ -284,7 +292,7 @@ test('pending requests cannot be submitted twice and server rejections preserve 
   const { state, sandbox, notifications, failures } = context()
   let rejectRequest
   let requests = 0
-  sandbox.useAxiosInstance = () => ({ post: () => {
+  sandbox.useAxiosInstance = () => ({ put: () => {
     requests++
     return new Promise((resolve, reject) => { rejectRequest = reject })
   } })
@@ -302,4 +310,51 @@ test('pending requests cannot be submitted twice and server rejections preserve 
   assert.equal(state.refreshed, undefined)
   assert.equal(notifications.length, 0)
   assert.equal(failures[0].message, 'Target already configured')
+})
+
+test('RabbitMQ is saved per database and target before bootstrap is requested', async () => {
+  const { state, calls } = context()
+  state.replicaDatabaseId = 'first'
+  state.replicaUrl = 'https://new.example'
+  state.replicaTransport = 'RABBITMQ'
+  state.rabbitmqSites = ['https://new.example']
+  await state.addReplica()
+  assert.equal(calls[0].body.transport, 'RABBITMQ')
+  assert.equal(calls[0].path, '/api/replication/transports/first')
+  assert.equal(calls[1].path, '/api/v1/database/first/replicas')
+})
+
+test('a cleared target does not crash the replication form', async () => {
+  const { state, calls } = context()
+  state.replicaDatabaseId = 'first'
+  state.replicaUrl = null
+  assert.equal(state.replicaUrlError, '')
+  await state.addReplica()
+  assert.equal(calls.length, 0)
+})
+
+test('existing connections default to REST and a confirmed change saves only that database and peer', async () => {
+  const { state, sandbox, calls } = context()
+  const item = state.transportRows.find(row => row.databaseId === 'existing')
+  assert.equal(item.transport, 'REST')
+  state.transportDrafts[item.key] = 'RABBITMQ'
+  sandbox.confirm = () => false
+  await state.saveTransport(item)
+  assert.equal(calls.length, 0)
+  sandbox.confirm = () => true
+  state.loadTransports = async () => {}
+  await state.saveTransport(item)
+  assert.equal(calls[0].path, '/api/replication/transports/existing')
+  assert.equal(calls[0].body.site, 'https://peer.example')
+  assert.equal(calls[0].body.transport, 'RABBITMQ')
+  assert.equal(state.transportDrafts[item.key], undefined)
+  assert.equal(state.savingTransport, null)
+  state.transportRoutes = [{databaseId: 'existing', site: 'https://peer.example', transport: 'RABBITMQ'}]
+  const rows = state.transportRows.filter(row => row.databaseId === 'existing')
+  assert.equal(rows.length, 1)
+  assert.equal(rows[0].transport, 'RABBITMQ')
+  state.cacheStore = {getRoles: []}
+  state.transportDrafts[item.key] = 'REST'
+  await state.saveTransport(item)
+  assert.equal(calls.length, 1)
 })

@@ -151,12 +151,22 @@
                 variant="outlined"
                 hide-details="auto" />
             </v-col>
-            <v-col cols="12" md="5">
-              <v-text-field
+            <v-col cols="12" md="3">
+              <v-autocomplete
                 v-model="replicaUrl"
-                type="url"
+                :items="transportSites"
                 :label="$t('replication.add.target')"
                 :error-messages="replicaUrlError"
+                :disabled="addingReplica"
+                density="compact"
+                variant="outlined"
+                hide-details="auto" />
+            </v-col>
+            <v-col cols="12" md="2">
+              <v-select
+                v-model="replicaTransport"
+                :items="transportChoices(replicaUrl)"
+                :label="$t('replication.transport.label')"
                 :disabled="addingReplica"
                 density="compact"
                 variant="outlined"
@@ -167,7 +177,7 @@
                 type="submit"
                 color="primary"
                 prepend-icon="mdi-database-plus"
-                :disabled="!replicaDatabase || !replicaUrl.trim() || !!replicaUrlError || loadingDatabases || addingReplica"
+                :disabled="!replicaDatabase || !(replicaUrl || '').trim() || !!replicaUrlError || loadingDatabases || addingReplica"
                 :loading="addingReplica">
                 {{ $t('replication.add.title') }}
               </v-btn>
@@ -183,6 +193,35 @@
           @click:close="replicaQueued = null">
           {{ replicaQueued }}
         </v-alert>
+      </section>
+
+      <section class="mt-8" aria-labelledby="replication-transports">
+        <h2 id="replication-transports" class="text-h6 mb-3">{{ $t('replication.transport.title') }}</h2>
+        <v-data-table :headers="transportHeaders" :items="transportRows" :loading="loadingTransports" item-value="key">
+          <template #item.transport="{item}">
+            <v-select
+              :model-value="transportDrafts[item.key] || item.transport"
+              :items="transportChoices(item.site)"
+              :aria-label="$t('replication.transport.label')"
+              :disabled="savingTransport !== null"
+              density="compact"
+              variant="outlined"
+              hide-details
+              @update:model-value="transportDrafts[item.key] = $event" />
+          </template>
+          <template #item.actions="{item}">
+            <v-btn
+              icon="mdi-content-save"
+              color="primary"
+              variant="text"
+              :aria-label="$t('replication.transport.save')"
+              :loading="savingTransport === item.key"
+              :disabled="savingTransport !== null || !transportDrafts[item.key] || transportDrafts[item.key] === item.transport"
+              @click="saveTransport(item)">
+              <v-tooltip activator="parent">{{ $t('replication.transport.save') }}</v-tooltip>
+            </v-btn>
+          </template>
+        </v-data-table>
       </section>
 
       <section
@@ -467,6 +506,13 @@ export default {
       databases: [],
       replicaDatabaseId: null,
       replicaUrl: '',
+      replicaTransport: 'REST',
+      transportSites: [],
+      rabbitmqSites: [],
+      transportRoutes: [],
+      transportDrafts: {},
+      loadingTransports: false,
+      savingTransport: null,
       addingReplica: false,
       replicaQueued: null,
       selectedDatabase: null,
@@ -495,6 +541,28 @@ export default {
     }
   },
   computed: {
+    transportHeaders () {
+      return [
+        {title: this.$t('replication.columns.database'), key: 'databaseName'},
+        {title: this.$t('replication.columns.target'), key: 'site'},
+        {title: this.$t('replication.transport.label'), key: 'transport', sortable: false},
+        {title: '', key: 'actions', sortable: false, align: 'end'}
+      ]
+    },
+    transportRows () {
+      return this.databases.flatMap(database => {
+        const configured = this.transportRoutes.filter(route => route.databaseId === database.id)
+        const sites = new Set([...Object.keys(database.replica_urls || {}), ...configured.map(route => route.site)]
+          .map(site => this.normaliseSiteUrl(site)).filter(Boolean))
+        return [...sites].map(site => ({
+          key: `${database.id}:${site}`,
+          databaseId: database.id,
+          databaseName: database.name,
+          site,
+          transport: configured.find(route => this.normaliseSiteUrl(route.site) === site)?.transport || 'REST'
+        }))
+      })
+    },
     roles () {
       return this.cacheStore.getRoles
     },
@@ -513,7 +581,7 @@ export default {
       return this.primaryDatabases.find(database => database.id === this.replicaDatabaseId)
     },
     replicaUrlError () {
-      if (!this.replicaUrl.trim()) {
+      if (!(this.replicaUrl || '').trim()) {
         return ''
       }
       const target = this.normaliseSiteUrl(this.replicaUrl)
@@ -594,6 +662,9 @@ export default {
     }
   },
   watch: {
+    replicaUrl () {
+      this.replicaTransport = 'REST'
+    },
     activeOutbox () {
       this.refreshOutbox()
     },
@@ -626,6 +697,40 @@ export default {
     }
   },
   methods: {
+    transportChoices (site) {
+      return [
+        {title: 'REST', value: 'REST'},
+        {title: 'RabbitMQ', value: 'RABBITMQ', props: {disabled: !this.rabbitmqSites.includes(this.normaliseSiteUrl(site || ''))}}
+      ]
+    },
+    async loadTransports () {
+      this.loadingTransports = true
+      try {
+        const config = await useReplicationService().findTransports()
+        this.transportRoutes = config.routes
+        this.transportSites = config.sites
+        this.rabbitmqSites = config.rabbitmqSites
+      } catch (error) {
+        this.showError(error)
+      } finally {
+        this.loadingTransports = false
+      }
+    },
+    async saveTransport (item) {
+      if (!this.canManageReplication || this.savingTransport !== null || !this.transportDrafts[item.key]) return
+      if (!confirm(this.$t('replication.transport.confirm', {site: item.site}))) return
+      this.savingTransport = item.key
+      try {
+        await useReplicationService().saveTransport(item.databaseId, item.site, this.transportDrafts[item.key])
+        delete this.transportDrafts[item.key]
+        await this.loadTransports()
+        useToastInstance().success(this.$t('replication.transport.saved'))
+      } catch (error) {
+        this.showError(error)
+      } finally {
+        this.savingTransport = null
+      }
+    },
     normaliseSiteUrl (value) {
       try {
         const url = new URL(value.trim())
@@ -638,7 +743,7 @@ export default {
       }
     },
     async addReplica () {
-      if (!this.canManageReplication || !this.replicaDatabase || !this.replicaUrl.trim() ||
+      if (!this.canManageReplication || !this.replicaDatabase || !(this.replicaUrl || '').trim() ||
         this.replicaUrlError || this.addingReplica || this.loadingDatabases) {
         return
       }
@@ -647,7 +752,7 @@ export default {
       this.addingReplica = true
       this.replicaQueued = null
       try {
-        await useReplicationService().addReplica(database.id, url)
+        await useReplicationService().addReplica(database.id, url, this.replicaTransport)
         this.replicaQueued = this.$t('replication.add.queued', {database: database.name, url})
         useToastInstance().success(this.replicaQueued)
         this.replicaUrl = ''
@@ -688,6 +793,7 @@ export default {
       try {
         await Promise.all([
           this.loadStatus(),
+          this.loadTransports(),
           this.loadDatabases(),
           this.loadAccess(),
           this.refreshOutbox()
