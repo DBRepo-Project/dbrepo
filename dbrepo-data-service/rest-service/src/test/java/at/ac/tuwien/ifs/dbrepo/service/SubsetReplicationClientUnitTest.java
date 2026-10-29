@@ -18,17 +18,20 @@ class SubsetReplicationClientUnitTest {
     private final SubsetReplicationConfig config = new SubsetReplicationConfig();
 
     @Test
-    void sendsOnlyReplicationCredentialsToAllowedPeersAndDoesNotFollowRedirects() throws Exception {
+    void routesSubsetsThroughTheTransportSelectorAndRejectsUntrustedTargets() throws Exception {
         final var source = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         final var sink = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         final var credentials = new AtomicReference<String>();
         final var sinkRequests = new AtomicInteger();
         final String sourceSite = "http://127.0.0.1:" + source.getAddress().getPort();
         final String sinkSite = "http://127.0.0.1:" + sink.getAddress().getPort();
-        source.createContext("/subset", request -> {
+        source.createContext("/api/replication/transports/deliver", request -> {
             credentials.set(request.getRequestHeaders().getFirst("Authorization"));
-            request.getResponseHeaders().set("Location", sinkSite + "/stolen");
-            request.sendResponseHeaders(307, -1);
+            assertTrue(new String(request.getRequestBody().readAllBytes(), StandardCharsets.UTF_8).contains("https://peer.example/subset"));
+            byte[] response = "{\"status\":409,\"body\":\"e30=\"}".getBytes(StandardCharsets.UTF_8);
+            request.getResponseHeaders().set("Content-Type", "application/json");
+            request.sendResponseHeaders(200, response.length);
+            request.getResponseBody().write(response);
             request.close();
         });
         sink.createContext("/stolen", request -> {
@@ -39,9 +42,12 @@ class SubsetReplicationClientUnitTest {
         source.start();
         sink.start();
         try {
-            final var client = config.client(new ReplicationPeers(sourceSite), "replication", "test-secret", "system_user");
-            assertThrows(RestClientException.class, () -> client.put(sourceSite + "/subset", "{}"));
-            assertEquals("Basic " + Base64.getEncoder().encodeToString("replication:test-secret".getBytes(StandardCharsets.UTF_8)),
+            var proxy = new org.springframework.web.client.RestTemplate();
+            proxy.setUriTemplateHandler(new org.springframework.web.util.DefaultUriBuilderFactory(sourceSite));
+            proxy.getInterceptors().add(new org.springframework.http.client.support.BasicAuthenticationInterceptor("internal", "test-secret"));
+            final var client = config.client(new ReplicationPeers("https://peer.example"), proxy);
+            assertThrows(org.springframework.web.client.HttpClientErrorException.Conflict.class, () -> client.put("https://peer.example/subset", "{}"));
+            assertEquals("Basic " + Base64.getEncoder().encodeToString("internal:test-secret".getBytes(StandardCharsets.UTF_8)),
                     credentials.get());
             assertEquals(0, sinkRequests.get());
             assertThrows(IllegalArgumentException.class, () -> client.put(sinkSite + "/stolen", "{}"));
@@ -53,13 +59,10 @@ class SubsetReplicationClientUnitTest {
     }
 
     @Test
-    void rejectsUnsafeSitesAndSharedSystemIdentity() {
+    void rejectsUnsafeSites() {
         for (String site : new String[]{"http://peer.example", "https://peer.example/path", "https://user:pass@peer.example",
                 "https://peer.example?url=other", "https://peer.example#other"}) {
             assertThrows(IllegalArgumentException.class, () -> config.peers(site));
         }
-        final var peers = config.peers("https://peer.example");
-        assertThrows(IllegalStateException.class, () -> config.client(peers, "system_user", "secret", "system_user"));
-        assertThrows(IllegalStateException.class, () -> config.client(peers, "replication", "", "system_user"));
     }
 }

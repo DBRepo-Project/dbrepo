@@ -20,9 +20,12 @@ class TupleReplicationClientUnitTest {
             final var factory = assertInstanceOf(SimpleClientHttpRequestFactory.class,
                     ReflectionTestUtils.getField(client, "requestFactory"));
             assertEquals(10_000, ReflectionTestUtils.getField(factory, "connectTimeout"));
-            assertEquals(30_000, ReflectionTestUtils.getField(factory, "readTimeout"));
+            assertEquals(url.equals("http://replication.example") ? 270_000 : 30_000,
+                    ReflectionTestUtils.getField(factory, "readTimeout"));
             assertEquals(url + "/api", client.getUriTemplateHandler().expand("/api", Map.of()).toString());
             assertEquals(1, client.getInterceptors().size());
         });
+        ReflectionTestUtils.setField(config, "replicationRequestTimeoutMs", 0);
+        assertThrows(IllegalArgumentException.class, config::replicationRestTemplate);
     }
 }

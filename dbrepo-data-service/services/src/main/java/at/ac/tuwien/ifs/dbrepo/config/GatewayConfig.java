@@ -37,6 +37,9 @@ public class GatewayConfig {
     @Value("${dbrepo.replication.password}")
     private String replicationPassword;
 
+    @Value("${dbrepo.replication.requestTimeoutMs:270000}")
+    private int replicationRequestTimeoutMs = 270_000;
+
     @PostConstruct
     void validateServiceUsers() {
         if (systemUsername.equals(replicationUsername)) {
@@ -46,7 +49,7 @@ public class GatewayConfig {
 
     @Bean("metadataServiceRestTemplate")
     public RestTemplate metadataServiceRestTemplate() {
-        final RestTemplate restTemplate = timeoutRestTemplate();
+        final RestTemplate restTemplate = timeoutRestTemplate(30_000);
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(metadataEndpoint));
         restTemplate.getInterceptors()
                 .add(new BasicRequestInterceptor(this));
@@ -55,17 +58,18 @@ public class GatewayConfig {
 
     @Bean("replicationRestTemplate")
     public RestTemplate replicationRestTemplate() {
-        final RestTemplate restTemplate = timeoutRestTemplate();
+        if (replicationRequestTimeoutMs <= 0) throw new IllegalArgumentException("Replication request timeout must be positive");
+        final RestTemplate restTemplate = timeoutRestTemplate(replicationRequestTimeoutMs);
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(replicationEndpoint));
         restTemplate.getInterceptors()
                 .add(new BasicRequestInterceptor(this));
         return restTemplate;
     }
 
-    private RestTemplate timeoutRestTemplate() {
+    private RestTemplate timeoutRestTemplate(int readTimeoutMs) {
         final SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(10_000);
-        factory.setReadTimeout(30_000);
+        factory.setReadTimeout(readTimeoutMs);
         return new RestTemplate(factory);
     }
 
