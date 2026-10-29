@@ -720,6 +720,11 @@ dataservice:
 ## @section Replication Service
 
 replicationservice:
+  amqp:
+    ## @param replicationservice.amqp.existingSecret Secret containing config.json with broker connections. Empty disables AMQP.
+    existingSecret: ""
+    ## @param replicationservice.amqp.timeoutMs Maximum wait for an application receipt, not just a broker confirm.
+    timeoutMs: 120000
   ## @param replicationservice.allowedSites Trusted HTTPS site origins allowed to receive shared replication credentials.
   allowedSites: [ ]
   ## @param replicationservice.enabled Enable the Replication Service.

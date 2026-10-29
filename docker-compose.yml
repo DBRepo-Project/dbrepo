@@ -268,6 +268,8 @@ services:
       OAUTH_ISSUER_URI: "${BASE_URL:-http://localhost}/realms/dbrepo"
       OAUTH_JWK_SET_URI: "${OAUTH_JWK_SET_URI:-http://auth-service:8080/realms/dbrepo/protocol/openid-connect/certs}"
       REPLICATION_OUTBOX_PATH: "${REPLICATION_OUTBOX_PATH:-/var/lib/dbrepo/replication/outbox.json}"
+      REPLICATION_AMQP_CONFIG: "${REPLICATION_AMQP_CONFIG:-}"
+      REPLICATION_AMQP_TIMEOUT_MS: "${REPLICATION_AMQP_TIMEOUT_MS:-120000}"
       REPLICATION_ALLOWED_SITES: "${REPLICATION_ALLOWED_SITES:-}"
       REPLICATION_USERNAME: "${REPLICATION_USERNAME:-replication}"
       REPLICATION_PASSWORD: "${REPLICATION_PASSWORD:-replication}"

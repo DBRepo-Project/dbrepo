@@ -50,6 +50,11 @@ spec:
               mountPath: /var/log/app/service/replication
             - name: outbox-dir
               mountPath: /var/lib/dbrepo/replication
+            {{- if .Values.replicationservice.amqp.existingSecret }}
+            - name: replication-amqp
+              mountPath: /run/secrets/replication-amqp
+              readOnly: true
+            {{- end }}
           envFrom:
             - secretRef:
                 name: replication-service-secret
@@ -75,6 +80,11 @@ spec:
           resources: {{- include "common.resources.preset" (dict "type" .Values.replicationservice.resourcesPreset) | nindent 12 }}
           {{- end }}
       volumes:
+        {{- if .Values.replicationservice.amqp.existingSecret }}
+        - name: replication-amqp
+          secret:
+            secretName: {{ .Values.replicationservice.amqp.existingSecret | quote }}
+        {{- end }}
         - name: empty-dir
           emptyDir: { }
         - name: outbox-dir

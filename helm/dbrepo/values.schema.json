@@ -1100,6 +1100,13 @@
         "replicationservice": {
             "type": "object",
             "properties": {
+                "amqp": {
+                    "type": "object",
+                    "properties": {
+                        "existingSecret": { "type": "string" },
+                        "timeoutMs": { "type": "integer", "minimum": 1000, "maximum": 900000 }
+                    }
+                },
                 "allowedSites": {
                     "type": "array",
                     "items": {
