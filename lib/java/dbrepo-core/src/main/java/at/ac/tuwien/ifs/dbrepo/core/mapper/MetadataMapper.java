@@ -1038,7 +1038,8 @@ public interface MetadataMapper {
                         .map(fk -> {
                             final Optional<Table> optional = table.getInternalName().equals(nameToInternalName(fk.getReferencedTable())) ? Optional.of(table) : database.getTables()
                                     .stream()
-                                    .filter(t -> t.getInternalName().equals(fk.getReferencedTable()))
+                                    .filter(t -> t.getInternalName().equals(
+                                            nameToInternalName(fk.getReferencedTable())))
                                     .findFirst();
                             if (optional.isEmpty()) {
                                 log.error("Failed to find foreign key referenced table {} in tables: {}", fk.getReferencedTable(), database.getTables().stream().map(Table::getInternalName).toList());
