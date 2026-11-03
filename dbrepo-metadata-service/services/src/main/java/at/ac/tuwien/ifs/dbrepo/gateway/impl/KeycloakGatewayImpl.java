@@ -92,10 +92,13 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
 
     @Override
     public UserRepresentation findByUsername(String username) throws UserNotFoundException, NotAllowedException {
-        log.debug("get user token for user: {}", username);
+        log.debug("find user in auth service by username: {}", username);
         final List<UserRepresentation> users = keycloak.realm(keycloakConfig.getKeycloakRealm())
                 .users()
-                .search(username);
+                .searchByUsername(username, true)
+                .stream()
+                .filter(user -> username.equals(user.getUsername()))
+                .toList();
         if (users.isEmpty()) {
             log.error("Failed to get user with username: {}", username);
             throw new UserNotFoundException("Failed to get user with username: " + username);
