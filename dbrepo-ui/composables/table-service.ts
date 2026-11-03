@@ -285,7 +285,7 @@ export const useTableService = (): any => {
       .trim()
       .replace(/\s+/g, '_')
       .replace(/[^\w-]+/g, '_')
-      .replace(/--+/g, '_')
+      .replace(/-+/g, '_')
   }
 
   function mapFilter(

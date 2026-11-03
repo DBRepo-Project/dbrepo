@@ -1036,7 +1036,7 @@ public interface MetadataMapper {
                 .foreignKeys(data.getForeignKeys()
                         .stream()
                         .map(fk -> {
-                            final Optional<Table> optional = fk.getReferencedTable().equals(table.getInternalName()) ? Optional.of(table) : database.getTables()
+                            final Optional<Table> optional = table.getInternalName().equals(nameToInternalName(fk.getReferencedTable())) ? Optional.of(table) : database.getTables()
                                     .stream()
                                     .filter(t -> t.getInternalName().equals(fk.getReferencedTable()))
                                     .findFirst();
