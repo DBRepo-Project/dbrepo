@@ -543,6 +543,36 @@
           "foreign_key": {
             "label": "Foreign key"
           },
+          "foreign_keys": {
+            "add": {
+              "text": "Add Foreign Key"
+            },
+            "remove": {
+              "text": "Remove"
+            },
+            "columns": {
+              "label": "Local Columns",
+              "hint": "Required. Select columns in foreign-key order"
+            },
+            "selected": {
+              "label": "Selected Columns",
+              "empty": "No columns selected"
+            },
+            "references": {
+              "label": "Referenced Primary Key",
+              "empty": "No eligible primary keys"
+            },
+            "on_update": {
+              "label": "On Update"
+            },
+            "on_delete": {
+              "label": "On Delete"
+            },
+            "move": {
+              "up": "Move selected column up",
+              "down": "Move selected column down"
+            }
+          },
           "references": {
             "label": "Foreign references"
           },
