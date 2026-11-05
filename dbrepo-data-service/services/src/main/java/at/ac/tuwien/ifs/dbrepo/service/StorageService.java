@@ -19,6 +19,7 @@ public interface StorageService {
 
     /**
      * Loads an object of a bucket from the storage service into an input stream.
+     * The caller must close the returned stream.
      *
      * @param bucket The bucket name.
      * @param key    The object key.
