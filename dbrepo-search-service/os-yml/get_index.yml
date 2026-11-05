@@ -15,27 +15,12 @@ parameters:
       enum: [ database, table, view, column, user, identifier, concept, unit ]
     required: true
     description: The search type.
-  - in: "body"
-    name: "body"
-    required: true
-    schema:
-      type: "object"
-      properties:
-        search_term:
-          type: "string"
-          example: "air quality"
-        field_value_pairs:
-          type: "object"
-        t1:
-          type: "integer"
-          example: 0
-        t2:
-          type: "integer"
-          example: 100
 responses:
   200:
-    description: OK, contains the elements formatted as an array of JSON arrays
+    description: An array of the requested result type, using current metadata permissions.
     content:
       application/json:
         schema:
-          $ref: '#/components/schemas/IndexDto'
+          type: array
+          items:
+            type: object

@@ -2,9 +2,11 @@
 The opensearch_client.py is used by the different API endpoints in routes.py to handle requests  to the opensearch db
 """
 import logging
+import math
 import os
 from collections.abc import MutableMapping
 from json import dumps, load
+from decimal import Decimal
 
 from opensearchpy import OpenSearch, NotFoundError
 import requests
@@ -13,6 +15,7 @@ from dbrepo.api.dto import Database
 from dbrepo.api.exceptions import ServiceConnectionError
 from dbrepo.core.omlib.constants import OM_IDS
 from dbrepo.core.omlib.measure import om
+from dbrepo.core.omlib.exceptions.unitconversionexception import UnitConversionException
 from dbrepo.core.omlib.omconstants import OM
 from dbrepo.core.omlib.unit import Unit
 
@@ -189,7 +192,13 @@ class SearchServiceClient:
                     logging.debug(f"skip empty key: {key}")
                     continue
                 logging.debug(f"processing key: {key}")
-                if '.' in key:
+                if key in ('tables.columns.concept.uri', 'tables.columns.unit.uri',
+                           'tables.columns.concept_uri', 'tables.columns.unit_uri'):
+                    legacy = key.replace('_uri', '.uri')
+                    current = legacy.replace('.uri', '_uri')
+                    musts.append({'bool': {'should': [{'match': {legacy: value}}, {'match': {current: value}}],
+                                           'minimum_should_match': 1}})
+                elif '.' in key:
                     logging.debug(f'key {key} is nested: use nested query')
                     musts.append({
                         "match": {
@@ -230,85 +239,67 @@ class SearchServiceClient:
         :param username: the username, optional.
         :return:
         """
-        logging.info(f"Performing unit-independent search")
-        searches = []
-        body = {
-            "size": 0,
-            "aggs": {
-                "units": {
-                    "terms": {"field": "unit.uri", "size": 500}
-                }
-            }
-        }
-        response = self._instance().search(
-            index="database",
-            size=1000,
-            body=dumps(body)
-        )
-        unit_uris = [hit["key"] for hit in response["aggregations"]["units"]["buckets"]]
-        logging.debug(f"found {len(unit_uris)} unit(s) in column index")
-        if len(unit_uris) == 0:
-            raise NotFoundError("Failed to search: no unit assigned")
-        base_unit = unit_uri_to_unit(field_value_pairs["unit.uri"])
-        for unit_uri in unit_uris:
-            gte = t1
-            lte = t2
-            if unit_uri != field_value_pairs["unit.uri"]:
-                target_unit = unit_uri_to_unit(unit_uri)
-                if not Unit.can_convert(base_unit, target_unit):
-                    logging.error(f"Cannot convert unit {field_value_pairs['unit.uri']} to target unit {unit_uri}")
-                    continue
-                gte = om(t1, base_unit).convert(target_unit)
-                lte = om(t2, base_unit).convert(target_unit)
-                logging.debug(
-                    f"converted original range [{t1},{t2}] for base unit {base_unit} to mapped range [{gte},{lte}] for target unit={target_unit}")
-            searches.append({'index': 'column'})
-            searches.append({
-                "query": {
-                    "bool": {
-                        "must": [
-                            {
-                                "match": {
-                                    "concept.uri": {
-                                        "query": field_value_pairs["concept.uri"]
-                                    }
-                                }
-                            },
-                            {
-                                "range": {
-                                    "val_min": {
-                                        "gte": gte
-                                    }
-                                }
-                            },
-                            {
-                                "range": {
-                                    "val_max": {
-                                        "lte": lte
-                                    }
-                                }
-                            },
-                            {
-                                "match": {
-                                    "unit.uri": {
-                                        "query": unit_uri
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                }
-            })
-        logging.debug('searches: %s', searches)
-        body = ''
-        for search in searches:
-            body += '%s \n' % dumps(search)
-        response = self._instance().msearch(
-            body=dumps(body)
-        )
-        results = flatten([hits["hits"]["hits"] for hits in response["responses"]])
-        databases = [Database.model_validate(hit["_source"]) for hit in results]
-        return self.filter_results(databases, username, user_token)
+        concept_uri = field_value_pairs.get('tables.columns.concept.uri', field_value_pairs.get('concept.uri'))
+        unit_uri = field_value_pairs.get('tables.columns.unit.uri', field_value_pairs.get('unit.uri'))
+        fields = {key: value for key, value in field_value_pairs.items()
+                  if key not in ('concept.uri', 'unit.uri', 'tables.columns.concept.uri', 'tables.columns.unit.uri')}
+        # Database documents contain ordinary object arrays, so evaluate the range on one current column.
+        databases = self.general_search(fields, username, user_token)
+        results = []
+        for database in databases:
+            tables = []
+            for table in database.tables or []:
+                columns = [column for column in table.columns
+                           if column_in_range(column, concept_uri, unit_uri, t1, t2)]
+                if columns:
+                    tables.append(table.model_copy(update={'columns': columns}))
+            if tables:
+                results.append(database.model_copy(update={'tables': tables}))
+        return results
+
+
+def semantic_value(column, field: str):
+    """Prefer the current scalar URI; older indexed records can contain a full semantic object."""
+    uri = getattr(column, f'{field}_uri')
+    value = getattr(column, field)
+    if uri is not None:
+        return value if value is not None and value.uri == uri else {'uri': uri}
+    return value
+
+
+def column_in_range(column, concept_uri: str, unit_uri: str, lower: float, upper: float) -> bool:
+    concept = semantic_value(column, 'concept')
+    unit = semantic_value(column, 'unit')
+    if concept is None or unit is None or column.val_min is None or column.val_max is None:
+        return False
+    actual_concept = concept['uri'] if isinstance(concept, dict) else concept.uri
+    actual_unit = unit['uri'] if isinstance(unit, dict) else unit.uri
+    if actual_concept != concept_uri or not all(math.isfinite(value) for value in
+                                                (lower, upper, column.val_min, column.val_max)):
+        return False
+    lower, upper = Decimal(str(lower)), Decimal(str(upper))
+    if actual_unit != unit_uri:
+        try:
+            # Absolute temperatures need offsets that OM's multiplicative Unit converter does not supply.
+            temperatures = {OM_IDS.NAMESPACE + 'kelvin': (Decimal(1), Decimal('273.15')),
+                            OM_IDS.NAMESPACE + 'degreeCelsius': (Decimal(1), Decimal(0)),
+                            OM_IDS.NAMESPACE + 'degreeFahrenheit': (Decimal('1.8'), Decimal(32))}
+            if unit_uri in temperatures and actual_unit in temperatures:
+                source_factor, source_offset = temperatures[unit_uri]
+                target_factor, target_offset = temperatures[actual_unit]
+                lower = (lower - source_offset) / source_factor * target_factor + target_offset
+                upper = (upper - source_offset) / source_factor * target_factor + target_offset
+            else:
+                source, target = unit_uri_to_unit(unit_uri), unit_uri_to_unit(actual_unit)
+                if not Unit.can_convert(source, target) or source.dimensions.Theta != 0:
+                    return False
+                factor = om(1, source)
+                factor.convert(target)
+                lower *= Decimal(str(factor.numericalValue))
+                upper *= Decimal(str(factor.numericalValue))
+        except (AttributeError, TypeError, ValueError, UnitConversionException):
+            return False
+    return lower <= Decimal(str(column.val_min)) <= Decimal(str(column.val_max)) <= upper
 
 
 def key_to_attr_name(key: str) -> str:
@@ -362,5 +353,7 @@ def flatten(mylist):
 
 
 def unit_uri_to_unit(uri):
+    if not isinstance(uri, str) or not uri.startswith(OM_IDS.NAMESPACE):
+        raise ValueError('Unit is outside the supported OM namespace')
     base_identifier = uri[len(OM_IDS.NAMESPACE):].replace("-", "")
     return getattr(OM, base_identifier)

@@ -1,5 +1,5 @@
 import time
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 from uuid import uuid4
 
 import jwt
@@ -167,14 +167,10 @@ def test_environment_credentials_cannot_override_caller(indexed, credentials, re
 
 
 def test_unit_search_candidates_use_the_same_authority(indexed, credentials, requests_mock):
-    # The legacy query builder remains separate; this checks its candidate-to-response boundary.
     unit = 'http://www.ontology-of-units-of-measure.org/resource/om-2/degreeCelsius'
-    backend = Mock()
-    backend.search.return_value = {'aggregations': {'units': {'buckets': [{'key': unit}]}}}
-    backend.msearch.return_value = {'responses': [{'hits': {'hits': [{'_source': indexed.model_dump(mode='json')}]}}]}
     headers = credentials('member')
     endpoint = requests_mock.get(f'http://metadata.invalid/api/v1/database/{indexed.id}', status_code=403)
-    with patch.object(SearchServiceClient, '_instance', return_value=backend), app.test_client() as client:
+    with app.test_client() as client:
         response = client.post('/api/v1/search/column?t1=0&t2=10',
                                json={'unit.uri': unit, 'concept.uri': 'http://example.org/concept'}, headers=headers)
     assert response.status_code == 200

@@ -4,7 +4,7 @@ import os
 from dbrepo.api.dto import Database, ApiError
 from dbrepo.api.exceptions import ServiceConnectionError
 from dbrepo.core.client.auth import User, AuthServiceClient
-from dbrepo.core.client.search import SearchServiceClient, flatten
+from dbrepo.core.client.search import SearchServiceClient, semantic_value
 from flasgger import LazyJSONEncoder, Swagger, swag_from
 from flask import Flask, request, Response
 from flask_cors import CORS
@@ -261,36 +261,28 @@ def metadata_unavailable(error):
                     code='search.metadata.unavailable').model_dump(), 503, headers
 
 
-def general_filter(index, results):
-    """
-    Applies filtering to the result of opensearch queries.
-
-    we only want to return specific entries of the result dict to the user, depending on the queried index.
-    the keys for the entries per index that shouldn't be deleted are specified in the important_keys dict.
-
-    :param index: the search index the query results are about
-    :param results: the raw response of the query_index_by_term_opensearch function.
-    :return:
-    """
-    important_keys = {
-        "column": ["id", "name", "column_type"],
-        "table": ["id", "name", "description"],
-        "identifier": ["id", "type", "creator"],
-        "user": ["id", "username"],
-        "database": ["id", "name", "is_public", "is_schema_public", "details"],
-        "concept": ["uri", "name"],
-        "unit": [],
-        "view": ["id", "name", "creator"],
-    }
-    if index not in important_keys.keys():
-        raise KeyError(f"Failed to find index {index} in: {important_keys.keys()}")
-    for result in results:
-        result_keys_copy = tuple(result.keys())
-        for key in result_keys_copy:
-            if key not in important_keys[index]:
-                del result[key]
-    logging.debug('general filter results: %s', results)
-    return results
+def general_filter(index: str, results: list[Database]):
+    """Project already authorized databases into the requested result type."""
+    if index == 'database':
+        return results
+    if index == 'user':
+        return [database.owner for database in results]
+    tables = [table for database in results for table in database.tables or []]
+    views = [view for database in results for view in database.views or []]
+    if index == 'table':
+        return tables
+    if index == 'view':
+        return views
+    if index == 'identifier':
+        return ([identifier for database in results
+                 for identifier in (database.identifiers or []) + (database.subsets or [])]
+                + [identifier for source in tables + views for identifier in source.identifiers or []])
+    columns = [column for table in tables for column in table.columns]
+    if index == 'column':
+        return columns
+    if index in ('concept', 'unit'):
+        return [value for column in columns if (value := semantic_value(column, index)) is not None]
+    raise KeyError(index)
 
 
 def search_client():
@@ -385,64 +377,40 @@ def post_general_search(field_type):
                         code='search.general.media').model_dump(), 415
     value_pairs = request.json
     logging.debug(f'endpoint get general search, field_type={field_type}, value_pairs={value_pairs}')
-    t1 = request.args.get("t1")
-    if not str(t1).isdigit():
-        t1 = None
-    t2 = request.args.get("t2")
-    if not str(t2).isdigit():
-        t2 = None
+    if not isinstance(value_pairs, dict):
+        return ApiError(status='BAD_REQUEST', message='Search fields must be an object',
+                        code='search.general.invalid').model_dump(), 400, headers
+    value_pairs = value_pairs.copy()
+    t1 = request.args.get('t1', value_pairs.pop('t1', None))
+    t2 = request.args.get('t2', value_pairs.pop('t2', None))
+    for field in ('concept', 'unit'):
+        for alias in (f'{field}.uri', f'tables.columns.{field}_uri'):
+            if alias in value_pairs:
+                value_pairs[f'tables.columns.{field}.uri'] = value_pairs.pop(alias)
     username, error, status = auth_client.get_username(request.headers.get('Authorization'))
     if error is not None and status is not None:
         return error, status
-    if t1 is not None and t2 is not None and "unit.uri" in value_pairs and "concept.uri" in value_pairs:
+    if t1 is not None or t2 is not None:
+        try:
+            t1, t2 = float(t1), float(t2)
+            if not math.isfinite(t1) or not math.isfinite(t2) or t1 > t2:
+                raise ValueError('Invalid range')
+            if not value_pairs.get('tables.columns.unit.uri') or not value_pairs.get('tables.columns.concept.uri'):
+                raise ValueError('A range requires a concept and unit')
+        except (TypeError, ValueError):
+            return ApiError(status='BAD_REQUEST', message='Provide a finite ordered range, concept and unit',
+                            code='search.general.range').model_dump(), 400, headers
         response = search_client().unit_independent_search(t1, t2, value_pairs, username,
-                                                             request.headers.get("Authorization"))
+                                                           request.headers.get('Authorization'))
     else:
         response = search_client().general_search(field_value_pairs=value_pairs,
-                                                  username=username,
-                                                  user_token=request.headers.get('Authorization'))
-    # filter by type
-    tables = flatten([database.tables or [] for database in response])
-    views = flatten([database.views or [] for database in response])
-    if field_type == 'table':
-        logging.debug(f'filtered to {len(tables)} tables')
-        response = tables
-    if field_type == 'identifier':
-        tmp = []
-        for database in response:
-            if database["identifiers"] is not None:
-                for identifier in database['identifiers']:
-                    tmp.append(identifier)
-            if database["subsets"] is not None:
-                for identifier in database['subsets']:
-                    tmp.append(identifier)
-            if database["tables"] is not None:
-                for table in database['tables']:
-                    if database["identifiers"] is not None:
-                        for identifier in table['identifiers']:
-                            tmp.append(identifier)
-        for view in [x for xs in response for x in xs["views"]]:
-            if 'identifier' in view:
-                tmp.append(view['identifier'])
-        response = tmp
-    elif field_type == 'column':
-        response = flatten([table.columns for table in tables])
-    elif field_type == 'concept':
-        tmp = []
-        tables = [x for xs in response for x in xs["tables"]]
-        for column in [x for xs in tables for x in xs["columns"]]:
-            if 'concept' in column and column["concept"] is not None:
-                tmp.append(column["concept"])
-        response = tmp
-    elif field_type == 'unit':
-        tmp = []
-        tables = [x for xs in response for x in xs["tables"]]
-        for column in [x for xs in tables for x in xs["columns"]]:
-            if 'unit' in column and column["unit"] is not None:
-                tmp.append(column["unit"])
-        response = tmp
-    elif field_type == 'view':
-        response = views
+                                                 username=username,
+                                                 user_token=request.headers.get('Authorization'))
+    try:
+        response = general_filter(field_type, response)
+    except KeyError:
+        return ApiError(status='NOT_FOUND', message=f'Failed to find search type: {field_type}',
+                        code='search.type.missing').model_dump(), 404, headers
     return Response(dumps(response, default=pydantic_encoder)), 200, headers
 
 
