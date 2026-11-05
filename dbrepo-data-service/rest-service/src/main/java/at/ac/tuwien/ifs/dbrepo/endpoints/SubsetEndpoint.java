@@ -16,6 +16,7 @@ import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
 import at.ac.tuwien.ifs.dbrepo.service.SubsetService;
 import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
 import at.ac.tuwien.ifs.dbrepo.validation.EndpointValidator;
+import at.ac.tuwien.ifs.dbrepo.validation.SubsetAccessValidator;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.headers.Header;
@@ -29,6 +30,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
+import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -55,12 +57,14 @@ public class SubsetEndpoint {
     private final MetadataService metadataService;
     private final EndpointValidator endpointValidator;
     private final MetadataServiceGateway metadataServiceGateway;
+    private final SubsetAccessValidator subsetAccessValidator;
+    private final DSLContext context;
 
     @Autowired
     public SubsetEndpoint(DataService dataService, MariaDbMapper mariaDbMapper,
                           SubsetService subsetService, MetadataMapper metadataMapper,
                           MetadataService metadataService, EndpointValidator endpointValidator,
-                          MetadataServiceGateway metadataServiceGateway) {
+                          MetadataServiceGateway metadataServiceGateway, SubsetAccessValidator subsetAccessValidator, DSLContext context) {
         this.dataService = dataService;
         this.mariaDbMapper = mariaDbMapper;
         this.subsetService = subsetService;
@@ -68,6 +72,8 @@ public class SubsetEndpoint {
         this.metadataService = metadataService;
         this.endpointValidator = endpointValidator;
         this.metadataServiceGateway = metadataServiceGateway;
+        this.subsetAccessValidator = subsetAccessValidator;
+        this.context = context;
     }
 
     @GetMapping
@@ -254,7 +260,7 @@ public class SubsetEndpoint {
             log.debug("timestamp not set: default to {}", timestamp);
         }
         /* create */
-        final Database database = metadataService.getDatabase(databaseId);
+        final Database database = metadataServiceGateway.getDatabaseById(databaseId);
         if (!database.getIsPublic()) {
             if (principal == null) {
                 log.error("Failed to create subset: no authentication found");
@@ -264,6 +270,9 @@ public class SubsetEndpoint {
                 endpointValidator.validateOnlyAccess(database, principal);
             }
         }
+        subsetAccessValidator.validate(database, data, principal);
+        subsetAccessValidator.validate(database,
+                mariaDbMapper.subsetDtoToNormalizedTimestampedQuery(context, database, data, timestamp), principal);
         try {
             final UUID subsetId = subsetService.create(database, data, timestamp, username);
             return getData(databaseId, subsetId, principal, "application/json", request, timestamp, page, size);
@@ -328,7 +337,7 @@ public class SubsetEndpoint {
         log.debug("endpoint get subset data, databaseId={}, subsetId={}, accept={} page={}, size={}", databaseId,
                 subsetId, accept, page, size);
         endpointValidator.validateDataParams(page, size);
-        final Database database = metadataService.getDatabase(databaseId);
+        final Database database = metadataServiceGateway.getDatabaseById(databaseId);
         if (!database.getIsPublic()) {
             if (principal == null) {
                 log.error("Failed to re-execute query: no authentication found");
@@ -360,6 +369,7 @@ public class SubsetEndpoint {
             final HttpHeaders headers = new HttpHeaders();
             headers.set("X-Id", "" + subsetId);
             final Subset subset = subsetService.findById(database, subsetId);
+            subsetAccessValidator.validate(database, subset.getQueryNormalized(), principal);
             if (request.getMethod().equals("HEAD")) {
                 final SubsetMetadata metadata = subsetService.getMetadata(database, subset.getQueryNormalized());
                 headers.set("X-Count", "" + metadata.getResultCount());
