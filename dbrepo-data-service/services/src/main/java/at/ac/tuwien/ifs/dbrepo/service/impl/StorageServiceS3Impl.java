@@ -40,17 +40,19 @@ public class StorageServiceS3Impl extends DataConnector implements StorageServic
     public void putObject(String key, byte[] content) throws StorageObjectExistsException {
         final long start = System.currentTimeMillis();
         try {
-            final GetObjectResponse response = s3Client.getObject(GetObjectRequest.builder()
-                            .key(key)
-                            .bucket(s3Config.getS3Bucket())
-                            .build())
-                    .response();
+            final HeadObjectResponse response = s3Client.headObject(HeadObjectRequest.builder()
+                    .key(key)
+                    .bucket(s3Config.getS3Bucket())
+                    .build());
             if (matchesAnyHash(response, content)) {
                 log.debug("object with key {} already exists", key);
                 throw new StorageObjectExistsException("Object already exists");
             }
-        } catch (NoSuchKeyException e) {
-            /* ignore */
+        } catch (S3Exception e) {
+            // HEAD responses have no error body and may use a generic S3Exception for a missing key.
+            if (e.statusCode() != 404) {
+                throw e;
+            }
         }
         s3Client.putObject(PutObjectRequest.builder()
                 .key(key)
@@ -68,7 +70,7 @@ public class StorageServiceS3Impl extends DataConnector implements StorageServic
                 .log();
     }
 
-    public boolean matchesAnyHash(GetObjectResponse response, byte[] content) {
+    public boolean matchesAnyHash(HeadObjectResponse response, byte[] content) {
         if (response == null) {
             log.trace("response is null");
             return false;
