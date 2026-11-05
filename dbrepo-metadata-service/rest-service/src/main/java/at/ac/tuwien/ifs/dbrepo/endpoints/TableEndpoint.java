@@ -339,14 +339,14 @@ public class TableEndpoint extends RestEndpoint {
                     .filter(a -> a.getUsername().equals(AuthUtil.getUsername(principal)))
                     .findFirst();
             if (table.getIsPublic() || table.getIsSchemaPublic() || optional.isPresent()) {
-                return ResponseEntity.ok(metadataMapper.tableToTableDto(table));
+                return ResponseEntity.ok(filterTableMetadata(metadataMapper.tableToTableDto(table), visibleColumns(filterTables(database, principal)), principal));
             }
         }
         if (!table.getIsPublic() && !table.getIsSchemaPublic()) {
             log.error("Failed to find table: not public and no access found");
             throw new NotAllowedException("Failed to find table: not public and no access found");
         }
-        return ResponseEntity.ok(metadataMapper.tableToTableDto(table));
+        return ResponseEntity.ok(filterTableMetadata(metadataMapper.tableToTableDto(table), visibleColumns(filterTables(database, principal)), principal));
     }
 
     @DeleteMapping("/{tableId}")

@@ -58,6 +58,10 @@ Celsius [http://www.ontology-of-units-of-measure.org/resource/om-2/degreeCelsius
     in [contact](/infrastructures/dbrepo/1.13/contact) with us, we happily answer requests for collaboration with attached CV and your programming 
     experience!
 
-## Security
+## Response permissions
 
-(none)
+Search result bodies use current Metadata Service responses with the caller's credentials. Anonymous requests send no
+credentials. Nested schemas, access lists and identifier drafts follow the Metadata Service's visibility rules.
+
+The Metadata Service must be available when returning matching results. If its response is unavailable or malformed, the
+Search Service returns HTTP 503 instead of returning the indexed payload.

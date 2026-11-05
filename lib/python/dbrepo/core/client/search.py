@@ -7,10 +7,10 @@ from collections.abc import MutableMapping
 from json import dumps, load
 
 from opensearchpy import OpenSearch, NotFoundError
-from requests import head
+import requests
 
 from dbrepo.api.dto import Database
-from dbrepo.api.exceptions import ForbiddenError, NotExistsError
+from dbrepo.api.exceptions import ServiceConnectionError
 from dbrepo.core.omlib.constants import OM_IDS
 from dbrepo.core.omlib.measure import om
 from dbrepo.core.omlib.omconstants import OM
@@ -147,23 +147,26 @@ class SearchServiceClient:
     def filter_results(self, results: list[Database], username: str | None = None, user_token: str | None = None) -> \
             list[Database]:
         filtered: list[Database] = []
-        for database in results:
-            if database.is_public or database.is_schema_public:
-                logging.debug(f'database with id {database.id} is public or has public schema')
-                filtered.append(database)
-            elif username is not None and user_token is not None:
+        # The index selects candidates; current Metadata responses decide what the caller may see.
+        with requests.Session() as session:
+            session.trust_env = False  # Do not inherit .netrc credentials or environment authentication.
+            headers = {"Accept": "application/json"}
+            if user_token is not None:
+                headers["Authorization"] = user_token
+            for database in results:
                 try:
-                    url = f'{self.metadata_endpoint}/api/v1/database/{database.id}/access/{username}'
-                    logging.debug(f'requesting access from url: {url}')
-                    response = head(url=url, auth=(self.system_username, self.system_password))
-                    if response.status_code == 200:
-                        logging.debug(f'database with id {database.id} is draft and access was found')
-                        filtered.append(database)
-                    else:
-                        logging.warning(
-                            f'database with id {database.id} is not accessible: code {response.status_code}')
-                except (ForbiddenError, NotExistsError) as e:
-                    logging.warning(f'database with id {database.id} is draft but no access was found')
+                    response = session.get(f'{self.metadata_endpoint}/api/v1/database/{database.id}',
+                                           headers=headers, timeout=(3.05, 5), allow_redirects=False)
+                    if response.status_code in (401, 403, 404):
+                        continue
+                    if response.status_code != 200:
+                        raise ServiceConnectionError("Failed to retrieve current search metadata")
+                    current = Database.model_validate(response.json())
+                    if current.id != database.id:
+                        raise ServiceConnectionError("Metadata response does not match the search candidate")
+                    filtered.append(current)
+                except (requests.RequestException, ValueError) as error:
+                    raise ServiceConnectionError("Failed to retrieve current search metadata") from error
         logging.debug(f'filtered {len(filtered)} results')
         return filtered
 
@@ -215,7 +218,8 @@ class SearchServiceClient:
         logging.debug(f'found {len(results)} results')
         return self.filter_results(results, username, user_token)
 
-    def unit_independent_search(self, t1: float, t2: float, field_value_pairs: dict, username: str | None = None) -> \
+    def unit_independent_search(self, t1: float, t2: float, field_value_pairs: dict, username: str | None = None,
+                                user_token: str | None = None) -> \
             list[Database]:
         """
         Main method for searching stuff in the opensearch db
@@ -303,9 +307,8 @@ class SearchServiceClient:
             body=dumps(body)
         )
         results = flatten([hits["hits"]["hits"] for hits in response["responses"]])
-        return [database for database in results if
-                database.is_public or database.is_schema_public or (
-                        username is not None and database.owner.username == username)]
+        databases = [Database.model_validate(hit["_source"]) for hit in results]
+        return self.filter_results(databases, username, user_token)
 
 
 def key_to_attr_name(key: str) -> str:

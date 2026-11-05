@@ -2,6 +2,7 @@ import logging
 import math
 import os
 from dbrepo.api.dto import Database, ApiError
+from dbrepo.api.exceptions import ServiceConnectionError
 from dbrepo.core.client.auth import User, AuthServiceClient
 from dbrepo.core.client.search import SearchServiceClient, flatten
 from flasgger import LazyJSONEncoder, Swagger, swag_from
@@ -253,6 +254,13 @@ def get_user_roles(user: User) -> List[str]:
 headers = {'Content-Type': 'application/json'}
 
 
+@app.errorhandler(ServiceConnectionError)
+def metadata_unavailable(error):
+    logging.warning("Current search metadata is unavailable")
+    return ApiError(status='SERVICE_UNAVAILABLE', message='Current search metadata is unavailable',
+                    code='search.metadata.unavailable').model_dump(), 503, headers
+
+
 def general_filter(index, results):
     """
     Applies filtering to the result of opensearch queries.
@@ -305,7 +313,10 @@ def get_index(index: str):
     :return: list of the results
     """
     logging.debug(f'endpoint get search type: {index}')
-    results = search_client().general_search()
+    username, error, status = auth_client.get_username(request.headers.get('Authorization'))
+    if error is not None and status is not None:
+        return error, status, headers
+    results = search_client().general_search(username=username, user_token=request.headers.get('Authorization'))
     try:
         results = general_filter(index, results)
 
@@ -384,16 +395,15 @@ def post_general_search(field_type):
     if error is not None and status is not None:
         return error, status
     if t1 is not None and t2 is not None and "unit.uri" in value_pairs and "concept.uri" in value_pairs:
-        response = search_client().unit_independent_search(t1, t2, value_pairs, username)
+        response = search_client().unit_independent_search(t1, t2, value_pairs, username,
+                                                             request.headers.get("Authorization"))
     else:
         response = search_client().general_search(field_value_pairs=value_pairs,
                                                   username=username,
                                                   user_token=request.headers.get('Authorization'))
     # filter by type
-    tables = [table for table in flatten([database.tables for database in response]) if
-              table.is_public or table.is_schema_public or (username is not None and table.owner.username == username)]
-    views = [view for view in flatten([database.views for database in response]) if
-             view.is_public or view.is_schema_public or (username is not None and view.owner.username == username)]
+    tables = flatten([database.tables or [] for database in response])
+    views = flatten([database.views or [] for database in response])
     if field_type == 'table':
         logging.debug(f'filtered to {len(tables)} tables')
         response = tables

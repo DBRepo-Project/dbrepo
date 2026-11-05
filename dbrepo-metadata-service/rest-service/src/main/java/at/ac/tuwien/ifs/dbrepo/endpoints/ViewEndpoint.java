@@ -176,14 +176,14 @@ public class ViewEndpoint extends RestEndpoint {
                     .filter(a -> a.getUsername().equals(AuthUtil.getUsername(principal)))
                     .findFirst();
             if (view.getIsPublic() || view.getIsSchemaPublic() || optional.isPresent()) {
-                return ResponseEntity.ok(metadataMapper.viewToViewDto(view));
+                return ResponseEntity.ok(filterViewMetadata(metadataMapper.viewToViewDto(view), principal));
             }
         }
         if (!view.getIsPublic() && !view.getIsSchemaPublic()) {
             log.error("Failed to find view: not public and no access found");
             throw new NotAllowedException("Failed to find view: not public and no access found");
         }
-        return ResponseEntity.ok(metadataMapper.viewToViewDto(view));
+        return ResponseEntity.ok(filterViewMetadata(metadataMapper.viewToViewDto(view), principal));
     }
 
     @DeleteMapping("/{viewId}")
