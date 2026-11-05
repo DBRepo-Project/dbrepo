@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 @Slf4j
 @Service
@@ -79,6 +80,7 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
                     .addKeyValue(Constants.ACTION, "flush_privileges")
                     .log();
             connection.commit();
+            closeUserConnections(connection, database, user);
         } catch (SQLException e) {
             connection.rollback();
             log.error("Failed to give database access: {}", e.getMessage());
@@ -110,6 +112,7 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
             /* apply access rights */
             connection.prepareStatement(mariaDbMapper.databaseFlushPrivilegesQuery());
             connection.commit();
+            closeUserConnections(connection, database, user);
         } catch (SQLException e) {
             connection.rollback();
             log.error("Failed to modify database access: {}", e.getMessage());
@@ -146,6 +149,7 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
                     .addKeyValue(Constants.ACTION, "flush_privileges")
                     .log();
             connection.commit();
+            closeUserConnections(connection, database, user);
         } catch (SQLException e) {
             connection.rollback();
             log.error("Failed to revoke database access: {}", e.getMessage());
@@ -154,6 +158,16 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
             dataSource.close();
         }
         log.info("Deleted access to database with id {} for user with id {}", database.getId(), user.getId());
+    }
+
+    private void closeUserConnections(Connection connection, Database database, User user) throws SQLException {
+        if (user.getUsername().equals(database.getContainer().getUsername())) {
+            return;
+        }
+        // Open sessions cache database privileges until they reconnect.
+        try (Statement statement = connection.createStatement()) {
+            statement.execute("KILL USER `" + user.getUsername().replace("`", "``") + "`@`%`");
+        }
     }
 
     private void revokeQueryStoreAccess(Connection connection, Database database, User user) throws SQLException {

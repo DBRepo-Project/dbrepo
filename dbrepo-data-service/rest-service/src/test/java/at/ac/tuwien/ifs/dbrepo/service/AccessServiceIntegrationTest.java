@@ -142,7 +142,7 @@ public class AccessServiceIntegrationTest extends BaseTest {
 
     @Test
     public void broadConfiguredGrants_areRejected() {
-        for (String grants : new String[]{"SELECT, EXECUTE", "ALL", "ALL PRIVILEGES"}) {
+        for (String grants : new String[]{"SELECT, EXECUTE", "ALL", "ALL PRIVILEGES", "ALL    PRIVILEGES", "ALL/**/PRIVILEGES", "SELECT, /*! EXECUTE */"}) {
             assertThrows(IllegalArgumentException.class, () -> mariaDbMapper.databaseGrantPrivilegesQuery(
                     DATABASE_1_INTERNAL_NAME, USER_1_USERNAME, grants));
         }
@@ -178,6 +178,21 @@ public class AccessServiceIntegrationTest extends BaseTest {
         accessService.update(DATABASE_1_CACHE, USER_1_CACHE, AccessTypeDto.READ);
         try (Connection reader = readerConnection(); Statement query = reader.createStatement()) {
             assertTrue(query.executeQuery("SELECT COUNT(*) FROM qs_queries").next());
+            assertInternalCallsDenied(query);
+        }
+    }
+
+    @Test
+    public void update_disconnectsSessionsWithCachedExecutePrivileges() throws Exception {
+        accessService.create(DATABASE_1_CACHE, USER_1_CACHE, AccessTypeDto.READ);
+        addLegacyRoutineGrants();
+        try (Connection existing = readerConnection(); Statement query = existing.createStatement()) {
+            query.execute("CALL store_query('SELECT 1 AS value', 'SELECT 1 AS value', NOW(), @id)");
+            accessService.update(DATABASE_1_CACHE, USER_1_CACHE, AccessTypeDto.READ);
+            assertThrows(SQLException.class, () -> query.execute("SELECT 1"));
+        }
+        try (Connection fresh = readerConnection(); Statement query = fresh.createStatement()) {
+            assertTrue(query.executeQuery("SELECT 1").next());
             assertInternalCallsDenied(query);
         }
     }

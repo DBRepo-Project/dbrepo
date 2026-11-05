@@ -118,8 +118,7 @@ public interface MariaDbMapper {
     }
 
     default String databaseGrantPrivilegesQuery(String database, String username, String grants) {
-        if (Arrays.stream(grants.split(",")).map(String::trim)
-                .anyMatch(grant -> Set.of("EXECUTE", "ALL", "ALL PRIVILEGES").contains(grant.toUpperCase(Locale.ROOT)))) {
+        if (Pattern.compile("(?i)\\b(?:EXECUTE|ALL)\\b").matcher(grants).find()) {
             throw new IllegalArgumentException("Database access grants must not include EXECUTE or ALL privileges");
         }
         final StringBuilder statement = new StringBuilder("GRANT ")
