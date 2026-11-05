@@ -64,3 +64,14 @@ printf(f"subset id: {subset.id}")
     We strongly encourage you to help us implement it as we are welcoming contributors to open-source software and get
     in [contact](/infrastructures/dbrepo/1.13/contact) with us, we happily answer requests for collaboration with attached CV and your programming 
     experience!
+
+## Reusing saved subsets
+
+Each request checks the current database, table and view permissions. This applies to creating a subset, downloading its
+rows and requesting its row count or hash. A saved subset does not retain access after a source becomes private or a grant
+is removed. A public view remains readable according to the view's own visibility.
+
+Saved SQL must reference known sources in the selected database. Replay supports selections, joins, filters and the subset
+builder's timestamp clauses. SQL with function calls, comments, double-quoted tokens, backslash escapes, locking clauses,
+sequence access or no data source is rejected for ordinary users. These restrictions also apply to filter values that
+require backslash escapes. Saved queries outside this supported format need to be recreated with supported expressions.
