@@ -238,6 +238,32 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
     }
 
     @Override
+    public void checkUserAuthority(String username, String authority) throws RemoteUnavailableException,
+            UserNotFoundException, NotAllowedException, MetadataServiceException {
+        final ResponseEntity<Void> response;
+        final String url = "/api/v1/user/" + username + "/authority/" + authority;
+        log.debug("check user authority at metadata service: {}", url);
+        try {
+            response = metadataServiceRestTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, Void.class);
+        } catch (ResourceAccessException | HttpServerErrorException e) {
+            log.error("Failed to check authority {} for user {}: {}", authority, username, e.getMessage());
+            throw new RemoteUnavailableException("Failed to check user authority: " + e.getMessage(), e);
+        } catch (HttpClientErrorException.NotFound e) {
+            log.error("Failed to check authority {} for user {}: user not found: {}", authority, username, e.getMessage());
+            throw new UserNotFoundException("Failed to check user authority: user not found", e);
+        } catch (HttpClientErrorException.Forbidden e) {
+            log.debug("Authority {} not found for user {}: {}", authority, username, e.getMessage());
+            throw new NotAllowedException("Failed to check user authority: forbidden", e);
+        }
+        if (!response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
+            log.error("Failed to check authority {} for user {}: service responded unsuccessful: {}", authority,
+                    username, response.getStatusCode());
+            throw new MetadataServiceException("Failed to check user authority: service responded unsuccessful: " +
+                    response.getStatusCode());
+        }
+    }
+
+    @Override
     public List<IdentifierBriefDto> getIdentifiers(@NotNull UUID databaseId, UUID subsetId) throws MetadataServiceException,
             RemoteUnavailableException, DatabaseNotFoundException {
         final ResponseEntity<IdentifierBriefDto[]> response;

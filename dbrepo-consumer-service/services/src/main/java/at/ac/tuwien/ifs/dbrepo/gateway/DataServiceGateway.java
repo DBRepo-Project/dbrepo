@@ -9,6 +9,6 @@ import java.util.UUID;
 
 public interface DataServiceGateway {
 
-    void insertRawTuple(UUID databaseId, UUID tableId, TupleDto tuple) throws RemoteUnavailableException,
+    void insertRawTuple(UUID databaseId, UUID tableId, TupleDto tuple, String amqpUsername) throws RemoteUnavailableException,
             TableNotFoundException, DataServiceException;
 }

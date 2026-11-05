@@ -84,6 +84,19 @@ public interface MetadataServiceGateway {
     User getUserByUsername(String username) throws RemoteUnavailableException, UserNotFoundException, MetadataServiceException;
 
     /**
+     * Checks if a user has a given authority at the metadata service.
+     *
+     * @param username  The username.
+     * @param authority The authority.
+     * @throws RemoteUnavailableException The remote service is not available.
+     * @throws UserNotFoundException      The user was not found.
+     * @throws NotAllowedException        The authority was not found for the user.
+     * @throws MetadataServiceException   The remote service returned invalid data.
+     */
+    void checkUserAuthority(String username, String authority) throws RemoteUnavailableException,
+            UserNotFoundException, NotAllowedException, MetadataServiceException;
+
+    /**
      * Get a list of identifiers for a given database id and optional subset id.
      *
      * @param databaseId The database id.

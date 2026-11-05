@@ -127,7 +127,7 @@ public class PrometheusEndpointMvcTest extends BaseTest {
             /* ignore */
         }
         try {
-            tableEndpoint.insertRawTuple(DATABASE_1_ID, TABLE_1_ID, TupleDto.builder().build(), USER_1_PRINCIPAL);
+            tableEndpoint.insertRawTuple(DATABASE_1_ID, TABLE_1_ID, TupleDto.builder().build(), null, null, USER_1_PRINCIPAL);
         } catch (Exception e) {
             /* ignore */
         }

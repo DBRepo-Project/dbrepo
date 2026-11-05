@@ -39,6 +39,16 @@ public interface UserService {
     UserDto findById(UUID id) throws UserNotFoundException, NotAllowedException;
 
     /**
+     * Checks if a user has a given authority in the auth service.
+     *
+     * @param username  The username.
+     * @param authority The authority.
+     * @throws UserNotFoundException The user was not found.
+     * @throws NotAllowedException   The authority was not found for the user.
+     */
+    void checkAuthority(String username, String authority) throws UserNotFoundException, NotAllowedException;
+
+    /**
      * Updates the user information for a user with given id in the auth service.
      *
      * @param user The user.
