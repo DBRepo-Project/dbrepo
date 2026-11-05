@@ -442,6 +442,13 @@ public class DatabaseEndpoint extends RestEndpoint {
         log.debug("endpoint find database, databaseId={}", databaseId);
         final Database database = filterDatabase(databaseService.findById(databaseId), principal);
         final DatabaseDto dto = metadataMapper.databaseToDatabaseDto(database);
+        if (!AuthUtil.isSystem(principal)) {
+            final var columns = visibleColumns(database.getTables());
+            dto.getTables().forEach(table -> filterTableMetadata(table, columns, principal));
+            dto.getViews().forEach(view -> filterViewMetadata(view, principal));
+            dto.setIdentifiers(filterIdentifiers(dto.getIdentifiers(), principal));
+            dto.setSubsets(filterIdentifiers(dto.getSubsets(), principal));
+        }
         final HttpHeaders headers = new HttpHeaders();
         if (AuthUtil.isSystem(principal)) {
             log.trace("attach privileged credential information");
