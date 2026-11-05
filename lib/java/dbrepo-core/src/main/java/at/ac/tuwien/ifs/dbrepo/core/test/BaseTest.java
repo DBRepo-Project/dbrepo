@@ -1604,6 +1604,7 @@ public class BaseTest {
 
     public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table TABLE_1_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table.builder()
             .id(TABLE_1_ID)
+            .databaseId(DATABASE_1_ID)
             .internalName(TABLE_1_INTERNAL_NAME)
             .isPublic(TABLE_1_IS_PUBLIC)
             .isSchemaPublic(TABLE_1_SCHEMA_PUBLIC)
@@ -1880,6 +1881,7 @@ public class BaseTest {
 
     public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table TABLE_2_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table.builder()
             .id(TABLE_2_ID)
+            .databaseId(DATABASE_1_ID)
             .internalName(TABLE_2_INTERNAL_NAME)
             .isPublic(TABLE_2_IS_PUBLIC)
             .isSchemaPublic(TABLE_2_SCHEMA_PUBLIC)
@@ -1951,6 +1953,7 @@ public class BaseTest {
 
     public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table TABLE_3_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table.builder()
             .id(TABLE_3_ID)
+            .databaseId(DATABASE_1_ID)
             .internalName(TABLE_3_INTERNAL_NAME)
             .isPublic(TABLE_3_IS_PUBLIC)
             .isSchemaPublic(TABLE_3_SCHEMA_PUBLIC)
@@ -2057,6 +2060,7 @@ public class BaseTest {
 
     public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table TABLE_5_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table.builder()
             .id(TABLE_5_ID)
+            .databaseId(DATABASE_2_ID)
             .internalName(TABLE_5_INTERNAL_NAME)
             .isPublic(TABLE_5_IS_PUBLIC)
             .isSchemaPublic(TABLE_5_SCHEMA_PUBLIC)
@@ -2124,6 +2128,7 @@ public class BaseTest {
 
     public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table TABLE_6_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table.builder()
             .id(TABLE_6_ID)
+            .databaseId(DATABASE_2_ID)
             .internalName(TABLE_6_INTERNAL_NAME)
             .isPublic(TABLE_6_IS_PUBLIC)
             .isSchemaPublic(TABLE_6_SCHEMA_PUBLIC)
@@ -2243,6 +2248,7 @@ public class BaseTest {
 
     public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table TABLE_7_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table.builder()
             .id(TABLE_7_ID)
+            .databaseId(DATABASE_2_ID)
             .internalName(TABLE_7_INTERNAL_NAME)
             .isPublic(TABLE_7_IS_PUBLIC)
             .isSchemaPublic(TABLE_7_SCHEMA_PUBLIC)
@@ -2322,6 +2328,7 @@ public class BaseTest {
 
     public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table TABLE_4_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table.builder()
             .id(TABLE_4_ID)
+            .databaseId(DATABASE_1_ID)
             .internalName(TABLE_4_INTERNAL_NAME)
             .columns(new LinkedList<>()) /* TABLE_4_COLUMNS_CACHE */
             .isPublic(TABLE_4_IS_PUBLIC)
@@ -2482,6 +2489,7 @@ public class BaseTest {
 
     public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table TABLE_8_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table.builder()
             .id(TABLE_8_ID)
+            .databaseId(DATABASE_3_ID)
             .internalName(TABLE_8_INTERNAL_NAME)
             .isPublic(TABLE_8_IS_PUBLIC)
             .isSchemaPublic(TABLE_8_SCHEMA_PUBLIC)
@@ -5565,6 +5573,7 @@ public class BaseTest {
 
     public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.View VIEW_1_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.View.builder()
             .id(VIEW_1_ID)
+            .databaseId(DATABASE_1_ID)
             .internalName(VIEW_1_INTERNAL_NAME)
             .isPublic(VIEW_1_PUBLIC)
             .isSchemaPublic(VIEW_1_SCHEMA_PUBLIC)
@@ -5773,6 +5782,7 @@ public class BaseTest {
 
     public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.View VIEW_2_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.View.builder()
             .id(VIEW_2_ID)
+            .databaseId(DATABASE_1_ID)
             .internalName(VIEW_2_INTERNAL_NAME)
             .isPublic(VIEW_2_PUBLIC)
             .isSchemaPublic(VIEW_2_SCHEMA_PUBLIC)
@@ -5948,6 +5958,7 @@ public class BaseTest {
 
     public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.View VIEW_3_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.View.builder()
             .id(VIEW_3_ID)
+            .databaseId(DATABASE_1_ID)
             .internalName(VIEW_3_INTERNAL_NAME)
             .isPublic(VIEW_3_PUBLIC)
             .isSchemaPublic(VIEW_3_SCHEMA_PUBLIC)
@@ -6252,6 +6263,7 @@ public class BaseTest {
 
     public final at.ac.tuwien.ifs.dbrepo.core.entity.cache.View VIEW_4_CACHE = at.ac.tuwien.ifs.dbrepo.core.entity.cache.View.builder()
             .id(VIEW_4_ID)
+            .databaseId(DATABASE_2_ID)
             .internalName(VIEW_4_INTERNAL_NAME)
             .isPublic(VIEW_4_PUBLIC)
             .isSchemaPublic(VIEW_4_SCHEMA_PUBLIC)

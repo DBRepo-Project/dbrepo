@@ -103,13 +103,17 @@ public class MetadataServiceImpl implements MetadataService {
     @Override
     public Table getTable(UUID databaseId, UUID id) throws TableNotFoundException, RemoteUnavailableException,
             MetadataServiceException {
-        final Optional<Table> optional = tableRepository.findById(id);
+        final Optional<Table> optional = tableRepository.findById(id)
+                .filter(table -> databaseId.equals(table.getDatabaseId()));
         if (optional.isPresent()) {
             log.trace("Cache hit on table: {}", id);
             return optional.get();
         }
         log.trace("Cache miss on table: {}", id);
         final Table table = metadataServiceGateway.getTableById(databaseId, id);
+        if (!databaseId.equals(table.getDatabaseId())) {
+            throw new TableNotFoundException("Failed to find table in database");
+        }
         table.setExp(cacheConfig.getTtl());
         return tableRepository.save(table);
     }
@@ -117,13 +121,17 @@ public class MetadataServiceImpl implements MetadataService {
     @Override
     public View getView(UUID databaseId, UUID id) throws RemoteUnavailableException, MetadataServiceException,
             ViewNotFoundException {
-        final Optional<View> optional = viewRepository.findById(id);
+        final Optional<View> optional = viewRepository.findById(id)
+                .filter(view -> databaseId.equals(view.getDatabaseId()));
         if (optional.isPresent()) {
             log.trace("Cache hit on view: {}", id);
             return optional.get();
         }
         log.trace("Cache miss on view: {}", id);
         final View view = metadataServiceGateway.getViewById(databaseId, id);
+        if (!databaseId.equals(view.getDatabaseId())) {
+            throw new ViewNotFoundException("Failed to find view in database");
+        }
         view.setExp(cacheConfig.getTtl());
         return viewRepository.save(view);
     }
