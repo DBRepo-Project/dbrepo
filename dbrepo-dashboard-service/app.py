@@ -157,9 +157,6 @@ app.config["AUTH_SERVICE_CLIENT"] = os.getenv("AUTH_SERVICE_CLIENT", "dbrepo-cli
 app.config["AUTH_SERVICE_CLIENT_SECRET"] = os.getenv("AUTH_SERVICE_CLIENT_SECRET", "MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG")
 app.config["BASE_URL"] = os.getenv("BASE_URL", "http://localhost")
 app.config["JSON_DATASOURCE_NAME"] = os.getenv('JSON_DATASOURCE_NAME', 'dbrepojson0')
-app.config["JWT_ALGORITHM"] = "HS256"
-app.config["JWT_PUBKEY"] = '-----BEGIN PUBLIC KEY-----\n' + os.getenv("JWT_PUBKEY",
-                                                                      "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB") + '\n-----END PUBLIC KEY-----'
 app.config["READONLY_USERNAME"] = os.getenv('READONLY_USERNAME', 'user')
 app.config["READONLY_PASSWORD"] = os.getenv('READONLY_PASSWORD', 'user')
 app.config["SYSTEM_USERNAME"] = os.getenv('SYSTEM_USERNAME', 'admin')
@@ -178,7 +175,7 @@ def dashboard_client():
 
 def auth_client():
     return AuthServiceClient(app.config["AUTH_SERVICE_ENDPOINT"], app.config["AUTH_SERVICE_CLIENT"],
-                             app.config["AUTH_SERVICE_CLIENT_SECRET"], app.config["JWT_PUBKEY"])
+                             app.config["AUTH_SERVICE_CLIENT_SECRET"])
 
 
 @token_auth.verify_token

@@ -12,7 +12,7 @@ public interface StorageService {
      *
      * @param bucket The bucket name.
      * @param key    The object key.
-     * @return The input stream, if successful.
+     * @return The input stream, if successful. The caller must close it.
      * @throws StorageNotFoundException    The object could not be found in the Storage Service.
      * @throws StorageUnavailableException The object failed to be loaded from the Storage Service.
      */
