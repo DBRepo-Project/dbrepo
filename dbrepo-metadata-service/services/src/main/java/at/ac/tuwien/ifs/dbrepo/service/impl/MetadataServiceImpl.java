@@ -6,6 +6,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.orcid.OrcidDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.ror.RorDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.external.ExternalMetadataDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.Identifier;
+import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.IdentifierStatusType;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.gateway.CrossRefGateway;
@@ -78,7 +79,9 @@ public class MetadataServiceImpl implements MetadataService {
     @Transactional(readOnly = true)
     public String listIdentifiers(OaiListIdentifiersParameters parameters) {
         final StringBuilder builder = new StringBuilder("<ListIdentifiers>");
-        final List<Identifier> identifiers = identifierService.findAll();
+        final List<Identifier> identifiers = identifierService.findAll().stream()
+                .filter(identifier -> IdentifierStatusType.PUBLISHED.equals(identifier.getStatus()))
+                .toList();
         log.debug("found {} identifiers", identifiers.size());
         identifiers.forEach(identifier -> {
             final Context context = new Context();
@@ -96,7 +99,9 @@ public class MetadataServiceImpl implements MetadataService {
     @Override
     public String listRecords(OaiListRecordsParameters parameters) {
         final StringBuilder builder = new StringBuilder("<ListRecords>");
-        final List<Identifier> identifiers = identifierService.findAll();
+        final List<Identifier> identifiers = identifierService.findAll().stream()
+                .filter(identifier -> IdentifierStatusType.PUBLISHED.equals(identifier.getStatus()))
+                .toList();
         log.debug("found {} identifiers", identifiers.size());
         identifiers.forEach(identifier -> {
             final Context context = new Context();
@@ -123,6 +128,9 @@ public class MetadataServiceImpl implements MetadataService {
             final String prefix = parameters.getIdentifier().substring(0, 3);
             log.error("Invalid prefix: {}", prefix);
             throw new IdentifierNotFoundException("Invalid prefix: " + prefix);
+        }
+        if (!IdentifierStatusType.PUBLISHED.equals(identifier.getStatus())) {
+            throw new IdentifierNotFoundException("Identifier is not available through OAI-PMH");
         }
         final String templateFileName = "record_" + (parameters.getMetadataPrefix() == null ? "oai_datacite" : parameters.getMetadataPrefix()) + ".xml";
         final Context context = new Context();
