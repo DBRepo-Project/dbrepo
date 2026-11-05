@@ -4,10 +4,14 @@ import at.ac.tuwien.ifs.dbrepo.oaipmh.OaiListIdentifiersParameters;
 import at.ac.tuwien.ifs.dbrepo.oaipmh.OaiRecordParameters;
 import at.ac.tuwien.ifs.dbrepo.metadata.IdentifierRepository;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
+import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.Identifier;
+import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.IdentifierStatusType;
 import at.ac.tuwien.ifs.dbrepo.utils.XmlUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -27,6 +31,10 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class MetadataEndpointUnitTest extends BaseTest {
+
+    private final Identifier publishedIdentifier = IDENTIFIER_1.toBuilder()
+            .status(IdentifierStatusType.PUBLISHED)
+            .build();
 
     @MockitoBean
     private IdentifierRepository identifierRepository;
@@ -73,13 +81,16 @@ public class MetadataEndpointUnitTest extends BaseTest {
 
         /* mock */
         when(identifierRepository.findAll())
-                .thenReturn(List.of(IDENTIFIER_1));
+                .thenReturn(List.of(publishedIdentifier, IDENTIFIER_2, IDENTIFIER_5));
 
         /* test */
         final ResponseEntity<String> response = metadataEndpoint.listIdentifiers(parameters);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = response.getBody();
         assertNotNull(body);
+        assertTrue(body.contains("doi:" + IDENTIFIER_1_DOI));
+        assertFalse(body.contains("oai:" + IDENTIFIER_2_ID));
+        assertFalse(body.contains("doi:" + IDENTIFIER_5_DOI));
         assertTrue(XmlUtils.validateXmlResponse("http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd", body));
     }
 
@@ -142,7 +153,7 @@ public class MetadataEndpointUnitTest extends BaseTest {
 
         /* mock */
         when(identifierRepository.findById(IDENTIFIER_1_ID))
-                .thenReturn(Optional.of(IDENTIFIER_1));
+                .thenReturn(Optional.of(publishedIdentifier));
 
         /* test */
         final ResponseEntity<String> response = metadataEndpoint.getRecord(parameters);
@@ -162,7 +173,7 @@ public class MetadataEndpointUnitTest extends BaseTest {
 
         /* mock */
         when(identifierRepository.findById(IDENTIFIER_1_ID))
-                .thenReturn(Optional.of(IDENTIFIER_1));
+                .thenReturn(Optional.of(publishedIdentifier));
 
         /* test */
         final ResponseEntity<String> response = metadataEndpoint.getRecord(parameters);
@@ -171,6 +182,28 @@ public class MetadataEndpointUnitTest extends BaseTest {
         assertNotNull(body);
 //        assertTrue(XmlUtils.validateXmlResponse("http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd", body));
         // TODO: currently no strict validation passes
+    }
+
+    @ParameterizedTest
+    @CsvSource({"oai,oai_dc", "doi,oai_dc", "oai,oai_datacite", "doi,oai_datacite"})
+    @WithAnonymousUser
+    public void getRecord_draft_notFound(String identifierPrefix, String metadataPrefix) {
+        final OaiRecordParameters parameters = new OaiRecordParameters();
+        parameters.setMetadataPrefix(metadataPrefix);
+        parameters.setIdentifier(identifierPrefix + ":" +
+                (identifierPrefix.equals("oai") ? IDENTIFIER_5_ID : IDENTIFIER_5_DOI));
+        when(identifierRepository.findById(IDENTIFIER_5_ID)).thenReturn(Optional.of(IDENTIFIER_5));
+        when(identifierRepository.findByDoi(IDENTIFIER_5_DOI)).thenReturn(Optional.of(IDENTIFIER_5));
+
+        final ResponseEntity<String> response = metadataEndpoint.getRecord(parameters);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        final String body = response.getBody();
+        assertNotNull(body);
+        assertTrue(body.contains("code=\"idDoesNotExist\""));
+        assertFalse(body.contains("<record>"));
+        assertFalse(body.contains("<metadata>"));
+        assertTrue(XmlUtils.validateXmlResponse("http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd", body));
     }
 
     @Test
