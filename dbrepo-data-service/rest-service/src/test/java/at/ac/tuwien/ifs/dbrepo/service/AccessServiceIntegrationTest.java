@@ -6,6 +6,9 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseMalformedException;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.utils.MariaDbUtil;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
+import at.ac.tuwien.ifs.dbrepo.service.impl.AccessServiceMariaDbImpl;
+import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -193,6 +197,29 @@ public class AccessServiceIntegrationTest extends BaseTest {
         }
         try (Connection fresh = readerConnection(); Statement query = fresh.createStatement()) {
             assertTrue(query.executeQuery("SELECT 1").next());
+            assertInternalCallsDenied(query);
+        }
+    }
+
+    @Test
+    public void update_disconnectsSessionsWithServerPreparedStatementsEnabled() throws Exception {
+        AccessServiceMariaDbImpl service = new AccessServiceMariaDbImpl(mariaDbMapper) {
+            @Override
+            public ComboPooledDataSource getDataSource(Database database) {
+                ComboPooledDataSource source = super.getDataSource(database);
+                source.setJdbcUrl(source.getJdbcUrl() + "?useServerPrepStmts=true");
+                return source;
+            }
+        };
+        ReflectionTestUtils.setField(service, "grantDefaultRead", "SELECT");
+        accessService.create(DATABASE_1_CACHE, USER_1_CACHE, AccessTypeDto.READ);
+        addLegacyRoutineGrants();
+        try (Connection existing = readerConnection(); Statement query = existing.createStatement()) {
+            query.execute("CALL store_query('SELECT 1 AS value', 'SELECT 1 AS value', NOW(), @id)");
+            service.update(DATABASE_1_CACHE, USER_1_CACHE, AccessTypeDto.READ);
+            assertThrows(SQLException.class, () -> query.execute("SELECT 1"));
+        }
+        try (Connection fresh = readerConnection(); Statement query = fresh.createStatement()) {
             assertInternalCallsDenied(query);
         }
     }

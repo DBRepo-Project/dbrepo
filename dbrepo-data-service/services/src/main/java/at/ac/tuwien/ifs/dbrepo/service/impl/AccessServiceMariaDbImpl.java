@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 @Slf4j
 @Service
@@ -165,8 +164,10 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
             return;
         }
         // Open sessions cache database privileges until they reconnect.
-        try (Statement statement = connection.createStatement()) {
-            statement.execute("KILL USER `" + user.getUsername().replace("`", "``") + "`@`%`");
+        // MariaDB cannot bind KILL USER on the server; let its JDBC driver bind the account.
+        try (PreparedStatement statement = connection.prepareStatement("/*client prepare*/ KILL USER ?@'%'")) {
+            statement.setString(1, user.getUsername());
+            statement.execute();
         }
     }
 
