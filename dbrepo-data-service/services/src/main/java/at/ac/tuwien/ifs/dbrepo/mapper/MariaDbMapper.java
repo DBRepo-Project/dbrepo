@@ -118,6 +118,10 @@ public interface MariaDbMapper {
     }
 
     default String databaseGrantPrivilegesQuery(String database, String username, String grants) {
+        if (Arrays.stream(grants.split(",")).map(String::trim)
+                .anyMatch(grant -> Set.of("EXECUTE", "ALL", "ALL PRIVILEGES").contains(grant.toUpperCase(Locale.ROOT)))) {
+            throw new IllegalArgumentException("Database access grants must not include EXECUTE or ALL privileges");
+        }
         final StringBuilder statement = new StringBuilder("GRANT ")
                 .append(grants)
                 .append(" ON `")
@@ -139,14 +143,11 @@ public interface MariaDbMapper {
         return statement.toString();
     }
 
-    default String databaseGrantProcedureQuery(String username, String procedure) {
-        final StringBuilder statement = new StringBuilder("GRANT EXECUTE ON PROCEDURE `")
-                .append(procedure)
-                .append("` TO `")
-                .append(username)
-                .append("`@`%`;");
-        log.trace("mapped grant privileges statement: {}", statement);
-        return statement.toString();
+    default String databaseRevokeExecuteQuery(String database, String username, String procedure) {
+        final String target = "`" + database.replace("`", "``") + "`";
+        final String account = "`" + username.replace("`", "``") + "`@`%`";
+        return procedure == null ? "REVOKE EXECUTE ON " + target + ".* FROM " + account
+                : "REVOKE EXECUTE ON PROCEDURE " + target + ".`" + procedure.replace("`", "``") + "` FROM " + account;
     }
 
     default String databaseFlushPrivilegesQuery() {

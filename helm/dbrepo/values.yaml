@@ -658,9 +658,9 @@ dataservice:
   ## @skip dataservice.resources
   grant:
     ## @param dataservice.grant.read The default database permissions for users with read access.
-    read: SELECT, EXECUTE
+    read: SELECT
     ## @param dataservice.grant.write The default database permissions for users with write access.
-    write: SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, EXECUTE, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE
+    write: SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE
   rabbitmq:
     ## @param dataservice.rabbitmq.consumerConcurrentMin The minimal number of RabbitMQ consumers.
     consumerConcurrentMin: 2
