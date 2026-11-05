@@ -2,6 +2,7 @@ package at.ac.tuwien.ifs.dbrepo.service;
 
 import at.ac.tuwien.ifs.dbrepo.config.S3Config;
 import at.ac.tuwien.ifs.dbrepo.core.exception.StorageObjectExistsException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.StorageNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.service.impl.StorageServiceS3Impl;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,10 +12,12 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 
 import java.nio.charset.StandardCharsets;
+import java.io.IOException;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -101,6 +104,31 @@ class StorageServiceS3UnitTest {
 
         verify(client).headObject(HEAD);
         verifyNoMoreInteractions(client);
+    }
+
+    @Test
+    void getBytes_closesResponseAfterReading() throws Exception {
+        final ResponseInputStream<GetObjectResponse> response = mock(ResponseInputStream.class);
+        when(client.getObject(any(GetObjectRequest.class))).thenReturn(response);
+        when(response.readAllBytes()).thenReturn(CONTENT);
+
+        assertArrayEquals(CONTENT, service.getBytes("sample.csv"));
+
+        verify(response).close();
+    }
+
+    @Test
+    void getBytes_closesResponseWhenReadingFails() throws Exception {
+        final ResponseInputStream<GetObjectResponse> response = mock(ResponseInputStream.class);
+        when(client.getObject(any(GetObjectRequest.class))).thenReturn(response);
+        final IOException failure = new IOException("Interrupted response");
+        when(response.readAllBytes()).thenThrow(failure);
+
+        final StorageNotFoundException error = assertThrows(StorageNotFoundException.class,
+                () -> service.getBytes("uploads", "sample.csv"));
+
+        assertSame(failure, error.getCause());
+        verify(response).close();
     }
 
     private static S3Exception s3Failure(int status) {

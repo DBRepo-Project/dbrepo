@@ -126,9 +126,8 @@ public class StorageServiceS3Impl extends DataConnector implements StorageServic
 
     @Override
     public byte[] getBytes(String bucket, String key) throws StorageNotFoundException, StorageUnavailableException {
-        try {
-            return getObject(bucket, key)
-                    .readAllBytes();
+        try (InputStream object = getObject(bucket, key)) {
+            return object.readAllBytes();
         } catch (IOException e) {
             log.error("Failed to read bytes from input stream: {}", e.getMessage());
             throw new StorageNotFoundException("Failed to read bytes from input stream: " + e.getMessage(), e);
