@@ -1,0 +1,117 @@
+{
+  "dbrepo": [
+    {
+      "id": "2f53ccf3-37b0-4d34-83e7-ed497499ee51",
+      "name": "rsa-enc-generated",
+      "providerId": "rsa-enc-generated",
+      "config": {
+        "keyUse": [
+          "ENC"
+        ],
+        "priority": [
+          "100"
+        ],
+        "algorithm": [
+          "RSA-OAEP"
+        ]
+      }
+    },
+    {
+      "id": "28ca0b6d-b2e2-4785-b04b-2391e6344e30",
+      "name": "aes-generated",
+      "providerId": "aes-generated",
+      "config": {
+        "priority": [
+          "100"
+        ]
+      }
+    },
+    {
+      "id": "bd7945cf-6d35-4e03-9c3a-197f2dc76973",
+      "name": "hmac-generated",
+      "providerId": "hmac-generated",
+      "config": {
+        "priority": [
+          "100"
+        ],
+        "algorithm": [
+          "HS256"
+        ]
+      }
+    },
+    {
+      "id": "2293ff99-3c6d-46d1-8635-5e679d5b134a",
+      "name": "rsa-generated",
+      "providerId": "rsa-generated",
+      "config": {
+        "keyUse": [
+          "SIG"
+        ],
+        "priority": [
+          "100"
+        ]
+      }
+    },
+    {
+      "id": "addbae10-c6ae-4735-851f-7a5ea035ce25",
+      "name": "hmac-generated-hs512",
+      "providerId": "hmac-generated",
+      "config": {
+        "priority": [
+          "100"
+        ],
+        "algorithm": [
+          "HS512"
+        ]
+      }
+    }
+  ],
+  "master": [
+    {
+      "id": "5b1052d2-fb71-47d2-86f9-908c869c8d1b",
+      "name": "hmac-generated-hs512",
+      "providerId": "hmac-generated",
+      "config": {
+        "priority": [
+          "100"
+        ],
+        "algorithm": [
+          "HS512"
+        ]
+      }
+    },
+    {
+      "id": "fd48cdb1-8be8-4ac9-9347-dc3e91db95d7",
+      "name": "rsa-enc-generated",
+      "providerId": "rsa-enc-generated",
+      "config": {
+        "priority": [
+          "100"
+        ],
+        "algorithm": [
+          "RSA-OAEP"
+        ]
+      }
+    },
+    {
+      "id": "0ff03eb6-b43b-4065-b583-9e310f53a573",
+      "name": "rsa-generated",
+      "providerId": "rsa-generated",
+      "config": {
+        "priority": [
+          "100"
+        ]
+      }
+    },
+    {
+      "id": "df28b561-7463-4927-974d-615618056b41",
+      "name": "aes-generated",
+      "providerId": "aes-generated",
+      "config": {
+        "priority": [
+          "100"
+        ]
+      }
+    }
+  ]
+}

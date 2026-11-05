@@ -36,7 +36,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     public void insertRawTuple(UUID databaseId, UUID tableId, TupleDto tuple) throws RemoteUnavailableException,
             TableNotFoundException, DataServiceException {
         final ResponseEntity<Void> response;
-        final String url = "/api/v1/database/" + databaseId + "/tables/" + tableId + "/data";
+        final String url = "/api/v1/database/" + databaseId + "/table/" + tableId + "/data";
         log.debug("insert raw tuple into data service: {}", url);
         try {
             response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(tuple), Void.class);
