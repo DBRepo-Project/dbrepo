@@ -18,29 +18,29 @@ parameters:
   - in: "query"
     name: "t1"
     schema:
-      type: "integer"
+      type: "number"
   - in: "query"
     name: "t2"
     schema:
-      type: "integer"
+      type: "number"
   - in: "body"
     name: "body"
     required: true
     schema:
-      $ref: '#/components/schemas/SearchRequestDto'
+      type: object
+      additionalProperties: true
+      description: Field paths and values to match. Semantic ranges also accept t1 and t2 here.
+      example:
+        tables.columns.concept.uri: http://www.wikidata.org/entity/Q11466
+        tables.columns.unit.uri: http://www.ontology-of-units-of-measure.org/resource/om-2/degreeCelsius
+        t1: 0
+        t2: 100
 responses:
   200:
-    description: OK, contains the elements formatted as an array of JSON arrays
+    description: An array of the requested result type, using current metadata permissions.
     content:
       application/json:
         schema:
-          type: object
-          properties:
-            results:
-              type: array
-              items:
-                type: object
-            type:
-              type: string
-              enum: [ database, table, view, column, user, identifier, concept, unit ]
-              description: "Same as the requested type"
+          type: array
+          items:
+            type: object

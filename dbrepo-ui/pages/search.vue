@@ -47,6 +47,7 @@
             v-if="tags(result).length > 0"
             class="mt-2 db-tags">
             <ResourceStatus
+              v-if="isTable(result) || isView(result)"
               :resource="result" />
             <v-chip
               v-for="(tag, i) in tags(result)"
@@ -118,7 +119,7 @@ export default {
       const searchService = useSearchService()
       searchService.fuzzy_search(this.q)
         .then((results) => {
-          this.results = results
+          this.onSearchResult(results, 'database')
           this.loading = false
         })
         .catch(({code, message}) => {
@@ -198,7 +199,7 @@ export default {
         }
         return title
       } else if (this.isUser(item)) {
-        return item.owner.qualified_name
+        return item.qualified_name || item.username
       }
       return null
     },
@@ -246,12 +247,12 @@ export default {
       if (this.isDatabase(item)) {
       } else if (this.isTable(item)) {
       } else if (this.isColumn(item)) {
-        if ('concept' in item) {
-          const conceptName = ('name' in item.concept) ? item.concept.name : this.$t('pages.search.concept')
+        if (item.concept_uri || item.concept) {
+          const conceptName = item.concept_uri || item.concept.name || item.concept.uri
           tags.push({ color: 'success', text: conceptName })
         }
-        if ('unit' in item) {
-          const unitName = ('name' in item.unit) ? item.unit.name : this.$t('pages.search.unit')
+        if (item.unit_uri || item.unit) {
+          const unitName = item.unit_uri || item.unit.name || item.unit.uri
           tags.push({ color: 'success', text: unitName })
         }
       } else if (this.isView(item)) {
@@ -275,13 +276,14 @@ export default {
       } else if (this.isUnit(item)) {
       } else if (this.isConcept(item)) {
       } else if (this.isUser(item)) {
-        if (item.owner.attributes.orcid) {
+        if (item.orcid) {
           tags.push({ text: 'ORCID', color: 'success' })
         }
       }
       return tags
     },
-    onSearchResult (results) {
+    onSearchResult (results, type) {
+      this.type = type
       this.results = results
     },
     capitalizeFirstLetter(string) {

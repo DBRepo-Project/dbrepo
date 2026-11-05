@@ -50,6 +50,20 @@ temperature [http://www.wikidata.org/entity/Q11466](http://www.wikidata.org/enti
 (provided as URI, e.g. degree
 Celsius [http://www.ontology-of-units-of-measure.org/resource/om-2/degreeCelsius](http://www.ontology-of-units-of-measure.org/resource/om-2/degreeCelsius)).
 
+GET `/api/v1/search/{type}` and POST `/api/v1/search/{type}` return JSON arrays of the requested type.
+Database results contain database objects; table, column and view results contain those objects. Identifier results include
+records attached to databases, subsets, tables and views. User results contain database owners. Concept and unit results
+contain a `uri`, with names and descriptions when Metadata supplies them.
+
+For a unit-independent range search, send `tables.columns.concept.uri`, `tables.columns.unit.uri`, `t1` and `t2` in the POST
+body. Bounds may also be query parameters; the shorter `concept.uri` and `unit.uri` keys remain accepted. Both bounds must
+be finite numbers in ascending order. A column matches when its entire recorded minimum-to-maximum range falls within the
+requested range after conversion. Concept, unit and statistics must belong to that same column.
+
+The service supports compatible non-temperature OM unit conversions and absolute Celsius, Kelvin and Fahrenheit conversions for their
+exact OM URIs. Missing statistics, incompatible units and unsupported conversions do not match. Concept and unit URI
+values can also be compared directly without a conversion. Search retains its existing limit of 1,000 database candidates.
+
 ## Limitations
 
 !!! question "Do you miss functionality? Do these limitations affect you?"
