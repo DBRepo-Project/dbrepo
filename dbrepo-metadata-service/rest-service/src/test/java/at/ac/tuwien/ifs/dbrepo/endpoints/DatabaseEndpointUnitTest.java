@@ -28,6 +28,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @Slf4j
@@ -485,6 +486,8 @@ public class DatabaseEndpointUnitTest extends BaseTest {
         when(storageService.getBytes(request.getKey()))
                 .thenReturn(new byte[]{1, 2, 3, 4, 5});
 
+        when(databaseService.modifyImage(eq(DATABASE_1), any(byte[].class))).thenReturn(DATABASE_1);
+
         /* test */
         databaseEndpoint.modifyImage(DATABASE_1_ID, request, USER_1_PRINCIPAL);
     }
@@ -503,6 +506,8 @@ public class DatabaseEndpointUnitTest extends BaseTest {
                 .thenReturn(DATABASE_1);
         when(userService.findByUsername(USER_1_USERNAME))
                 .thenReturn(USER_1_DTO);
+
+        when(databaseService.modifyImage(DATABASE_1, null)).thenReturn(DATABASE_1);
 
         /* test */
         databaseEndpoint.modifyImage(DATABASE_1_ID, request, USER_1_PRINCIPAL);
@@ -559,6 +564,8 @@ public class DatabaseEndpointUnitTest extends BaseTest {
                 .thenReturn(USER_1_DTO);
         when(userService.findByUsername(USER_4_USERNAME))
                 .thenReturn(USER_4_DTO);
+
+        when(databaseService.modifyOwner(DATABASE_1, USER_4_USERNAME)).thenReturn(DATABASE_1);
 
         /* test */
         databaseEndpoint.transfer(DATABASE_1_ID, request, USER_1_PRINCIPAL);

@@ -1,6 +1,9 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.*;
+import at.ac.tuwien.ifs.dbrepo.service.DashboardService;
+import org.springframework.security.test.context.support.WithMockUser;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.service.TableService;
@@ -37,6 +40,10 @@ class MetadataVisibilityUnitTest extends BaseTest {
     private TableService tables;
     @MockitoBean
     private ViewService views;
+    @MockitoBean
+    private DashboardService dashboards;
+    @MockitoBean private at.ac.tuwien.ifs.dbrepo.service.UserService users;
+    @MockitoBean private at.ac.tuwien.ifs.dbrepo.service.ContainerService containers;
 
     @BeforeEach
     void prepare() throws Exception {
@@ -127,6 +134,108 @@ class MetadataVisibilityUnitTest extends BaseTest {
                 .getIdentifiers().stream().map(i -> i.getId()).toList());
         assertEquals(4, TABLE_2.getIdentifiers().size());
         assertEquals(4, VIEW_1.getIdentifiers().size());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"anonymous", "nonmember", "member", "owner", "system"})
+    void briefIdentifiersFollowIdentifierOwnership(String role) {
+        IDENTIFIER_1.setStatus(IdentifierStatusType.PUBLISHED);
+        IDENTIFIER_2.setStatus(IdentifierStatusType.DRAFT);
+        IDENTIFIER_2.setOwnedBy(USER_1_USERNAME);
+        IDENTIFIER_3.setStatus(IdentifierStatusType.DRAFT);
+        IDENTIFIER_3.setOwnedBy(USER_2_USERNAME);
+        IDENTIFIER_5.setStatus(IdentifierStatusType.DRAFT);
+        IDENTIFIER_5.setOwnedBy(null);
+        DATABASE_1.setIdentifiers(List.of(IDENTIFIER_1, IDENTIFIER_2, IDENTIFIER_3, IDENTIFIER_5));
+        when(databases.findAllPublicOrSchemaPublic()).thenReturn(List.of(DATABASE_1));
+        when(databases.findAllPublicOrSchemaPublicOrReadAccess(org.mockito.ArgumentMatchers.anyString()))
+                .thenReturn(List.of(DATABASE_1));
+        when(databases.findAll()).thenReturn(List.of(DATABASE_1));
+        final var expected = switch (role) {
+            case "owner" -> List.of(IDENTIFIER_1_ID, IDENTIFIER_2_ID);
+            case "member" -> List.of(IDENTIFIER_1_ID, IDENTIFIER_3_ID);
+            case "system" -> List.of(IDENTIFIER_1_ID, IDENTIFIER_2_ID, IDENTIFIER_3_ID, IDENTIFIER_5_ID);
+            default -> List.of(IDENTIFIER_1_ID);
+        };
+        final var response = databaseEndpoint.list(null, principal(role));
+        assertEquals("1", response.getHeaders().getFirst("X-Count"));
+        assertEquals(expected, response.getBody().getFirst().getIdentifiers().stream().map(i -> i.getId()).toList());
+        assertEquals(4, DATABASE_1.getIdentifiers().size());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"table", "view", "visibility", "owner", "image", "create"})
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"find-database", "modify-database-visibility",
+            "modify-database-owner", "modify-database-image", "create-database"})
+    void writeResponsesPreserveOwnDraftAndPreviewWhileExcludingForeignDrafts(String route) throws Exception {
+        IDENTIFIER_1.setStatus(IdentifierStatusType.PUBLISHED);
+        IDENTIFIER_2.setStatus(IdentifierStatusType.DRAFT);
+        IDENTIFIER_2.setOwnedBy(USER_1_USERNAME);
+        IDENTIFIER_3.setStatus(IdentifierStatusType.DRAFT);
+        IDENTIFIER_3.setOwnedBy(USER_2_USERNAME);
+        IDENTIFIER_5.setStatus(IdentifierStatusType.DRAFT);
+        IDENTIFIER_5.setOwnedBy(null);
+        DATABASE_1.setIdentifiers(List.of(IDENTIFIER_1, IDENTIFIER_2, IDENTIFIER_3, IDENTIFIER_5));
+        DATABASE_1.setImage(new byte[]{1, 2, 3});
+        final var expectedPreview = mapper.databaseDtoToDatabaseBriefDto(mapper.databaseToDatabaseDto(DATABASE_1))
+                .getPreviewImage();
+        when(databases.updateTableMetadata(DATABASE_1)).thenReturn(DATABASE_1);
+        when(databases.updateViewMetadata(DATABASE_1)).thenReturn(DATABASE_1);
+        when(databases.modifyVisibility(org.mockito.ArgumentMatchers.eq(DATABASE_1),
+                org.mockito.ArgumentMatchers.any())).thenReturn(DATABASE_1);
+        when(databases.modifyOwner(DATABASE_1, USER_2_USERNAME)).thenReturn(DATABASE_1);
+        when(databases.modifyImage(DATABASE_1, null)).thenReturn(DATABASE_1);
+        when(containers.find(CONTAINER_1_ID)).thenReturn(CONTAINER_1);
+        when(users.findByUsername(USER_1_USERNAME)).thenReturn(USER_1_DTO);
+        when(databases.create(org.mockito.ArgumentMatchers.eq(CONTAINER_1), org.mockito.ArgumentMatchers.any(),
+                org.mockito.ArgumentMatchers.eq(USER_1_DTO))).thenReturn(DATABASE_1);
+        when(dashboards.create(DATABASE_1)).thenReturn(at.ac.tuwien.ifs.dbrepo.core.api.grafana.CreateDashboardResponseDto
+                .builder().uid("test-dashboard").build());
+        final var response = switch (route) {
+            case "create" -> databaseEndpoint.create(CreateDatabaseDto.builder().cid(CONTAINER_1_ID)
+                    .name("Example").isPublic(true).build(), USER_1_PRINCIPAL);
+            case "table" -> databaseEndpoint.refreshTableMetadata(DATABASE_1_ID, USER_1_PRINCIPAL);
+            case "view" -> databaseEndpoint.refreshViewMetadata(DATABASE_1_ID, USER_1_PRINCIPAL);
+            case "visibility" -> databaseEndpoint.visibility(DATABASE_1_ID, DatabaseModifyVisibilityDto.builder()
+                    .isPublic(true).isSchemaPublic(true).build(), USER_1_PRINCIPAL);
+            case "owner" -> databaseEndpoint.transfer(DATABASE_1_ID,
+                    DatabaseTransferDto.builder().username(USER_2_USERNAME).build(), USER_1_PRINCIPAL);
+            default -> databaseEndpoint.modifyImage(DATABASE_1_ID, DatabaseModifyImageDto.builder().build(), USER_1_PRINCIPAL);
+        };
+        assertEquals(List.of(IDENTIFIER_1_ID, IDENTIFIER_2_ID), response.getBody().getIdentifiers().stream()
+                .map(identifier -> identifier.getId()).toList());
+        if (!route.equals("create")) {
+            assertEquals(expectedPreview, response.getBody().getPreviewImage());
+        }
+        assertEquals(4, DATABASE_1.getIdentifiers().size());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"anonymous", "nonmember", "member", "owner", "system"})
+    void batchPreservesNestedVisibilityAndEntityReferences(String role) throws Exception {
+        IDENTIFIER_1.setStatus(IdentifierStatusType.PUBLISHED);
+        IDENTIFIER_2.setStatus(IdentifierStatusType.DRAFT);
+        IDENTIFIER_2.setOwnedBy(USER_1_USERNAME);
+        IDENTIFIER_3.setStatus(IdentifierStatusType.DRAFT);
+        IDENTIFIER_3.setOwnedBy(USER_2_USERNAME);
+        IDENTIFIER_5.setStatus(IdentifierStatusType.DRAFT);
+        IDENTIFIER_5.setOwnedBy(null);
+        DATABASE_1.setIdentifiers(List.of(IDENTIFIER_1, IDENTIFIER_2, IDENTIFIER_3, IDENTIFIER_5));
+        final var response = databaseEndpoint.findBatch(List.of(DATABASE_1_ID), principal(role));
+        final var database = response.getBody().getFirst();
+        final var table = database.getTables().stream().filter(t -> t.getId().equals(TABLE_2_ID)).findFirst().orElseThrow();
+        assertEquals(privileged(role) ? 1 : 0, table.getConstraints().getForeignKeys().size());
+        assertEquals(role.equals("owner") || role.equals("system") ? 3 : 0, database.getAccesses().size());
+        final var expected = switch (role) {
+            case "owner" -> List.of(IDENTIFIER_1_ID, IDENTIFIER_2_ID);
+            case "member" -> List.of(IDENTIFIER_1_ID, IDENTIFIER_3_ID);
+            case "system" -> List.of(IDENTIFIER_1_ID, IDENTIFIER_2_ID, IDENTIFIER_3_ID, IDENTIFIER_5_ID);
+            default -> List.of(IDENTIFIER_1_ID);
+        };
+        assertEquals(expected, database.getIdentifiers().stream().map(identifier -> identifier.getId()).toList());
+        assertEquals(4, DATABASE_1.getIdentifiers().size());
+        assertEquals(1, TABLE_2.getConstraints().getForeignKeys().size());
+        assertSame(TABLE_1, TABLE_2.getConstraints().getForeignKeys().getFirst().getReferencedTable());
     }
 
     private Principal principal(String role) {

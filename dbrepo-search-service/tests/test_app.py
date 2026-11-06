@@ -7,6 +7,7 @@ from cryptography.hazmat.primitives import serialization
 from typing import List
 
 import jwt
+import pytest
 from dbrepo.api.dto import Database, Table, Constraints, Column, ColumnType, ConceptBrief, UnitBrief, \
     UserBrief, ContainerBrief, ImageBrief
 
@@ -59,6 +60,10 @@ req = Database(id="209acf92-5c9b-4633-ad99-113c86f6e948",
 
 
 class JwtTest(unittest.TestCase):
+
+    @pytest.fixture(autouse=True)
+    def empty_current_metadata(self, requests_mock):
+        requests_mock.get('http://metadata-service:8080/api/v1/database', json=[])
 
     def setUp(self):
         private = rsa.generate_private_key(public_exponent=65537, key_size=2048)
