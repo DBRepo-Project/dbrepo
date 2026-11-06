@@ -33,7 +33,7 @@ def projected(indexed, session):
     for i, view in enumerate(indexed.views):
         view.identifiers = [identifier('view', f'view-record-{i}')]
     SearchServiceClient().save_database(indexed.id, indexed)
-    session.get_client().indices.refresh(index='database')
+    SearchServiceClient()._instance().indices.refresh(index='database')
     return indexed
 
 
@@ -61,7 +61,7 @@ def request_projection(client, method, kind, headers, data=None):
 @pytest.mark.parametrize('method', ['get', 'post'])
 def test_real_matches_project_current_typed_results(projected, credentials, requests_mock, role, kind, method):
     payload = projection_payload(projected, role)
-    endpoint = requests_mock.get(f'http://metadata.invalid/api/v1/database/{projected.id}', json=payload)
+    endpoint = requests_mock.get('http://metadata.invalid/api/v1/database/batch', json=[payload])
     headers = credentials(role)
     with app.test_client() as client:
         response = request_projection(client, method, kind, headers, {'id': projected.id})
@@ -72,12 +72,12 @@ def test_real_matches_project_current_typed_results(projected, credentials, requ
     if kind == 'database':
         assert body == [payload]
     elif kind == 'table':
-        assert body == payload['tables']
+        assert body == sorted(payload['tables'], key=lambda item: item['id'])
     elif kind == 'view':
-        assert body == payload['views']
+        assert body == sorted(payload['views'], key=lambda item: item['id'])
     elif kind == 'column':
-        assert [item['id'] for item in body] == [table.columns[0].id for table in projected.tables[:count]]
-        assert [item['name'] for item in body] == [f'current-column-{i}' for i in range(count)]
+        assert [item['id'] for item in body] == sorted(table.columns[0].id for table in projected.tables[:count])
+        assert sorted(item['name'] for item in body) == [f'current-column-{i}' for i in range(count)]
     elif kind == 'user':
         assert body == [payload['owner']]
         assert body[0]['id'] == projected.owner.id
@@ -96,7 +96,7 @@ def test_real_matches_project_current_typed_results(projected, credentials, requ
     elif kind == 'concept':
         assert body == [{'uri': CONCEPT + f'/{i}'} for i in range(count)]
     elif kind == 'unit':
-        assert body == [{'uri': OM + unit} for unit in ['metre', 'centimetre'][:count]]
+        assert body == sorted([{'uri': OM + unit} for unit in ['metre', 'centimetre'][:count]], key=lambda item: item['uri'])
     if role in ('anonymous', 'nonmember'):
         assert projected.tables[1].id not in response.get_data(as_text=True)
         assert projected.views[1].id not in response.get_data(as_text=True)
@@ -108,8 +108,8 @@ def test_real_matches_project_current_typed_results(projected, credentials, requ
 @pytest.mark.parametrize('kind', TYPES)
 @pytest.mark.parametrize('method', ['get', 'post'])
 def test_all_projections_reflect_revoked_access(projected, credentials, requests_mock, kind, method):
-    requests_mock.get(f'http://metadata.invalid/api/v1/database/{projected.id}',
-                      [{'json': projection_payload(projected, 'member')}, {'status_code': 403}])
+    requests_mock.get('http://metadata.invalid/api/v1/database/batch',
+                      [{'json': [projection_payload(projected, 'member')]}, {'json': []}])
     with app.test_client() as client:
         first = request_projection(client, method, kind, credentials('member'))
         second = request_projection(client, method, kind, credentials('member'))
@@ -122,7 +122,7 @@ def test_all_projections_reflect_revoked_access(projected, credentials, requests
 def test_empty_optional_collections(projected, credentials, requests_mock, kind):
     payload = projection_payload(projected, 'anonymous')
     payload.update(identifiers=None, subsets=None, tables=None, views=None)
-    requests_mock.get(f'http://metadata.invalid/api/v1/database/{projected.id}', json=payload)
+    requests_mock.get('http://metadata.invalid/api/v1/database/batch', json=[payload])
     with app.test_client() as client:
         response = request_projection(client, 'post', kind, {})
     assert response.status_code == 200
@@ -137,7 +137,7 @@ def test_unit_independent_real_matches_use_current_columns(projected, credential
         column = table['columns'][0]
         column['concept_uri'] = CONCEPT
         column['val_min'], column['val_max'] = ((-0.5, 1.5) if i == 0 else (-50, 150))
-    requests_mock.get(f'http://metadata.invalid/api/v1/database/{projected.id}', json=payload)
+    requests_mock.get('http://metadata.invalid/api/v1/database/batch', json=[payload])
     data = {'t1': -1.25, 't2': 2.5, 'tables.columns.concept.uri': CONCEPT,
             'tables.columns.unit.uri': OM + 'metre'}
     with app.test_client() as client:
@@ -147,8 +147,8 @@ def test_unit_independent_real_matches_use_current_columns(projected, credential
     assert body
     if kind == 'column':
         count = 1 if role in ('anonymous', 'nonmember') else 2
-        assert [item['id'] for item in body] == [table.columns[0].id for table in projected.tables[:count]]
-        assert [item['val_max'] for item in body] == [1.5, 150][:count]
+        assert [item['id'] for item in body] == sorted(table.columns[0].id for table in projected.tables[:count])
+        assert sorted(item['val_max'] for item in body) == [1.5, 150][:count]
     if role in ('anonymous', 'nonmember'):
         assert projected.tables[1].id not in response.get_data(as_text=True)
 
@@ -178,7 +178,7 @@ def test_unit_search_requires_one_matching_column(projected, credentials, reques
         other = dict(column, id=str(uuid4()), concept_uri='https://example.org/other')
         column['val_max'] = 11
         payload['tables'][0]['columns'].append(other)
-    requests_mock.get(f'http://metadata.invalid/api/v1/database/{projected.id}', json=payload)
+    requests_mock.get('http://metadata.invalid/api/v1/database/batch', json=[payload])
     with app.test_client() as client:
         response = client.post('/api/v1/search/column?t1=0&t2=10',
                                json={'concept.uri': CONCEPT, 'unit.uri': requested_unit})
@@ -210,7 +210,7 @@ def test_converted_ranges_include_expected_values(projected, credentials, reques
     payload = projection_payload(projected, 'anonymous')
     column = payload['tables'][0]['columns'][0]
     column.update(concept_uri=CONCEPT, unit_uri=OM + actual, val_min=minimum, val_max=maximum)
-    requests_mock.get(f'http://metadata.invalid/api/v1/database/{projected.id}', json=payload)
+    requests_mock.get('http://metadata.invalid/api/v1/database/batch', json=[payload])
     with app.test_client() as client:
         response = client.post('/api/v1/search/column', json={'t1': lower, 't2': upper,
                                'concept.uri': CONCEPT, 'unit.uri': OM + requested})
@@ -232,7 +232,7 @@ def test_semantic_facets_match_actual_index_fields(projected, credentials, reque
     projected.tables = projected.tables[:1]
     SearchServiceClient().save_database(projected.id, projected)
     SearchServiceClient()._instance().indices.refresh(index='database')
-    requests_mock.get(f'http://metadata.invalid/api/v1/database/{projected.id}', json=projected.model_dump(mode='json'))
+    requests_mock.get('http://metadata.invalid/api/v1/database/batch', json=[projected.model_dump(mode='json')])
     with app.test_client() as client:
         response = client.post(f'/api/v1/search/{field}', json={f'tables.columns.{field}.uri': uri})
     assert response.status_code == 200
@@ -244,7 +244,7 @@ def test_temperature_range_excludes_values_outside_bounds(projected, credentials
     payload = projection_payload(projected, 'anonymous')
     column = payload['tables'][0]['columns'][0]
     column.update(concept_uri=CONCEPT, unit_uri=OM + 'degreeFahrenheit', val_min=minimum, val_max=maximum)
-    requests_mock.get(f'http://metadata.invalid/api/v1/database/{projected.id}', json=payload)
+    requests_mock.get('http://metadata.invalid/api/v1/database/batch', json=[payload])
     with app.test_client() as client:
         response = client.post('/api/v1/search/column', json={'t1': 0, 't2': 100,
                                'tables.columns.concept_uri': CONCEPT,

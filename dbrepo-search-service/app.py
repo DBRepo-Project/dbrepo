@@ -62,7 +62,8 @@ dictConfig({
 # create app object
 app = Flask(__name__)
 
-cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+cors = CORS(app, resources={r"/api/*": {"origins": "*"}},
+            expose_headers=['X-Count', 'X-Total-Pages', 'X-Page', 'X-Page-Size'])
 
 metrics = PrometheusMetrics(app)
 metrics.info("app_info", "Application info", version="0.0.1")
@@ -285,6 +286,43 @@ def general_filter(index: str, results: list[Database]):
     raise KeyError(index)
 
 
+def search_pagination(default_size=None):
+    if default_size is None and 'page' not in request.args and 'results_per_page' not in request.args:
+        return None
+    page = int(request.args.get('page', '1'))
+    size = int(request.args.get('results_per_page', str(default_size or 50)))
+    if page < 1 or not 1 <= size <= 500:
+        raise ValueError('Invalid search pagination')
+    return page, size
+
+
+def search_response(results, field_type, pagination):
+    def sort_key(item):
+        data = item.model_dump(mode='json') if hasattr(item, 'model_dump') else item
+        if field_type in ('concept', 'unit'):
+            identity = data.get('uri') or ''
+        elif field_type == 'user':
+            identity = data.get('id') or data.get('username') or ''
+        else:
+            identity = data.get('id') or ''
+        return identity, dumps(data, sort_keys=True)
+
+    results = sorted(results, key=sort_key)
+    response_headers = dict(headers, **{'X-Count': str(len(results)),
+        'Access-Control-Expose-Headers': 'X-Count, X-Total-Pages, X-Page, X-Page-Size'})
+    if pagination is not None:
+        page, size = pagination
+        response_headers.update({'X-Total-Pages': str(math.ceil(len(results) / size)),
+                                 'X-Page': str(page), 'X-Page-Size': str(size)})
+        results = results[(page - 1) * size:page * size]
+    return Response(dumps(results, default=pydantic_encoder)), 200, response_headers
+
+
+def invalid_search_pagination():
+    return ApiError(status='BAD_REQUEST', message='Page must be positive and results_per_page must be between 1 and 500',
+                    code='search.pagination.invalid').model_dump(), 400, headers
+
+
 def search_client():
     return SearchServiceClient(app.config["OPENSEARCH_HOST"], int(app.config["OPENSEARCH_PORT"]),
                                app.config["OPENSEARCH_USERNAME"], app.config["OPENSEARCH_PASSWORD"])
@@ -305,6 +343,10 @@ def get_index(index: str):
     :return: list of the results
     """
     logging.debug(f'endpoint get search type: {index}')
+    try:
+        pagination = search_pagination(default_size=50)
+    except ValueError:
+        return invalid_search_pagination()
     username, error, status = auth_client.get_username(request.headers.get('Authorization'))
     if error is not None and status is not None:
         return error, status, headers
@@ -312,11 +354,7 @@ def get_index(index: str):
     try:
         results = general_filter(index, results)
 
-        results_per_page = min(request.args.get("results_per_page", 50, type=int), 500)
-        max_pages = math.ceil(len(results) / results_per_page)
-        page = min(request.args.get("page", 1, type=int), max_pages)
-        results = results[(results_per_page * (page - 1)): (results_per_page * page)]
-        return Response(dumps(results, default=pydantic_encoder)), 200, headers
+        return search_response(results, index, pagination)
     except KeyError:
         return ApiError(status='NOT_FOUND', message=f'Failed to find get index: {index}',
                         code='search.index.missing').model_dump(), 404, headers
@@ -355,13 +393,17 @@ def get_fuzzy_search():
         return ApiError(status='BAD_REQUEST', message='Provide a search term with ?q=term',
                         code='search.fuzzy.invalid').model_dump(), 400
     logging.debug(f"search request query: {search_term}")
+    try:
+        pagination = search_pagination()
+    except ValueError:
+        return invalid_search_pagination()
     username, error, status = auth_client.get_username(request.headers.get('Authorization'))
     if error is not None and status is not None:
         return error, status, headers
     results = search_client().fuzzy_search(search_term=search_term,
                                            username=username,
                                            user_token=request.headers.get('Authorization'))
-    return Response(dumps(results, default=pydantic_encoder)), 200, headers
+    return search_response(results, 'database', pagination)
 
 
 @app.route("/api/v1/search/<string:field_type>", methods=["POST"], endpoint="search_post_general_search")
@@ -375,6 +417,10 @@ def post_general_search(field_type):
     if request.content_type != "application/json":
         return ApiError(status='UNSUPPORTED_MEDIA_TYPE', message='Content type needs to be application/json',
                         code='search.general.media').model_dump(), 415
+    try:
+        pagination = search_pagination()
+    except ValueError:
+        return invalid_search_pagination()
     value_pairs = request.json
     logging.debug(f'endpoint get general search, field_type={field_type}, value_pairs={value_pairs}')
     if not isinstance(value_pairs, dict):
@@ -411,7 +457,7 @@ def post_general_search(field_type):
     except KeyError:
         return ApiError(status='NOT_FOUND', message=f'Failed to find search type: {field_type}',
                         code='search.type.missing').model_dump(), 404, headers
-    return Response(dumps(response, default=pydantic_encoder)), 200, headers
+    return search_response(response, field_type, pagination)
 
 
 @app.route("/api/v1/search/database/<string:database_id>", methods=["PUT"], endpoint="search_save_database")
