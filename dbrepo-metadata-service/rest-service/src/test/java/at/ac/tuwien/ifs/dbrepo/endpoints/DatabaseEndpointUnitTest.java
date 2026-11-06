@@ -9,6 +9,7 @@ import at.ac.tuwien.ifs.dbrepo.service.*;
 import at.ac.tuwien.ifs.dbrepo.service.impl.DatabaseServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -36,6 +37,13 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class DatabaseEndpointUnitTest extends BaseTest {
+
+    @BeforeEach
+    void lockingLookupUsesFixture() throws Exception {
+        when(databaseService.findForUpdateById(any(UUID.class)))
+                .thenAnswer(call -> databaseService.findById(call.getArgument(0)));
+    }
+
 
     @MockitoBean
     private BrokerService messageQueueService;
@@ -397,6 +405,8 @@ public class DatabaseEndpointUnitTest extends BaseTest {
             DashboardServiceException, DashboardServiceConnectionException {
         final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
                 .isPublic(true)
+                .isSchemaPublic(true)
+                .isDashboardEnabled(true)
                 .build();
 
         /* mock */
@@ -553,7 +563,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-database-owner"})
     public void transfer_hasRole_succeeds() throws DataServiceConnectionException, DataServiceException,
             NotAllowedException, UserNotFoundException, DatabaseNotFoundException, SearchServiceException,
-            SearchServiceConnectionException {
+            SearchServiceConnectionException, DashboardServiceException, DashboardServiceConnectionException {
         final DatabaseTransferDto request = DatabaseTransferDto.builder()
                 .username(USER_4_USERNAME)
                 .build();

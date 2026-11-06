@@ -1,13 +1,14 @@
 import logging
 from typing import List
+from urllib.parse import quote, urlencode
 
 import requests
 from grafana_client import GrafanaApi
-from grafana_client.client import GrafanaClientError, GrafanaException
+from grafana_client.client import GrafanaClientError
 from requests import Response
 
-from dbrepo.api.dto import Database, ColumnType, ViewColumn, View
-from dbrepo.core.api.dto import Permission
+from dbrepo.api.dto import Database, ColumnType, ViewColumn, View, AccessType
+from dbrepo.core.api.exceptions import DashboardAccessError
 
 statistics_row_title = 'Generated Dashboard'
 auto_generated_description = 'Auto-generated'
@@ -114,12 +115,12 @@ class DashboardServiceClient:
     def generic_get(self, api_url: str) -> Response:
         request_url = self.endpoint + api_url
         logging.debug(f'generic get url={request_url}, auth=({self.username}, <reacted>)')
-        return requests.get(request_url, auth=(self.username, self.password))
+        return requests.get(request_url, auth=(self.username, self.password), timeout=(3, 10))
 
     def generic_post(self, api_url: str, payload: dict) -> Response:
         request_url = self.endpoint + api_url
         logging.debug(f'generic post url={request_url}, payload={payload}, auth=({self.username}, <reacted>)')
-        return requests.post(request_url, json=payload, auth=(self.username, self.password))
+        return requests.post(request_url, json=payload, auth=(self.username, self.password), timeout=(3, 10))
 
     def find(self, uid: str):
         """
@@ -131,13 +132,16 @@ class DashboardServiceClient:
             return None
         try:
             return self.client.dashboard.get_dashboard(uid)
-        except GrafanaClientError:
+        except GrafanaClientError as error:
+            if error.status_code != 404:
+                raise
             logging.warning(f"Failed to find dashboard with uid: {uid}")
             return None
 
-    def create(self, database_name: str, uid: str = '') -> dict:
+    def create(self, database_name: str, uid: str = '', owner_username: str | None = None,
+               is_public: bool = False, is_schema_public: bool = False) -> dict:
         dashboard = dict(uid=uid,
-                         title=f'{database_name} Overview',
+                         title='New dashboard',
                          tags=['managed'],
                          timezone='browser',
                          refresh='30m',
@@ -148,6 +152,25 @@ class DashboardServiceClient:
                        overwrite=False,
                        dashboard=dashboard)
         dashboard = self.client.dashboard.update_dashboard(payload)
+        try:
+            self.update_anonymous_read_access(dashboard['uid'], False, False)
+            owner = None
+            if owner_username:
+                owner = self.find_user(owner_username)
+                if owner is not None and not owner.get('isDisabled'):
+                    self._set_user_permission(dashboard['uid'], owner['id'], 'Admin')
+            self._sync_owner_permissions(dashboard['uid'], owner, [])
+            content = self.find(dashboard['uid'])['dashboard']
+            content['title'] = f'{database_name} Overview'
+            self.client.dashboard.update_dashboard(dict(folderUid='', overwrite=True, dashboard=content))
+            self.update_anonymous_read_access(dashboard['uid'], is_public, is_schema_public)
+        except Exception:
+            # Do not leave a newly created dashboard with default access after a failed setup.
+            try:
+                self.delete(dashboard['uid'])
+            except Exception:
+                logging.exception('Failed to remove dashboard after unsuccessful creation')
+            raise
         logging.info(f"Created dashboard with uid: {dashboard['uid']}")
         return dashboard
 
@@ -157,12 +180,44 @@ class DashboardServiceClient:
     def update(self, database: Database) -> None:
         dashboard = self.find(database.dashboard_uid)
         if dashboard is None:
+            if not database.dashboard_uid:
+                raise DashboardAccessError('Database has no dashboard UID', 404)
             self.create(database.internal_name, database.dashboard_uid)
             dashboard = self.find(database.dashboard_uid)
-        dashboard = dashboard['dashboard']
+        self._require_root(dashboard)
+        # Secure legacy dashboards even when a missing owner prevents activation.
+        self.update_anonymous_read_access(database.dashboard_uid, False, False)
+        owner = self.find_user(database.owner.username)
+        if (database.is_dashboard_enabled and not (database.is_public or database.is_schema_public) and
+                (owner is None or owner.get('isDisabled'))):
+            raise DashboardAccessError('The dashboard owner needs an existing Grafana account with the same login', 404)
+        if owner is not None and not owner.get('isDisabled'):
+            self._set_user_permission(database.dashboard_uid, owner['id'], 'Admin')
+        self._sync_owner_permissions(database.dashboard_uid, owner, database.accesses or [])
+        if database.is_dashboard_enabled:
+            self._update_content(database, dashboard['dashboard'])
+        elif 'managed' in dashboard['dashboard'].get('tags', []):
+            dashboard['dashboard']['tags'].remove('managed')
+            self.client.dashboard.update_dashboard(dict(folderUid='', overwrite=True, dashboard=dashboard['dashboard']))
+        self.update_anonymous_read_access(database.dashboard_uid, database.is_public, database.is_schema_public)
+
+    def update_content(self, database: Database) -> None:
+        if not database.is_dashboard_enabled:
+            return
+        dashboard = self.find(database.dashboard_uid)
+        self._require_root(dashboard)
+        self._update_content(database, dashboard['dashboard'])
+
+    def reconcile(self, database: Database) -> None:
+        """Maintenance only: callers must stop concurrent DBRepo access/owner/visibility changes."""
+        self.update(database)
+        for access in database.accesses or []:
+            if access.user.username != database.owner.username:
+                self.update_access(database.dashboard_uid, access.user.username,
+                                   'View' if access.type == AccessType.READ else 'Edit')
+
+    def _update_content(self, database: Database, dashboard: dict) -> None:
         # update metadata
-        if not database.is_dashboard_enabled and 'managed' in dashboard['tags']:
-            dashboard['tags'].remove('managed')
         if len(database.identifiers) > 0 and len(database.identifiers[0].titles) > 0:
             dashboard['title'] = database.identifiers[0].titles[0].title
         if len(database.identifiers) > 0 and len(database.identifiers[0].descriptions) > 0:
@@ -185,23 +240,80 @@ class DashboardServiceClient:
         return links
 
     def update_anonymous_read_access(self, uid: str, is_public: bool, is_schema_public: bool) -> None:
-        permissions = self.client.dashboard.get_permissions_by_uid(uid)
-        viewer_role = [permission for permission in permissions if
-                       'permissionName' in permission and permission['permissionName'] != 'View']
-        permission = ''
-        if is_public or is_schema_public:
-            permission = 'View'
-        if len(viewer_role) == 0:
-            logging.warning(f'Failed to find permissionName=View')
-            return None
-        try:
-            response = self.generic_post(f'/api/access-control/dashboards/{uid}/builtInRoles/Viewer',
-                                         Permission(permission=permission).model_dump())
-            if response.status_code != 200:
-                raise OSError(f'Failed to update anonymous read access: {response.content}')
-        except GrafanaException as e:
-            raise OSError(f'Failed to update anonymous read access: {e.message}')
+        self._require_root(self.find(uid))
+        permission = 'View' if is_public or is_schema_public else ''
+        for role in ('Editor', 'Viewer'):
+            self._set_permission(f'/api/access-control/dashboards/{quote(uid, safe="")}/builtInRoles/{role}', permission)
         logging.info(f"Updated anonymous read access for dashboard with uid: {uid}")
+
+    @staticmethod
+    def _require_root(dashboard: dict | None) -> None:
+        if dashboard is None:
+            raise DashboardAccessError('Dashboard not found', 404)
+        if dashboard.get('meta', {}).get('folderUid'):
+            raise DashboardAccessError('Managed dashboards must remain in General; inherited folder permissions cannot be synchronized', 409)
+
+    def find_user(self, username: str) -> dict | None:
+        response = self.generic_get('/api/users/lookup?' + urlencode({'loginOrEmail': username}))
+        if response.status_code == 404:
+            return None
+        response.raise_for_status()
+        user = response.json()
+        if user.get('login') != username:
+            return None
+        if not isinstance(user.get('id'), int) or user['id'] <= 0:
+            raise DashboardAccessError('Grafana returned an invalid user')
+        # The lookup response does not reliably reflect the account's disabled state.
+        current = self.generic_get(f'/api/users/{user["id"]}')
+        if current.status_code == 404:
+            return None
+        current.raise_for_status()
+        details = current.json()
+        if details.get('id') != user['id'] or details.get('login') != username:
+            return None
+        if not isinstance(details.get('isDisabled'), bool):
+            raise DashboardAccessError('Grafana returned an invalid user state')
+        return details
+
+    def require_user(self, username: str) -> None:
+        user = self.find_user(username)
+        if user is None or user.get('isDisabled'):
+            raise DashboardAccessError('An existing Grafana account with the same login is required', 404)
+
+    def _set_permission(self, path: str, permission: str) -> None:
+        response = self.generic_post(path, {'permission': permission})
+        response.raise_for_status()
+        if response.status_code != 200:
+            raise DashboardAccessError('Grafana did not confirm the permission update')
+
+    def _set_user_permission(self, uid: str, user_id: int, permission: str) -> None:
+        self._set_permission(f'/api/access-control/dashboards/{quote(uid, safe="")}/users/{user_id}', permission)
+
+    def _sync_owner_permissions(self, uid: str, owner: dict | None, accesses: list) -> None:
+        response = self.generic_get(f'/api/access-control/dashboards/{quote(uid, safe="")}')
+        response.raise_for_status()
+        permissions = response.json()
+        if not isinstance(permissions, list):
+            raise DashboardAccessError('Grafana returned invalid dashboard permissions')
+        grants = {access.user.username: 'View' if access.type == AccessType.READ else 'Edit' for access in accesses}
+        owner_id = owner['id'] if owner is not None else None
+        for permission in permissions:
+            user_id = permission.get('userId')
+            if (user_id and user_id != owner_id and permission.get('permission') == 'Admin' and
+                    permission.get('isInherited') is False):
+                # Managed dashboards reserve direct Admin for their current DBRepo owner.
+                self._set_user_permission(uid, user_id, grants.get(permission.get('userLogin'), ''))
+
+    def update_access(self, uid: str, username: str, permission: str) -> None:
+        if permission not in ('View', 'Edit', 'Editor', 'Admin', ''):
+            raise DashboardAccessError('Invalid dashboard permission', 400)
+        self._require_root(self.find(uid))
+        user = self.find_user(username)
+        if user is None:
+            raise DashboardAccessError('An existing Grafana account with the same login is required', 404)
+        if user.get('isDisabled') and permission:
+            raise DashboardAccessError('The Grafana account is disabled', 404)
+        self._set_user_permission(uid, user['id'], 'Edit' if permission == 'Editor' else permission)
 
     def _map_timeseries_panel(self, database_id: str, view: View, panel_type: str, h: int = 8, w: int = 12, x: int = 12,
                               y: int = 8) -> dict:

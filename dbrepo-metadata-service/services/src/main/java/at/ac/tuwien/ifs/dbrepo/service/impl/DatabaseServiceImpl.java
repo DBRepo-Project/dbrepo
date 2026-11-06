@@ -98,6 +98,13 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     @Override
     @Transactional
+    public Database findForUpdateById(UUID id) throws DatabaseNotFoundException {
+        return databaseRepository.findForUpdateById(id)
+                .orElseThrow(() -> new DatabaseNotFoundException("Database not found"));
+    }
+
+    @Override
+    @Transactional
     public Database create(Container container, CreateDatabaseDto data, UserDto owner)
             throws DataServiceException, SearchServiceException, DataServiceConnectionException,
             DatabaseNotFoundException, SearchServiceConnectionException, DashboardServiceException,

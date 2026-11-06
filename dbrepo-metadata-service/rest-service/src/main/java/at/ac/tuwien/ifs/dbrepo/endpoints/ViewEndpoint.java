@@ -136,7 +136,7 @@ public class ViewEndpoint extends RestEndpoint {
             throw new ViewExistsException("Failed to create view: name exists");
         }
         final View view = viewService.create(database, AuthUtil.getUsername(principal), data);
-        dashboardService.update(view.getDatabase());
+        dashboardService.updateContent(view.getDatabase());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(metadataMapper.viewToViewBriefDto(view));
     }
@@ -229,7 +229,7 @@ public class ViewEndpoint extends RestEndpoint {
         }
         final View view = viewService.findById(database, viewId);
         viewService.delete(view);
-        dashboardService.update(databaseService.findById(databaseId));
+        dashboardService.updateContent(databaseService.findById(databaseId));
         return ResponseEntity.accepted()
                 .build();
     }
@@ -275,7 +275,7 @@ public class ViewEndpoint extends RestEndpoint {
             throw new NotAllowedException("Failed to update view: not the database- or view owner");
         }
         final View view1 = viewService.update(view, data);
-        dashboardService.update(view1.getDatabase());
+        dashboardService.updateContent(view1.getDatabase());
         return ResponseEntity.accepted()
                 .body(metadataMapper.viewToViewBriefDto(view1));
     }

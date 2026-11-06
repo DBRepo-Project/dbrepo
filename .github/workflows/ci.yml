@@ -108,7 +108,7 @@ jobs:
             test_cmd: mkdir -p "$PWD/.logs/search" && export LOG_PATH="$PWD/.logs/search" && cd ./dbrepo-search-service && coverage run --rcfile=.coveragerc -m pytest tests/test_app.py tests/test_search_visibility.py tests/test_search_projections.py tests/test_current_search.py && coverage report
           - name: dashboard-service
             install_cmd: PYTHON_LIB_VERSION=$(python3 -c "import tomllib; f=open('lib/python/pyproject.toml','rb'); print(tomllib.load(f)['project']['version'])") && cp ./lib/python/dist/dbrepo-$PYTHON_LIB_VERSION.tar.gz ./dbrepo-dashboard-service/lib/dbrepo-$PYTHON_LIB_VERSION.tar.gz && PIPENV_PIPFILE=./dbrepo-dashboard-service/Pipfile pipenv install --skip-lock --dev --system
-            test_cmd: mkdir -p "$PWD/.logs/dashboard" && export LOG_PATH="$PWD/.logs/dashboard" && cd ./dbrepo-dashboard-service && coverage run --rcfile=.coveragerc -m pytest tests/test_integration_app.py && coverage report
+            test_cmd: mkdir -p "$PWD/.logs/dashboard" && export LOG_PATH="$PWD/.logs/dashboard" && cd ./dbrepo-dashboard-service && coverage run --rcfile=.coveragerc -m pytest tests && coverage report
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6

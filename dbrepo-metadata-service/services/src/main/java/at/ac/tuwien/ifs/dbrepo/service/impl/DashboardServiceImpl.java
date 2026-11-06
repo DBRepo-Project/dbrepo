@@ -27,11 +27,19 @@ public class DashboardServiceImpl implements DashboardService {
 
     @Override
     public void update(Database database) throws DashboardServiceException, DashboardServiceConnectionException {
-        if (!database.getIsDashboardEnabled()) {
-            log.trace("database does not manage their dashboard, skip");
-            return;
-        }
         dashboardServiceGateway.update(metadataMapper.databaseToDatabaseDto(database));
+    }
+
+    @Override
+    public void updateContent(Database database) throws DashboardServiceException, DashboardServiceConnectionException {
+        if (database.getIsDashboardEnabled()) {
+            dashboardServiceGateway.updateContent(metadataMapper.databaseToDatabaseDto(database));
+        }
+    }
+
+    @Override
+    public void requireUser(String username) throws DashboardServiceException, DashboardServiceConnectionException {
+        dashboardServiceGateway.requireUser(username);
     }
 
     @Override
