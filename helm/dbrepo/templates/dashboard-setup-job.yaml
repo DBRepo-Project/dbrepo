@@ -1,4 +1,7 @@
-{{- if .Values.dashboardservice.enabled }}
+{{- if and .Values.dashboardservice.enabled .Values.dashboardservice.setupJob.enabled }}
+{{- if not (and .Values.authservice.enabled .Values.dashboardui.enabled) }}
+{{- fail "Dashboard setup requires bundled authservice and dashboardui; disable dashboardservice.setupJob.enabled and run documented setup explicitly for external services" }}
+{{- end }}
 ---
 apiVersion: batch/v1
 kind: Job
@@ -21,6 +24,39 @@ spec:
           securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.dashboardservice.containerSecurityContext "context" $) | nindent 12 }}
           {{- end }}
           env:
+            - name: AUTH_SERVICE_ADMIN
+              valueFrom:
+                secretKeyRef:
+                  name: auth-service-secret
+                  key: AUTH_SERVICE_ADMIN
+            - name: AUTH_SERVICE_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: auth-service-secret
+                  key: AUTH_SERVICE_ADMIN_PASSWORD
+            - name: DASHBOARD_OAUTH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: dashboard-ui-secret
+                  key: GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET
+            - name: DASHBOARD_OAUTH_CLIENT_ID
+              value: {{ .Values.dashboardui.oauthClientId | quote }}
+            - name: DASHBOARD_DATA_ENDPOINT
+              value: {{ .Values.dashboardui.dataEndpoint | quote }}
+            - name: DASHBOARD_PUBLIC_URL
+              value: {{ .Values.dashboardui.serverRootUrl | default (printf "https://%s/dashboard/" .Values.hostname) | quote }}
+            - name: DASHBOARD_RESEARCH_ORG_NAME
+              value: {{ .Values.dashboardui.researchOrganizationName | quote }}
+            - name: DASHBOARD_MONITORING_ORG_NAME
+              value: {{ .Values.dashboardui.monitoringOrganizationName | quote }}
+            - name: DASHBOARD_MONITORING_ORG_ID
+              value: {{ .Values.dashboardui.monitoringOrganizationId | quote }}
+            - name: DASHBOARD_METRICS_URL
+              value: "http://metric-db-server"
+            {{- if .Values.dashboardui.migrationExportSecret }}
+            - name: DASHBOARD_MIGRATION_EXPORT
+              value: /app/migration/system-dashboards.json
+            {{- end }}
             - name: POD_IP
               valueFrom:
                 fieldRef:
@@ -37,6 +73,11 @@ spec:
             - secretRef:
                 name: dashboard-service-secret
           volumeMounts:
+            {{- if .Values.dashboardui.migrationExportSecret }}
+            - name: migration-export
+              mountPath: /app/migration
+              readOnly: true
+            {{- end }}
             - name: empty-dir
               mountPath: /var/log/app/service/dashboard
           {{- if .Values.dashboardservice.setupJob.resources }}
@@ -45,6 +86,11 @@ spec:
           resources: {{- include "common.resources.preset" (dict "type" .Values.dashboardservice.setupJob.resourcesPreset) | nindent 12 }}
           {{- end }}
       volumes:
+        {{- if .Values.dashboardui.migrationExportSecret }}
+        - name: migration-export
+          secret:
+            secretName: {{ .Values.dashboardui.migrationExportSecret | quote }}
+        {{- end }}
         - name: empty-dir
           emptyDir: { }
 {{- end }}

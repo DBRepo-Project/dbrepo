@@ -1148,6 +1148,18 @@ dashboardservice:
 ## @section Dashboard UI
 
 dashboardui:
+  ## Research org receives anonymous/OAuth viewers; monitoring contains only server administrators.
+  organizationId: 1
+  ## Internal URL reachable from Grafana; browser URLs remain separate.
+  dataEndpoint: http://gateway-service
+  researchOrganizationName: "Main Org."
+  monitoringOrganizationName: "DBRepo Monitoring"
+  monitoringOrganizationId: ""
+  ## Optional Secret containing system-dashboards.json exported before a protected upgrade.
+  migrationExportSecret: ""
+  oauthClientId: dbrepo-grafana
+  ## Empty generates a dedicated secret on install and reuses it from the existing Kubernetes Secret on upgrade.
+  oauthClientSecret: ""
   ## @param dashboardui.enabled Enable the Dashboard UI.
   enabled: true
   ## @skip dashboardui.fullnameOverride

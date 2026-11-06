@@ -51,7 +51,8 @@ dictConfig({
 
 def dashboard_client():
     return DashboardServiceClient(os.getenv('DASHBOARD_UI_ENDPOINT', 'http://localhost:3000'),
-                                  os.getenv('DASHBOARD_UI_USERNAME', 'admin'), os.getenv('DASHBOARD_UI_PASSWORD', 'admin'))
+                                  os.getenv('DASHBOARD_UI_USERNAME', 'admin'), os.getenv('DASHBOARD_UI_PASSWORD', 'admin'),
+                                  organization_id=int(os.getenv('DASHBOARD_ORG_ID', '1')))
 
 
 def rest_client():
@@ -85,5 +86,7 @@ def synchronize_dashboards() -> None:
 
 
 if __name__ == "__main__":
+    from provision import configure_environment
+    configure_environment()
     synchronize_dashboards()
     logging.info("Finished. Exiting.")

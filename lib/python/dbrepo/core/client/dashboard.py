@@ -1,6 +1,6 @@
 import logging
 from typing import List
-from urllib.parse import quote, urlencode
+from urllib.parse import quote, urlencode, urlsplit
 
 import requests
 from grafana_client import GrafanaApi
@@ -101,9 +101,18 @@ def map_preview_image_panel(database_id: str, w: int = 4, h: int = 4, x: int = 2
 class DashboardServiceClient:
 
     def __init__(self, endpoint: str, username: str, password: str, base_url: str = 'http://localhost',
-                 datasource_uid: str = 'dbrepojson0'):
-        self.client: GrafanaApi = GrafanaApi.from_url(url=f'{endpoint}', credential=(username, password))
-        self.endpoint = endpoint
+                 datasource_uid: str = 'dbrepojson0', organization_id: int = 1):
+        if type(organization_id) is not int or organization_id < 1:
+            raise ValueError('A positive Grafana organization ID is required')
+        url = urlsplit(endpoint)
+        if (url.scheme not in ('http', 'https') or not url.hostname or url.username is not None or
+                url.password is not None or url.query or url.fragment):
+            raise ValueError('A Grafana HTTP endpoint without URL credentials is required')
+        self.organization_id = organization_id
+        self.client: GrafanaApi = GrafanaApi(auth=(username, password), host=url.hostname, port=url.port,
+                                            protocol=url.scheme, url_path_prefix=(url.path.strip('/') + '/') if url.path.strip('/') else '',
+                                            organization_id=organization_id)
+        self.endpoint = endpoint.rstrip('/')
         self.username = username
         self.password = password
         self.base_url = base_url
@@ -115,12 +124,14 @@ class DashboardServiceClient:
     def generic_get(self, api_url: str) -> Response:
         request_url = self.endpoint + api_url
         logging.debug(f'generic get url={request_url}, auth=({self.username}, <reacted>)')
-        return requests.get(request_url, auth=(self.username, self.password), timeout=(3, 10))
+        return requests.get(request_url, auth=(self.username, self.password),
+                            headers={"X-Grafana-Org-Id": str(self.organization_id)}, timeout=(3, 10))
 
     def generic_post(self, api_url: str, payload: dict) -> Response:
         request_url = self.endpoint + api_url
         logging.debug(f'generic post url={request_url}, payload={payload}, auth=({self.username}, <reacted>)')
-        return requests.post(request_url, json=payload, auth=(self.username, self.password), timeout=(3, 10))
+        return requests.post(request_url, json=payload, auth=(self.username, self.password),
+                            headers={"X-Grafana-Org-Id": str(self.organization_id)}, timeout=(3, 10))
 
     def find(self, uid: str):
         """
