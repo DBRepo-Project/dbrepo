@@ -6,6 +6,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.RegexPatternTypeFilter;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import java.security.Principal;
+import java.util.UUID;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,6 +20,13 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 public class EndpointUtils {
+
+    public static Principal jwtPrincipal(Principal original, UUID subject) {
+        final Authentication authentication = (Authentication) original;
+        final Jwt jwt = Jwt.withTokenValue("test-token").header("alg", "RS256")
+                .subject(subject.toString()).claim("preferred_username", authentication.getName()).build();
+        return new JwtAuthenticationToken(jwt, authentication.getAuthorities());
+    }
 
     public static List<Class<?>> getExceptions() throws ClassNotFoundException {
         final ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);

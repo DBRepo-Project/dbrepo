@@ -393,9 +393,10 @@ export default {
       }
       this.loading = true
       const searchService = useSearchService()
-      searchService.general_search(this.searchType, this.advancedSearchData)
+      const type = this.searchType
+      searchService.general_search(type, this.advancedSearchData)
         .then((results) => {
-          this.$emit('search-result', results)
+          this.$emit('search-result', results, type)
         })
         .finally(() => {
           this.loading = false
@@ -465,7 +466,7 @@ export default {
         return
       }
       this.resetAdvancedSearchFields()
-      this.$emit('search-result', [])
+      this.$emit('search-result', [], this.searchType)
       const searchService = useSearchService()
       this.loadingFields = true
       searchService.fields(this.searchType)

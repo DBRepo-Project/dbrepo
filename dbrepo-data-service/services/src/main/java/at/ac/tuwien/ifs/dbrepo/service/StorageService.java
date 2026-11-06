@@ -8,6 +8,12 @@ import java.io.InputStream;
 
 public interface StorageService {
 
+    /** Stores a new independent upload and returns its opaque object key. */
+    String putUpload(String originalFilename, byte[] content, String owner) throws StorageUnavailableException;
+
+    /** Checks an uploaded object's owner before a caller-controlled key is consumed. */
+    void requireUploadOwner(String key, String owner) throws StorageNotFoundException, StorageUnavailableException;
+
     /**
      * Uploads content of an object to the S3 backend. It can be later retrieved using the given key.
      *
@@ -19,6 +25,7 @@ public interface StorageService {
 
     /**
      * Loads an object of a bucket from the storage service into an input stream.
+     * The caller must close the returned stream.
      *
      * @param bucket The bucket name.
      * @param key    The object key.

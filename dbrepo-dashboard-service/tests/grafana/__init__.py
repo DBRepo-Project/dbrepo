@@ -9,6 +9,9 @@ class GrafanaContainer(DockerContainer):
     def __init__(self, image: str = "grafana/grafana:11.6.16", **kwargs) -> None:
         super().__init__(image=image, **kwargs)
         self.with_exposed_ports(self.MGMT_PORT)
+        self.with_env('GF_AUTH_ANONYMOUS_ENABLED', 'true')
+        self.with_env('GF_AUTH_ANONYMOUS_ORG_ROLE', 'Viewer')
+        self.with_env('GF_RBAC_PERMISSION_CACHE', 'false')
 
     def get_url(self) -> str:
         return f"http://{self.get_container_host_ip()}:{self.get_exposed_port(self.MGMT_PORT)}"

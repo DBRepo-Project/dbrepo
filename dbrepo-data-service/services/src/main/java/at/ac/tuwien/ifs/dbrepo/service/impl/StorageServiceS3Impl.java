@@ -6,6 +6,8 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.StorageObjectExistsException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.StorageUnavailableException;
 import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
 import at.ac.tuwien.ifs.dbrepo.service.StorageService;
+import at.ac.tuwien.ifs.dbrepo.core.storage.UploadMetadata;
+import software.amazon.awssdk.core.exception.SdkException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,20 +39,63 @@ public class StorageServiceS3Impl extends DataConnector implements StorageServic
     }
 
     @Override
+    public void requireUploadOwner(String key, String owner) throws StorageNotFoundException, StorageUnavailableException {
+        if (UploadMetadata.SYSTEM_OWNER.equals(owner)) {
+            return;
+        }
+        if (!UploadMetadata.isUploadKey(key) || owner == null) {
+            throw new StorageNotFoundException("Upload not found");
+        }
+        try {
+            final var object = s3Client.headObject(HeadObjectRequest.builder()
+                    .bucket(s3Config.getS3Bucket()).key(key).build());
+            if (!owner.equals(object.metadata().get(UploadMetadata.OWNER))) {
+                throw new StorageNotFoundException("Upload not found");
+            }
+        } catch (S3Exception exception) {
+            if (exception.statusCode() == 404) {
+                throw new StorageNotFoundException("Upload not found", exception);
+            }
+            throw new StorageUnavailableException("Upload metadata is unavailable", exception);
+        } catch (SdkException exception) {
+            throw new StorageUnavailableException("Upload metadata is unavailable", exception);
+        }
+    }
+
+    @Override
+    public String putUpload(String originalFilename, byte[] content, String owner) throws StorageUnavailableException {
+        final String key = UploadMetadata.newKey(originalFilename);
+        final var metadata = new HashMap<>(UploadMetadata.metadata(originalFilename, owner));
+        metadata.put(HASH_SHA256, DigestUtils.sha256Hex(content));
+        metadata.put(HASH_SHA1, DigestUtils.sha1Hex(content));
+        metadata.put(HASH_MD5, DigestUtils.md5Hex(content));
+        try {
+            s3Client.putObject(PutObjectRequest.builder().bucket(s3Config.getS3Bucket()).key(key)
+                    .metadata(metadata).overrideConfiguration(configuration -> configuration.putHeader("If-None-Match", "*"))
+                    .build(), RequestBody.fromBytes(content));
+            return key;
+        } catch (SdkException exception) {
+            throw new StorageUnavailableException("Upload could not be stored", exception);
+        }
+    }
+
+    @Override
     public void putObject(String key, byte[] content) throws StorageObjectExistsException {
         final long start = System.currentTimeMillis();
         try {
-            final GetObjectResponse response = s3Client.getObject(GetObjectRequest.builder()
-                            .key(key)
-                            .bucket(s3Config.getS3Bucket())
-                            .build())
-                    .response();
+            final HeadObjectResponse response = s3Client.headObject(HeadObjectRequest.builder()
+                    .key(key)
+                    .bucket(s3Config.getS3Bucket())
+                    .build());
             if (matchesAnyHash(response, content)) {
                 log.debug("object with key {} already exists", key);
                 throw new StorageObjectExistsException("Object already exists");
             }
-        } catch (NoSuchKeyException e) {
-            /* ignore */
+        } catch (S3Exception e) {
+            // HEAD responses have no error body and may use a generic S3Exception for a missing key.
+            if (e.statusCode() != 404) {
+                throw e;
+            }
         }
         s3Client.putObject(PutObjectRequest.builder()
                 .key(key)
@@ -68,7 +113,7 @@ public class StorageServiceS3Impl extends DataConnector implements StorageServic
                 .log();
     }
 
-    public boolean matchesAnyHash(GetObjectResponse response, byte[] content) {
+    public boolean matchesAnyHash(HeadObjectResponse response, byte[] content) {
         if (response == null) {
             log.trace("response is null");
             return false;
@@ -124,9 +169,8 @@ public class StorageServiceS3Impl extends DataConnector implements StorageServic
 
     @Override
     public byte[] getBytes(String bucket, String key) throws StorageNotFoundException, StorageUnavailableException {
-        try {
-            return getObject(bucket, key)
-                    .readAllBytes();
+        try (InputStream object = getObject(bucket, key)) {
+            return object.readAllBytes();
         } catch (IOException e) {
             log.error("Failed to read bytes from input stream: {}", e.getMessage());
             throw new StorageNotFoundException("Failed to read bytes from input stream: " + e.getMessage(), e);

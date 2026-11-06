@@ -6,6 +6,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.endpoints.ViewEndpoint;
+import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.service.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -47,6 +48,9 @@ public class ViewEndpointUnitTest extends BaseTest {
 
     @MockitoBean
     private MetadataService metadataService;
+
+    @MockitoBean
+    private MetadataServiceGateway gateway;
 
     @MockitoBean
     private HttpServletRequest httpServletRequest;
@@ -280,9 +284,8 @@ public class ViewEndpointUnitTest extends BaseTest {
         /* mock */
         when(computeService.query(any(Database.class), anyString()))
                 .thenReturn(mock(QueryResultStream.class));
-        when(metadataService.getView(DATABASE_1_ID, VIEW_1_ID))
-                .thenReturn(VIEW_1_CACHE);
-        when(metadataService.getDatabase(DATABASE_1_ID))
+        DATABASE_1_CACHE.setViews(List.of(VIEW_1_CACHE));
+        when(gateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
@@ -299,9 +302,8 @@ public class ViewEndpointUnitTest extends BaseTest {
             ViewNotFoundException, MetadataServiceException, DatabaseNotFoundException {
 
         /* mock */
-        when(metadataService.getView(DATABASE_1_ID, VIEW_1_ID))
-                .thenReturn(VIEW_1_CACHE);
-        when(metadataService.getDatabase(DATABASE_1_ID))
+        DATABASE_1_CACHE.setViews(List.of(VIEW_1_CACHE));
+        when(gateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
@@ -321,9 +323,8 @@ public class ViewEndpointUnitTest extends BaseTest {
             StorageNotFoundException, ImageInvalidException, AnalyseDataTypesException {
 
         /* mock */
-        when(metadataService.getView(DATABASE_1_ID, VIEW_3_ID))
-                .thenReturn(VIEW_3_CACHE);
-        when(metadataService.getDatabase(DATABASE_1_ID))
+        DATABASE_1_CACHE.setViews(List.of(VIEW_3_CACHE));
+        when(gateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
         when(httpServletRequest.getMethod())
                 .thenReturn("HEAD");
@@ -348,9 +349,8 @@ public class ViewEndpointUnitTest extends BaseTest {
             MetadataServiceException, DatabaseNotFoundException {
 
         /* mock */
-        when(metadataService.getView(DATABASE_1_ID, VIEW_1_ID))
-                .thenReturn(VIEW_1_CACHE);
-        when(metadataService.getDatabase(DATABASE_1_ID))
+        DATABASE_1_CACHE.setViews(List.of(VIEW_1_CACHE));
+        when(gateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
@@ -363,13 +363,12 @@ public class ViewEndpointUnitTest extends BaseTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"view-database-view-data"})
-    public void getData_viewNotFoundTextCsv_fails() throws RemoteUnavailableException, ViewNotFoundException,
+    public void getData_viewNotFoundTextCsv_fails() throws DatabaseNotFoundException, RemoteUnavailableException, ViewNotFoundException,
             MetadataServiceException {
 
         /* mock */
-        doThrow(ViewNotFoundException.class)
-                .when(metadataService)
-                .getView(DATABASE_1_ID, VIEW_1_ID);
+        DATABASE_1_CACHE.setViews(List.of());
+        when(gateway.getDatabaseById(DATABASE_1_ID)).thenReturn(DATABASE_1_CACHE);
 
         /* test */
         assertThrows(ViewNotFoundException.class, () -> {
@@ -383,9 +382,8 @@ public class ViewEndpointUnitTest extends BaseTest {
             MetadataServiceException, DatabaseNotFoundException {
 
         /* mock */
-        when(metadataService.getView(DATABASE_1_ID, VIEW_1_ID))
-                .thenReturn(VIEW_1_CACHE);
-        when(metadataService.getDatabase(DATABASE_1_ID))
+        DATABASE_1_CACHE.setViews(List.of(VIEW_1_CACHE));
+        when(gateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
 
         /* test */
@@ -400,9 +398,8 @@ public class ViewEndpointUnitTest extends BaseTest {
             MetadataServiceException, DatabaseNotFoundException {
 
         /* mock */
-        when(metadataService.getView(DATABASE_1_ID, VIEW_1_ID))
-                .thenReturn(VIEW_1_CACHE);
-        when(metadataService.getDatabase(DATABASE_1_ID))
+        DATABASE_1_CACHE.setViews(List.of(VIEW_1_CACHE));
+        when(gateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
 
         /* test */
@@ -413,13 +410,12 @@ public class ViewEndpointUnitTest extends BaseTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"view-database-view-data"})
-    public void getData_viewNotFound_fails() throws RemoteUnavailableException, ViewNotFoundException,
+    public void getData_viewNotFound_fails() throws DatabaseNotFoundException, RemoteUnavailableException, ViewNotFoundException,
             MetadataServiceException {
 
         /* mock */
-        doThrow(ViewNotFoundException.class)
-                .when(metadataService)
-                .getView(DATABASE_1_ID, VIEW_1_ID);
+        DATABASE_1_CACHE.setViews(List.of());
+        when(gateway.getDatabaseById(DATABASE_1_ID)).thenReturn(DATABASE_1_CACHE);
 
         /* test */
         assertThrows(ViewNotFoundException.class, () -> {
@@ -434,9 +430,8 @@ public class ViewEndpointUnitTest extends BaseTest {
             NotAllowedException, DatabaseNotFoundException, SQLException {
 
         /* mock */
-        when(metadataService.getView(DATABASE_1_ID, VIEW_1_ID))
-                .thenReturn(VIEW_1_CACHE);
-        when(metadataService.getDatabase(DATABASE_1_ID))
+        DATABASE_1_CACHE.setViews(List.of(VIEW_1_CACHE));
+        when(gateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
         when(tableService.getStatistics(DATABASE_1_CACHE, VIEW_1_ID, VIEW_1_INTERNAL_NAME))
                 .thenReturn(VIEW_1_STATISTIC_DTO);

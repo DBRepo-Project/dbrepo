@@ -201,6 +201,7 @@ public interface MetadataMapper {
 
     TableBriefDto tableDtoToTableBriefDto(TableDto data);
 
+    @Mapping(target = "ownedBy", source = "owner.username")
     IdentifierBriefDto identifierDtoToIdentifierBriefDto(IdentifierDto data);
 
     default String metricToUri(String baseUrl, UUID databaseId, UUID tableId, UUID subsetId, UUID viewId) {

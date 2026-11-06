@@ -54,7 +54,7 @@
                 :title="$t('pages.database.dashboard.title')"
                 density="compact">
                 <NuxtLink
-                  :href="`${config.public.dashboard.url}/d/${database.dashboard_uid}`">
+                  :href="`${config.public.dashboard.url}/d/${database.dashboard_uid}${cacheUser ? '?forceLogin=true' : ''}`">
                   {{ $t('pages.database.dashboard.text') }}
                 </NuxtLink>
               </v-list-item>

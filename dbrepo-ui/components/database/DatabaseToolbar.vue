@@ -25,7 +25,7 @@
         :loading="loading === 0"
         :variant="buttonVariant"
         :text="$t('toolbars.database.dashboard.permanent') + ($vuetify.display.mdAndUp ? ' ' + $t('toolbars.database.dashboard.xl') : '')"
-        :href="`${config.public.dashboard.url}/d/${database.dashboard_uid}`"
+        :href="`${config.public.dashboard.url}/d/${database.dashboard_uid}${cacheUser ? '?forceLogin=true' : ''}`"
         @click="loading = 0" />
       <v-btn
         v-if="canCreateTable"

@@ -9,6 +9,7 @@ import at.ac.tuwien.ifs.dbrepo.service.*;
 import at.ac.tuwien.ifs.dbrepo.service.impl.DatabaseServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,14 +27,23 @@ import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
 
+import static at.ac.tuwien.ifs.dbrepo.core.test.utils.EndpointUtils.jwtPrincipal;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @Slf4j
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class DatabaseEndpointUnitTest extends BaseTest {
+
+    @BeforeEach
+    void lockingLookupUsesFixture() throws Exception {
+        when(databaseService.findForUpdateById(any(UUID.class)))
+                .thenAnswer(call -> databaseService.findById(call.getArgument(0)));
+    }
+
 
     @MockitoBean
     private BrokerService messageQueueService;
@@ -395,6 +405,8 @@ public class DatabaseEndpointUnitTest extends BaseTest {
             DashboardServiceException, DashboardServiceConnectionException {
         final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
                 .isPublic(true)
+                .isSchemaPublic(true)
+                .isDashboardEnabled(true)
                 .build();
 
         /* mock */
@@ -485,8 +497,10 @@ public class DatabaseEndpointUnitTest extends BaseTest {
         when(storageService.getBytes(request.getKey()))
                 .thenReturn(new byte[]{1, 2, 3, 4, 5});
 
+        when(databaseService.modifyImage(eq(DATABASE_1), any(byte[].class))).thenReturn(DATABASE_1);
+
         /* test */
-        databaseEndpoint.modifyImage(DATABASE_1_ID, request, USER_1_PRINCIPAL);
+        databaseEndpoint.modifyImage(DATABASE_1_ID, request, jwtPrincipal(USER_1_PRINCIPAL, USER_1_ID));
     }
 
     @Test
@@ -504,8 +518,10 @@ public class DatabaseEndpointUnitTest extends BaseTest {
         when(userService.findByUsername(USER_1_USERNAME))
                 .thenReturn(USER_1_DTO);
 
+        when(databaseService.modifyImage(DATABASE_1, null)).thenReturn(DATABASE_1);
+
         /* test */
-        databaseEndpoint.modifyImage(DATABASE_1_ID, request, USER_1_PRINCIPAL);
+        databaseEndpoint.modifyImage(DATABASE_1_ID, request, jwtPrincipal(USER_1_PRINCIPAL, USER_1_ID));
     }
 
     @Test
@@ -547,7 +563,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-database-owner"})
     public void transfer_hasRole_succeeds() throws DataServiceConnectionException, DataServiceException,
             NotAllowedException, UserNotFoundException, DatabaseNotFoundException, SearchServiceException,
-            SearchServiceConnectionException {
+            SearchServiceConnectionException, DashboardServiceException, DashboardServiceConnectionException {
         final DatabaseTransferDto request = DatabaseTransferDto.builder()
                 .username(USER_4_USERNAME)
                 .build();
@@ -559,6 +575,8 @@ public class DatabaseEndpointUnitTest extends BaseTest {
                 .thenReturn(USER_1_DTO);
         when(userService.findByUsername(USER_4_USERNAME))
                 .thenReturn(USER_4_DTO);
+
+        when(databaseService.modifyOwner(DATABASE_1, USER_4_USERNAME)).thenReturn(DATABASE_1);
 
         /* test */
         databaseEndpoint.transfer(DATABASE_1_ID, request, USER_1_PRINCIPAL);
@@ -862,6 +880,20 @@ public class DatabaseEndpointUnitTest extends BaseTest {
 
         /* test */
         return databaseEndpoint.findPreviewImage(databaseId);
+    }
+
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-database-image"})
+    void databaseOwnerCannotUseAnotherUploadAsImage() throws Exception {
+        when(databaseService.findById(DATABASE_1_ID)).thenReturn(DATABASE_1);
+        when(userService.findByUsername(USER_1_USERNAME)).thenReturn(USER_1_DTO);
+        doThrow(new StorageNotFoundException("Upload not found")).when(storageService)
+                .requireUploadOwner("foreign.csv", USER_1_ID.toString());
+        assertThrows(StorageNotFoundException.class, () -> databaseEndpoint.modifyImage(DATABASE_1_ID,
+                DatabaseModifyImageDto.builder().key("foreign.csv").build(), jwtPrincipal(USER_1_PRINCIPAL, USER_1_ID)));
+        verify(storageService, never()).getBytes(anyString());
+        verify(databaseService, never()).modifyImage(any(), any());
     }
 
 }

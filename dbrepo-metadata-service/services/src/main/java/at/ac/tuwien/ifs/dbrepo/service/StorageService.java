@@ -7,12 +7,15 @@ import java.io.InputStream;
 
 public interface StorageService {
 
+    /** Checks an uploaded object's owner before a caller-controlled key is consumed. */
+    void requireUploadOwner(String key, String owner) throws StorageNotFoundException, StorageUnavailableException;
+
     /**
      * Loads an object of a bucket from the Storage Service into an input stream.
      *
      * @param bucket The bucket name.
      * @param key    The object key.
-     * @return The input stream, if successful.
+     * @return The input stream, if successful. The caller must close it.
      * @throws StorageNotFoundException    The object could not be found in the Storage Service.
      * @throws StorageUnavailableException The object failed to be loaded from the Storage Service.
      */

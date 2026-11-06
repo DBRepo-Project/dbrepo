@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import static at.ac.tuwien.ifs.dbrepo.core.test.utils.EndpointUtils.jwtPrincipal;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -43,6 +44,9 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class TableEndpointUnitTest extends BaseTest {
+
+    @MockitoBean
+    private at.ac.tuwien.ifs.dbrepo.service.StorageService storageService;
 
     @Autowired
     private TableEndpoint tableEndpoint;
@@ -171,9 +175,8 @@ public class TableEndpointUnitTest extends BaseTest {
             NotAllowedException {
 
         /* mock */
-        when(metadataService.getTable(DATABASE_2_ID, TABLE_6_ID))
-                .thenReturn(TABLE_6_CACHE);
-        when(metadataService.getDatabase(DATABASE_2_ID))
+        DATABASE_2_CACHE.setTables(List.of(TABLE_6_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_2_ID))
                 .thenReturn(DATABASE_2_CACHE);
         when(tableService.getStatistics(any(Database.class), any(UUID.class), anyString()))
                 .thenReturn(TABLE_6_STATISTIC_DTO);
@@ -189,9 +192,8 @@ public class TableEndpointUnitTest extends BaseTest {
             MetadataServiceException, DatabaseNotFoundException {
 
         /* mock */
-        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_CACHE);
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        DATABASE_3_CACHE.setTables(List.of(TABLE_8_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
 
         /* test */
@@ -206,9 +208,8 @@ public class TableEndpointUnitTest extends BaseTest {
             RemoteUnavailableException, MetadataServiceException, SQLException, DatabaseNotFoundException {
 
         /* mock */
-        when(metadataService.getTable(DATABASE_2_ID, TABLE_7_ID))
-                .thenReturn(TABLE_7_CACHE);
-        when(metadataService.getDatabase(DATABASE_2_ID))
+        DATABASE_2_CACHE.setTables(List.of(TABLE_7_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_2_ID))
                 .thenReturn(DATABASE_2_CACHE);
         doThrow(SQLException.class)
                 .when(tableService)
@@ -223,12 +224,12 @@ public class TableEndpointUnitTest extends BaseTest {
     @Test
     @WithAnonymousUser
     public void statistic_notFound_fails() throws TableNotFoundException, RemoteUnavailableException,
-            MetadataServiceException {
+            MetadataServiceException, DatabaseNotFoundException {
 
         /* mock */
-        doThrow(TableNotFoundException.class)
-                .when(metadataService)
-                .getTable(DATABASE_1_ID, TABLE_1_ID);
+        DATABASE_1_CACHE.setTables(List.of());
+
+        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID)).thenReturn(DATABASE_1_CACHE);
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
@@ -310,9 +311,8 @@ public class TableEndpointUnitTest extends BaseTest {
             StorageNotFoundException, ImageInvalidException, AnalyseDataTypesException, SQLException, QueryMalformedException {
 
         /* mock */
-        when(metadataService.getTable(DATABASE_2_ID, TABLE_6_ID))
-                .thenReturn(TABLE_6_CACHE);
-        when(metadataService.getDatabase(DATABASE_2_ID))
+        DATABASE_2_CACHE.setTables(List.of(TABLE_6_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_2_ID))
                 .thenReturn(DATABASE_2_CACHE);
         when(tableService.inspect(DATABASE_2_CACHE, TABLE_6_CACHE.getInternalName()))
                 .thenReturn(TABLE_6_DTO);
@@ -336,9 +336,8 @@ public class TableEndpointUnitTest extends BaseTest {
             AnalyseDataTypesException {
 
         /* mock */
-        when(metadataService.getTable(DATABASE_2_ID, TABLE_5_ID))
-                .thenReturn(TABLE_5_CACHE);
-        when(metadataService.getDatabase(DATABASE_2_ID))
+        DATABASE_2_CACHE.setTables(List.of(TABLE_5_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_2_ID))
                 .thenReturn(DATABASE_2_CACHE);
         when(tableService.getCount(any(Database.class), anyString(), any(Instant.class)))
                 .thenReturn(3L);
@@ -358,11 +357,12 @@ public class TableEndpointUnitTest extends BaseTest {
     @Test
     @WithAnonymousUser
     public void getData_privateAnonymous_fails() throws TableNotFoundException, RemoteUnavailableException,
-            MetadataServiceException {
+            MetadataServiceException, DatabaseNotFoundException {
 
         /* mock */
-        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_CACHE);
+        DATABASE_1_CACHE.setTables(List.of(TABLE_1_CACHE));
+
+        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID)).thenReturn(DATABASE_1_CACHE);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -376,9 +376,8 @@ public class TableEndpointUnitTest extends BaseTest {
             MetadataServiceException, DatabaseNotFoundException {
 
         /* mock */
-        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_CACHE);
-        when(metadataService.getDatabase(DATABASE_1_ID))
+        DATABASE_1_CACHE.setTables(List.of(TABLE_1_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
 
         /* test */
@@ -390,13 +389,14 @@ public class TableEndpointUnitTest extends BaseTest {
     @Test
     @WithAnonymousUser
     public void getData_notAllowed_fails() throws TableNotFoundException, RemoteUnavailableException,
-            MetadataServiceException {
+            MetadataServiceException, DatabaseNotFoundException {
 
         /* mock */
-        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_CACHE);
+        DATABASE_3_CACHE.setTables(List.of(TABLE_8_CACHE));
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
+
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID)).thenReturn(DATABASE_3_CACHE);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -410,11 +410,10 @@ public class TableEndpointUnitTest extends BaseTest {
             MetadataServiceException, DatabaseNotFoundException {
 
         /* mock */
-        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_CACHE);
+        DATABASE_1_CACHE.setTables(List.of(TABLE_1_CACHE));
         doThrow(RemoteUnavailableException.class)
-                .when(metadataService)
-                .getDatabase(DATABASE_1_ID);
+                .when(metadataServiceGateway)
+                .getDatabaseById(DATABASE_1_ID);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
 
@@ -434,9 +433,8 @@ public class TableEndpointUnitTest extends BaseTest {
             SQLException, QueryMalformedException {
 
         /* mock */
-        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_CACHE);
-        when(metadataService.getDatabase(DATABASE_1_ID))
+        DATABASE_1_CACHE.setTables(List.of(TABLE_1_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
         when(tableService.inspect(DATABASE_1_CACHE, TABLE_1_CACHE.getInternalName()))
                 .thenReturn(TABLE_1_DTO);
@@ -459,9 +457,8 @@ public class TableEndpointUnitTest extends BaseTest {
             QueryMalformedException {
 
         /* mock */
-        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_CACHE);
-        when(metadataService.getDatabase(DATABASE_1_ID))
+        DATABASE_1_CACHE.setTables(List.of(TABLE_1_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
         when(tableService.inspect(DATABASE_1_CACHE, TABLE_1_CACHE.getInternalName()))
                 .thenReturn(TABLE_1_DTO);
@@ -487,9 +484,8 @@ public class TableEndpointUnitTest extends BaseTest {
             QueryMalformedException {
 
         /* mock */
-        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_CACHE);
-        when(metadataService.getDatabase(DATABASE_1_ID))
+        DATABASE_1_CACHE.setTables(List.of(TABLE_1_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
@@ -510,9 +506,8 @@ public class TableEndpointUnitTest extends BaseTest {
             MetadataServiceException, DatabaseNotFoundException, SQLException, QueryMalformedException {
 
         /* mock */
-        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_CACHE);
-        when(metadataService.getDatabase(DATABASE_1_ID))
+        DATABASE_1_CACHE.setTables(List.of(TABLE_1_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
@@ -528,12 +523,12 @@ public class TableEndpointUnitTest extends BaseTest {
     @Test
     @WithAnonymousUser
     public void getData_tableNotFound_fails() throws TableNotFoundException, RemoteUnavailableException,
-            MetadataServiceException {
+            MetadataServiceException, DatabaseNotFoundException {
 
         /* mock */
-        doThrow(TableNotFoundException.class)
-                .when(metadataService)
-                .getTable(DATABASE_3_ID, TABLE_8_ID);
+        DATABASE_3_CACHE.setTables(List.of());
+
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID)).thenReturn(DATABASE_3_CACHE);
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
@@ -555,9 +550,8 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_CACHE);
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        DATABASE_3_CACHE.setTables(List.of(TABLE_8_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
         doNothing()
                 .when(tableService)
@@ -583,7 +577,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
 
         /* test */
@@ -604,11 +598,9 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
-        doThrow(TableNotFoundException.class)
-                .when(metadataService)
-                .getTable(DATABASE_3_ID, TABLE_8_ID);
+        DATABASE_3_CACHE.setTables(List.of());
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
@@ -628,9 +620,8 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_CACHE);
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        DATABASE_3_CACHE.setTables(List.of(TABLE_8_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
 
         /* test */
@@ -652,9 +643,8 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_CACHE);
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        DATABASE_3_CACHE.setTables(List.of(TABLE_8_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
         doThrow(SQLException.class)
                 .when(tableService)
@@ -679,9 +669,8 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_CACHE);
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        DATABASE_3_CACHE.setTables(List.of(TABLE_8_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
 
         /* test */
@@ -700,9 +689,8 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_CACHE);
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        DATABASE_3_CACHE.setTables(List.of(TABLE_8_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
 
         /* test */
@@ -725,9 +713,8 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_CACHE);
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        DATABASE_3_CACHE.setTables(List.of(TABLE_8_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
 
         /* test */
@@ -751,9 +738,8 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_CACHE);
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        DATABASE_3_CACHE.setTables(List.of(TABLE_8_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
         doNothing()
                 .when(tableService)
@@ -782,7 +768,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
 
         /* test */
@@ -806,11 +792,9 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
-        doThrow(TableNotFoundException.class)
-                .when(metadataService)
-                .getTable(DATABASE_3_ID, TABLE_8_ID);
+        DATABASE_3_CACHE.setTables(List.of());
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
@@ -833,9 +817,8 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_CACHE);
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        DATABASE_3_CACHE.setTables(List.of(TABLE_8_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
 
         /* test */
@@ -860,9 +843,8 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_CACHE);
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        DATABASE_3_CACHE.setTables(List.of(TABLE_8_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
         doThrow(SQLException.class)
                 .when(tableService)
@@ -891,9 +873,8 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_CACHE);
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        DATABASE_3_CACHE.setTables(List.of(TABLE_8_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
         doNothing()
                 .when(tableService)
@@ -996,9 +977,8 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_CACHE);
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        DATABASE_3_CACHE.setTables(List.of(TABLE_8_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
 
         /* test */
@@ -1024,9 +1004,8 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_CACHE);
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        DATABASE_3_CACHE.setTables(List.of(TABLE_8_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
         doNothing()
                 .when(tableService)
@@ -1053,9 +1032,8 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_CACHE);
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        DATABASE_3_CACHE.setTables(List.of(TABLE_8_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
         doNothing()
                 .when(tableService)
@@ -1080,7 +1058,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
 
         /* test */
@@ -1100,11 +1078,9 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
-        doThrow(TableNotFoundException.class)
-                .when(metadataService)
-                .getTable(DATABASE_3_ID, TABLE_8_ID);
+        DATABASE_3_CACHE.setTables(List.of());
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
@@ -1123,9 +1099,8 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_CACHE);
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        DATABASE_3_CACHE.setTables(List.of(TABLE_8_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
 
         /* test */
@@ -1146,9 +1121,8 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_CACHE);
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        DATABASE_3_CACHE.setTables(List.of(TABLE_8_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
         doThrow(SQLException.class)
                 .when(tableService)
@@ -1173,9 +1147,8 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_CACHE);
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        DATABASE_3_CACHE.setTables(List.of(TABLE_8_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
         doNothing()
                 .when(tableService)
@@ -1200,9 +1173,8 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_CACHE);
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        DATABASE_3_CACHE.setTables(List.of(TABLE_8_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
 
         /* test */
@@ -1224,9 +1196,8 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_CACHE);
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        DATABASE_3_CACHE.setTables(List.of(TABLE_8_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
         doNothing()
                 .when(tableService)
@@ -1247,9 +1218,8 @@ public class TableEndpointUnitTest extends BaseTest {
             PaginationException, DatabaseNotFoundException {
 
         /* mock */
-        when(metadataService.getTable(DATABASE_2_ID, TABLE_5_ID))
-                .thenReturn(TABLE_5_CACHE);
-        when(metadataService.getDatabase(DATABASE_2_ID))
+        DATABASE_2_CACHE.setTables(List.of(TABLE_5_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_2_ID))
                 .thenReturn(DATABASE_2_CACHE);
         when(tableService.history(DATABASE_2_CACHE, TABLE_5_CACHE, null))
                 .thenReturn(List.of());
@@ -1265,9 +1235,8 @@ public class TableEndpointUnitTest extends BaseTest {
             MetadataServiceException, DatabaseNotFoundException {
 
         /* mock */
-        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_CACHE);
-        when(metadataService.getDatabase(DATABASE_1_ID))
+        DATABASE_1_CACHE.setTables(List.of(TABLE_1_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
 
         /* test */
@@ -1293,9 +1262,8 @@ public class TableEndpointUnitTest extends BaseTest {
             MetadataServiceException, DatabaseNotFoundException {
 
         /* mock */
-        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_CACHE);
-        when(metadataService.getDatabase(DATABASE_1_ID))
+        DATABASE_1_CACHE.setTables(List.of(TABLE_1_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
 
         /* test */
@@ -1311,9 +1279,8 @@ public class TableEndpointUnitTest extends BaseTest {
             DatabaseNotFoundException {
 
         /* mock */
-        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_CACHE);
-        when(metadataService.getDatabase(DATABASE_1_ID))
+        DATABASE_1_CACHE.setTables(List.of(TABLE_1_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
         when(tableService.history(DATABASE_1_CACHE, TABLE_1_CACHE, 10L))
                 .thenReturn(List.of());
@@ -1329,9 +1296,8 @@ public class TableEndpointUnitTest extends BaseTest {
             TableNotFoundException, MetadataServiceException, DatabaseNotFoundException {
 
         /* mock */
-        when(metadataService.getTable(DATABASE_2_ID, TABLE_5_ID))
-                .thenReturn(TABLE_5_CACHE);
-        when(metadataService.getDatabase(DATABASE_2_ID))
+        DATABASE_2_CACHE.setTables(List.of(TABLE_5_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_2_ID))
                 .thenReturn(DATABASE_2_CACHE);
         doThrow(SQLException.class)
                 .when(tableService)
@@ -1349,11 +1315,9 @@ public class TableEndpointUnitTest extends BaseTest {
             MetadataServiceException, DatabaseNotFoundException {
 
         /* mock */
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
-        doThrow(TableNotFoundException.class)
-                .when(metadataService)
-                .getTable(DATABASE_3_ID, TABLE_8_ID);
+        DATABASE_3_CACHE.setTables(List.of());
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
@@ -1370,9 +1334,8 @@ public class TableEndpointUnitTest extends BaseTest {
             SQLException, QueryMalformedException {
 
         /* mock */
-        when(metadataService.getTable(DATABASE_2_ID, TABLE_6_ID))
-                .thenReturn(TABLE_6_CACHE);
-        when(metadataService.getDatabase(DATABASE_2_ID))
+        DATABASE_2_CACHE.setTables(List.of(TABLE_6_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_2_ID))
                 .thenReturn(DATABASE_2_CACHE);
         when(tableService.inspect(DATABASE_2_CACHE, TABLE_6_CACHE.getInternalName()))
                 .thenReturn(TABLE_6_DTO);
@@ -1396,9 +1359,8 @@ public class TableEndpointUnitTest extends BaseTest {
             AnalyseDataTypesException, SQLException, QueryMalformedException {
 
         /* mock */
-        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_CACHE);
-        when(metadataService.getDatabase(DATABASE_1_ID))
+        DATABASE_1_CACHE.setTables(List.of(TABLE_1_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
         when(tableService.inspect(DATABASE_1_CACHE, TABLE_1_CACHE.getInternalName()))
                 .thenReturn(TABLE_1_DTO);
@@ -1418,9 +1380,8 @@ public class TableEndpointUnitTest extends BaseTest {
             MetadataServiceException, DatabaseNotFoundException {
 
         /* mock */
-        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_CACHE);
-        when(metadataService.getDatabase(DATABASE_1_ID))
+        DATABASE_1_CACHE.setTables(List.of(TABLE_1_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
 
         /* test */
@@ -1497,9 +1458,8 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_CACHE);
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        DATABASE_3_CACHE.setTables(List.of(TABLE_8_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
         doNothing()
                 .when(tableService)
@@ -1509,7 +1469,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .updateTableStatistics(DATABASE_3_ID, TABLE_8_ID, TOKEN_ACCESS_TOKEN);
 
         /* test */
-        final ResponseEntity<Void> response = tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+        final ResponseEntity<Void> response = tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, jwtPrincipal(USER_1_PRINCIPAL, USER_1_ID), TOKEN_ACCESS_TOKEN);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
     }
 
@@ -1524,14 +1484,14 @@ public class TableEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, USER_4_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+            tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, jwtPrincipal(USER_4_PRINCIPAL, USER_4_ID), TOKEN_ACCESS_TOKEN);
         });
     }
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"insert-table-data"})
     public void importDataset_tableNotFound_fails() throws TableNotFoundException, RemoteUnavailableException,
-            MetadataServiceException {
+            MetadataServiceException, DatabaseNotFoundException {
         final ImportDto request = ImportDto.builder()
                 .header(true)
                 .lineTermination("\\n")
@@ -1539,13 +1499,13 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        doThrow(TableNotFoundException.class)
-                .when(metadataService)
-                .getTable(DATABASE_3_ID, TABLE_8_ID);
+        DATABASE_3_CACHE.setTables(List.of());
+
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID)).thenReturn(DATABASE_3_CACHE);
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+            tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, jwtPrincipal(USER_3_PRINCIPAL, USER_3_ID), TOKEN_ACCESS_TOKEN);
         });
     }
 
@@ -1561,9 +1521,8 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_CACHE);
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        DATABASE_3_CACHE.setTables(List.of(TABLE_8_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
         doThrow(SQLException.class)
                 .when(tableService)
@@ -1571,7 +1530,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
-            tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+            tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, jwtPrincipal(USER_1_PRINCIPAL, USER_1_ID), TOKEN_ACCESS_TOKEN);
         });
     }
 
@@ -1587,9 +1546,8 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_CACHE);
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        DATABASE_3_CACHE.setTables(List.of(TABLE_8_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
         doThrow(SQLException.class)
                 .when(tableService)
@@ -1597,7 +1555,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+            tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, jwtPrincipal(USER_3_PRINCIPAL, USER_3_ID), TOKEN_ACCESS_TOKEN);
         });
     }
 
@@ -1612,14 +1570,13 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_CACHE);
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        DATABASE_3_CACHE.setTables(List.of(TABLE_8_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+            tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, jwtPrincipal(USER_3_PRINCIPAL, USER_3_ID), TOKEN_ACCESS_TOKEN);
         });
     }
 
@@ -1636,13 +1593,12 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_CACHE);
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        DATABASE_3_CACHE.setTables(List.of(TABLE_8_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
 
         /* test */
-        tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+        tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, jwtPrincipal(USER_1_PRINCIPAL, USER_1_ID), TOKEN_ACCESS_TOKEN);
     }
 
     @Test
@@ -1656,14 +1612,13 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_CACHE);
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        DATABASE_3_CACHE.setTables(List.of(TABLE_8_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+            tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, jwtPrincipal(USER_3_PRINCIPAL, USER_3_ID), TOKEN_ACCESS_TOKEN);
         });
     }
 
@@ -1680,13 +1635,12 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_CACHE);
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        DATABASE_3_CACHE.setTables(List.of(TABLE_8_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
 
         /* test */
-        tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+        tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, jwtPrincipal(USER_1_PRINCIPAL, USER_1_ID), TOKEN_ACCESS_TOKEN);
     }
 
     @Test
@@ -1702,13 +1656,12 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_CACHE);
-        when(metadataService.getDatabase(DATABASE_1_ID))
+        DATABASE_1_CACHE.setTables(List.of(TABLE_1_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
 
         /* test */
-        final ResponseEntity<Void> response = tableEndpoint.importDataset(DATABASE_1_ID, TABLE_1_ID, request, USER_3_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+        final ResponseEntity<Void> response = tableEndpoint.importDataset(DATABASE_1_ID, TABLE_1_ID, request, jwtPrincipal(USER_3_PRINCIPAL, USER_3_ID), TOKEN_ACCESS_TOKEN);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
     }
 
@@ -1723,14 +1676,13 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_CACHE);
-        when(metadataService.getDatabase(DATABASE_1_ID))
+        DATABASE_1_CACHE.setTables(List.of(TABLE_1_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.importDataset(DATABASE_1_ID, TABLE_1_ID, request, USER_2_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+            tableEndpoint.importDataset(DATABASE_1_ID, TABLE_1_ID, request, jwtPrincipal(USER_2_PRINCIPAL, USER_2_ID), TOKEN_ACCESS_TOKEN);
         });
     }
 
@@ -1747,13 +1699,12 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getTable(DATABASE_1_ID, TABLE_2_ID))
-                .thenReturn(TABLE_2_CACHE);
-        when(metadataService.getDatabase(DATABASE_1_ID))
+        DATABASE_1_CACHE.setTables(List.of(TABLE_2_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
 
         /* test */
-        tableEndpoint.importDataset(DATABASE_1_ID, TABLE_2_ID, request, USER_2_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+        tableEndpoint.importDataset(DATABASE_1_ID, TABLE_2_ID, request, jwtPrincipal(USER_2_PRINCIPAL, USER_2_ID), TOKEN_ACCESS_TOKEN);
     }
 
     @Test
@@ -1767,14 +1718,13 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_CACHE);
-        when(metadataService.getDatabase(DATABASE_1_ID))
+        DATABASE_1_CACHE.setTables(List.of(TABLE_1_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.importDataset(DATABASE_1_ID, TABLE_1_ID, request, USER_2_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+            tableEndpoint.importDataset(DATABASE_1_ID, TABLE_1_ID, request, jwtPrincipal(USER_2_PRINCIPAL, USER_2_ID), TOKEN_ACCESS_TOKEN);
         });
     }
 
@@ -1789,15 +1739,72 @@ public class TableEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getTable(DATABASE_1_ID, TABLE_2_ID))
-                .thenReturn(TABLE_2_CACHE);
-        when(metadataService.getDatabase(DATABASE_1_ID))
+        DATABASE_1_CACHE.setTables(List.of(TABLE_2_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.importDataset(DATABASE_1_ID, TABLE_2_ID, request, USER_1_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+            tableEndpoint.importDataset(DATABASE_1_ID, TABLE_2_ID, request, jwtPrincipal(USER_1_PRINCIPAL, USER_1_ID), TOKEN_ACCESS_TOKEN);
         });
+    }
+
+
+    static Stream<Arguments> blobOperations() {
+        return Stream.of(at.ac.tuwien.ifs.dbrepo.core.entity.cache.ColumnType.BLOB,
+                        at.ac.tuwien.ifs.dbrepo.core.entity.cache.ColumnType.TINYBLOB,
+                        at.ac.tuwien.ifs.dbrepo.core.entity.cache.ColumnType.MEDIUMBLOB,
+                        at.ac.tuwien.ifs.dbrepo.core.entity.cache.ColumnType.LONGBLOB)
+                .flatMap(type -> Stream.of("insert", "update", "update-key", "delete")
+                        .map(operation -> Arguments.of(type, operation)));
+    }
+
+    @ParameterizedTest
+    @MethodSource("blobOperations")
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data", "delete-table-data"})
+    void foreignBlobIsDeniedBeforeAnyWrite(at.ac.tuwien.ifs.dbrepo.core.entity.cache.ColumnType type,
+                                          String operation) throws Exception {
+        Table table = Table.builder().id(TABLE_8_ID).databaseId(DATABASE_3_ID)
+                .ownedBy(USER_1_USERNAME).isPublic(true).internalName("mfcc")
+                .columns(List.of(at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column.builder()
+                        .internalName("raw").columnType(type).build())).build();
+        DATABASE_3_CACHE.setTables(List.of(table));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID)).thenReturn(DATABASE_3_CACHE);
+        doThrow(new StorageNotFoundException("Upload not found")).when(storageService)
+                .requireUploadOwner("foreign.csv", USER_1_ID.toString());
+        var principal = jwtPrincipal(USER_1_PRINCIPAL, USER_1_ID);
+        var blob = java.util.Map.<String, Object>of("raw", "foreign.csv");
+        assertThrows(StorageNotFoundException.class, () -> {
+            switch (operation) {
+                case "insert" -> tableEndpoint.insertRawTuple(DATABASE_3_ID, TABLE_8_ID,
+                        TupleDto.builder().data(blob).build(), principal);
+                case "update" -> tableEndpoint.updateRawTuple(DATABASE_3_ID, TABLE_8_ID,
+                        TupleUpdateDto.builder().data(blob).keys(java.util.Map.of()).build(), principal);
+                case "update-key" -> tableEndpoint.updateRawTuple(DATABASE_3_ID, TABLE_8_ID,
+                        TupleUpdateDto.builder().data(java.util.Map.of()).keys(blob).build(), principal);
+                case "delete" -> tableEndpoint.deleteRawTuple(DATABASE_3_ID, TABLE_8_ID,
+                        TupleDeleteDto.builder().keys(blob).build(), principal);
+            }
+        });
+        verify(storageService).requireUploadOwner("foreign.csv", USER_1_ID.toString());
+        verifyNoInteractions(tableService);
+        verify(metadataServiceGateway).getDatabaseById(DATABASE_3_ID);
+        verifyNoMoreInteractions(metadataServiceGateway);
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data"})
+    void foreignCsvIsDeniedEvenForDatabaseWriter() throws Exception {
+        DATABASE_3_CACHE.setTables(List.of(TABLE_8_CACHE));
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID)).thenReturn(DATABASE_3_CACHE);
+        doThrow(new StorageNotFoundException("Upload not found")).when(storageService)
+                .requireUploadOwner("foreign.csv", USER_1_ID.toString());
+        assertThrows(StorageNotFoundException.class, () -> tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID,
+                ImportDto.builder().location("foreign.csv").header(true).separator(',').build(),
+                jwtPrincipal(USER_1_PRINCIPAL, USER_1_ID), TOKEN_ACCESS_TOKEN));
+        verifyNoInteractions(tableService);
+        verify(metadataServiceGateway).getDatabaseById(DATABASE_3_ID);
+        verifyNoMoreInteractions(metadataServiceGateway);
     }
 
 }

@@ -3,10 +3,12 @@ package at.ac.tuwien.ifs.dbrepo.endpoints;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.grafana.CreateDashboardResponseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.UserDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierStatusTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.container.Container;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
+import at.ac.tuwien.ifs.dbrepo.core.storage.UploadMetadata;
 import at.ac.tuwien.ifs.dbrepo.service.*;
 import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
 import io.micrometer.observation.annotation.Observed;
@@ -29,9 +31,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.UUID;
 
 @Slf4j
@@ -109,8 +115,39 @@ public class DatabaseEndpoint extends RestEndpoint {
         return ResponseEntity.status(HttpStatus.OK)
                 .headers(headers)
                 .body(databases.stream()
-                        .map(metadataMapper::databaseToDatabaseBriefDto)
+                        .map(database -> filterBrief(metadataMapper.databaseToDatabaseBriefDto(database), principal))
                         .toList());
+    }
+
+    @GetMapping("/batch")
+    @Transactional(readOnly = true)
+    @Observed(name = "dbrepo_database_batch")
+    @Operation(summary = "Find current database metadata in a batch",
+            description = "Accepts 1 to 100 database IDs. Duplicate IDs are read once; missing or inaccessible databases are omitted.")
+    public ResponseEntity<List<DatabaseDto>> findBatch(@RequestParam("id") List<UUID> ids, Principal principal) {
+        if (ids == null || ids.isEmpty() || ids.size() > 100 || ids.stream().anyMatch(Objects::isNull)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Provide 1 to 100 database IDs");
+        }
+        final List<DatabaseDto> result = new ArrayList<>();
+        for (UUID id : new LinkedHashSet<>(ids)) {
+            try {
+                result.add(findById(id, principal).getBody());
+            } catch (DatabaseNotFoundException | NotAllowedException ignored) {
+                // Use the same authorization as a single read without revealing excluded databases.
+            }
+        }
+        return ResponseEntity.ok(result);
+    }
+
+    private DatabaseBriefDto filterBrief(DatabaseBriefDto dto, Principal principal) {
+        if (!AuthUtil.isSystem(principal) && dto.getIdentifiers() != null) {
+            final String username = principal == null ? null : AuthUtil.getUsername(principal);
+            dto.setIdentifiers(dto.getIdentifiers().stream().filter(identifier ->
+                    IdentifierStatusTypeDto.PUBLISHED.equals(identifier.getStatus()) ||
+                            (IdentifierStatusTypeDto.DRAFT.equals(identifier.getStatus()) && username != null &&
+                                    username.equals(identifier.getOwnedBy()))).toList());
+        }
+        return dto;
     }
 
     @PostMapping
@@ -166,7 +203,7 @@ public class DatabaseEndpoint extends RestEndpoint {
         final CreateDashboardResponseDto dashboard = dashboardService.create(database);
         database.setDashboardUid(dashboard.getUid());
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(metadataMapper.databaseToDatabaseBriefDto(database));
+                .body(filterBrief(metadataMapper.databaseToDatabaseBriefDto(database), principal));
     }
 
     @PutMapping("/{databaseId}/metadata/table")
@@ -208,8 +245,8 @@ public class DatabaseEndpoint extends RestEndpoint {
             log.error("Failed to refresh database tables metadata: not owner");
             throw new NotAllowedException("Failed to refresh tables metadata: not owner");
         }
-        return ResponseEntity.ok(metadataMapper.databaseDtoToDatabaseBriefDto(metadataMapper.databaseToDatabaseDto(
-                databaseService.updateTableMetadata(database))));
+        return ResponseEntity.ok(filterBrief(metadataMapper.databaseDtoToDatabaseBriefDto(metadataMapper.databaseToDatabaseDto(
+                        databaseService.updateTableMetadata(database))), principal));
     }
 
     @PutMapping("/{databaseId}/metadata/view")
@@ -248,12 +285,12 @@ public class DatabaseEndpoint extends RestEndpoint {
             log.error("Failed to refresh database views metadata: not owner");
             throw new NotAllowedException("Failed to refresh database views metadata: not owner");
         }
-        return ResponseEntity.ok(metadataMapper.databaseDtoToDatabaseBriefDto(metadataMapper.databaseToDatabaseDto(
-                databaseService.updateViewMetadata(database))));
+        return ResponseEntity.ok(filterBrief(metadataMapper.databaseDtoToDatabaseBriefDto(metadataMapper.databaseToDatabaseDto(
+                        databaseService.updateViewMetadata(database))), principal));
     }
 
     @PutMapping("/{databaseId}/visibility")
-    @Transactional
+    @Transactional(rollbackFor = {DashboardServiceException.class, DashboardServiceConnectionException.class})
     @PreAuthorize("hasAuthority('modify-database-visibility')")
     @Observed(name = "dbrepo_database_visibility")
     @Operation(summary = "Update database visibility",
@@ -287,20 +324,23 @@ public class DatabaseEndpoint extends RestEndpoint {
             NotAllowedException, SearchServiceException, SearchServiceConnectionException, DashboardServiceException,
             DashboardServiceConnectionException {
         log.debug("endpoint modify database visibility, databaseId={}, data={}", databaseId, data);
-        final Database database = databaseService.findById(databaseId);
+        final Database database = databaseService.findForUpdateById(databaseId);
         if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to modify database visibility: not owner");
             throw new NotAllowedException("Failed to modify database visibility: not owner");
         }
+        if (data.getIsDashboardEnabled() && !data.getIsPublic() && !data.getIsSchemaPublic()) {
+            dashboardService.requireUser(database.getOwnedBy());
+        }
         final Database database1 = databaseService.modifyVisibility(database, data);
         dashboardService.update(database1);
         return ResponseEntity.accepted()
-                .body(metadataMapper.databaseDtoToDatabaseBriefDto(metadataMapper.databaseToDatabaseDto(
-                        databaseService.modifyVisibility(database, data))));
+                .body(filterBrief(metadataMapper.databaseDtoToDatabaseBriefDto(metadataMapper.databaseToDatabaseDto(
+                        database1)), principal));
     }
 
     @PutMapping("/{databaseId}/owner")
-    @Transactional
+    @Transactional(rollbackFor = {DashboardServiceException.class, DashboardServiceConnectionException.class})
     @PreAuthorize("hasAuthority('modify-database-owner')")
     @Observed(name = "dbrepo_database_transfer")
     @Operation(summary = "Update database owner",
@@ -332,16 +372,21 @@ public class DatabaseEndpoint extends RestEndpoint {
                                                      @Valid @RequestBody DatabaseTransferDto data,
                                                      Principal principal) throws NotAllowedException,
             DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
-            SearchServiceConnectionException {
+            SearchServiceConnectionException, DashboardServiceException, DashboardServiceConnectionException {
         log.debug("endpoint transfer database, databaseId={}, transferDto.username={}", databaseId, data.getUsername());
-        final Database database = databaseService.findById(databaseId);
+        final Database database = databaseService.findForUpdateById(databaseId);
         if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to transfer database: not owner");
             throw new NotAllowedException("Failed to transfer database: not owner");
         }
+        if (database.getIsDashboardEnabled() && !database.getIsPublic() && !database.getIsSchemaPublic()) {
+            dashboardService.requireUser(data.getUsername());
+        }
+        final Database updated = databaseService.modifyOwner(database, data.getUsername());
+        dashboardService.update(updated);
         return ResponseEntity.accepted()
-                .body(metadataMapper.databaseDtoToDatabaseBriefDto(metadataMapper.databaseToDatabaseDto(
-                        databaseService.modifyOwner(database, data.getUsername()))));
+                .body(filterBrief(metadataMapper.databaseDtoToDatabaseBriefDto(metadataMapper.databaseToDatabaseDto(
+                        updated)), principal));
     }
 
     @PutMapping("/{databaseId}/image")
@@ -379,18 +424,19 @@ public class DatabaseEndpoint extends RestEndpoint {
             DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException,
             StorageUnavailableException, StorageNotFoundException {
         log.debug("endpoint modify database image, databaseId={}, data.key={}", databaseId, data.getKey());
-        final Database database = databaseService.findById(databaseId);
+        final Database database = databaseService.findForUpdateById(databaseId);
         if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to update database image: not owner");
             throw new NotAllowedException("Failed to update database image: not owner");
         }
         byte[] image = null;
         if (data.getKey() != null) {
+            storageService.requireUploadOwner(data.getKey(), UploadMetadata.ownerId(principal));
             image = storageService.getBytes(data.getKey());
         }
         return ResponseEntity.accepted()
-                .body(metadataMapper.databaseDtoToDatabaseBriefDto(metadataMapper.databaseToDatabaseDto(
-                        databaseService.modifyImage(database, image))));
+                .body(filterBrief(metadataMapper.databaseDtoToDatabaseBriefDto(metadataMapper.databaseToDatabaseDto(
+                        databaseService.modifyImage(database, image))), principal));
     }
 
     @GetMapping("/{databaseId}/image")
@@ -442,6 +488,13 @@ public class DatabaseEndpoint extends RestEndpoint {
         log.debug("endpoint find database, databaseId={}", databaseId);
         final Database database = filterDatabase(databaseService.findById(databaseId), principal);
         final DatabaseDto dto = metadataMapper.databaseToDatabaseDto(database);
+        if (!AuthUtil.isSystem(principal)) {
+            final var columns = visibleColumns(database.getTables());
+            dto.getTables().forEach(table -> filterTableMetadata(table, columns, principal));
+            dto.getViews().forEach(view -> filterViewMetadata(view, principal));
+            dto.setIdentifiers(filterIdentifiers(dto.getIdentifiers(), principal));
+            dto.setSubsets(filterIdentifiers(dto.getSubsets(), principal));
+        }
         final HttpHeaders headers = new HttpHeaders();
         if (AuthUtil.isSystem(principal)) {
             log.trace("attach privileged credential information");

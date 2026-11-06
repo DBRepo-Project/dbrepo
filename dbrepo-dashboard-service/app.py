@@ -1,7 +1,7 @@
 import logging
 import os
 from dbrepo.api.dto import ApiError, Database
-from dbrepo.core.api.exceptions import DashboardNotFound
+from dbrepo.core.api.exceptions import DashboardAccessError
 from dbrepo.core.client.auth import User, AuthServiceClient
 from dbrepo.core.client.dashboard import DashboardServiceClient
 from flasgger import LazyJSONEncoder, Swagger, swag_from
@@ -14,6 +14,7 @@ from json import dumps
 from prometheus_flask_exporter import PrometheusMetrics
 from pydantic import ValidationError
 from typing import List, Any
+from requests import RequestException
 
 logging.addLevelName(level=logging.NOTSET, levelName='TRACE')
 logging.basicConfig(level=logging.DEBUG)
@@ -157,9 +158,6 @@ app.config["AUTH_SERVICE_CLIENT"] = os.getenv("AUTH_SERVICE_CLIENT", "dbrepo-cli
 app.config["AUTH_SERVICE_CLIENT_SECRET"] = os.getenv("AUTH_SERVICE_CLIENT_SECRET", "MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG")
 app.config["BASE_URL"] = os.getenv("BASE_URL", "http://localhost")
 app.config["JSON_DATASOURCE_NAME"] = os.getenv('JSON_DATASOURCE_NAME', 'dbrepojson0')
-app.config["JWT_ALGORITHM"] = "HS256"
-app.config["JWT_PUBKEY"] = '-----BEGIN PUBLIC KEY-----\n' + os.getenv("JWT_PUBKEY",
-                                                                      "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB") + '\n-----END PUBLIC KEY-----'
 app.config["READONLY_USERNAME"] = os.getenv('READONLY_USERNAME', 'user')
 app.config["READONLY_PASSWORD"] = os.getenv('READONLY_PASSWORD', 'user')
 app.config["SYSTEM_USERNAME"] = os.getenv('SYSTEM_USERNAME', 'admin')
@@ -173,12 +171,13 @@ headers = {'Content-Type': 'application/json'}
 def dashboard_client():
     return DashboardServiceClient(endpoint=os.getenv('DASHBOARD_UI_ENDPOINT', 'http://localhost:3000'),
                                   username=os.getenv('DASHBOARD_UI_USERNAME', 'admin'),
-                                  password=os.getenv('DASHBOARD_UI_PASSWORD', 'admin'))
+                                  password=os.getenv('DASHBOARD_UI_PASSWORD', 'admin'),
+                                  organization_id=int(os.getenv('DASHBOARD_ORG_ID', '1')))
 
 
 def auth_client():
     return AuthServiceClient(app.config["AUTH_SERVICE_ENDPOINT"], app.config["AUTH_SERVICE_CLIENT"],
-                             app.config["AUTH_SERVICE_CLIENT_SECRET"], app.config["JWT_PUBKEY"])
+                             app.config["AUTH_SERVICE_CLIENT_SECRET"])
 
 
 @token_auth.verify_token
@@ -208,24 +207,54 @@ def health():
     return dict({"status": "UP"}), 200
 
 
+@app.errorhandler(DashboardAccessError)
+def dashboard_access_error(error):
+    return Response(ApiError(status=HTTPStatus(error.status_code).phrase.upper(), message=str(error),
+                             code='error.dashboard.access').model_dump_json(), error.status_code, headers)
+
+
+@app.errorhandler(RequestException)
+@app.errorhandler(GrafanaClientError)
+def dashboard_backend_error(error):
+    logging.error('Dashboard backend request failed: %s', error)
+    return Response(ApiError(status='BAD_GATEWAY', message='Dashboard backend request failed',
+                             code='error.dashboard.connection').model_dump_json(), 502, headers)
+
+
+@app.route('/api/v1/dashboard/user/<string:username>', methods=['HEAD'], endpoint='check_dashboard_user')
+@swag_from("/app/ds-yml/check_dashboard_user.yml")
+@auth.login_required(role=['system'])
+def check_dashboard_user(username: str):
+    dashboard_client().require_user(username)
+    return Response(), 204, headers
+
+
 @app.route("/api/v1/dashboard", methods=["POST"], endpoint="create_dashboard")
 @metrics.gauge(name='dbrepo_create_dashboard', description='Time needed to create dashboard')
 @swag_from("/app/ds-yml/create_dashboard.yml")
 @auth.login_required(role=['system'])
 def create_dashboard():
+    if not isinstance(request.get_json(), dict):
+        return Response(ApiError(status='BAD_REQUEST', message='A dashboard object is required',
+                                 code='error.dashboard.malformed').model_dump_json(), 400, headers)
     for parameter in [param for param in ['is_public', 'is_schema_public', 'owner_username', 'database_name'] if
                       param not in request.json]:
         return Response(ApiError(status='BAD_REQUEST', message=f'Missing required parameter: {parameter}',
                                  code="error.dashboard.malformed").model_dump_json(), 400, headers)
 
-    is_public = bool(request.json['is_public'])
-    is_schema_public = bool(request.json['is_schema_public'])
+    if (any(type(request.json[key]) is not bool for key in ('is_public', 'is_schema_public')) or
+            any(not isinstance(request.json[key], str) or not request.json[key].strip()
+                for key in ('database_name', 'owner_username'))):
+        return Response(ApiError(status='BAD_REQUEST', message='Invalid dashboard parameters',
+                                 code='error.dashboard.malformed').model_dump_json(), 400, headers)
+    is_public = request.json['is_public']
+    is_schema_public = request.json['is_schema_public']
     owner_username = request.json['owner_username']
     logging.debug(f"endpoint create dashboard, is_public={is_public}, is_schema_public={is_schema_public}, "
                   f"owner_username={owner_username}")
     try:
-        db = dashboard_client().create(request.json['database_name'])
-        dashboard_client().update_anonymous_read_access(db['uid'], is_public, is_schema_public)
+        db = dashboard_client().create(request.json['database_name'], owner_username=owner_username,
+                                       is_public=is_public, is_schema_public=is_schema_public)
         return Response(dumps(db)), 201, headers
     except GrafanaClientError as e:
         logging.error(f"Failed to create dashboard: {e.response['message']}")
@@ -238,10 +267,12 @@ def create_dashboard():
 
 
 @app.route("/api/v1/dashboard/<string:uid>", methods=["PUT"], endpoint="update_dashboard")
+@app.route("/api/v1/dashboard/<string:uid>/content", methods=["PUT"],
+           defaults={'content_only': True}, endpoint="update_dashboard_content")
 @metrics.gauge(name='dbrepo_update_dashboard', description='Time needed to update dashboard')
 @swag_from("/app/ds-yml/update_dashboard.yml")
 @auth.login_required(role=['system'])
-def update_dashboard(uid: str):
+def update_dashboard(uid: str, content_only: bool = False):
     logging.debug(f'endpoint update dashboard, uid={uid}')
     try:
         database = Database.model_validate(request.json)
@@ -249,12 +280,13 @@ def update_dashboard(uid: str):
         logging.error(f'Model malformed: {str(e).strip()}')
         return Response(ApiError(status='BAD_REQUEST', message='Invalid database format',
                                  code='error.database.malformed').model_dump_json(), 400, headers)
-    try:
+    if database.dashboard_uid != uid:
+        return Response(ApiError(status='BAD_REQUEST', message='Dashboard UID does not match the path',
+                                 code='error.dashboard.malformed').model_dump_json(), 400, headers)
+    if content_only:
+        dashboard_client().update_content(database)
+    else:
         dashboard_client().update(database)
-    except DashboardNotFound:
-        return Response(ApiError(status='NOT_FOUND', message=f"Failed to update dashboard: not found",
-                                 code="error.dashboard.missing").model_dump_json(), 404, headers)
-    dashboard_client().update_anonymous_read_access(uid, database.is_public, database.is_schema_public)
     return Response(), 202, headers
 
 
@@ -263,7 +295,11 @@ def update_dashboard(uid: str):
 @metrics.gauge(name='dbrepo_update_dashboard_access', description='Time needed to update dashboard access')
 @swag_from("/app/ds-yml/update_dashboard_access.yml")
 @auth.login_required(role=['system'])
-def update_dashboard(uid: str, username: str):
+def update_dashboard_access(uid: str, username: str):
     logging.debug(f'endpoint update dashboard access, uid={uid}, username={username}')
-    # not implemented
+    data = request.get_json()
+    if not isinstance(data, dict) or not isinstance(data.get('permission'), str):
+        return Response(ApiError(status='BAD_REQUEST', message='A dashboard permission is required',
+                                 code='error.dashboard.malformed').model_dump_json(), 400, headers)
+    dashboard_client().update_access(uid, username, data['permission'])
     return Response(), 202, headers

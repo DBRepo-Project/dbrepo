@@ -52,8 +52,14 @@ jobs:
           IGNORE_VOLUMES=1 IGNORE_IMAGE=1 bash .scripts/check-service.sh dbrepo-storage-service-init
           IGNORE_IMAGE=1 bash .scripts/check-service.sh dbrepo-dashboard-service-init
           IGNORE_IMAGE=1 bash .scripts/check-service.sh dbrepo-ui
+      - uses: azure/setup-helm@v5
+        with:
+          version: v4.1.3
       - name: Check Grafana plugin pins
-        run: python3 .scripts/test-grafana-plugins.py
+        run: |
+          python3 .scripts/test-grafana-plugins.py
+          python3 -m pip install PyYAML
+          python3 .scripts/test-dashboard-config.py
 
   java-services:
     runs-on: ubuntu-latest
@@ -91,6 +97,13 @@ jobs:
           mkdir -p ~/.duckdb/extensions/$DUCKDB_VERSION/linux_amd64
           gunzip -rf ./dbrepo-data-service/lib
           mv ./dbrepo-data-service/lib/* ~/.duckdb/extensions/$DUCKDB_VERSION/linux_amd64
+      - uses: actions/setup-python@v6
+        if: matrix.name == 'data-service'
+        with:
+          python-version: '3.11'
+      - name: Install native dashboard test dependencies
+        if: matrix.name == 'data-service'
+        run: python3 -m pip install requests cryptography
       - name: Run tests
         run: mvn -f ${{ matrix.pom }} clean test verify
 
@@ -102,13 +115,13 @@ jobs:
         include:
           - name: python-lib
             install_cmd: PIPENV_PIPFILE=./lib/python/Pipfile pipenv install --dev --system --deploy
-            test_cmd: cd ./lib/python && coverage run --rcfile=.coveragerc -m pytest tests/test_unit_container.py tests/test_unit_messages.py tests/test_unit_image.py tests/test_unit_concept.py tests/test_unit_database.py tests/test_unit_identifier.py tests/test_unit_license.py tests/test_unit_query.py tests/test_unit_rest_client.py tests/test_unit_table.py tests/test_unit_user.py tests/test_unit_view.py tests/test_unit_unit.py && coverage report
+            test_cmd: cd ./lib/python && coverage run --rcfile=.coveragerc -m pytest tests/test_auth_signing_keys.py tests/test_unit_container.py tests/test_unit_messages.py tests/test_unit_image.py tests/test_unit_concept.py tests/test_unit_database.py tests/test_unit_identifier.py tests/test_unit_license.py tests/test_unit_query.py tests/test_unit_rest_client.py tests/test_unit_table.py tests/test_unit_user.py tests/test_unit_view.py tests/test_unit_unit.py && coverage report && python ../../.scripts/test-rotate-realm-keys.py
           - name: search-service
             install_cmd: PYTHON_LIB_VERSION=$(python3 -c "import tomllib; f=open('lib/python/pyproject.toml','rb'); print(tomllib.load(f)['project']['version'])") && cp ./lib/python/dist/dbrepo-$PYTHON_LIB_VERSION.tar.gz ./dbrepo-search-service/lib/dbrepo-$PYTHON_LIB_VERSION.tar.gz && PIPENV_PIPFILE=./dbrepo-search-service/Pipfile pipenv install --skip-lock --dev --system
-            test_cmd: mkdir -p "$PWD/.logs/search" && export LOG_PATH="$PWD/.logs/search" && cd ./dbrepo-search-service && coverage run --rcfile=.coveragerc -m pytest tests/test_app.py && coverage report
+            test_cmd: mkdir -p "$PWD/.logs/search" && export LOG_PATH="$PWD/.logs/search" && cd ./dbrepo-search-service && coverage run --rcfile=.coveragerc -m pytest tests/test_app.py tests/test_search_visibility.py tests/test_search_projections.py tests/test_current_search.py && coverage report
           - name: dashboard-service
             install_cmd: PYTHON_LIB_VERSION=$(python3 -c "import tomllib; f=open('lib/python/pyproject.toml','rb'); print(tomllib.load(f)['project']['version'])") && cp ./lib/python/dist/dbrepo-$PYTHON_LIB_VERSION.tar.gz ./dbrepo-dashboard-service/lib/dbrepo-$PYTHON_LIB_VERSION.tar.gz && PIPENV_PIPFILE=./dbrepo-dashboard-service/Pipfile pipenv install --skip-lock --dev --system
-            test_cmd: mkdir -p "$PWD/.logs/dashboard" && export LOG_PATH="$PWD/.logs/dashboard" && cd ./dbrepo-dashboard-service && coverage run --rcfile=.coveragerc -m pytest tests/test_integration_app.py && coverage report
+            test_cmd: mkdir -p "$PWD/.logs/dashboard" && export LOG_PATH="$PWD/.logs/dashboard" && cd ./dbrepo-dashboard-service && coverage run --rcfile=.coveragerc -m pytest tests integration && coverage report
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
@@ -124,6 +137,18 @@ jobs:
           python -m build --wheel ./lib/python
       - name: Install dependencies
         run: ${{ matrix.install_cmd }}
+      - name: Build dashboard setup image
+        if: matrix.name == 'dashboard-service'
+        run: |
+          rm ./dbrepo-dashboard-service/Pipfile.lock
+          PIPENV_PIPFILE=./dbrepo-dashboard-service/Pipfile pipenv lock
+          docker build -f dbrepo-dashboard-service/init.Dockerfile -t dbrepo-dashboard-setup-ci .
+      - name: Check installed wheel imports
+        if: matrix.name == 'python-lib'
+        run: |
+          python -m venv "$RUNNER_TEMP/dbrepo-wheel"
+          "$RUNNER_TEMP/dbrepo-wheel/bin/python" -m pip install ./lib/python/dist/*.whl
+          "$RUNNER_TEMP/dbrepo-wheel/bin/python" -c "from dbrepo.RestClient import RestClient; from dbrepo.MqttClient import MqttClient"
       - name: Run tests
         run: ${{ matrix.test_cmd }}
 
@@ -137,6 +162,7 @@ jobs:
       - name: Build UI
         run: |
           bun install --cwd ./dbrepo-ui
+          node --test ./dbrepo-ui/tests/search-results.test.mjs
           bun run --cwd ./dbrepo-ui build
       - name: Run UI smoke test
         run: |

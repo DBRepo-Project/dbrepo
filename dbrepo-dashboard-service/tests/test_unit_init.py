@@ -5,7 +5,7 @@ from dbrepo.api.dto import Database, Table, Constraints, Column, ColumnType, Con
     UserBrief, ContainerBrief, ImageBrief, DatabaseBrief
 from dbrepo.api.exceptions import NotExistsError
 
-from app import fetch_databases
+from init import fetch_databases
 
 req = Database(id="209acf92-5c9b-4633-ad99-113c86f6e948",
                name="Test",
@@ -62,7 +62,7 @@ class AppUnitTest(unittest.TestCase):
                      json=[DatabaseBrief(id='209acf92-5c9b-4633-ad99-113c86f6e948',
                                          name="Test",
                                          internal_name="test_tuw1",
-                                         owner_id="c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502",
+                                         owned_by="foo",
                                          is_public=True,
                                          is_schema_public=True,
                                          contact=UserBrief(id="c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502",
@@ -87,7 +87,7 @@ class AppUnitTest(unittest.TestCase):
                      json=[DatabaseBrief(id='209acf92-5c9b-4633-ad99-113c86f6e948',
                                          name="Test",
                                          internal_name="test_tuw1",
-                                         owner_id="c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502",
+                                         owned_by="foo",
                                          is_public=True,
                                          is_schema_public=True,
                                          contact=UserBrief(id="c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502",

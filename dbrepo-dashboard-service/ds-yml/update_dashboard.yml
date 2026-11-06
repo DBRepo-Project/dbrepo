@@ -1,8 +1,7 @@
 tags:
   - dashboard-endpoint
 summary: "Update dashboard"
-operationId: update_dashboard
-description: "Updates a dashboard in the Dashboard UI. Requires role `system`."
+description: "Synchronizes dashboard permissions and managed content. The /content route changes enabled managed content only. Requires role `system`."
 consumes:
   - "application/json"
 produces:
@@ -20,14 +19,20 @@ parameters:
     schema:
       type: object
 responses:
+  400:
+    description: Malformed request
+  502:
+    description: Dashboard backend request failed
   202:
     description: Updated dashboard successfully
     content:
       application/json:
         schema:
           type: object
+  409:
+    description: Dashboard is in an operator-managed folder
   404:
-    description: "Dashboard not found"
+    description: "Dashboard or required owner account not found"
     content:
       application/json:
         schema:

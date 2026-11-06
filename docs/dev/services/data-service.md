@@ -36,6 +36,13 @@ internally generates a view with the 64-character hash of the query. This view i
 The Data Service also uses [DuckDB](), a open-source column-oriented database for large-data analytics. It is used as
 in-memory data type analytics database to suggest data types from a (big) dataset using the larger-than-memory feature.
 
+CSV schema analysis reads one uploaded object at a time. Object paths are bound as
+values in both DuckDB queries, including names with apostrophes or Unicode.
+Analysis rejects `*`, `?`, and `[` because DuckDB treats them as file patterns.
+Pending legacy files with wildcard or bracket-class names must be uploaded again
+and analyzed using the returned opaque key. A closing bracket by itself remains
+a literal filename character. The upload ownership rules also apply to analysis.
+
 ## Caching
 
 The Data Service uses [Caffeine](https://github.com/ben-manes/caffeine), a caching solution that is used to temporarily

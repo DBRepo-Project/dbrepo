@@ -54,6 +54,7 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
         /* test */
         final Table response = metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID);
         assertEquals(TABLE_1_INTERNAL_NAME, response.getInternalName());
+        assertEquals(DATABASE_1_ID, response.getDatabaseId());
     }
 
     @Test
@@ -136,6 +137,13 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
         /* test */
         final Database response = metadataServiceGateway.getDatabaseById(DATABASE_1_ID);
         assertEquals(DATABASE_1_ID, response.getId());
+        final var view = response.getViews().stream().filter(item -> VIEW_1_ID.equals(item.getId())).findFirst().orElseThrow();
+        assertEquals(DATABASE_1_ID, view.getDatabaseId());
+        assertEquals(VIEW_1_QUERY, view.getQuery());
+        assertEquals(VIEW_1_INTERNAL_NAME, view.getInternalName());
+        final var table = response.getTables().stream().filter(item -> TABLE_1_ID.equals(item.getId())).findFirst().orElseThrow();
+        assertEquals(DATABASE_1_ID, table.getDatabaseId());
+        assertEquals(TABLE_1_INTERNAL_NAME, table.getInternalName());
     }
 
     @Test
@@ -330,8 +338,9 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
                         .body(VIEW_1_DTO));
 
         /* test */
-        final View response = metadataServiceGateway.getViewById(CONTAINER_1_ID, VIEW_1_ID);
+        final View response = metadataServiceGateway.getViewById(DATABASE_1_ID, VIEW_1_ID);
         assertEquals(VIEW_1_ID, response.getId());
+        assertEquals(DATABASE_1_ID, response.getDatabaseId());
     }
 
     @Test

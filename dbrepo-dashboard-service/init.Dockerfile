@@ -7,9 +7,9 @@ RUN apk add --no-cache \
     bash \
     jq
 
-COPY Pipfile Pipfile.lock ./
+COPY dbrepo-dashboard-service/Pipfile dbrepo-dashboard-service/Pipfile.lock ./
 
-COPY ./lib ./lib
+COPY dbrepo-dashboard-service/lib ./lib
 
 RUN pip install pipenv && \
     pipenv install gunicorn && \
@@ -24,6 +24,7 @@ RUN mkdir -p /var/log/app/service/dashboard && \
 
 USER 1001
 
-COPY --chown=1001 ./init.py ./init.py
+COPY --chown=1001 dbrepo-dashboard-service/init.py dbrepo-dashboard-service/provision.py ./
+COPY --chown=1001 dbrepo-dashboard-ui/dashboards/System ./system-dashboards
 
 ENTRYPOINT [ "python", "./init.py" ]

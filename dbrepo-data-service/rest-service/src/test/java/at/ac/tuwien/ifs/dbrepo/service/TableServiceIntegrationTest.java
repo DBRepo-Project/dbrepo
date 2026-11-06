@@ -216,6 +216,8 @@ public class TableServiceIntegrationTest extends BaseTest {
         final List<Map<String, byte[]>> result = MariaDbUtil.selectQueryByteArr(DATABASE_3_CACHE, "SELECT raw FROM mfcc WHERE raw IS NOT NULL", Set.of("raw"));
         assertNotNull(result.get(0).get("raw"));
         assertArrayEquals(Files.toByteArray(new File("src/test/resources/csv/keyboard.csv")), result.get(0).get("raw"));
+        org.mockito.Mockito.verify(storageService).getBytes("s3key");
+        org.mockito.Mockito.verifyNoMoreInteractions(storageService);
     }
 
     @Test

@@ -32,6 +32,10 @@ parameters:
           type: string
           example: "foobar"
 responses:
+  400:
+    description: Malformed request
+  502:
+    description: Dashboard backend request failed
   201:
     description: Created dashboard successfully
     content:

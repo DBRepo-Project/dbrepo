@@ -157,7 +157,8 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
     @Override
     @Timed(value = "dbrepo_data_find_subset", description = "Time spent finding a specific subset", histogram = true)
     public Subset findById(Database database, UUID queryId) throws QueryNotFoundException, SQLException {
-        final Optional<Subset> optional = subsetRepository.findById(queryId);
+        final Optional<Subset> optional = subsetRepository.findById(queryId)
+                .filter(subset -> database.getId().equals(subset.getDatabaseId()));
         if (optional.isPresent()) {
             log.trace("cache hit for subset: {}", queryId);
             return optional.get();
