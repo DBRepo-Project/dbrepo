@@ -144,6 +144,8 @@ def login(label, name):
     s = session()
     entry = s.get(PUBLIC + '/dashboard/d/native-return?forceLogin=true', timeout=20)
     assert urlsplit(entry.url).path == '/dashboard/login'
+    redirect_to = parse_qs(urlsplit(entry.url).query)['redirectTo'][0]
+    assert urlsplit(redirect_to).path == '/d/native-return'
     response = s.get(PUBLIC + '/dashboard/login/generic_oauth', timeout=20)
     assert urlsplit(response.url).path.startswith('/realms/dbrepo/'), urlsplit(response.url).path
     auth = parse_qs(urlsplit(response.url).query)
@@ -156,7 +158,14 @@ def login(label, name):
     info = s.get(PUBLIC + '/dashboard/api/user', timeout=20)
     identity = info.json() if info.status_code == 200 and 'login' in info.json() else None
     if identity:
-        assert urlsplit(response.url).path == '/dashboard/d/native-return'
+        assert urlsplit(response.url).path == '/dashboard/', urlsplit(response.url).path
+        # Grafana 11.6.16 app.ts restores the saved destination from browser sessionStorage.
+        # This HTTP fixture models that one navigation step after verifying the real login.
+        response = s.get(PUBLIC + '/dashboard' + redirect_to, timeout=20)
+        assert response.status_code == 200
+        assert urlsplit(response.url).path == '/dashboard/d/native-return', urlsplit(response.url).path
+        dashboard = s.get(PUBLIC + '/dashboard/api/dashboards/uid/native-return', timeout=20)
+        assert dashboard.status_code == 200 and dashboard.json()['dashboard']['uid'] == 'native-return'
     record('login', case=label, status=info.status_code, final_path=urlsplit(response.url).path,
            user={k: identity.get(k) for k in ['id', 'login', 'isGrafanaAdmin']} if identity else None,
            pkce_s256=True, exact_callback=True)

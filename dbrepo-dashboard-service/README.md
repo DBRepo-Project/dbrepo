@@ -59,6 +59,8 @@ Managed research dashboards must remain in the root folder. Moving one into a fo
 
 Account migration requires an operator to verify the Keycloak issuer and subject against the old Grafana numeric user ID, login and email. Matching names or addresses alone are insufficient. Pause permission changes and record the current authoritative DBRepo grants before proceeding.
 
+Keep a working Grafana server administrator throughout the migration. If the account being retired is the only server administrator or is configured as `DASHBOARD_UI_USERNAME`, first create and verify a separate trusted service administrator, update the Dashboard Service and setup credentials, and confirm that they can still manage Grafana. The default local Grafana administrator can share a login with the DBRepo administrator; its replacement OAuth identity is an ordinary user and does not inherit server-administrator privileges.
+
 1. Disable the verified old Grafana account and log out its active sessions using the native administrator APIs.
 2. Remove that numeric user's direct grants from the managed DBRepo dashboards. Preserve unrelated dashboards, team memberships and permission entries for separate review.
 3. Give the old account unique retired login and email values, keeping it disabled.

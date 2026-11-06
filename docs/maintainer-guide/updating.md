@@ -17,6 +17,8 @@ The update procedure is:
 
 Existing Grafana installations need the following maintenance sequence before normal traffic resumes. Keep public Grafana access and DBRepo permission, owner and visibility mutations paused. Back up the Grafana database as well as Metadata. Keep the automatic initializer stopped during preparation; on Helm, use `dashboardservice.setupJob.enabled=false` until the migration is ready.
 
+Preserve a working Grafana server administrator for setup and reconciliation. Before retiring the only server administrator or the account configured as `DASHBOARD_UI_USERNAME`, create and verify a separate trusted service administrator and update the backend credentials. The default Grafana administrator may share the DBRepo administrator's login, but a newly created OAuth identity is an ordinary user and cannot replace those service privileges.
+
 1. **Export before removing provisioning.** Use the new setup image against the existing Grafana instance. Set its Grafana administrator credentials and research organization, and supply the exact existing backend URLs. `DASHBOARD_LEGACY_DATA_ENDPOINT` identifies the old Infinity URL and defaults to `BASE_URL`; Helm installations use `DASHBOARD_METRICS_URL=http://metric-db-server`. With a protected writable export directory mounted into the setup container, run:
 
    ```sh
