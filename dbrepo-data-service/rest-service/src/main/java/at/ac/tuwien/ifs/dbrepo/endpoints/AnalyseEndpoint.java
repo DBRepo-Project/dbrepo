@@ -4,6 +4,8 @@ import at.ac.tuwien.ifs.dbrepo.core.api.analyse.SchemaAnalysisResultDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Image;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.service.AnalyseService;
+import at.ac.tuwien.ifs.dbrepo.service.StorageService;
+import at.ac.tuwien.ifs.dbrepo.core.storage.UploadMetadata;
 import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -18,6 +20,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
+import java.security.Principal;
 
 @Slf4j
 @RestController
@@ -26,11 +29,13 @@ import java.util.UUID;
 public class AnalyseEndpoint {
 
     private final AnalyseService analyseService;
+    private final StorageService storageService;
     private final MetadataService metadataService;
 
     @Autowired
-    public AnalyseEndpoint(AnalyseService analyseService, MetadataService metadataService) {
+    public AnalyseEndpoint(AnalyseService analyseService, MetadataService metadataService, StorageService storageService) {
         this.analyseService = analyseService;
+        this.storageService = storageService;
         this.metadataService = metadataService;
     }
 
@@ -56,11 +61,12 @@ public class AnalyseEndpoint {
                     content = {@Content}),
     })
     public ResponseEntity<SchemaAnalysisResultDto> analyseDatatypes(@PathVariable("imageId") UUID imageId,
-                                                                    @PathVariable("key") String key)
+                                                                    @PathVariable("key") String key, Principal principal)
             throws AnalyseDataTypesException, DatabaseUnavailableException, StorageNotFoundException,
             RemoteUnavailableException, MetadataServiceException, ImageNotFoundException,
-            ColumnNotFoundException, ImageInvalidException {
+            StorageUnavailableException, NotAllowedException, ColumnNotFoundException, ImageInvalidException {
         log.debug("endpoint analyse datatypes, imageId={}, key={}", imageId, key);
+        storageService.requireUploadOwner(key, UploadMetadata.ownerId(principal));
         final Image image = metadataService.getImage(imageId);
         return ResponseEntity.ok()
                 .body(analyseService.determineS3CsvDataTypes(image, key));

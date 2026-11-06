@@ -6,6 +6,8 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.StorageObjectExistsException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.StorageUnavailableException;
 import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
 import at.ac.tuwien.ifs.dbrepo.service.StorageService;
+import at.ac.tuwien.ifs.dbrepo.core.storage.UploadMetadata;
+import software.amazon.awssdk.core.exception.SdkException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +36,47 @@ public class StorageServiceS3Impl extends DataConnector implements StorageServic
     public StorageServiceS3Impl(S3Config s3Config, S3Client s3Client) {
         this.s3Config = s3Config;
         this.s3Client = s3Client;
+    }
+
+    @Override
+    public void requireUploadOwner(String key, String owner) throws StorageNotFoundException, StorageUnavailableException {
+        if (UploadMetadata.SYSTEM_OWNER.equals(owner)) {
+            return;
+        }
+        if (!UploadMetadata.isUploadKey(key) || owner == null) {
+            throw new StorageNotFoundException("Upload not found");
+        }
+        try {
+            final var object = s3Client.headObject(HeadObjectRequest.builder()
+                    .bucket(s3Config.getS3Bucket()).key(key).build());
+            if (!owner.equals(object.metadata().get(UploadMetadata.OWNER))) {
+                throw new StorageNotFoundException("Upload not found");
+            }
+        } catch (S3Exception exception) {
+            if (exception.statusCode() == 404) {
+                throw new StorageNotFoundException("Upload not found", exception);
+            }
+            throw new StorageUnavailableException("Upload metadata is unavailable", exception);
+        } catch (SdkException exception) {
+            throw new StorageUnavailableException("Upload metadata is unavailable", exception);
+        }
+    }
+
+    @Override
+    public String putUpload(String originalFilename, byte[] content, String owner) throws StorageUnavailableException {
+        final String key = UploadMetadata.newKey(originalFilename);
+        final var metadata = new HashMap<>(UploadMetadata.metadata(originalFilename, owner));
+        metadata.put(HASH_SHA256, DigestUtils.sha256Hex(content));
+        metadata.put(HASH_SHA1, DigestUtils.sha1Hex(content));
+        metadata.put(HASH_MD5, DigestUtils.md5Hex(content));
+        try {
+            s3Client.putObject(PutObjectRequest.builder().bucket(s3Config.getS3Bucket()).key(key)
+                    .metadata(metadata).overrideConfiguration(configuration -> configuration.putHeader("If-None-Match", "*"))
+                    .build(), RequestBody.fromBytes(content));
+            return key;
+        } catch (SdkException exception) {
+            throw new StorageUnavailableException("Upload could not be stored", exception);
+        }
     }
 
     @Override

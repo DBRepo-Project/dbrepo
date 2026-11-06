@@ -26,6 +26,7 @@ import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
 
+import static at.ac.tuwien.ifs.dbrepo.core.test.utils.EndpointUtils.jwtPrincipal;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -489,7 +490,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
         when(databaseService.modifyImage(eq(DATABASE_1), any(byte[].class))).thenReturn(DATABASE_1);
 
         /* test */
-        databaseEndpoint.modifyImage(DATABASE_1_ID, request, USER_1_PRINCIPAL);
+        databaseEndpoint.modifyImage(DATABASE_1_ID, request, jwtPrincipal(USER_1_PRINCIPAL, USER_1_ID));
     }
 
     @Test
@@ -510,7 +511,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
         when(databaseService.modifyImage(DATABASE_1, null)).thenReturn(DATABASE_1);
 
         /* test */
-        databaseEndpoint.modifyImage(DATABASE_1_ID, request, USER_1_PRINCIPAL);
+        databaseEndpoint.modifyImage(DATABASE_1_ID, request, jwtPrincipal(USER_1_PRINCIPAL, USER_1_ID));
     }
 
     @Test
@@ -869,6 +870,20 @@ public class DatabaseEndpointUnitTest extends BaseTest {
 
         /* test */
         return databaseEndpoint.findPreviewImage(databaseId);
+    }
+
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-database-image"})
+    void databaseOwnerCannotUseAnotherUploadAsImage() throws Exception {
+        when(databaseService.findById(DATABASE_1_ID)).thenReturn(DATABASE_1);
+        when(userService.findByUsername(USER_1_USERNAME)).thenReturn(USER_1_DTO);
+        doThrow(new StorageNotFoundException("Upload not found")).when(storageService)
+                .requireUploadOwner("foreign.csv", USER_1_ID.toString());
+        assertThrows(StorageNotFoundException.class, () -> databaseEndpoint.modifyImage(DATABASE_1_ID,
+                DatabaseModifyImageDto.builder().key("foreign.csv").build(), jwtPrincipal(USER_1_PRINCIPAL, USER_1_ID)));
+        verify(storageService, never()).getBytes(anyString());
+        verify(databaseService, never()).modifyImage(any(), any());
     }
 
 }

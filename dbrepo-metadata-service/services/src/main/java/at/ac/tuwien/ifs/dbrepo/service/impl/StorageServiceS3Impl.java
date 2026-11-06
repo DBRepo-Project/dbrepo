@@ -4,11 +4,14 @@ import at.ac.tuwien.ifs.dbrepo.config.S3Config;
 import at.ac.tuwien.ifs.dbrepo.core.exception.StorageNotFoundException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.StorageUnavailableException;
 import at.ac.tuwien.ifs.dbrepo.service.StorageService;
+import at.ac.tuwien.ifs.dbrepo.core.storage.UploadMetadata;
+import software.amazon.awssdk.core.exception.SdkException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
@@ -26,6 +29,30 @@ public class StorageServiceS3Impl implements StorageService {
     public StorageServiceS3Impl(S3Config s3Config, S3Client s3Client) {
         this.s3Config = s3Config;
         this.s3Client = s3Client;
+    }
+
+    @Override
+    public void requireUploadOwner(String key, String owner) throws StorageNotFoundException, StorageUnavailableException {
+        if (UploadMetadata.SYSTEM_OWNER.equals(owner)) {
+            return;
+        }
+        if (!UploadMetadata.isUploadKey(key) || owner == null) {
+            throw new StorageNotFoundException("Upload not found");
+        }
+        try {
+            final var object = s3Client.headObject(HeadObjectRequest.builder()
+                    .bucket(s3Config.getS3Bucket()).key(key).build());
+            if (!owner.equals(object.metadata().get(UploadMetadata.OWNER))) {
+                throw new StorageNotFoundException("Upload not found");
+            }
+        } catch (S3Exception exception) {
+            if (exception.statusCode() == 404) {
+                throw new StorageNotFoundException("Upload not found", exception);
+            }
+            throw new StorageUnavailableException("Upload metadata is unavailable", exception);
+        } catch (SdkException exception) {
+            throw new StorageUnavailableException("Upload metadata is unavailable", exception);
+        }
     }
 
     @Override

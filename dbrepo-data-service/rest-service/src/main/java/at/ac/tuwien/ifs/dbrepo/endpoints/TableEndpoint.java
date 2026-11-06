@@ -13,6 +13,9 @@ import at.ac.tuwien.ifs.dbrepo.service.DataService;
 import at.ac.tuwien.ifs.dbrepo.service.QueryResultStream;
 import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
 import at.ac.tuwien.ifs.dbrepo.service.TableService;
+import at.ac.tuwien.ifs.dbrepo.service.StorageService;
+import at.ac.tuwien.ifs.dbrepo.core.storage.UploadMetadata;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.ColumnType;
 import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
 import at.ac.tuwien.ifs.dbrepo.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
@@ -43,6 +46,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.EnumSet;
 
 @Slf4j
 @RestController
@@ -52,6 +56,7 @@ public class TableEndpoint {
 
     private final DataService dataService;
     private final TableService tableService;
+    private final StorageService storageService;
     private final MariaDbMapper mariaDbMapper;
     private final AnalyseService analyseService;
     private final MetadataService metadataService;
@@ -63,9 +68,10 @@ public class TableEndpoint {
     @Autowired
     public TableEndpoint(DataService dataService, TableService tableService,
                          MariaDbMapper mariaDbMapper, AnalyseService analyseService, MetadataService metadataService,
-                         EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway) {
+                         EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway, StorageService storageService) {
         this.dataService = dataService;
         this.tableService = tableService;
+        this.storageService = storageService;
         this.mariaDbMapper = mariaDbMapper;
         this.analyseService = analyseService;
         this.metadataService = metadataService;
@@ -376,6 +382,7 @@ public class TableEndpoint {
         final Table table = metadataService.getTable(databaseId, tableId);
         final Database database = metadataService.getDatabase(databaseId);
         endpointValidator.validateOnlyWriteAccess(database, table, principal);
+        validateUploadValues(table, data.getData(), principal);
         try {
             tableService.createTuple(database, table, data);
             return ResponseEntity.status(HttpStatus.CREATED)
@@ -420,6 +427,8 @@ public class TableEndpoint {
         final Table table = metadataService.getTable(databaseId, tableId);
         final Database database = metadataService.getDatabase(databaseId);
         endpointValidator.validateOnlyWriteAccess(database, table, principal);
+        validateUploadValues(table, data.getData(), principal);
+        validateUploadValues(table, data.getKeys(), principal);
         try {
             tableService.updateTuple(database, table, data);
             return ResponseEntity.status(HttpStatus.ACCEPTED)
@@ -464,6 +473,7 @@ public class TableEndpoint {
         final Table table = metadataService.getTable(databaseId, tableId);
         final Database database = metadataService.getDatabase(databaseId);
         endpointValidator.validateOnlyWriteAccess(database, table, principal);
+        validateUploadValues(table, data.getKeys(), principal);
         try {
             tableService.deleteTuple(database, table, data);
             return ResponseEntity.status(HttpStatus.ACCEPTED)
@@ -610,6 +620,7 @@ public class TableEndpoint {
         final Table table = metadataService.getTable(databaseId, tableId);
         final Database database = metadataService.getDatabase(databaseId);
         endpointValidator.validateOnlyWriteAccess(database, table, principal);
+        storageService.requireUploadOwner(data.getLocation(), UploadMetadata.ownerId(principal));
         if (data.getLineTermination() == null) {
             data.setLineTermination("\\r\\n");
             log.debug("line termination not present, default to {}", data.getLineTermination());
@@ -671,6 +682,18 @@ public class TableEndpoint {
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database", e);
+        }
+    }
+
+    private void validateUploadValues(Table table, Map<String, Object> values, Principal principal)
+            throws NotAllowedException, StorageNotFoundException, StorageUnavailableException {
+        final var blobTypes = EnumSet.of(ColumnType.BLOB, ColumnType.TINYBLOB,
+                ColumnType.MEDIUMBLOB, ColumnType.LONGBLOB);
+        for (var column : table.getColumns()) {
+            final Object value = values.get(column.getInternalName());
+            if (value != null && blobTypes.contains(column.getColumnType())) {
+                storageService.requireUploadOwner(String.valueOf(value), UploadMetadata.ownerId(principal));
+            }
         }
     }
 

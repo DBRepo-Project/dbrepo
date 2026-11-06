@@ -10,6 +10,8 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.service.AccessService;
 import at.ac.tuwien.ifs.dbrepo.service.AnalyseService;
+import at.ac.tuwien.ifs.dbrepo.service.StorageService;
+import at.ac.tuwien.ifs.dbrepo.core.storage.UploadMetadata;
 import at.ac.tuwien.ifs.dbrepo.service.DatabaseService;
 import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.sql.SQLException;
 import java.util.UUID;
+import java.security.Principal;
 
 @Slf4j
 @RestController
@@ -37,15 +40,17 @@ public class DatabaseEndpoint {
 
     private final AccessService accessService;
     private final AnalyseService analyseService;
+    private final StorageService storageService;
     private final MetadataMapper metadataMapper;
     private final DatabaseService databaseService;
     private final MetadataService metadataService;
 
     @Autowired
     public DatabaseEndpoint(AccessService accessService, AnalyseService analyseService, MetadataMapper metadataMapper,
-                            DatabaseService databaseService, MetadataService metadataService) {
+                            DatabaseService databaseService, MetadataService metadataService, StorageService storageService) {
         this.accessService = accessService;
         this.analyseService = analyseService;
+        this.storageService = storageService;
         this.metadataMapper = metadataMapper;
         this.databaseService = databaseService;
         this.metadataService = metadataService;
@@ -150,11 +155,12 @@ public class DatabaseEndpoint {
                     content = {@Content}),
     })
     public ResponseEntity<SchemaAnalysisResultDto> analyseDatatypes(@NotNull @PathVariable("databaseId") UUID databaseId,
-                                                                    @PathVariable("key") String key)
+                                                                    @PathVariable("key") String key, Principal principal)
             throws AnalyseDataTypesException, DatabaseUnavailableException, StorageNotFoundException,
             RemoteUnavailableException, MetadataServiceException, ImageInvalidException, DatabaseNotFoundException,
-            ColumnNotFoundException {
+            StorageUnavailableException, NotAllowedException, ColumnNotFoundException {
         log.debug("endpoint analyse datatypes, databaseId={}, key={}", databaseId, key);
+        storageService.requireUploadOwner(key, UploadMetadata.ownerId(principal));
         final Database database = metadataService.getDatabase(databaseId);
         return ResponseEntity.ok()
                 .body(analyseService.determineS3CsvDataTypes(database.getContainer().getImage(), key));
