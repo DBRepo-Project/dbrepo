@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import static at.ac.tuwien.ifs.dbrepo.core.test.utils.EndpointUtils.jwtPrincipal;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -43,6 +44,9 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class TableEndpointUnitTest extends BaseTest {
+
+    @MockitoBean
+    private at.ac.tuwien.ifs.dbrepo.service.StorageService storageService;
 
     @Autowired
     private TableEndpoint tableEndpoint;
@@ -1509,7 +1513,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .updateTableStatistics(DATABASE_3_ID, TABLE_8_ID, TOKEN_ACCESS_TOKEN);
 
         /* test */
-        final ResponseEntity<Void> response = tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+        final ResponseEntity<Void> response = tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, jwtPrincipal(USER_1_PRINCIPAL, USER_1_ID), TOKEN_ACCESS_TOKEN);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
     }
 
@@ -1524,7 +1528,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, USER_4_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+            tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, jwtPrincipal(USER_4_PRINCIPAL, USER_4_ID), TOKEN_ACCESS_TOKEN);
         });
     }
 
@@ -1545,7 +1549,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+            tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, jwtPrincipal(USER_3_PRINCIPAL, USER_3_ID), TOKEN_ACCESS_TOKEN);
         });
     }
 
@@ -1571,7 +1575,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
-            tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+            tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, jwtPrincipal(USER_1_PRINCIPAL, USER_1_ID), TOKEN_ACCESS_TOKEN);
         });
     }
 
@@ -1597,7 +1601,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+            tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, jwtPrincipal(USER_3_PRINCIPAL, USER_3_ID), TOKEN_ACCESS_TOKEN);
         });
     }
 
@@ -1619,7 +1623,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+            tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, jwtPrincipal(USER_3_PRINCIPAL, USER_3_ID), TOKEN_ACCESS_TOKEN);
         });
     }
 
@@ -1642,7 +1646,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(DATABASE_3_CACHE);
 
         /* test */
-        tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+        tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, jwtPrincipal(USER_1_PRINCIPAL, USER_1_ID), TOKEN_ACCESS_TOKEN);
     }
 
     @Test
@@ -1663,7 +1667,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+            tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, jwtPrincipal(USER_3_PRINCIPAL, USER_3_ID), TOKEN_ACCESS_TOKEN);
         });
     }
 
@@ -1686,7 +1690,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(DATABASE_3_CACHE);
 
         /* test */
-        tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+        tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, jwtPrincipal(USER_1_PRINCIPAL, USER_1_ID), TOKEN_ACCESS_TOKEN);
     }
 
     @Test
@@ -1708,7 +1712,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(DATABASE_1_CACHE);
 
         /* test */
-        final ResponseEntity<Void> response = tableEndpoint.importDataset(DATABASE_1_ID, TABLE_1_ID, request, USER_3_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+        final ResponseEntity<Void> response = tableEndpoint.importDataset(DATABASE_1_ID, TABLE_1_ID, request, jwtPrincipal(USER_3_PRINCIPAL, USER_3_ID), TOKEN_ACCESS_TOKEN);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
     }
 
@@ -1730,7 +1734,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.importDataset(DATABASE_1_ID, TABLE_1_ID, request, USER_2_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+            tableEndpoint.importDataset(DATABASE_1_ID, TABLE_1_ID, request, jwtPrincipal(USER_2_PRINCIPAL, USER_2_ID), TOKEN_ACCESS_TOKEN);
         });
     }
 
@@ -1753,7 +1757,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(DATABASE_1_CACHE);
 
         /* test */
-        tableEndpoint.importDataset(DATABASE_1_ID, TABLE_2_ID, request, USER_2_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+        tableEndpoint.importDataset(DATABASE_1_ID, TABLE_2_ID, request, jwtPrincipal(USER_2_PRINCIPAL, USER_2_ID), TOKEN_ACCESS_TOKEN);
     }
 
     @Test
@@ -1774,7 +1778,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.importDataset(DATABASE_1_ID, TABLE_1_ID, request, USER_2_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+            tableEndpoint.importDataset(DATABASE_1_ID, TABLE_1_ID, request, jwtPrincipal(USER_2_PRINCIPAL, USER_2_ID), TOKEN_ACCESS_TOKEN);
         });
     }
 
@@ -1796,8 +1800,62 @@ public class TableEndpointUnitTest extends BaseTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.importDataset(DATABASE_1_ID, TABLE_2_ID, request, USER_1_PRINCIPAL, TOKEN_ACCESS_TOKEN);
+            tableEndpoint.importDataset(DATABASE_1_ID, TABLE_2_ID, request, jwtPrincipal(USER_1_PRINCIPAL, USER_1_ID), TOKEN_ACCESS_TOKEN);
         });
+    }
+
+
+    static Stream<Arguments> blobOperations() {
+        return Stream.of(at.ac.tuwien.ifs.dbrepo.core.entity.cache.ColumnType.BLOB,
+                        at.ac.tuwien.ifs.dbrepo.core.entity.cache.ColumnType.TINYBLOB,
+                        at.ac.tuwien.ifs.dbrepo.core.entity.cache.ColumnType.MEDIUMBLOB,
+                        at.ac.tuwien.ifs.dbrepo.core.entity.cache.ColumnType.LONGBLOB)
+                .flatMap(type -> Stream.of("insert", "update", "update-key", "delete")
+                        .map(operation -> Arguments.of(type, operation)));
+    }
+
+    @ParameterizedTest
+    @MethodSource("blobOperations")
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data", "delete-table-data"})
+    void foreignBlobIsDeniedBeforeAnyWrite(at.ac.tuwien.ifs.dbrepo.core.entity.cache.ColumnType type,
+                                          String operation) throws Exception {
+        Table table = Table.builder().id(TABLE_8_ID).databaseId(DATABASE_3_ID)
+                .ownedBy(USER_1_USERNAME).isPublic(true).internalName("mfcc")
+                .columns(List.of(at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column.builder()
+                        .internalName("raw").columnType(type).build())).build();
+        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID)).thenReturn(table);
+        when(metadataService.getDatabase(DATABASE_3_ID)).thenReturn(DATABASE_3_CACHE);
+        doThrow(new StorageNotFoundException("Upload not found")).when(storageService)
+                .requireUploadOwner("foreign.csv", USER_1_ID.toString());
+        var principal = jwtPrincipal(USER_1_PRINCIPAL, USER_1_ID);
+        var blob = java.util.Map.<String, Object>of("raw", "foreign.csv");
+        assertThrows(StorageNotFoundException.class, () -> {
+            switch (operation) {
+                case "insert" -> tableEndpoint.insertRawTuple(DATABASE_3_ID, TABLE_8_ID,
+                        TupleDto.builder().data(blob).build(), principal);
+                case "update" -> tableEndpoint.updateRawTuple(DATABASE_3_ID, TABLE_8_ID,
+                        TupleUpdateDto.builder().data(blob).keys(java.util.Map.of()).build(), principal);
+                case "update-key" -> tableEndpoint.updateRawTuple(DATABASE_3_ID, TABLE_8_ID,
+                        TupleUpdateDto.builder().data(java.util.Map.of()).keys(blob).build(), principal);
+                case "delete" -> tableEndpoint.deleteRawTuple(DATABASE_3_ID, TABLE_8_ID,
+                        TupleDeleteDto.builder().keys(blob).build(), principal);
+            }
+        });
+        verify(storageService).requireUploadOwner("foreign.csv", USER_1_ID.toString());
+        verifyNoInteractions(tableService, metadataServiceGateway);
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data"})
+    void foreignCsvIsDeniedEvenForDatabaseWriter() throws Exception {
+        when(metadataService.getTable(DATABASE_3_ID, TABLE_8_ID)).thenReturn(TABLE_8_CACHE);
+        when(metadataService.getDatabase(DATABASE_3_ID)).thenReturn(DATABASE_3_CACHE);
+        doThrow(new StorageNotFoundException("Upload not found")).when(storageService)
+                .requireUploadOwner("foreign.csv", USER_1_ID.toString());
+        assertThrows(StorageNotFoundException.class, () -> tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID,
+                ImportDto.builder().location("foreign.csv").header(true).separator(',').build(),
+                jwtPrincipal(USER_1_PRINCIPAL, USER_1_ID), TOKEN_ACCESS_TOKEN));
+        verifyNoInteractions(tableService, metadataServiceGateway);
     }
 
 }

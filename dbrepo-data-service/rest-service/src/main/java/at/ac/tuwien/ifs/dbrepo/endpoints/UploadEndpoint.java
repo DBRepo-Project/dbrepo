@@ -1,6 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
-import at.ac.tuwien.ifs.dbrepo.core.exception.StorageObjectExistsException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.NotAllowedException;
+import at.ac.tuwien.ifs.dbrepo.core.storage.UploadMetadata;
 import at.ac.tuwien.ifs.dbrepo.core.exception.StorageUnavailableException;
 import at.ac.tuwien.ifs.dbrepo.service.StorageService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.security.Principal;
 
 @Slf4j
 @RestController
@@ -42,43 +44,28 @@ public class UploadEndpoint {
             security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
-                    headers = {@Header(name = "X-S3-Key", description = "The S3 filename", schema = @Schema(implementation = String.class), required = true),
+                    headers = {@Header(name = "X-S3-Key", description = "The opaque upload key", schema = @Schema(implementation = String.class), required = true),
                             @Header(name = "Access-Control-Expose-Headers", description = "Expose `X-S3-Key` custom header", schema = @Schema(implementation = String.class), required = true)},
                     description = "Uploaded the file",
                     content = {@Content}),
-            @ApiResponse(responseCode = "204",
-                    headers = {@Header(name = "X-S3-Key", description = "The S3 filename", schema = @Schema(implementation = String.class), required = true),
-                            @Header(name = "Access-Control-Expose-Headers", description = "Expose `X-S3-Key` custom header", schema = @Schema(implementation = String.class), required = true)},
-                    description = "File already present",
+            @ApiResponse(responseCode = "403",
+                    description = "Upload requires a valid authenticated identity",
                     content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Failed to establish connection with the storage service",
                     content = {@Content}),
     })
-    public ResponseEntity<Void> create(@NotNull @RequestParam("file") MultipartFile file)
-            throws StorageUnavailableException {
-        log.atDebug()
-                .setMessage("endpoint upload file")
-                .addKeyValue("file", file)
-                .log();
-        final String s3key = file.getOriginalFilename();
-        final HttpHeaders headers = new HttpHeaders();
-        headers.set("Access-Control-Expose-Headers", "X-S3-Key");
-        headers.set("X-S3-Key", s3key);
+    public ResponseEntity<Void> create(@NotNull @RequestParam("file") MultipartFile file, Principal principal)
+            throws StorageUnavailableException, NotAllowedException {
+        final String owner = UploadMetadata.ownerId(principal);
         try {
-            storageService.putObject(s3key, file.getBytes());
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .headers(headers)
-                    .build();
-        } catch (IOException e) {
-            log.error("Failed to establish connection to database: {}", e.getMessage());
-            throw new StorageUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
-        } catch (StorageObjectExistsException e) {
-            log.info("Object with key {} already exists, skip", s3key);
-            return ResponseEntity.noContent()
-                    .headers(headers)
-                    .build();
+            final String key = storageService.putUpload(file.getOriginalFilename(), file.getBytes(), owner);
+            final HttpHeaders headers = new HttpHeaders();
+            headers.set("Access-Control-Expose-Headers", "X-S3-Key");
+            headers.set("X-S3-Key", key);
+            return ResponseEntity.status(HttpStatus.CREATED).headers(headers).build();
+        } catch (IOException exception) {
+            throw new StorageUnavailableException("Upload content could not be read", exception);
         }
     }
-
 }

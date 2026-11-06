@@ -8,6 +8,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.container.Container;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
+import at.ac.tuwien.ifs.dbrepo.core.storage.UploadMetadata;
 import at.ac.tuwien.ifs.dbrepo.service.*;
 import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
 import io.micrometer.observation.annotation.Observed;
@@ -422,6 +423,7 @@ public class DatabaseEndpoint extends RestEndpoint {
         }
         byte[] image = null;
         if (data.getKey() != null) {
+            storageService.requireUploadOwner(data.getKey(), UploadMetadata.ownerId(principal));
             image = storageService.getBytes(data.getKey());
         }
         return ResponseEntity.accepted()

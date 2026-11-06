@@ -17,6 +17,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import static at.ac.tuwien.ifs.dbrepo.core.test.utils.EndpointUtils.jwtPrincipal;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
@@ -25,6 +26,9 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class AnalyseEndpointUnitTest extends BaseTest {
+
+    @MockitoBean
+    private at.ac.tuwien.ifs.dbrepo.service.StorageService storageService;
 
     @Autowired
     private AnalyseEndpoint analyseEndpoint;
@@ -39,7 +43,7 @@ public class AnalyseEndpointUnitTest extends BaseTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"analyse-datatypes"})
     public void create_succeeds() throws DatabaseUnavailableException, StorageNotFoundException,
             AnalyseDataTypesException, ColumnNotFoundException, ImageInvalidException, RemoteUnavailableException,
-            MetadataServiceException, ImageNotFoundException {
+            MetadataServiceException, ImageNotFoundException, StorageUnavailableException, NotAllowedException {
 
         /* mock */
         when(metadataService.getImage(IMAGE_1_ID))
@@ -48,7 +52,7 @@ public class AnalyseEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_1_SCHEMA_ANALYSIS_RESULT_DTO);
 
         /* test */
-        final ResponseEntity<SchemaAnalysisResultDto> response = analyseEndpoint.analyseDatatypes(IMAGE_1_ID, "s3key");
+        final ResponseEntity<SchemaAnalysisResultDto> response = analyseEndpoint.analyseDatatypes(IMAGE_1_ID, "s3key", jwtPrincipal(USER_1_PRINCIPAL, USER_1_ID));
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final SchemaAnalysisResultDto body = response.getBody();
         assertNotNull(body);
@@ -61,6 +65,17 @@ public class AnalyseEndpointUnitTest extends BaseTest {
         assertEquals(TABLE_1_SCHEMA_ANALYSIS_RESULT_DTO.getTimestampFormat(), body.getTimestampFormat());
         assertEquals(TABLE_1_SCHEMA_ANALYSIS_RESULT_DTO.getDateFormat(), body.getDateFormat());
         assertEquals(TABLE_1_SCHEMA_ANALYSIS_RESULT_DTO.getPrompt(), body.getPrompt());
+    }
+
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"analyse-datatypes"})
+    void foreignUploadIsDeniedBeforeAnalysis() throws Exception {
+        org.mockito.Mockito.doThrow(new StorageNotFoundException("Upload not found"))
+                .when(storageService).requireUploadOwner("foreign.csv", USER_1_ID.toString());
+        org.junit.jupiter.api.Assertions.assertThrows(StorageNotFoundException.class,
+                () -> analyseEndpoint.analyseDatatypes(IMAGE_1_ID, "foreign.csv", jwtPrincipal(USER_1_PRINCIPAL, USER_1_ID)));
+        org.mockito.Mockito.verifyNoInteractions(metadataService, analyseService);
     }
 
 }

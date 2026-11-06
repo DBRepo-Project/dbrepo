@@ -7,6 +7,9 @@ import java.io.InputStream;
 
 public interface StorageService {
 
+    /** Checks an uploaded object's owner before a caller-controlled key is consumed. */
+    void requireUploadOwner(String key, String owner) throws StorageNotFoundException, StorageUnavailableException;
+
     /**
      * Loads an object of a bucket from the Storage Service into an input stream.
      *

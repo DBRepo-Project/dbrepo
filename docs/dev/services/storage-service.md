@@ -31,6 +31,33 @@ created that holds uploads temporarily. It is recommended to delete the contents
 
 The S3 endpoint of the Storage Service is available on port `9000`.
 
+### User uploads
+
+`POST /api/v1/upload` returns `201` and an opaque `X-S3-Key` for every upload,
+including repeated uploads of the same filename or content. Clients must keep the
+returned key and pass it unchanged to import, schema analysis, BLOB tuple writes,
+or preview-image requests. The original filename is stored separately as UTF-8
+Base64 in S3 metadata; it is never used as an object path.
+
+An upload belongs to the authenticated account's canonical Keycloak subject UUID.
+Basic and Bearer authentication for the same account use the same owner. Changing
+a username does not transfer uploads. Ordinary callers can consume their own
+uploads; database ownership or a write grant does not grant access to another
+account's upload. The existing trusted system identity retains internal access.
+Missing objects, foreign uploads, and old uploads without ownership metadata
+return `404`. Existing pending uploads must be uploaded again after upgrading;
+this change does not delete or rewrite stored objects or imported database data.
+
+Keys consist of a server-generated UUID and a fixed reader suffix. CSV is the
+default, including filenames without an extension; TSV and recognized compression
+suffixes are retained for the existing CSV readers. The suffix does not validate
+content or add reader support for a compression format. Raw BLOB and image reads
+preserve the original bytes.
+
+Upgrade Data and Metadata together to apply the same ownership checks at all
+upload consumers. During the upgrade, pause uploads and their consumption until
+both services are updated.
+
 ### Filer UI
 
 The storage service comes with a simple UI that can be used to explore the uploaded files, rename them and delete them.
