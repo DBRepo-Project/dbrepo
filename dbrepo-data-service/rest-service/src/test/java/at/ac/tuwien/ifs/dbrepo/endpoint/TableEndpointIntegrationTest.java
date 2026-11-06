@@ -90,9 +90,7 @@ public class TableEndpointIntegrationTest extends BaseTest {
     public void getData_succeeds() throws Exception {
 
         /* mock */
-        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_CACHE);
-        when(metadataService.getDatabase(DATABASE_1_ID))
+        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
@@ -115,9 +113,7 @@ public class TableEndpointIntegrationTest extends BaseTest {
     public void getData_sortsByExplicitColumn() throws Exception {
 
         /* mock */
-        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_CACHE);
-        when(metadataService.getDatabase(DATABASE_1_ID))
+        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
@@ -140,9 +136,7 @@ public class TableEndpointIntegrationTest extends BaseTest {
     public void getData_csv_streamsResponse() throws Exception {
 
         /* mock */
-        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_CACHE);
-        when(metadataService.getDatabase(DATABASE_1_ID))
+        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
 
         /* test */

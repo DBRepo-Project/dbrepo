@@ -262,9 +262,9 @@ public class TableEndpoint {
             timestamp = Instant.now();
             log.debug("timestamp not set: default to {}", timestamp);
         }
-        final Table table = metadataService.getTable(databaseId, tableId);
-        final Database database = metadataService.getDatabase(databaseId);
-        if (!table.getIsPublic()) {
+        final Database database = metadataServiceGateway.getDatabaseById(databaseId);
+        final Table table = currentTable(database, databaseId, tableId);
+        if (!Boolean.TRUE.equals(table.getIsPublic())) {
             if (principal == null) {
                 log.error("Failed find table data: authentication required");
                 throw new NotAllowedException("Failed to find table data: authentication required");
@@ -666,9 +666,9 @@ public class TableEndpoint {
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             MetadataServiceException, TableMalformedException, DatabaseNotFoundException, NotAllowedException {
         log.debug("endpoint generate table statistic, databaseId={}, tableId={}", databaseId, tableId);
-        final Table table = metadataService.getTable(databaseId, tableId);
-        final Database database = metadataService.getDatabase(databaseId);
-        if (!table.getIsPublic()) {
+        final Database database = metadataServiceGateway.getDatabaseById(databaseId);
+        final Table table = currentTable(database, databaseId, tableId);
+        if (!Boolean.TRUE.equals(table.getIsPublic())) {
             if (principal == null) {
                 log.error("Failed to get statistic from table: unauthorized");
                 throw new NotAllowedException("Failed to get statistic from table: unauthorized");
@@ -695,6 +695,16 @@ public class TableEndpoint {
                 storageService.requireUploadOwner(String.valueOf(value), UploadMetadata.ownerId(principal));
             }
         }
+    }
+
+    private Table currentTable(Database database, UUID databaseId, UUID tableId) throws TableNotFoundException {
+        if (!databaseId.equals(database.getId()) || database.getTables() == null) {
+            throw new TableNotFoundException("Failed to find table in database");
+        }
+        return database.getTables().stream()
+                .filter(table -> tableId.equals(table.getId()) && databaseId.equals(table.getDatabaseId()))
+                .findFirst()
+                .orElseThrow(() -> new TableNotFoundException("Failed to find table in database"));
     }
 
 }
