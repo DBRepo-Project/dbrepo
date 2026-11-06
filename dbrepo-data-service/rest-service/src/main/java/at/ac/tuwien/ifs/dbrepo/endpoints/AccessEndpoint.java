@@ -6,6 +6,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.service.AccessService;
 import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
+import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -31,11 +32,13 @@ public class AccessEndpoint {
 
     private final AccessService accessService;
     private final MetadataService metadataService;
+    private final MetadataServiceGateway metadataServiceGateway;
 
     @Autowired
-    public AccessEndpoint(AccessService accessService, MetadataService metadataService) {
+    public AccessEndpoint(AccessService accessService, MetadataService metadataService, MetadataServiceGateway metadataServiceGateway) {
         this.accessService = accessService;
         this.metadataService = metadataService;
+        this.metadataServiceGateway = metadataServiceGateway;
     }
 
     @PostMapping("/{username}")
@@ -69,7 +72,7 @@ public class AccessEndpoint {
             RemoteUnavailableException, UserNotFoundException, DatabaseMalformedException, MetadataServiceException,
             AccessNotFoundException {
         log.debug("endpoint give access to database, databaseId={}, username={}", databaseId, username);
-        final Database database = metadataService.getDatabase(databaseId);
+        final Database database = metadataServiceGateway.getDatabaseById(databaseId);
         final User user = metadataService.getUser(username);
         if (database.getAccesses().stream().anyMatch(a -> a.getUsername().equals(username))) {
             log.error("Failed to create access to user {}: already has access", username);
@@ -116,7 +119,7 @@ public class AccessEndpoint {
             MetadataServiceException, AccessNotFoundException {
         log.debug("endpoint modify access to database, databaseId={}, username={}, access.type={}", databaseId, username,
                 access.getType());
-        final Database database = metadataService.getDatabase(databaseId);
+        final Database database = metadataServiceGateway.getDatabaseById(databaseId);
         final User user = metadataService.getUser(username);
         if (database.getAccesses().stream().noneMatch(a -> a.getUsername().equals(username))) {
             log.error("Failed to update access to user {}: no access", username);
@@ -161,7 +164,7 @@ public class AccessEndpoint {
             DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException, DatabaseMalformedException,
             MetadataServiceException, AccessNotFoundException {
         log.debug("endpoint revoke access to database, databaseId={}, username={}", databaseId, username);
-        final Database database = metadataService.getDatabase(databaseId);
+        final Database database = metadataServiceGateway.getDatabaseById(databaseId);
         final User user = metadataService.getUser(username);
         if (database.getAccesses().stream().noneMatch(a -> a.getUsername().equals(username))) {
             log.error("Failed to delete access to user {}: no access", username);
