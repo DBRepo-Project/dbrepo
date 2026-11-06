@@ -20,6 +20,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -34,12 +36,16 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
 @SpringBootTest
@@ -170,4 +176,35 @@ public class AnalyseServiceIntegrationTest extends BaseTest {
         final SchemaAnalysisResultDto response = analyseService.determineS3CsvDataTypes(IMAGE_1_CACHE, "weather_aus.csv");
     }
 
+
+    @TempDir
+    private Path scratch;
+
+    @ParameterizedTest
+    @ValueSource(strings = {"normal.csv", "O'Brien.csv", "Österreich_日本語.csv", "report].csv",
+            "report'); SELECT 42; --.csv"})
+    void literalObjectNamesPreserveDialectAndSchema(String key) throws Exception {
+        final byte[] csv = "id;city\n1;\"Wien\"\n2;\"Graz\"\n".getBytes(StandardCharsets.UTF_8);
+        s3Client.putObject(PutObjectRequest.builder().key(key).bucket(s3Config.getS3Bucket()).build(),
+                RequestBody.fromBytes(csv));
+
+        final SchemaAnalysisResultDto result = analyseService.determineS3CsvDataTypes(IMAGE_1_CACHE, key);
+
+        assertEquals(";", result.getDelimiter());
+        assertTrue(result.getHasHeader());
+        assertEquals(0, result.getSkipRows());
+        assertEquals(List.of("id", "city"), result.getColumns().stream().map(ColumnAnalysisResultDto::getName).toList());
+        assertEquals(List.of(ColumnTypeDto.BIGINT, ColumnTypeDto.VARCHAR),
+                result.getColumns().stream().map(ColumnAnalysisResultDto::getDatatype).toList());
+    }
+
+    @Test
+    void expressionCannotRedirectAnalysisToLocalFile() throws Exception {
+        final Path marker = scratch.resolve("marker.csv");
+        Files.writeString(marker, "audit_only_marker\n42\n");
+        final String key = "x'.replace('s3://" + s3Config.getS3Bucket() + "/x', '" + marker + "') || '";
+
+        assertThrows(StorageNotFoundException.class, () -> analyseService.determineS3CsvDataTypes(IMAGE_1_CACHE, key));
+        assertEquals("audit_only_marker\n42\n", Files.readString(marker));
+    }
 }
