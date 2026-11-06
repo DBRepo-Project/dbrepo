@@ -81,10 +81,10 @@ class UploadOwnershipIntegrationTest extends BaseTest {
                 at.ac.tuwien.ifs.dbrepo.core.entity.cache.DatabaseAccess.builder().username(USER_1_USERNAME)
                         .type(at.ac.tuwien.ifs.dbrepo.core.entity.cache.AccessType.WRITE_ALL).build(),
                 DATABASE_1_USER_3_WRITE_ALL_ACCESS_CACHE));
-        when(metadata.getDatabase(DATABASE_1_ID)).thenReturn(DATABASE_1_CACHE);
-        when(metadata.getTable(DATABASE_1_ID, TABLE_1_ID)).thenReturn(TABLE_1_CACHE);
-        when(metadata.getDatabase(DATABASE_3_ID)).thenReturn(DATABASE_3_CACHE);
-        when(metadata.getTable(DATABASE_3_ID, TABLE_8_ID)).thenReturn(TABLE_8_CACHE);
+        when(gateway.getDatabaseById(DATABASE_1_ID)).thenReturn(DATABASE_1_CACHE);
+        DATABASE_1_CACHE.setTables(List.of(TABLE_1_CACHE));
+        when(gateway.getDatabaseById(DATABASE_3_ID)).thenReturn(DATABASE_3_CACHE);
+        DATABASE_3_CACHE.setTables(List.of(TABLE_8_CACHE));
         var dataTypes = new ArrayList<>(IMAGE_1_CACHE.getDataTypes());
         dataTypes.add(at.ac.tuwien.ifs.dbrepo.core.entity.cache.DataType.builder().value("double").build());
         IMAGE_1_CACHE.setDataTypes(dataTypes);
@@ -126,7 +126,8 @@ class UploadOwnershipIntegrationTest extends BaseTest {
         assertEquals("same.csv", new String(Base64.getDecoder().decode(stored.metadata().get(UploadMetadata.FILENAME)), StandardCharsets.UTF_8));
         assertThrows(StorageNotFoundException.class, () -> tables.importDataset(DATABASE_1_ID, TABLE_1_ID,
                 csv(firstKey), bob, "caller-token"));
-        verifyNoInteractions(gateway);
+        verify(gateway).getDatabaseById(DATABASE_1_ID);
+        verifyNoMoreInteractions(gateway);
         tables.importDataset(DATABASE_1_ID, TABLE_1_ID, csv(firstKey), alice, "caller-token");
         tables.importDataset(DATABASE_1_ID, TABLE_1_ID, csv(secondKey), bob, "caller-token");
         var rows = MariaDbUtil.selectQuery(DATABASE_1_CACHE, "SELECT location FROM weather_aus WHERE id IN (4,5) ORDER BY id", Set.of("location"));

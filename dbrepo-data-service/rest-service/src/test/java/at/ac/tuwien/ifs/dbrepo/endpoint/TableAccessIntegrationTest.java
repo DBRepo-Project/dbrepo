@@ -44,6 +44,8 @@ class TableAccessIntegrationTest extends BaseTest {
     @Autowired TableCacheRepository tables;
 
     @Autowired MetadataService metadata;
+    @org.springframework.test.context.bean.override.mockito.MockitoSpyBean
+    at.ac.tuwien.ifs.dbrepo.service.TableService tableService;
     private Database current;
 
     @BeforeEach
@@ -139,6 +141,64 @@ class TableAccessIntegrationTest extends BaseTest {
                 "application/json", new MockHttpServletRequest("HEAD", "/"), null);
         assertEquals("3", head.getHeaders().getFirst("X-Count"));
         assertTrue(endpoint.getStatistic(DATABASE_1_ID, TABLE_2_ID, null).getBody().toString().contains("mintemp"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"insert", "update", "delete", "import", "history"})
+    void revokedGrantCannotMutateOrReadHistoryWithWarmCache(String operation) throws Exception {
+        current.setAccesses(List.of(at.ac.tuwien.ifs.dbrepo.core.entity.cache.DatabaseAccess.builder()
+                .username(USER_2_USERNAME).type(at.ac.tuwien.ifs.dbrepo.core.entity.cache.AccessType.WRITE_ALL).build()));
+        warm();
+        current = snapshot(TABLE_2_CACHE, List.of());
+        clearInvocations(gateway, tableService);
+        var context = org.springframework.security.core.context.SecurityContextHolder.getContext();
+        context.setAuthentication((org.springframework.security.core.Authentication) USER_2_PRINCIPAL);
+        try {
+            assertThrows(NotAllowedException.class, () -> mutateOrHistory(operation));
+        } finally {
+            org.springframework.security.core.context.SecurityContextHolder.clearContext();
+        }
+        verify(gateway, times(1)).getDatabaseById(DATABASE_1_ID);
+        verifyNoMoreInteractions(gateway);
+        verifyNoInteractions(tableService);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"insert", "update", "delete", "import"})
+    void downgradedWriterCannotUseCachedTableOwnership(String operation) throws Exception {
+        current.setAccesses(List.of(at.ac.tuwien.ifs.dbrepo.core.entity.cache.DatabaseAccess.builder()
+                .username(USER_2_USERNAME).type(at.ac.tuwien.ifs.dbrepo.core.entity.cache.AccessType.WRITE_ALL).build()));
+        TABLE_2_CACHE.setOwnedBy(USER_2_USERNAME);
+        warm();
+        Table transferred = Table.builder().id(TABLE_2_ID).databaseId(DATABASE_1_ID).internalName(TABLE_2_INTERNAL_NAME)
+                .isPublic(false).ownedBy(USER_1_USERNAME).build();
+        current = snapshot(transferred, List.of(at.ac.tuwien.ifs.dbrepo.core.entity.cache.DatabaseAccess.builder()
+                .username(USER_2_USERNAME).type(at.ac.tuwien.ifs.dbrepo.core.entity.cache.AccessType.WRITE_OWN).build()));
+        clearInvocations(gateway, tableService);
+        org.springframework.security.core.context.SecurityContextHolder.getContext()
+                .setAuthentication((org.springframework.security.core.Authentication) USER_2_PRINCIPAL);
+        try {
+            assertThrows(NotAllowedException.class, () -> mutateOrHistory(operation));
+        } finally {
+            org.springframework.security.core.context.SecurityContextHolder.clearContext();
+        }
+        verify(gateway).getDatabaseById(DATABASE_1_ID);
+        verifyNoInteractions(tableService);
+    }
+
+    private void mutateOrHistory(String operation) throws Exception {
+        switch (operation) {
+            case "insert" -> endpoint.insertRawTuple(DATABASE_1_ID, TABLE_2_ID,
+                    at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleDto.builder().data(java.util.Map.of()).build(), USER_2_PRINCIPAL);
+            case "update" -> endpoint.updateRawTuple(DATABASE_1_ID, TABLE_2_ID,
+                    at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleUpdateDto.builder().build(), USER_2_PRINCIPAL);
+            case "delete" -> endpoint.deleteRawTuple(DATABASE_1_ID, TABLE_2_ID,
+                    at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleDeleteDto.builder().build(), USER_2_PRINCIPAL);
+            case "import" -> endpoint.importDataset(DATABASE_1_ID, TABLE_2_ID,
+                    at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto.builder().location("opaque.csv").build(), USER_2_PRINCIPAL, "Bearer synthetic");
+            case "history" -> endpoint.getHistory(DATABASE_1_ID, TABLE_2_ID, null, USER_2_PRINCIPAL);
+            default -> throw new IllegalArgumentException(operation);
+        }
     }
 
     private void warm() throws Exception {

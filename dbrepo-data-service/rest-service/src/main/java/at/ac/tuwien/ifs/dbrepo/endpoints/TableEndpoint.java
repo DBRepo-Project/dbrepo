@@ -379,8 +379,8 @@ public class TableEndpoint {
             TableMalformedException, QueryMalformedException, NotAllowedException, StorageUnavailableException,
             StorageNotFoundException, MetadataServiceException, DatabaseNotFoundException {
         log.debug("endpoint insert raw table data, databaseId={}, tableId={}", databaseId, tableId);
-        final Table table = metadataService.getTable(databaseId, tableId);
-        final Database database = metadataService.getDatabase(databaseId);
+        final Database database = metadataServiceGateway.getDatabaseById(databaseId);
+        final Table table = currentTable(database, databaseId, tableId);
         endpointValidator.validateOnlyWriteAccess(database, table, principal);
         validateUploadValues(table, data.getData(), principal);
         try {
@@ -424,8 +424,8 @@ public class TableEndpoint {
             DatabaseNotFoundException, StorageUnavailableException, StorageNotFoundException {
         log.debug("endpoint update raw table data, databaseId={}, tableId={}, data.keys={}", databaseId, tableId,
                 data.getKeys());
-        final Table table = metadataService.getTable(databaseId, tableId);
-        final Database database = metadataService.getDatabase(databaseId);
+        final Database database = metadataServiceGateway.getDatabaseById(databaseId);
+        final Table table = currentTable(database, databaseId, tableId);
         endpointValidator.validateOnlyWriteAccess(database, table, principal);
         validateUploadValues(table, data.getData(), principal);
         validateUploadValues(table, data.getKeys(), principal);
@@ -470,8 +470,8 @@ public class TableEndpoint {
             DatabaseNotFoundException, StorageUnavailableException, StorageNotFoundException {
         log.debug("endpoint delete raw table data, databaseId={}, tableId={}, data.keys={}", databaseId, tableId,
                 data.getKeys());
-        final Table table = metadataService.getTable(databaseId, tableId);
-        final Database database = metadataService.getDatabase(databaseId);
+        final Database database = metadataServiceGateway.getDatabaseById(databaseId);
+        final Table table = currentTable(database, databaseId, tableId);
         endpointValidator.validateOnlyWriteAccess(database, table, principal);
         validateUploadValues(table, data.getKeys(), principal);
         try {
@@ -522,9 +522,9 @@ public class TableEndpoint {
             log.debug("size not set: default to 100L");
             size = 100L;
         }
-        final Table table = metadataService.getTable(databaseId, tableId);
-        final Database database = metadataService.getDatabase(databaseId);
-        if (!table.getIsPublic()) {
+        final Database database = metadataServiceGateway.getDatabaseById(databaseId);
+        final Table table = currentTable(database, databaseId, tableId);
+        if (!Boolean.TRUE.equals(table.getIsPublic())) {
             if (principal == null) {
                 log.error("Failed to find table history: no authentication found");
                 throw new NotAllowedException("Failed to find table history: no authentication found");
@@ -617,8 +617,8 @@ public class TableEndpoint {
                 .addKeyValue("table_id", tableId)
                 .addKeyValue("data", data)
                 .log();
-        final Table table = metadataService.getTable(databaseId, tableId);
-        final Database database = metadataService.getDatabase(databaseId);
+        final Database database = metadataServiceGateway.getDatabaseById(databaseId);
+        final Table table = currentTable(database, databaseId, tableId);
         endpointValidator.validateOnlyWriteAccess(database, table, principal);
         storageService.requireUploadOwner(data.getLocation(), UploadMetadata.ownerId(principal));
         if (data.getLineTermination() == null) {
