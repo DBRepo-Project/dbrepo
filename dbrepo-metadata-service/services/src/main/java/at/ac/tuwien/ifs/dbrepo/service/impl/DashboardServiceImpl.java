@@ -2,6 +2,7 @@ package at.ac.tuwien.ifs.dbrepo.service.impl;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.grafana.CreateDashboardResponseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.grafana.PermissionTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DashboardServiceConnectionException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DashboardServiceException;
@@ -52,7 +53,8 @@ public class DashboardServiceImpl implements DashboardService {
     public void updateAccess(Database database, String username, AccessTypeDto access) throws DashboardServiceException,
             DashboardServiceConnectionException {
         dashboardServiceGateway.updateAccess(database.getDashboardUid(), username,
-                metadataMapper.accessTypeDtoToPermissionTypeDto(access));
+                database.getOwnedBy().equals(username) ? PermissionTypeDto.ADMIN :
+                        metadataMapper.accessTypeDtoToPermissionTypeDto(access));
     }
 
 }

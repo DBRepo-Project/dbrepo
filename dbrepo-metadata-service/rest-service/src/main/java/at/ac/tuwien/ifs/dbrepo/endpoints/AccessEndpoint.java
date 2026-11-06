@@ -98,8 +98,7 @@ public class AccessEndpoint extends RestEndpoint {
         }
         try {
             final DatabaseAccess existing = accessService.find(database, username);
-            if (database.getOwnedBy().equals(username) ||
-                    existing.getType() != metadataMapper.accessTypeDtoToAccessType(data.getType())) {
+            if (existing.getType() != metadataMapper.accessTypeDtoToAccessType(data.getType())) {
                 throw new NotAllowedException("Failed to create access to user " + username + ": already has access");
             }
             final UserRepresentation user = keycloakGateway.findByUsername(username);

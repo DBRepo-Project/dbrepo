@@ -352,3 +352,16 @@ def test_concurrent_targeted_grants_preserve_both_users(headers, grafana):
     with ThreadPoolExecutor(max_workers=2) as executor:
         assert list(executor.map(grant, members)) == [202, 202]
     assert all(effective(uid, member).status_code == 200 for member in members)
+
+
+def test_transferred_owner_access_retry_preserves_native_admin(headers, grafana):
+    old_owner, new_owner = user(), user()
+    with app.test_client() as client:
+        uid = create(client, headers, old_owner['login'])
+        body = database(uid, new_owner['login'])
+        assert client.put(f'/api/v1/dashboard/{uid}', headers=headers, json=body.model_dump()).status_code == 202
+        assert effective(uid, new_owner).json()['meta']['canAdmin'] is True
+        for _ in range(2):
+            assert access(client, headers, uid, new_owner['login'], 'Admin').status_code == 202
+            assert effective(uid, new_owner).json()['meta']['canAdmin'] is True
+        assert effective(uid, old_owner).status_code == 403

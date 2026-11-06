@@ -2,6 +2,9 @@ package at.ac.tuwien.ifs.dbrepo.endpoints;
 
 import at.ac.tuwien.ifs.dbrepo.cache.DatabaseCacheRepository;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.grafana.PermissionTypeDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.grafana.UpdateDashboardAccessDto;
+import org.mockito.ArgumentCaptor;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.AccessType;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.DatabaseAccess;
@@ -17,6 +20,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.MethodSource;
+import java.util.stream.Stream;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -103,6 +108,43 @@ class DashboardAccessPersistenceTest extends BaseTest {
         verify(dashboardHttp, times(2)).exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class));
     }
 
+    static Stream<Object[]> ownerGrants() {
+        return Stream.of(AccessTypeDto.READ, AccessTypeDto.WRITE_ALL).flatMap(type ->
+                Stream.of(false, true).map(failFirst -> new Object[]{type, failFirst}));
+    }
+
+    @ParameterizedTest
+    @MethodSource("ownerGrants")
+    void transferredOwnerSelfGrantKeepsAdminAndRetriesAfterCommittedFailure(AccessTypeDto type, boolean failFirst)
+            throws Exception {
+        databaseEndpoint.transfer(DATABASE_1_ID, DatabaseTransferDto.builder().username(USER_2_USERNAME).build(),
+                USER_1_PRINCIPAL);
+        assertEquals(0, memberGrants());
+        clearInvocations(dataGateway, searchGateway, dashboardHttp);
+        if (failFirst) {
+            when(dashboardHttp.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
+                    .thenThrow(HttpServerErrorException.create(HttpStatus.BAD_GATEWAY, "Synthetic outage",
+                            HttpHeaders.EMPTY, new byte[0], StandardCharsets.UTF_8))
+                    .thenReturn(ResponseEntity.accepted().build());
+        }
+        final CreateAccessDto request = CreateAccessDto.builder().type(type).build();
+        if (failFirst) {
+            assertThrows(DashboardServiceConnectionException.class, () ->
+                    accessEndpoint.create(DATABASE_1_ID, USER_2_USERNAME, request, USER_2_PRINCIPAL));
+            assertEquals(1, memberGrants());
+        }
+        assertEquals(HttpStatus.ACCEPTED, accessEndpoint.create(DATABASE_1_ID, USER_2_USERNAME,
+                request, USER_2_PRINCIPAL).getStatusCode());
+        assertEquals(1, memberGrants());
+        verify(dataGateway, times(1)).createAccess(DATABASE_1_ID, USER_2_USERNAME, type);
+        verify(searchGateway, times(1)).update(any(Database.class));
+        final ArgumentCaptor<HttpEntity> sent = ArgumentCaptor.forClass(HttpEntity.class);
+        verify(dashboardHttp, times(failFirst ? 2 : 1)).exchange(anyString(), eq(HttpMethod.PUT), sent.capture(), eq(Void.class));
+        for (HttpEntity<?> entity : sent.getAllValues()) {
+            assertEquals(PermissionTypeDto.ADMIN, ((UpdateDashboardAccessDto) entity.getBody()).getPermission());
+        }
+    }
+
     @Test
     void failedGrafanaRevokeCommitsDeletionAndRetryDoesNotRepeatSql() throws Exception {
         seedAccess(USER_2_USERNAME, AccessType.READ);
@@ -122,11 +164,12 @@ class DashboardAccessPersistenceTest extends BaseTest {
     }
 
     @Test
-    void sameTypeRetryCannotDowngradeOwnerOrProtectedSystem() throws Exception {
+    void ownerDifferentTypeAndProtectedSystemRetriesRemainRejected() throws Exception {
         seedAccess(USER_1_USERNAME, AccessType.WRITE_ALL);
         final CreateAccessDto request = CreateAccessDto.builder().type(AccessTypeDto.WRITE_ALL).build();
         assertThrows(NotAllowedException.class, () ->
-                accessEndpoint.create(DATABASE_1_ID, USER_1_USERNAME, request, USER_1_PRINCIPAL));
+                accessEndpoint.create(DATABASE_1_ID, USER_1_USERNAME,
+                        CreateAccessDto.builder().type(AccessTypeDto.READ).build(), USER_1_PRINCIPAL));
         seedAccess(USER_2_USERNAME, AccessType.WRITE_ALL);
         final UserRepresentation system = new UserRepresentation();
         system.setUsername(USER_2_USERNAME);
