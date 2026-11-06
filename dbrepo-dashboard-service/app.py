@@ -171,7 +171,8 @@ headers = {'Content-Type': 'application/json'}
 def dashboard_client():
     return DashboardServiceClient(endpoint=os.getenv('DASHBOARD_UI_ENDPOINT', 'http://localhost:3000'),
                                   username=os.getenv('DASHBOARD_UI_USERNAME', 'admin'),
-                                  password=os.getenv('DASHBOARD_UI_PASSWORD', 'admin'))
+                                  password=os.getenv('DASHBOARD_UI_PASSWORD', 'admin'),
+                                  organization_id=int(os.getenv('DASHBOARD_ORG_ID', '1')))
 
 
 def auth_client():

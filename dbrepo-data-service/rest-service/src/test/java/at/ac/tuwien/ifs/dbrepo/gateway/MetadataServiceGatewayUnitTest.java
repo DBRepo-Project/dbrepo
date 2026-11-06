@@ -137,6 +137,13 @@ public class MetadataServiceGatewayUnitTest extends BaseTest {
         /* test */
         final Database response = metadataServiceGateway.getDatabaseById(DATABASE_1_ID);
         assertEquals(DATABASE_1_ID, response.getId());
+        final var view = response.getViews().stream().filter(item -> VIEW_1_ID.equals(item.getId())).findFirst().orElseThrow();
+        assertEquals(DATABASE_1_ID, view.getDatabaseId());
+        assertEquals(VIEW_1_QUERY, view.getQuery());
+        assertEquals(VIEW_1_INTERNAL_NAME, view.getInternalName());
+        final var table = response.getTables().stream().filter(item -> TABLE_1_ID.equals(item.getId())).findFirst().orElseThrow();
+        assertEquals(DATABASE_1_ID, table.getDatabaseId());
+        assertEquals(TABLE_1_INTERNAL_NAME, table.getInternalName());
     }
 
     @Test

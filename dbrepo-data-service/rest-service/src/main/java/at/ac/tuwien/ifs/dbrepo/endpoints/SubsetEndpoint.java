@@ -103,7 +103,7 @@ public class SubsetEndpoint {
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
             QueryNotFoundException, NotAllowedException, MetadataServiceException, UserNotFoundException {
         log.debug("endpoint find subsets in database, databaseId={}, filterPersisted={}", databaseId, filterPersisted);
-        final Database database = metadataService.getDatabase(databaseId);
+        final Database database = metadataServiceGateway.getDatabaseById(databaseId);
         if (!database.getIsPublic()) {
             if (principal == null) {
                 log.error("Failed to list queries: no authentication found");
@@ -160,7 +160,7 @@ public class SubsetEndpoint {
             QueryNotFoundException, UserNotFoundException, MetadataServiceException, NotAllowedException {
         log.debug("endpoint find subset in database, databaseId={}, subsetId={}, timestamp={}", databaseId,
                 subsetId, timestamp);
-        final Database database = metadataService.getDatabase(databaseId);
+        final Database database = metadataServiceGateway.getDatabaseById(databaseId);
         if (!database.getIsPublic()) {
             if (principal == null) {
                 log.error("Failed to find query: no authentication found");
@@ -446,7 +446,7 @@ public class SubsetEndpoint {
             DatabaseUnavailableException, QueryNotFoundException, UserNotFoundException, MetadataServiceException {
         log.debug("endpoint persist query, databaseId={}, queryId={}, data.persist={}", databaseId, queryId,
                 data.getPersist());
-        final Database database = metadataService.getDatabase(databaseId);
+        final Database database = metadataServiceGateway.getDatabaseById(databaseId);
         if (!AuthUtil.isSystem(principal)) {
             endpointValidator.validateOnlyAccess(database, principal);
         }

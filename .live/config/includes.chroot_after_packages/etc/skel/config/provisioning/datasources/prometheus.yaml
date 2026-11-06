@@ -1,7 +1,3 @@
+# Datasources are managed by the one-shot dashboard setup.
 apiVersion: 1
-
-datasources:
-  - name: dbrepo-metrics
-    type: prometheus
-    uid: dbrepometrics0
-    url: http://metric-db:9090
+datasources: []

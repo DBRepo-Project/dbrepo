@@ -1,18 +1,3 @@
+# Datasources are managed by the one-shot dashboard setup.
 apiVersion: 1
-
-datasources:
-  - name: dbrepo-json
-    uid: dbrepojson0
-    type: yesoreyeram-infinity-datasource
-    basicAuth: true
-    basicAuthUser: $READONLY_USERNAME
-    url: $BASE_URL
-    jsonData:
-      tlsSkipVerify: true
-      auth_method: 'basicAuth'
-      httpHeaderName1: Accept
-      allowedHosts:
-        - $BASE_URL
-    secureJsonData:
-      basicAuthPassword: $READONLY_PASSWORD
-      httpHeaderValue1: application/json
+datasources: []

@@ -143,7 +143,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
             DatabaseNotFoundException, RemoteUnavailableException, MetadataServiceException, UserNotFoundException {
 
         /* mock */
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
         doThrow(SQLException.class)
                 .when(subsetService)
@@ -161,7 +161,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
             RemoteUnavailableException, MetadataServiceException {
 
         /* mock */
-        when(metadataService.getDatabase(DATABASE_1_ID))
+        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
 
         /* test */
@@ -177,7 +177,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
             QueryNotFoundException, MetadataServiceException {
 
         /* mock */
-        when(metadataService.getDatabase(DATABASE_1_ID))
+        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
         when(subsetService.findById(DATABASE_1_CACHE, QUERY_1_ID))
                 .thenReturn(QUERY_1_CACHE);
@@ -193,7 +193,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
             QueryNotFoundException, MetadataServiceException {
 
         /* mock */
-        when(metadataService.getDatabase(DATABASE_1_ID))
+        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
         when(subsetService.findById(DATABASE_1_CACHE, QUERY_1_ID))
                 .thenReturn(QUERY_1_CACHE);
@@ -209,7 +209,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
             QueryNotFoundException, MetadataServiceException {
 
         /* mock */
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
         when(subsetService.findById(DATABASE_3_CACHE, QUERY_5_ID))
                 .thenReturn(QUERY_5_CACHE);
@@ -225,7 +225,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
             QueryNotFoundException, SQLException, MetadataServiceException, NotAllowedException {
 
         /* mock */
-        when(metadataService.getDatabase(DATABASE_1_ID))
+        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
         when(subsetService.findById(DATABASE_1_CACHE, QUERY_1_ID))
                 .thenReturn(QUERY_5_CACHE);
@@ -241,7 +241,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
             NotAllowedException, QueryNotFoundException, SQLException {
 
         /* mock */
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
         when(subsetService.findById(DATABASE_3_CACHE, QUERY_5_ID))
                 .thenReturn(QUERY_5_CACHE);
@@ -257,7 +257,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
             DatabaseUnavailableException, NotAllowedException {
 
         /* mock */
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
         when(subsetService.findById(DATABASE_3_CACHE, QUERY_5_ID))
                 .thenReturn(QUERY_5_CACHE);
@@ -273,8 +273,8 @@ public class SubsetEndpointUnitTest extends BaseTest {
 
         /* mock */
         doThrow(DatabaseNotFoundException.class)
-                .when(metadataService)
-                .getDatabase(DATABASE_3_ID);
+                .when(metadataServiceGateway)
+                .getDatabaseById(DATABASE_3_ID);
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
@@ -289,7 +289,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
             QueryNotFoundException {
 
         /* mock */
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
         doThrow(SQLException.class)
                 .when(subsetService)
@@ -645,7 +645,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
         doNothing()
                 .when(subsetService)
@@ -691,7 +691,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
 
         /* test */
@@ -710,8 +710,8 @@ public class SubsetEndpointUnitTest extends BaseTest {
 
         /* mock */
         doThrow(DatabaseNotFoundException.class)
-                .when(metadataService)
-                .getDatabase(DATABASE_3_ID);
+                .when(metadataServiceGateway)
+                .getDatabaseById(DATABASE_3_ID);
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
@@ -728,7 +728,7 @@ public class SubsetEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(metadataService.getDatabase(DATABASE_3_ID))
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_CACHE);
         doThrow(SQLException.class)
                 .when(subsetService)
@@ -746,12 +746,12 @@ public class SubsetEndpointUnitTest extends BaseTest {
 
         /* mock */
         if (database != null) {
-            when(metadataService.getDatabase(databaseId))
+            when(metadataServiceGateway.getDatabaseById(databaseId))
                     .thenReturn(database);
         } else {
             doThrow(DatabaseNotFoundException.class)
-                    .when(metadataService)
-                    .getDatabase(databaseId);
+                    .when(metadataServiceGateway)
+                    .getDatabaseById(databaseId);
         }
 
         /* test */

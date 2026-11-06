@@ -262,9 +262,9 @@ public class TableEndpoint {
             timestamp = Instant.now();
             log.debug("timestamp not set: default to {}", timestamp);
         }
-        final Table table = metadataService.getTable(databaseId, tableId);
-        final Database database = metadataService.getDatabase(databaseId);
-        if (!table.getIsPublic()) {
+        final Database database = metadataServiceGateway.getDatabaseById(databaseId);
+        final Table table = currentTable(database, databaseId, tableId);
+        if (!Boolean.TRUE.equals(table.getIsPublic())) {
             if (principal == null) {
                 log.error("Failed find table data: authentication required");
                 throw new NotAllowedException("Failed to find table data: authentication required");
@@ -379,8 +379,8 @@ public class TableEndpoint {
             TableMalformedException, QueryMalformedException, NotAllowedException, StorageUnavailableException,
             StorageNotFoundException, MetadataServiceException, DatabaseNotFoundException {
         log.debug("endpoint insert raw table data, databaseId={}, tableId={}", databaseId, tableId);
-        final Table table = metadataService.getTable(databaseId, tableId);
-        final Database database = metadataService.getDatabase(databaseId);
+        final Database database = metadataServiceGateway.getDatabaseById(databaseId);
+        final Table table = currentTable(database, databaseId, tableId);
         endpointValidator.validateOnlyWriteAccess(database, table, principal);
         validateUploadValues(table, data.getData(), principal);
         try {
@@ -424,8 +424,8 @@ public class TableEndpoint {
             DatabaseNotFoundException, StorageUnavailableException, StorageNotFoundException {
         log.debug("endpoint update raw table data, databaseId={}, tableId={}, data.keys={}", databaseId, tableId,
                 data.getKeys());
-        final Table table = metadataService.getTable(databaseId, tableId);
-        final Database database = metadataService.getDatabase(databaseId);
+        final Database database = metadataServiceGateway.getDatabaseById(databaseId);
+        final Table table = currentTable(database, databaseId, tableId);
         endpointValidator.validateOnlyWriteAccess(database, table, principal);
         validateUploadValues(table, data.getData(), principal);
         validateUploadValues(table, data.getKeys(), principal);
@@ -470,8 +470,8 @@ public class TableEndpoint {
             DatabaseNotFoundException, StorageUnavailableException, StorageNotFoundException {
         log.debug("endpoint delete raw table data, databaseId={}, tableId={}, data.keys={}", databaseId, tableId,
                 data.getKeys());
-        final Table table = metadataService.getTable(databaseId, tableId);
-        final Database database = metadataService.getDatabase(databaseId);
+        final Database database = metadataServiceGateway.getDatabaseById(databaseId);
+        final Table table = currentTable(database, databaseId, tableId);
         endpointValidator.validateOnlyWriteAccess(database, table, principal);
         validateUploadValues(table, data.getKeys(), principal);
         try {
@@ -522,9 +522,9 @@ public class TableEndpoint {
             log.debug("size not set: default to 100L");
             size = 100L;
         }
-        final Table table = metadataService.getTable(databaseId, tableId);
-        final Database database = metadataService.getDatabase(databaseId);
-        if (!table.getIsPublic()) {
+        final Database database = metadataServiceGateway.getDatabaseById(databaseId);
+        final Table table = currentTable(database, databaseId, tableId);
+        if (!Boolean.TRUE.equals(table.getIsPublic())) {
             if (principal == null) {
                 log.error("Failed to find table history: no authentication found");
                 throw new NotAllowedException("Failed to find table history: no authentication found");
@@ -617,8 +617,8 @@ public class TableEndpoint {
                 .addKeyValue("table_id", tableId)
                 .addKeyValue("data", data)
                 .log();
-        final Table table = metadataService.getTable(databaseId, tableId);
-        final Database database = metadataService.getDatabase(databaseId);
+        final Database database = metadataServiceGateway.getDatabaseById(databaseId);
+        final Table table = currentTable(database, databaseId, tableId);
         endpointValidator.validateOnlyWriteAccess(database, table, principal);
         storageService.requireUploadOwner(data.getLocation(), UploadMetadata.ownerId(principal));
         if (data.getLineTermination() == null) {
@@ -666,9 +666,9 @@ public class TableEndpoint {
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             MetadataServiceException, TableMalformedException, DatabaseNotFoundException, NotAllowedException {
         log.debug("endpoint generate table statistic, databaseId={}, tableId={}", databaseId, tableId);
-        final Table table = metadataService.getTable(databaseId, tableId);
-        final Database database = metadataService.getDatabase(databaseId);
-        if (!table.getIsPublic()) {
+        final Database database = metadataServiceGateway.getDatabaseById(databaseId);
+        final Table table = currentTable(database, databaseId, tableId);
+        if (!Boolean.TRUE.equals(table.getIsPublic())) {
             if (principal == null) {
                 log.error("Failed to get statistic from table: unauthorized");
                 throw new NotAllowedException("Failed to get statistic from table: unauthorized");
@@ -695,6 +695,16 @@ public class TableEndpoint {
                 storageService.requireUploadOwner(String.valueOf(value), UploadMetadata.ownerId(principal));
             }
         }
+    }
+
+    private Table currentTable(Database database, UUID databaseId, UUID tableId) throws TableNotFoundException {
+        if (!databaseId.equals(database.getId()) || database.getTables() == null) {
+            throw new TableNotFoundException("Failed to find table in database");
+        }
+        return database.getTables().stream()
+                .filter(table -> tableId.equals(table.getId()) && databaseId.equals(table.getDatabaseId()))
+                .findFirst()
+                .orElseThrow(() -> new TableNotFoundException("Failed to find table in database"));
     }
 
 }

@@ -62,6 +62,37 @@ class SubsetAccessEndpointUnitTest extends BaseTest {
     }
 
     @ParameterizedTest
+    @ValueSource(strings = {"list", "find", "persist"})
+    void metadataOperationsRejectCurrentRevocationBeforeQueryStore(String operation) throws Exception {
+        when(cache.getDatabase(databaseId)).thenReturn(DATABASE_1_CACHE);
+        database.setIsPublic(false);
+        database.setAccesses(List.of());
+        assertThrows(NotAllowedException.class, () -> metadataOperation(operation));
+        verify(gateway).getDatabaseById(databaseId);
+        verifyNoInteractions(cache, subsets, data);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"list", "find", "persist"})
+    void metadataOperationsDoNotFallBackAfterMetadataFailure(String operation) throws Exception {
+        when(cache.getDatabase(databaseId)).thenReturn(DATABASE_1_CACHE);
+        when(gateway.getDatabaseById(databaseId)).thenThrow(new at.ac.tuwien.ifs.dbrepo.core.exception.RemoteUnavailableException("unavailable"));
+        assertThrows(at.ac.tuwien.ifs.dbrepo.core.exception.RemoteUnavailableException.class, () -> metadataOperation(operation));
+        verify(gateway).getDatabaseById(databaseId);
+        verifyNoInteractions(cache, subsets, data);
+    }
+
+    private void metadataOperation(String operation) throws Exception {
+        switch (operation) {
+            case "list" -> endpoint.list(databaseId, null, USER_2_PRINCIPAL);
+            case "find" -> endpoint.findById(databaseId, subsetId, null, USER_2_PRINCIPAL);
+            case "persist" -> endpoint.persist(databaseId, subsetId,
+                    at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryPersistDto.builder().persist(true).build(), USER_2_PRINCIPAL);
+            default -> throw new IllegalArgumentException(operation);
+        }
+    }
+
+    @ParameterizedTest
     @ValueSource(strings = {"table", "view", "tableJoin", "viewJoin", "unknown", "empty"})
     void createDeniesUnreadableSourcesBeforeStoring(String kind) throws Exception {
         UUID id = kind.startsWith("view") ? privateView.getId() : privateTable.getId();
