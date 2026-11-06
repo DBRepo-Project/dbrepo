@@ -196,6 +196,10 @@ public class AnalyseServiceIntegrationTest extends BaseTest {
         assertEquals(List.of("id", "city"), result.getColumns().stream().map(ColumnAnalysisResultDto::getName).toList());
         assertEquals(List.of(ColumnTypeDto.BIGINT, ColumnTypeDto.VARCHAR),
                 result.getColumns().stream().map(ColumnAnalysisResultDto::getDatatype).toList());
+        assertEquals(List.of(true, true),
+                result.getColumns().stream().map(ColumnAnalysisResultDto::getNullAllowed).toList());
+        assertEquals(List.of(false, false),
+                result.getColumns().stream().map(ColumnAnalysisResultDto::getPrimaryKey).toList());
     }
 
     @Test
