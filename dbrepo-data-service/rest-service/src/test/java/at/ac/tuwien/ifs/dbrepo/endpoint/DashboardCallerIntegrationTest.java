@@ -37,6 +37,10 @@ import static org.mockito.Mockito.*;
 @Import(DashboardCallerIntegrationTest.AuthorityFixture.class)
 @Testcontainers
 class DashboardCallerIntegrationTest extends BaseTest {
+    static {
+        // Spark/Hadoop can already own the JVM-wide URL factory in the shared test process.
+        org.apache.catalina.webresources.TomcatURLStreamHandlerFactory.disable();
+    }
     @Container static MariaDBContainer<?> maria = MariaDbContainerConfig.getContainer();
     @Container static RedisContainerConfig.CustomRedisContainer redis = RedisContainerConfig.getContainer();
     private static final int KEYCLOAK_PORT = freePort(), GATEWAY_PORT = freePort();

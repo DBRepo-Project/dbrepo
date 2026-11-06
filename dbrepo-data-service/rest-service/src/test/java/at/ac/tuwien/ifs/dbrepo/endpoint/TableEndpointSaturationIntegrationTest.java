@@ -77,11 +77,10 @@ public class TableEndpointSaturationIntegrationTest extends BaseTest {
     @Test
     public void getData_executorSaturated_closesConnection() throws Exception {
         TABLE_1_CACHE.setIsPublic(true);
+        DATABASE_1_CACHE.setTables(List.of(TABLE_1_CACHE));
 
         /* mock */
-        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_CACHE);
-        when(metadataService.getDatabase(DATABASE_1_ID))
+        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
         final long before = countConnections();
         final CountDownLatch release = new CountDownLatch(1);

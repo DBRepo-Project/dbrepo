@@ -139,7 +139,10 @@ jobs:
         run: ${{ matrix.install_cmd }}
       - name: Build dashboard setup image
         if: matrix.name == 'dashboard-service'
-        run: docker build -f dbrepo-dashboard-service/init.Dockerfile -t dbrepo-dashboard-setup-ci .
+        run: |
+          rm ./dbrepo-dashboard-service/Pipfile.lock
+          PIPENV_PIPFILE=./dbrepo-dashboard-service/Pipfile pipenv lock
+          docker build -f dbrepo-dashboard-service/init.Dockerfile -t dbrepo-dashboard-setup-ci .
       - name: Check installed wheel imports
         if: matrix.name == 'python-lib'
         run: |
