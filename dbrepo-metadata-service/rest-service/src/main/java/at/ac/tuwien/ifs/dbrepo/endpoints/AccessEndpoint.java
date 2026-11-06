@@ -91,19 +91,23 @@ public class AccessEndpoint extends RestEndpoint {
             DashboardServiceException, DashboardServiceConnectionException {
         log.debug("endpoint give access to database, databaseId={}, username={}, access.type={}", databaseId, username,
                 data.getType());
-        final Database database = databaseService.findById(databaseId);
+        final Database database = databaseService.findForUpdateById(databaseId);
         if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to create access: not owner");
             throw new NotAllowedException("Failed to create access: not owner");
         }
         try {
-            accessService.find(database, username);
-            log.error("Failed to create access to user {}: already has access", username);
-            throw new NotAllowedException("Failed to create access to user " + username + ": already has access");
+            final DatabaseAccess existing = accessService.find(database, username);
+            if (existing.getType() != metadataMapper.accessTypeDtoToAccessType(data.getType())) {
+                throw new NotAllowedException("Failed to create access to user " + username + ": already has access");
+            }
+            final UserRepresentation user = keycloakGateway.findByUsername(username);
+            if (user.getRealmRoles() != null && user.getRealmRoles().contains("system")) {
+                throw new NotAllowedException("Failed to create access to a protected system user: already has access");
+            }
         } catch (AccessNotFoundException e) {
-            /* ignore */
+            accessService.create(database, username, data.getType());
         }
-        accessService.create(database, username, data.getType());
         dashboardService.updateAccess(database, username, data.getType());
         return ResponseEntity.accepted()
                 .build();
@@ -144,7 +148,7 @@ public class AccessEndpoint extends RestEndpoint {
             DashboardServiceException, DashboardServiceConnectionException {
         log.debug("endpoint modify database access, databaseId={}, username={}, access.type={}", databaseId, username,
                 data.getType());
-        final Database database = databaseService.findById(databaseId);
+        final Database database = databaseService.findForUpdateById(databaseId);
         if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to update access: not owner");
             throw new NotAllowedException("Failed to update access: not owner");
@@ -230,7 +234,7 @@ public class AccessEndpoint extends RestEndpoint {
             DatabaseNotFoundException, AccessNotFoundException, SearchServiceException, DataServiceConnectionException,
             UserNotFoundException {
         log.debug("endpoint revoke database access, databaseId={}, username={}", databaseId, username);
-        final Database database = databaseService.findById(databaseId);
+        final Database database = databaseService.findForUpdateById(databaseId);
         if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to revoke access: not owner");
             throw new NotAllowedException("Failed to revoke access: not owner");
@@ -244,8 +248,12 @@ public class AccessEndpoint extends RestEndpoint {
             log.error("Failed to revoke access: the internal user must have write-all access");
             throw new NotAllowedException("Failed to revoke access: the internal user must have write-all access");
         }
-        accessService.find(database, username);
-        accessService.delete(database, username);
+        try {
+            accessService.find(database, username);
+            accessService.delete(database, username);
+        } catch (AccessNotFoundException e) {
+            // A previous request may have committed the deletion before Grafana failed.
+        }
         dashboardService.updateAccess(database, username, null);
         return ResponseEntity.accepted()
                 .build();

@@ -54,7 +54,7 @@ class UploadImageIntegrationTest extends BaseTest {
             s3.putObject(PutObjectRequest.builder().bucket(config.getS3Bucket()).key(key).metadata(metadata).build(),
                     RequestBody.fromBytes(image));
         }
-        when(databases.findById(DATABASE_1_ID)).thenReturn(DATABASE_1);
+        when(databases.findForUpdateById(DATABASE_1_ID)).thenReturn(DATABASE_1);
         when(databases.modifyImage(eq(DATABASE_1), any(byte[].class))).thenReturn(DATABASE_1);
         var principal = jwtPrincipal(USER_1_PRINCIPAL, USER_1_ID);
         for (String key : java.util.List.of(foreign, legacy)) {

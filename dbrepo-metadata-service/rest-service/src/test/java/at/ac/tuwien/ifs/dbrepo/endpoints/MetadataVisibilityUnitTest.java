@@ -50,6 +50,7 @@ class MetadataVisibilityUnitTest extends BaseTest {
         DATABASE_1.setIsPublic(true);
         TABLE_2.setIsPublic(true);
         when(databases.findById(DATABASE_1_ID)).thenReturn(DATABASE_1);
+        when(databases.findForUpdateById(DATABASE_1_ID)).thenReturn(DATABASE_1);
         when(tables.findById(DATABASE_1, TABLE_2_ID)).thenReturn(TABLE_2);
     }
 
@@ -197,7 +198,7 @@ class MetadataVisibilityUnitTest extends BaseTest {
             case "table" -> databaseEndpoint.refreshTableMetadata(DATABASE_1_ID, USER_1_PRINCIPAL);
             case "view" -> databaseEndpoint.refreshViewMetadata(DATABASE_1_ID, USER_1_PRINCIPAL);
             case "visibility" -> databaseEndpoint.visibility(DATABASE_1_ID, DatabaseModifyVisibilityDto.builder()
-                    .isPublic(true).isSchemaPublic(true).build(), USER_1_PRINCIPAL);
+                    .isPublic(true).isSchemaPublic(true).isDashboardEnabled(false).build(), USER_1_PRINCIPAL);
             case "owner" -> databaseEndpoint.transfer(DATABASE_1_ID,
                     DatabaseTransferDto.builder().username(USER_2_USERNAME).build(), USER_1_PRINCIPAL);
             default -> databaseEndpoint.modifyImage(DATABASE_1_ID, DatabaseModifyImageDto.builder().build(), USER_1_PRINCIPAL);

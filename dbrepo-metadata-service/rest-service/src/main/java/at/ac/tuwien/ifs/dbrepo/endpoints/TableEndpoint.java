@@ -396,7 +396,7 @@ public class TableEndpoint extends RestEndpoint {
         }
         /* delete table */
         tableService.deleteTable(table);
-        dashboardService.update(databaseService.findById(databaseId));
+        dashboardService.updateContent(databaseService.findById(databaseId));
         return ResponseEntity.accepted()
                 .build();
     }

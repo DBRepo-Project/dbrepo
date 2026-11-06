@@ -73,6 +73,8 @@ public interface DatabaseService {
      */
     Database findById(UUID databaseId) throws DatabaseNotFoundException;
 
+    Database findForUpdateById(UUID databaseId) throws DatabaseNotFoundException;
+
     /**
      * Creates a new database with minimal metadata in the metadata database and creates a new database on the
      * container.

@@ -290,7 +290,7 @@ public class DatabaseEndpoint extends RestEndpoint {
     }
 
     @PutMapping("/{databaseId}/visibility")
-    @Transactional
+    @Transactional(rollbackFor = {DashboardServiceException.class, DashboardServiceConnectionException.class})
     @PreAuthorize("hasAuthority('modify-database-visibility')")
     @Observed(name = "dbrepo_database_visibility")
     @Operation(summary = "Update database visibility",
@@ -324,20 +324,23 @@ public class DatabaseEndpoint extends RestEndpoint {
             NotAllowedException, SearchServiceException, SearchServiceConnectionException, DashboardServiceException,
             DashboardServiceConnectionException {
         log.debug("endpoint modify database visibility, databaseId={}, data={}", databaseId, data);
-        final Database database = databaseService.findById(databaseId);
+        final Database database = databaseService.findForUpdateById(databaseId);
         if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to modify database visibility: not owner");
             throw new NotAllowedException("Failed to modify database visibility: not owner");
+        }
+        if (data.getIsDashboardEnabled() && !data.getIsPublic() && !data.getIsSchemaPublic()) {
+            dashboardService.requireUser(database.getOwnedBy());
         }
         final Database database1 = databaseService.modifyVisibility(database, data);
         dashboardService.update(database1);
         return ResponseEntity.accepted()
                 .body(filterBrief(metadataMapper.databaseDtoToDatabaseBriefDto(metadataMapper.databaseToDatabaseDto(
-                        databaseService.modifyVisibility(database, data))), principal));
+                        database1)), principal));
     }
 
     @PutMapping("/{databaseId}/owner")
-    @Transactional
+    @Transactional(rollbackFor = {DashboardServiceException.class, DashboardServiceConnectionException.class})
     @PreAuthorize("hasAuthority('modify-database-owner')")
     @Observed(name = "dbrepo_database_transfer")
     @Operation(summary = "Update database owner",
@@ -369,16 +372,21 @@ public class DatabaseEndpoint extends RestEndpoint {
                                                      @Valid @RequestBody DatabaseTransferDto data,
                                                      Principal principal) throws NotAllowedException,
             DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
-            SearchServiceConnectionException {
+            SearchServiceConnectionException, DashboardServiceException, DashboardServiceConnectionException {
         log.debug("endpoint transfer database, databaseId={}, transferDto.username={}", databaseId, data.getUsername());
-        final Database database = databaseService.findById(databaseId);
+        final Database database = databaseService.findForUpdateById(databaseId);
         if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to transfer database: not owner");
             throw new NotAllowedException("Failed to transfer database: not owner");
         }
+        if (database.getIsDashboardEnabled() && !database.getIsPublic() && !database.getIsSchemaPublic()) {
+            dashboardService.requireUser(data.getUsername());
+        }
+        final Database updated = databaseService.modifyOwner(database, data.getUsername());
+        dashboardService.update(updated);
         return ResponseEntity.accepted()
                 .body(filterBrief(metadataMapper.databaseDtoToDatabaseBriefDto(metadataMapper.databaseToDatabaseDto(
-                        databaseService.modifyOwner(database, data.getUsername()))), principal));
+                        updated)), principal));
     }
 
     @PutMapping("/{databaseId}/image")
@@ -416,7 +424,7 @@ public class DatabaseEndpoint extends RestEndpoint {
             DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException,
             StorageUnavailableException, StorageNotFoundException {
         log.debug("endpoint modify database image, databaseId={}, data.key={}", databaseId, data.getKey());
-        final Database database = databaseService.findById(databaseId);
+        final Database database = databaseService.findForUpdateById(databaseId);
         if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to update database image: not owner");
             throw new NotAllowedException("Failed to update database image: not owner");

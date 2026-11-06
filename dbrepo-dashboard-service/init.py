@@ -69,13 +69,21 @@ def fetch_databases() -> List[Database]:
 
 
 def upsert_dashboard(database: Database) -> None:
-    if dashboard_client().find(database.dashboard_uid) is None:
-        dashboard_client().create(database.internal_name, database.dashboard_uid)
-    dashboard_client().update(database)
+    dashboard_client().reconcile(database)
+
+
+def synchronize_dashboards() -> None:
+    failures = 0
+    for database in fetch_databases():
+        try:
+            upsert_dashboard(database)
+        except Exception:
+            failures += 1
+            logging.exception('Dashboard synchronization failed for database %s', database.id)
+    if failures:
+        raise RuntimeError(f'Dashboard synchronization failed for {failures} database(s)')
 
 
 if __name__ == "__main__":
-    for database in fetch_databases():
-        database = rest_client().get_database(database_id=database.id)
-        upsert_dashboard(database)
+    synchronize_dashboards()
     logging.info("Finished. Exiting.")
