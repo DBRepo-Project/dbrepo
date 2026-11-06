@@ -70,20 +70,29 @@ public class AnalyseServiceDuckDbImpl extends DataConnector implements AnalyseSe
     @Override
     public SchemaAnalysisResultDto determineS3CsvDataTypes(Image image, String key) throws AnalyseDataTypesException,
             DatabaseUnavailableException, StorageNotFoundException, ColumnNotFoundException, ImageInvalidException {
-        /* download sample from storage service */
+        final String path = "s3://" + s3Config.getS3Bucket() + "/" + key;
+        // DuckDB treats these characters as file patterns even when the path is bound.
+        if (path.indexOf('*') >= 0 || path.indexOf('?') >= 0 || path.indexOf('[') >= 0) {
+            throw new AnalyseDataTypesException("CSV analysis requires a single object key without wildcard characters");
+        }
         try (Connection connection = getDuckDbConnection()) {
             setup(connection);
-            final PreparedStatement statement1 = connection.prepareStatement(duckDbMapper.queryToRawDescribeCsvQuery(s3Config.getS3Bucket(), key));
-            final DuckDBResultSet resultSet1 = (DuckDBResultSet) statement1.executeQuery();
-            final SchemaAnalysisResultDto schema = dataMapper.resultSetToSchemaAnalysisResult(resultSet1);
+            final SchemaAnalysisResultDto schema;
+            try (PreparedStatement statement = connection.prepareStatement(duckDbMapper.queryToRawDescribeCsvQuery())) {
+                statement.setString(1, path);
+                try (DuckDBResultSet result = (DuckDBResultSet) statement.executeQuery()) {
+                    schema = dataMapper.resultSetToSchemaAnalysisResult(result);
+                }
+            }
             log.debug("determined csv schema of: s3://{}/{}", s3Config.getS3Bucket(), key);
-            statement1.close();
-            /* detect schema */
-            final PreparedStatement statement2 = connection.prepareStatement(duckDbMapper.queryToRawDescribeS3TableQuery(s3Config.getS3Bucket(), key));
-            final DuckDBResultSet resultSet2 = (DuckDBResultSet) statement2.executeQuery();
-            log.debug("determined data types of s3://" + s3Config.getS3Bucket() + "/" + key);
-            final Map<String, ColumnAnalysisResultDto> constraints = dataMapper.resultSetToConstraintResult(resultSet2);
-            resultSet2.close();
+            final Map<String, ColumnAnalysisResultDto> constraints;
+            try (PreparedStatement statement = connection.prepareStatement(duckDbMapper.queryToRawDescribeS3TableQuery())) {
+                statement.setString(1, path);
+                try (DuckDBResultSet result = (DuckDBResultSet) statement.executeQuery()) {
+                    constraints = dataMapper.resultSetToConstraintResult(result);
+                }
+            }
+            log.debug("determined data types of s3://{}/{}", s3Config.getS3Bucket(), key);
             for (int i = 0; i < schema.getColumns().size(); i++) {
                 final ColumnAnalysisResultDto column = schema.getColumns()
                         .get(i);
