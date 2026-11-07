@@ -563,7 +563,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-database-owner"})
     public void transfer_hasRole_succeeds() throws DataServiceConnectionException, DataServiceException,
             NotAllowedException, UserNotFoundException, DatabaseNotFoundException, SearchServiceException,
-            SearchServiceConnectionException, DashboardServiceException, DashboardServiceConnectionException {
+            SearchServiceConnectionException, DashboardServiceException, DashboardServiceConnectionException, AccessNotFoundException {
         final DatabaseTransferDto request = DatabaseTransferDto.builder()
                 .username(USER_4_USERNAME)
                 .build();

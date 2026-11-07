@@ -45,3 +45,6 @@ mvn -pl rest-service clean spring-boot:run -Dspring-boot.run.profiles=local
 #### OpenAPI
 
 - OpenAPI v3 as .yaml: http://localhost:9099/v3/api-docs.yaml
+### Database ownership transfer
+
+A transfer validates the target account and gives the new owner WRITE_ALL in Metadata and the Data-Service before changing ownership. A previously revoked user receives a new grant; an existing restricted grant is upgraded. An existing WRITE_ALL grant is retained. Existing grants for other users, including the previous owner, remain explicit memberships until separately revoked. A failed grant operation does not update ownership.
