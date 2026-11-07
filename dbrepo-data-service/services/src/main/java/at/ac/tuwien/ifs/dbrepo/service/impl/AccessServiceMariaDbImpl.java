@@ -52,7 +52,7 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
             }
             statement.setString(1, user.getUsername());
             statement.setString(2, user.getPassword());
-            log.trace("1={}, 2={}", user.getUsername(), user.getPassword());
+            log.trace("creating database account for user {}", user.getUsername());
             statement.execute();
             log.atDebug()
                     .setMessage("create user in database: " + database.getInternalName())
@@ -82,8 +82,9 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
             closeUserConnections(connection, database, user);
         } catch (SQLException e) {
             connection.rollback();
-            log.error("Failed to give database access: {}", e.getMessage());
-            throw new DatabaseMalformedException("Failed to give database access: " + e.getMessage(), e);
+            log.error("Failed to give database access (SQLState={}, code={})", e.getSQLState(), e.getErrorCode());
+            throw new DatabaseMalformedException("Failed to give database access (SQLState=" + e.getSQLState()
+                    + ", code=" + e.getErrorCode() + ")");
         } finally {
             dataSource.close();
         }

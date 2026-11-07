@@ -63,8 +63,17 @@ public class AnalyseServiceDuckDbImpl extends DataConnector implements AnalyseSe
         /* https://duckdb.org/docs/stable/guides/performance/how_to_tune_workloads.html#larger-than-memory-workloads-out-of-core-processing */
         connection.prepareStatement(duckDbMapper.queryToRawSetVariableQuery("temp_directory", duckDbConfig.getTmpDirectory()))
                 .execute();
-        connection.prepareStatement(duckDbMapper.queryToRawSetS3SecretQuery(s3Config.getS3aAccessKey(), s3Config.getS3aSecretKey()))
-                .execute();
+        executeCredentialStatement(connection,
+                duckDbMapper.queryToRawSetS3SecretQuery(s3Config.getS3aAccessKey(), s3Config.getS3aSecretKey()));
+    }
+
+    private void executeCredentialStatement(Connection connection, String sql) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.execute();
+        } catch (SQLException error) {
+            // Driver errors can include the credential-bearing SQL. Preserve diagnostic codes only.
+            throw new SQLException("Database credential operation failed", error.getSQLState(), error.getErrorCode());
+        }
     }
 
     @Override
@@ -131,9 +140,7 @@ public class AnalyseServiceDuckDbImpl extends DataConnector implements AnalyseSe
             final long start = System.currentTimeMillis();
             setup(connection);
             /* attach to mariadb in duckdb */
-            final PreparedStatement statement1 = connection.prepareStatement(duckDbMapper.databaseDtoToRawAttachQuery(database));
-            statement1.executeUpdate();
-            statement1.close();
+            executeCredentialStatement(connection, duckDbMapper.databaseDtoToRawAttachQuery(database));
             final PreparedStatement statement2 = connection.prepareStatement(statement);
             final DuckDBResultSet resultSet2 = (DuckDBResultSet) statement2.executeQuery();
             final Map<String, ColumnAnalysisResultDto> schema = dataMapper.resultSetToConstraintResult(resultSet2);

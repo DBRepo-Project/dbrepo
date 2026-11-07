@@ -67,7 +67,7 @@ public interface MariaDbMapper {
                 .append("`@`%` IDENTIFIED BY '")
                 .append(password)
                 .append("';");
-        log.trace("mapped set password statement: {}", statement);
+        log.trace("mapped password update for user {}", username);
         return statement.toString();
     }
 
