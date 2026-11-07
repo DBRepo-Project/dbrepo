@@ -513,7 +513,7 @@ class ModifyVisibility(BaseModel):
 
 
 class ModifyOwner(BaseModel):
-    id: str
+    username: str
 
 
 class CreateTable(BaseModel):
