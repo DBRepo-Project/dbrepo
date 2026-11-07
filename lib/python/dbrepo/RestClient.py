@@ -1237,7 +1237,7 @@ class RestClient:
 
     def get_database_access(self, database_id: str) -> AccessType:
         """
-        Get access of a view in a database with the given database id and view id.
+        Get the authenticated user's effective database access.
 
         :param database_id: The database id.
 
