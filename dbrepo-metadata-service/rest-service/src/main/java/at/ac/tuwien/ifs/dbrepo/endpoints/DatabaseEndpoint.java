@@ -25,6 +25,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -441,24 +442,37 @@ public class DatabaseEndpoint extends RestEndpoint {
     }
 
     @GetMapping("/{databaseId}/image")
-    @Transactional
+    @Transactional(readOnly = true)
     @Observed(name = "dbrepo_database_image_view")
     @Operation(summary = "Get database preview image",
-            description = "Gets the database with id on the preview image.",
+            description = "Reads a preview when the database or its schema is public, or the caller is its owner, a member or the internal system.",
             security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "View of image was successful"),
+            @ApiResponse(responseCode = "403",
+                    description = "The database preview is not visible to the caller",
+                    content = {@Content}),
             @ApiResponse(responseCode = "404",
                     description = "Database or user could not be found",
                     content = {@Content})
     })
-    public ResponseEntity<byte[]> findPreviewImage(@NotNull @PathVariable("databaseId") UUID databaseId)
-            throws DatabaseNotFoundException {
+    public ResponseEntity<byte[]> findPreviewImage(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                                   Principal principal)
+            throws DatabaseNotFoundException, NotAllowedException {
         log.debug("endpoint get database preview image, databaseId={}", databaseId);
+        final Database database = databaseService.findById(databaseId);
+        final String username = AuthUtil.getUsername(principal);
+        if (!database.getIsPublic() && !database.getIsSchemaPublic() && !AuthUtil.isSystem(principal)
+                && !database.getOwnedBy().equals(username)
+                && database.getAccesses().stream().noneMatch(access -> access.getUsername().equals(username))) {
+            throw new NotAllowedException("Database preview is not visible to the caller");
+        }
         return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .varyBy(HttpHeaders.AUTHORIZATION, HttpHeaders.COOKIE)
                 .contentType(MediaType.parseMediaType("image/webp"))
-                .body(databaseService.findById(databaseId).getImage());
+                .body(database.getImage());
     }
 
     @GetMapping("/{databaseId}")
