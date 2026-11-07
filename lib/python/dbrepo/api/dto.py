@@ -747,6 +747,30 @@ class ConceptBrief(BaseModel):
     description: Optional[str] = None
 
 
+class SchemaAnalysisColumn(BaseModel):
+    name: str
+    datatype: ColumnType
+    null_allowed: Optional[bool] = None
+    primary_key: Optional[bool] = None
+    size: Optional[int] = None
+    d: Optional[int] = None
+    enums: Optional[List[str]] = None
+    sets: Optional[List[str]] = None
+
+
+class SchemaAnalysis(BaseModel):
+    delimiter: str
+    quote: str
+    escape: str
+    newline_delimiter: str
+    comment: str
+    skip_rows: int
+    has_header: bool
+    columns: List[SchemaAnalysisColumn]
+    date_format: Optional[str] = None
+    timestamp_format: Optional[str] = None
+
+
 class DatatypeAnalysis(BaseModel):
     separator: str
     columns: dict[str, ColumnType]

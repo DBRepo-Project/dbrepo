@@ -3,6 +3,7 @@ import os
 import sys
 from io import BytesIO
 from uuid import uuid4
+from urllib.parse import quote
 
 import requests
 from pandas import DataFrame
@@ -973,65 +974,66 @@ class RestClient:
         raise ResponseCodeError(f'Failed to import table data: response code: {response.status_code} is not '
                                 f'202 (ACCEPTED): {response.text}')
 
-    def analyse_datatypes(self, dataframe: DataFrame, enum: bool = None, enum_tol: int = None) -> DatatypeAnalysis:
+    def analyse_schema(self, dataframe: DataFrame, image_id: str = None) -> SchemaAnalysis:
+        """Upload and analyse a CSV using the selected database engine image.
+
+        If image_id is omitted, use the unique default or sole registered image.
+        The response includes engine-specific types, CSV settings and key candidates.
         """
-        Import a csv dataset from a file and analyse it for the possible enums, line encoding and column data types.
-
-        :param dataframe: The dataframe.
-        :param enum: If set to `True`, enumerations should be guessed, otherwise no guessing. Optional.
-        :param enum_tol: The tolerance for guessing enumerations (ignored if enum=False). Optional.
-
-        :returns: The determined data types, if successful.
-
-        :raises MalformedError: If the payload is rejected by the service.
-        :raises NotExistsError: If the file was not found by the Analyse Service.
-        :raises ResponseCodeError: If something went wrong with the analysis.
-        """
-        params = [
-            ('filename', self._upload(dataframe)),
-            ('separator', ','),
-            ('enum', enum),
-            ('enum_tol', enum_tol)
-        ]
-        url = f'/api/v1/analyse/datatypes'
-        response = self._wrapper(method="get", url=url, params=params)
-        if response.status_code == 202:
-            body = response.json()
-            return DatatypeAnalysis.model_validate(body)
+        if image_id is None:
+            images = self.get_images()
+            defaults = [image for image in images if image.default]
+            if len(defaults) == 1:
+                image_id = defaults[0].id
+            elif not defaults and len(images) == 1:
+                image_id = images[0].id
+            else:
+                raise RequestError('Select image_id explicitly: no unambiguous default image is available')
+        key = self._upload(dataframe)
+        response = self._wrapper(method="get",
+                                 url=f'/api/v1/image/{quote(image_id, safe="")}/analyse/schema/{quote(key, safe="")}',
+                                 force_auth=True)
+        if response.status_code == 200:
+            return SchemaAnalysis.model_validate(response.json())
         if response.status_code == 400:
-            raise MalformedError(f'Failed to analyse data types: {response.text}')
+            raise MalformedError('Failed to analyse schema: invalid dataset or image')
+        if response.status_code == 403:
+            raise ForbiddenError('Failed to analyse schema: access denied')
         if response.status_code == 404:
-            raise NotExistsError(f'Failed to analyse data types: failed to find file in storage service')
-        raise ResponseCodeError(f'Failed to analyse data types: response code: {response.status_code} is not '
-                                f'202 (ACCEPTED): {response.text}')
+            raise NotExistsError('Failed to analyse schema: image or uploaded file not found')
+        if response.status_code == 503:
+            raise ServiceConnectionError('Failed to analyse schema: metadata or storage unavailable')
+        raise ResponseCodeError(f'Failed to analyse schema: HTTP {response.status_code}')
 
-    def analyse_keys(self, dataframe: DataFrame) -> KeyAnalysis:
+    def analyse_datatypes(self, dataframe: DataFrame, enum: bool = None, enum_tol: int = None,
+                          image_id: str = None) -> DatatypeAnalysis:
+        """Analyse CSV types through analyse_schema, retaining the datatype result type.
+
+        Legacy enum/enum_tol switches are unsupported by the current schema API.
+        Use analyse_schema to read the CSV settings and detected constraints.
         """
-        Import a csv dataset from a file and analyse it for the possible primary key.
+        if enum is not None or enum_tol is not None:
+            raise RequestError('enum/enum_tol are unsupported by the schema API; use analyse_schema()')
+        schema = self.analyse_schema(dataframe, image_id)
+        return DatatypeAnalysis(separator=schema.delimiter, line_termination=schema.newline_delimiter,
+                                columns={column.name: column.datatype for column in schema.columns})
 
-        :param dataframe: The dataframe.
+    def analyse_keys(self, dataframe: DataFrame, image_id: str = None) -> KeyAnalysis:
+        """Return server-detected key candidates ranked by distinct non-null values.
 
-        :returns: The determined ranking of the primary key candidates, if successful.
-
-        :raises MalformedError: If the payload is rejected by the service.
-        :raises NotExistsError: If the file was not found by the Analyse Service.
-        :raises ResponseCodeError: If something went wrong with the analysis.
+        Use analyse_schema for the complete constraint information. Column names
+        must be unique strings so that the server result maps back to the dataframe.
         """
-        params = [
-            ('filename', self._upload(dataframe)),
-            ('separator', ','),
-        ]
-        url = f'/api/v1/analyse/keys'
-        response = self._wrapper(method="get", url=url, params=params)
-        if response.status_code == 202:
-            body = response.json()
-            return KeyAnalysis.model_validate(body)
-        if response.status_code == 400:
-            raise MalformedError(f'Failed to analyse data keys: {response.text}')
-        if response.status_code == 404:
-            raise NotExistsError(f'Failed to analyse data keys: failed to find file in Storage Service')
-        raise ResponseCodeError(f'Failed to analyse data types: response code: {response.status_code} is not '
-                                f'202 (ACCEPTED): {response.text}')
+        if not dataframe.columns.is_unique or not all(isinstance(name, str) for name in dataframe.columns):
+            raise RequestError('Key analysis requires unique string column names')
+        schema = self.analyse_schema(dataframe, image_id)
+        keys = {}
+        for column in schema.columns:
+            if column.primary_key:
+                if column.name not in dataframe.columns:
+                    raise ResponseCodeError('Schema response contains an unknown key column')
+                keys[column.name] = int(dataframe[column.name].nunique())
+        return KeyAnalysis(keys=keys)
 
     def analyse_table_statistics(self, database_id: str, table_id: str) -> TableStatistics:
         """
