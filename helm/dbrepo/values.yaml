@@ -947,14 +947,14 @@ ui:
   image:
     ## @skip ui.image.name
     name: ghcr.io/dbrepo-project/dbrepo/ui:1.14.1
-  ## https://stackblitz.com/edit/nuxt-oidc-auth-keygen?file=index.js
+  ## Supply private installation values. These keys are required when UI is enabled; see docs/admin-guide/rotate-ui-secrets.md.
   oidc:
     ## @param ui.oidc.authSessionSecret This should be a at least 48 characters random string. It is used to encrypt the user session.
-    authSessionSecret: qJteD-fvcHNafjwDtJOT3pF7IrN1OEzQRcIyPO0xAT4gzct0
+    authSessionSecret: ""
     ## @param ui.oidc.sessionSecret This should be a at least 48 characters random string. It is used to encrypt the user session.
-    sessionSecret: TjOH1lFnocixYmy5ol2I5cOdsYUdrd5_jZsGxo6aMVPNNDkh
+    sessionSecret: ""
     ## @param ui.oidc.tokenKey This needs to be a random cryptographic AES key in base64. Used to encrypt the server side token store. You can generate a key in JS with await subtle.exportKey('raw', await subtle.generateKey({ name: 'AES-GCM', length: 256, }, true, ['encrypt', 'decrypt'])). You just have to encode it to base64 afterwards.
-    tokenKey: data:;base64,ntxOAfrF6yw22Ec1AFHK21iFz7L3PZmz9857Uqwyme0=
+    tokenKey: ""
   ## @param ui.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }

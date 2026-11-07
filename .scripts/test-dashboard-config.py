@@ -8,6 +8,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 ENV = {key: os.environ[key] for key in ('PATH', 'HOME') if key in os.environ}
+ENV.update(NUXT_OIDC_TOKEN_KEY='data:;base64,'+'A'*43+'=', OIDC_AUTH_SESSION_SECRET='synthetic-auth-'+'a'*48, OIDC_SESSION_SECRET='synthetic-session-'+'b'*48)
 ENV.update(BASE_URL='https://research.example', DASHBOARD_OAUTH_SECRET='synthetic-dedicated-' + 'x' * 40,
            AUTH_SERVICE_ADMIN='synthetic-admin', AUTH_SERVICE_ADMIN_PASSWORD='synthetic-password')
 COMPOSE = ('docker-compose.yml', '.docker/docker-compose.yml',
@@ -15,7 +16,7 @@ COMPOSE = ('docker-compose.yml', '.docker/docker-compose.yml',
 
 
 def render_helm(*values):
-    result = subprocess.run(['helm', 'template', 'audit', str(ROOT / 'helm/dbrepo'), *values],
+    result = subprocess.run(['helm', 'template', 'audit', str(ROOT / 'helm/dbrepo'), '--set-string', 'ui.oidc.tokenKey='+ENV['NUXT_OIDC_TOKEN_KEY'].replace(',', r'\,'), '--set-string', 'ui.oidc.authSessionSecret='+ENV['OIDC_AUTH_SESSION_SECRET'], '--set-string', 'ui.oidc.sessionSecret='+ENV['OIDC_SESSION_SECRET'], *values],
                             capture_output=True, text=True, env=ENV)
     return result
 
