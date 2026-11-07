@@ -108,6 +108,12 @@ public class MariaDbUtil {
             ResourceDatabasePopulator populator = new ResourceDatabasePopulator(new ClassPathResource("init/" + database.getInternalName() + ".sql"), new ClassPathResource("init/users.sql"), new ClassPathResource("init/querystore.sql"));
             populator.setSeparator(";\n");
             populator.populate(connection);
+            for (String routine : new String[]{"store_query", "_store_query", "hash_query"}) {
+                ResourceDatabasePopulator procedure = new ResourceDatabasePopulator(
+                        new ClassPathResource("query-store/" + routine + ".sql"));
+                procedure.setSeparator(org.springframework.jdbc.datasource.init.ScriptUtils.EOF_STATEMENT_SEPARATOR);
+                procedure.populate(connection);
+            }
         }
         log.debug("created init database {}", database.getInternalName());
     }

@@ -185,6 +185,7 @@ jobs:
         script:
           - ./dbrepo-broker-service/tests/test_integration_feature_flags.sh
           - ./dbrepo-broker-service/tests/test_integration_ldap.sh
+          - ./.scripts/test-query-worktables.sh
           - ./dbrepo-storage-service/init/tests/test_integration_expire.sh
     steps:
       - uses: actions/checkout@v5
