@@ -111,3 +111,10 @@ client = RestClient(...)
 
 * Prof. [Andreas Rauber](https://tiss.tuwien.ac.at/person/39608.html)<sup>TU Wien</sup>
 * DI. [Martin Weise](https://tiss.tuwien.ac.at/person/287722.html)<sup>TU Wien</sup>
+### Removed semantic registries
+
+The server no longer provides global unit, concept or ontology registries. The legacy `get_units()`, `get_concepts()` and `get_ontologies()` methods raise an actionable `NotImplementedError` without making an HTTP request. Read a column's `concept_uri` and `unit_uri` through `get_table()` and set them with `update_table_column()`. There is no replacement global ontology registry; use your external vocabulary provider for vocabulary discovery. Tests of supported API workflows must report these removed operations separately rather than counting an empty result as success.
+
+### CSV schema analysis
+
+Use `client.analyse_schema(dataframe, image_id=...)` for engine-specific types, CSV parsing settings and key candidates. If omitted, `image_id` uses the single configured default image, or the sole registered image when no default exists; ambiguous choices require an explicit image ID. The compatibility methods `analyse_datatypes()` and `analyse_keys()` use this API as well. Key scores are counts of distinct non-null values for candidates flagged by the server. Legacy `enum`/`enum_tol` overrides are rejected because the schema API does not implement those switches. The schema-analysis route must reach the Data-Service through the public gateway.

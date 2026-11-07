@@ -747,6 +747,30 @@ class ConceptBrief(BaseModel):
     description: Optional[str] = None
 
 
+class SchemaAnalysisColumn(BaseModel):
+    name: str
+    datatype: ColumnType
+    null_allowed: Optional[bool] = None
+    primary_key: Optional[bool] = None
+    size: Optional[int] = None
+    d: Optional[int] = None
+    enums: Optional[List[str]] = None
+    sets: Optional[List[str]] = None
+
+
+class SchemaAnalysis(BaseModel):
+    delimiter: str
+    quote: str
+    escape: str
+    newline_delimiter: str
+    comment: str
+    skip_rows: int
+    has_header: bool
+    columns: List[SchemaAnalysisColumn]
+    date_format: Optional[str] = None
+    timestamp_format: Optional[str] = None
+
+
 class DatatypeAnalysis(BaseModel):
     separator: str
     columns: dict[str, ColumnType]
@@ -779,6 +803,15 @@ class TableStatistics(BaseModel):
     max_data_length: Optional[int] = None
     avg_row_length: Optional[int] = None
     columns: dict[str, ColumnStatistic]
+
+
+    @field_validator("columns", mode="before")
+    @classmethod
+    def index_columns(cls, value):
+        if isinstance(value, list):
+            columns = [ColumnStatistic.model_validate(column) for column in value]
+            return {column.name: column for column in columns}
+        return value
 
 
 class UnitBrief(BaseModel):
