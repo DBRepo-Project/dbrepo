@@ -280,7 +280,7 @@ class SearchServiceClient:
                                 'filter': [{'ids': {'values': [query_id]}},
                                            {'range': {self.EXPIRY_FIELD: {'gt': 'now'}}}],
                                 'should': [{'percolate': {'field': self.QUERY_FIELD,
-                                                         'documents': [body for _, body in batch]}}],
+                                                         'documents': [percolator_document(body, {'properties': properties}) for _, body in batch]}}],
                                 'minimum_should_match': 0}}})
                     if (not isinstance(response, dict) or response.get('timed_out') is not False
                             or not isinstance(response.get('_shards'), dict) or response['_shards'].get('failed') != 0
@@ -368,6 +368,24 @@ class SearchServiceClient:
             if tables:
                 results.append(database.model_copy(update={'tables': tables}))
         return results
+
+
+def percolator_document(value, mapping):
+    """Normalize only mapped dates; preserve the remaining authorized metadata."""
+    if isinstance(value, list):
+        return [percolator_document(item, mapping) for item in value]
+    if isinstance(value, dict):
+        properties = mapping.get('properties', {})
+        return {name: percolator_document(item, properties.get(name, {})) for name, item in value.items()}
+    if mapping.get('type') in ('date', 'date_nanos') and isinstance(value, str) and ' ' in value:
+        date_format = mapping.get('format', 'strict_date_optional_time||epoch_millis')
+        if 'date_optional_time' in date_format:
+            try:
+                datetime.fromisoformat(value)
+                return value.replace(' ', 'T', 1)
+            except ValueError:
+                pass  # Leave other configured formats and invalid values for the engine to validate.
+    return value
 
 
 def database_properties():
