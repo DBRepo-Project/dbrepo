@@ -1797,7 +1797,7 @@ class RestClient:
 
     def get_identifiers(self, database_id: str = None, subset_id: str = None, view_id: str = None,
                         table_id: str = None, type: IdentifierType = None, status: IdentifierStatusType = None) -> List[
-        Identifier]:
+        IdentifierBrief]:
         """
         Get list of identifiers, filter by the remaining optional arguments.
 
@@ -1808,7 +1808,7 @@ class RestClient:
         :param type: The identifier type. Optional.
         :param status: The identifier status. Optional.
 
-        :returns: List of identifiers, if successful.
+        :returns: List of brief identifiers, if successful.
 
         :raises NotExistsError: If the accept header is neither application/json nor application/ld+json.
         :raises FormatNotAvailable: If the service could not represent the output.
@@ -1837,7 +1837,7 @@ class RestClient:
         response = self._wrapper(method="get", url=url, params=params, headers={'Accept': 'application/json'})
         if response.status_code == 200:
             body = response.json()
-            return TypeAdapter(List[Identifier]).validate_python(body)
+            return TypeAdapter(List[IdentifierBrief]).validate_python(body)
         if response.status_code == 404:
             raise NotExistsError(f'Failed to get identifiers: requested style is not known')
         if response.status_code == 406:
