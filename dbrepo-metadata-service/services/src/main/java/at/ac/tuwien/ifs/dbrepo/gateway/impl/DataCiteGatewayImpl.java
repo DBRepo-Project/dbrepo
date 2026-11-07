@@ -113,6 +113,9 @@ public class DataCiteGatewayImpl implements DataCiteGateway {
 
     @Override
     public String save(Identifier identifier, DataCiteDoiEvent event) throws MalformedException, ExternalServiceException {
+        if (identifier.getDoi() == null || identifier.getDoi().isBlank()) {
+            throw new MalformedException("A DOI is required for a provider update");
+        }
         final HttpHeaders headers = defaultHeaders();
         headers.setBasicAuth(dataCiteConfig.getUsername(), dataCiteConfig.getPassword());
         final DataCiteCreateDoi attributes = metadataMapper.identifierToDataCiteCreateDoi(identifier);

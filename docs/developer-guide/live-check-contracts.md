@@ -28,3 +28,21 @@ that the returned list contains that database. Do not accept an arbitrary HTTP 2
 or silently switch to individual reads after an error. The server regression suite
 also covers multiple IDs, duplicate IDs, missing IDs, current permissions and the
 literal HTTP route.
+
+## Identifier metadata updates
+
+Metadata updates retain the identifier's existing DOI in both the default and
+`doi` profiles. Omitting `doi` or sending JSON null leaves it unchanged. A supplied
+DOI must equal the existing value; this endpoint cannot assign, replace or remove
+DOIs. The body ID must match the URL and the identifier must remain in its database.
+
+An existing local draft without a DOI remains local when its metadata is edited,
+including with the `doi` profile enabled. No provider update is sent. DOI creation
+and publication keep their separate workflows. Draft creation on a DOI-enabled
+server can already contact DataCite, even without the runner's `--publish` flag.
+Use a provider stub or an approved sandbox for those tests.
+
+The DOI-profile persistence tests stub the provider transport and verify the exact
+resource and request ID, local readback and rollback on a provider failure. They
+must run alongside the default-profile tests; disabling DOI does not exercise the
+provider update path.
