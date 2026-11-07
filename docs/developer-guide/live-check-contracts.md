@@ -55,3 +55,42 @@ or `--table-deletion archive` for an integration build with commit `f39b2cbb9`.
 The default is physical deletion. See the [runner guide](../../.scripts/client-live-test.md)
 for required fixtures and historical-read assertions. The selected contract is
 recorded, and a mismatch cannot silently change the expected outcome.
+
+## AMQP authentication
+
+The default broker authenticates ordinary publishers against the shared LDAP
+service. Use the same LDAP-backed ordinary account for the REST fixture and AMQP
+publishing. A Keycloak-only account or an OIDC bearer token is not automatically
+an LDAP password. A dedicated internal service account remains available for the
+Consumer; do not substitute that account for the ordinary publisher in acceptance
+checks.
+
+RabbitMQ 3.13 expands environment variables in `rabbitmq.conf` using `$(NAME)`.
+The LDAP plugin separately substitutes `${username}` in user-DN patterns. The
+broker's bind DN and password use the former syntax. Using `${NAME}` for those
+credentials leaves literal strings in the effective broker configuration and
+prevents a valid LDAP account from authenticating.
+
+See [RabbitMQ configuration](https://www.rabbitmq.com/docs/3.13/configure#environment-variable-interpolation)
+and [LDAP DN patterns](https://www.rabbitmq.com/docs/ldap#usernames-and-dns).
+The disposable LDAP integration test uses the shipped configuration and checks
+ordinary-account publication of a row and a dataframe, their queue readback and
+rejection of invalid credentials. It creates its own network and containers and
+removes only those resources. It does not change authorization policy or prove
+that every database/table routing key is authorized. The full runner additionally
+requires the real Consumer path and database row readback.
+
+The Consumer has two separate connections: `BROKER_USERNAME`/`BROKER_PASSWORD`
+read the queue, while `SYSTEM_USERNAME`/`SYSTEM_PASSWORD` authenticate its HTTP
+writes to Data-Service. The normal row-write endpoint requires `insert-table-data`
+and the applicable database write grant. An internal account carrying only the
+`system` authority does not satisfy that endpoint's method permission. Broker
+login can therefore succeed while no rows arrive. Diagnose that HTTP failure
+separately from LDAP authentication.
+
+For a disposable end-to-end fixture, the Consumer's HTTP identity may be the same
+ordinary owner that has the write role and grant on its synthetic database. Record
+this fixture setting explicitly. Keep the broker reader separate and do not change
+a shared customer Consumer's identity from the live runner. The default worker's
+permission mismatch still needs a separate application fix; changing LDAP bind
+syntax does not fix it or establish production-wide ingestion readiness.
