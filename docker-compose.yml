@@ -13,6 +13,7 @@ volumes:
   dashboard-ui-data:
   dashboard-db-data:
   metric-db-data:
+  storage-service-data:
 
 services:
   dbrepo-metadata-db:
@@ -493,8 +494,9 @@ services:
     container_name: dbrepo-storage-service
     hostname: storage-service
     image: docker.io/chrislusf/seaweedfs:4.13
-    command: [ "server", "-s3", "-s3.port=9000", "-s3.config=/app/s3_config.json", "-metricsPort=9090" ]
+    command: [ "server", "-s3", "-s3.port=9000", "-s3.config=/app/s3_config.json", "-metricsPort=9090", "-master.volumeSizeLimitMB=64", "-master.volumePreallocate=false" ]
     volumes:
+      - storage-service-data:/data
       - ./dbrepo-storage-service/s3_config.json:/app/s3_config.json
     ports:
       - "9000:9000"
