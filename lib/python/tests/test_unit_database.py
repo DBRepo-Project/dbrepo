@@ -712,7 +712,7 @@ class DatabaseUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.post('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
-                      json=exp.model_dump(),
+                      
                       status_code=202)
             # test
             response = RestClient(username="a", password="b").create_database_access(
@@ -824,7 +824,7 @@ class DatabaseUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
-                     json=exp.model_dump(),
+                     
                      status_code=202)
             # test
             response = RestClient(username="a", password="b").update_database_access(

@@ -1278,8 +1278,7 @@ class RestClient:
         url = f'/api/v1/database/{database_id}/access/{username}'
         response = self._wrapper(method="post", url=url, force_auth=True, payload=CreateAccess(type=type))
         if response.status_code == 202:
-            body = response.json()
-            return DatabaseAccess.model_validate(body).type
+            return type
         if response.status_code == 400:
             raise MalformedError(f'Failed to create database access: {response.text}')
         if response.status_code == 403:
@@ -1314,8 +1313,7 @@ class RestClient:
         url = f'/api/v1/database/{database_id}/access/{username}'
         response = self._wrapper(method="put", url=url, force_auth=True, payload=UpdateAccess(type=type))
         if response.status_code == 202:
-            body = response.json()
-            return DatabaseAccess.model_validate(body).type
+            return type
         if response.status_code == 400:
             raise MalformedError(f'Failed to update database access: {response.text}')
         if response.status_code == 403:
