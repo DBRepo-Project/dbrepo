@@ -111,3 +111,6 @@ client = RestClient(...)
 
 * Prof. [Andreas Rauber](https://tiss.tuwien.ac.at/person/39608.html)<sup>TU Wien</sup>
 * DI. [Martin Weise](https://tiss.tuwien.ac.at/person/287722.html)<sup>TU Wien</sup>
+### Removed semantic registries
+
+The server no longer provides global unit, concept or ontology registries. The legacy `get_units()`, `get_concepts()` and `get_ontologies()` methods raise an actionable `NotImplementedError` without making an HTTP request. Read a column's `concept_uri` and `unit_uri` through `get_table()` and set them with `update_table_column()`. There is no replacement global ontology registry; use your external vocabulary provider for vocabulary discovery. Tests of supported API workflows must report these removed operations separately rather than counting an empty result as success.

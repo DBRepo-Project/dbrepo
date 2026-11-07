@@ -106,20 +106,14 @@ class RestClient:
                                 f'200 (OK): {response.text}')
 
     def get_units(self) -> List[UnitBrief]:
-        """
-        Get all units known to the metadata database.
+        """Removed server API. Use column concept_uri/unit_uri metadata instead.
 
-        :returns: List of units, if successful.
-
-        :raises ResponseCodeError: If something went wrong with the retrieval.
+        :raises NotImplementedError: The unit registry API was removed from the server.
         """
-        url = f'/api/v1/unit'
-        response = self._wrapper(method="get", url=url)
-        if response.status_code == 200:
-            body = response.json()
-            return TypeAdapter(List[UnitBrief]).validate_python(body)
-        raise ResponseCodeError(f'Failed to find units: response code: {response.status_code} is not '
-                                f'200 (OK): {response.text}')
+        raise NotImplementedError(
+            "get_units is unavailable: the server's unit registry API was removed. "
+            "Read concept_uri/unit_uri from get_table() columns or set them with update_table_column()."
+        )
 
     def get_user(self, username: str) -> User:
         """
@@ -1767,32 +1761,24 @@ class RestClient:
                                 f'200 (OK): {response.text}')
 
     def get_ontologies(self) -> List[OntologyBrief]:
-        """
-        Get list of ontologies.
+        """Removed server API. Use column concept_uri/unit_uri metadata instead.
 
-        :returns: List of ontologies, if successful.
+        :raises NotImplementedError: The ontology registry API was removed from the server.
         """
-        url = f'/api/v1/ontology'
-        response = self._wrapper(method="get", url=url)
-        if response.status_code == 200:
-            body = response.json()
-            return TypeAdapter(List[OntologyBrief]).validate_python(body)
-        raise ResponseCodeError(f'Failed to get ontologies: response code: {response.status_code} is not '
-                                f'200 (OK): {response.text}')
+        raise NotImplementedError(
+            "get_ontologies is unavailable: the server's ontology registry API was removed. "
+            "Read concept_uri/unit_uri from get_table() columns or set them with update_table_column()."
+        )
 
     def get_concepts(self) -> List[ConceptBrief]:
-        """
-        Get list of concepts known to the metadata database.
+        """Removed server API. Use column concept_uri/unit_uri metadata instead.
 
-        :returns: List of concepts, if successful.
+        :raises NotImplementedError: The concept registry API was removed from the server.
         """
-        url = f'/api/v1/concept'
-        response = self._wrapper(method="get", url=url)
-        if response.status_code == 200:
-            body = response.json()
-            return TypeAdapter(List[ConceptBrief]).validate_python(body)
-        raise ResponseCodeError(f'Failed to get concepts: response code: {response.status_code} is not '
-                                f'200 (OK): {response.text}')
+        raise NotImplementedError(
+            "get_concepts is unavailable: the server's concept registry API was removed. "
+            "Read concept_uri/unit_uri from get_table() columns or set them with update_table_column()."
+        )
 
     def get_identifiers(self, database_id: str = None, subset_id: str = None, view_id: str = None,
                         table_id: str = None, type: IdentifierType = None, status: IdentifierStatusType = None) -> List[
