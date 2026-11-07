@@ -377,7 +377,6 @@ class RestClient:
                                  payload=ModifyVisibility(is_public=is_public, is_schema_public=is_schema_public,
                                                           is_dashboard_enabled=is_dashboard_enabled))
         if response.status_code == 202:
-            body = response.json()
             return self.get_database(database_id)
         if response.status_code == 400:
             raise MalformedError(f'Failed to update database visibility: {response.text}')

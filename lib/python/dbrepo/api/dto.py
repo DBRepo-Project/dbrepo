@@ -1048,7 +1048,6 @@ class Query(BaseModel):
     result_number: Optional[int] = None
     identifiers: List[IdentifierBrief] = field(default_factory=list)
 
-
     @field_validator("identifiers", mode="before")
     @classmethod
     def normalize_identifiers(cls, value):
