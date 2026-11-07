@@ -520,12 +520,18 @@ class QueryUnitTest(unittest.TestCase):
             # mock
             mock.put(
                 '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/subset/e1df2bb8-1f12-494a-ade5-2c4aecdab939',
-                json=exp.model_dump(), headers={'X-Headers': 'id,username'}, status_code=202)
+                json={**exp.model_dump(), 'identifiers': None}, headers={'X-Headers': 'id,username'}, status_code=202)
             # test
             response = RestClient(username='foo', password='bar').update_subset(
                 database_id="6bd39359-b154-456d-b9c2-caa516a45732", subset_id="e1df2bb8-1f12-494a-ade5-2c4aecdab939",
                 persist=True)
             self.assertEqual(exp, response)
+            self.assertEqual([], response.identifiers)
+            for value in ([], None):
+                self.assertEqual([], Query.model_validate({**exp.model_dump(), 'identifiers': value}).identifiers)
+            from pydantic import ValidationError
+            with self.assertRaises(ValidationError):
+                Query.model_validate({**exp.model_dump(), 'identifiers': 'invalid'})
 
     def test_update_subset_400_fails(self):
         with requests_mock.Mocker() as mock:
