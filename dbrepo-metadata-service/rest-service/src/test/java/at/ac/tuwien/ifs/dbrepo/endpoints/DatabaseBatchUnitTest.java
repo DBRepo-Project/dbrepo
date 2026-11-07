@@ -105,6 +105,21 @@ class DatabaseBatchUnitTest extends BaseTest {
     }
 
     @Test
+    void literalHttpRouteReturnsRequestedDatabasesInOrderAndOmitsMissingIds() throws Exception {
+        DATABASE_1.setIsPublic(true);
+        DATABASE_2.setIsPublic(true);
+        when(databases.findById(DATABASE_1_ID)).thenReturn(DATABASE_1);
+        when(databases.findById(DATABASE_2_ID)).thenReturn(DATABASE_2);
+        when(databases.findById(DATABASE_3_ID)).thenThrow(new DatabaseNotFoundException("missing"));
+        mvc.perform(get("/api/v1/database/batch").param("id", DATABASE_2_ID.toString(),
+                        DATABASE_3_ID.toString(), DATABASE_1_ID.toString(), DATABASE_2_ID.toString()))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].id").value(DATABASE_2_ID.toString()))
+                .andExpect(jsonPath("$[1].id").value(DATABASE_1_ID.toString()));
+        verify(databases, times(1)).findById(DATABASE_2_ID);
+    }
+
+    @Test
     void overLimitHttpInputIsRejectedBeforeDeduplication() throws Exception {
         String[] ids = Collections.nCopies(101, DATABASE_1_ID.toString()).toArray(String[]::new);
         mvc.perform(get("/api/v1/database/batch").param("id", ids)).andExpect(status().isBadRequest());
