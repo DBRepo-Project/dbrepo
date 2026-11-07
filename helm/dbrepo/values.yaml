@@ -143,7 +143,7 @@ authservice:
   proxyHeaders: xforwarded
   ## @param authservice.issuerUri Custom issuer URI, if empty a combination of `$hostname/realms/dbrepo` is used.
   issuerUri: ""
-  ## @param authservice.jwkUri Custom JWK URI, if empty a combination of `$hostname/realms/dbrepo/protocol/openid-connect/certs` is used.
+  ## @param authservice.jwkUri Custom JWK URI, if empty the in-cluster `$endpoint/realms/dbrepo/protocol/openid-connect/certs` is used.
   jwkUri: ""
   auth:
     ## @skip authservice.auth.adminUser
