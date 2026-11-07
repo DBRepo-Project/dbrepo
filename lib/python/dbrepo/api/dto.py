@@ -781,6 +781,15 @@ class TableStatistics(BaseModel):
     columns: dict[str, ColumnStatistic]
 
 
+    @field_validator("columns", mode="before")
+    @classmethod
+    def index_columns(cls, value):
+        if isinstance(value, list):
+            columns = [ColumnStatistic.model_validate(column) for column in value]
+            return {column.name: column for column in columns}
+        return value
+
+
 class UnitBrief(BaseModel):
     id: str
     uri: str

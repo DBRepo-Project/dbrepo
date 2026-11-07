@@ -1054,13 +1054,15 @@ class RestClient:
         :raises ServiceError: If something went wrong with obtaining the information in the search service.
         :raises ResponseCodeError: If something went wrong with the analysis.
         """
-        url = f'/api/v1/analyse/database/{database_id}/table/{table_id}/statistics'
+        url = f'/api/v1/database/{database_id}/table/{table_id}/statistic'
         response = self._wrapper(method="get", url=url)
-        if response.status_code == 202:
+        if response.status_code == 200:
             body = response.json()
             return TableStatistics.model_validate(body)
         if response.status_code == 400:
             raise MalformedError(f'Failed to analyse table statistics: {response.text}')
+        if response.status_code == 403:
+            raise ForbiddenError('Failed to analyse table statistics: not allowed')
         if response.status_code == 404:
             raise NotExistsError(f'Failed to analyse table statistics: separator error')
         if response.status_code == 502:
@@ -1069,7 +1071,7 @@ class RestClient:
         if response.status_code == 503:
             raise ServiceError(f'Failed to analyse table statistics: failed to save statistic in search service')
         raise ResponseCodeError(f'Failed to analyse table statistics: response code: {response.status_code} is not '
-                                f'202 (ACCEPTED): {response.text}')
+                                f'200 (OK): {response.text}')
 
     def update_table_statistics(self, database_id: str, table_id: str) -> None:
         """

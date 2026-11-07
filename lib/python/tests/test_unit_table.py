@@ -1203,18 +1203,24 @@ class TableUnitTest(unittest.TestCase):
                     "id": ColumnStatistic(name="id", val_min=1.0, val_max=9.0, mean=5.0, median=5.0, std_dev=2.73)})
             # mock
             mock.get(
-                '/api/v1/analyse/database/6bd39359-b154-456d-b9c2-caa516a45732/table/b3230b86-4743-498d-9015-3fad58049692/statistics',
-                json=exp.model_dump(), status_code=202)
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/table/b3230b86-4743-498d-9015-3fad58049692/statistic',
+                json={**exp.model_dump(), 'columns': [column.model_dump() for column in exp.columns.values()]}, status_code=200)
             # test
             response = RestClient().analyse_table_statistics(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                                                              table_id="b3230b86-4743-498d-9015-3fad58049692")
             self.assertEqual(exp, response)
 
+    def test_analyse_table_statistics_forbidden(self):
+        with requests_mock.Mocker() as mock:
+            mock.get('/api/v1/database/db/table/table/statistic', status_code=403)
+            with self.assertRaises(ForbiddenError):
+                RestClient().analyse_table_statistics('db', 'table')
+
     def test_analyse_table_statistics_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get(
-                '/api/v1/analyse/database/6bd39359-b154-456d-b9c2-caa516a45732/table/b3230b86-4743-498d-9015-3fad58049692/statistics',
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/table/b3230b86-4743-498d-9015-3fad58049692/statistic',
                 status_code=400)
             # test
             try:
@@ -1227,7 +1233,7 @@ class TableUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get(
-                '/api/v1/analyse/database/6bd39359-b154-456d-b9c2-caa516a45732/table/b3230b86-4743-498d-9015-3fad58049692/statistics',
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/table/b3230b86-4743-498d-9015-3fad58049692/statistic',
                 status_code=404)
             # test
             try:
@@ -1240,7 +1246,7 @@ class TableUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get(
-                '/api/v1/analyse/database/6bd39359-b154-456d-b9c2-caa516a45732/table/b3230b86-4743-498d-9015-3fad58049692/statistics',
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/table/b3230b86-4743-498d-9015-3fad58049692/statistic',
                 status_code=502)
             # test
             try:
@@ -1253,7 +1259,7 @@ class TableUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get(
-                '/api/v1/analyse/database/6bd39359-b154-456d-b9c2-caa516a45732/table/b3230b86-4743-498d-9015-3fad58049692/statistics',
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/table/b3230b86-4743-498d-9015-3fad58049692/statistic',
                 status_code=503)
             # test
             try:
@@ -1266,8 +1272,8 @@ class TableUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get(
-                '/api/v1/analyse/database/6bd39359-b154-456d-b9c2-caa516a45732/table/b3230b86-4743-498d-9015-3fad58049692/statistics',
-                status_code=200)
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/table/b3230b86-4743-498d-9015-3fad58049692/statistic',
+                status_code=418)
             # test
             try:
                 RestClient().analyse_table_statistics(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
