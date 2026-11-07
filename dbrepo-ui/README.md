@@ -108,3 +108,7 @@ bun run .output/server/index.mjs
   success: `sudo sysctl -p`
 * See
   further: [https://stackoverflow.com/questions/53930305/nodemon-error-system-limit-for-number-of-file-watchers-reached](https://stackoverflow.com/questions/53930305/nodemon-error-system-limit-for-number-of-file-watchers-reached)
+
+### Public health response
+
+`GET /health` returns HTTP 200 with `Content-Type: application/json` and `{"status":"UP"}`. Both gateway configurations and the UI implement this contract, including deployments that route directly to the UI. This is availability of the responding process, not a readiness check for the databases or other services. Use the individual backend readiness endpoints for those checks. The UI replaces the Prometheus module's default text response while retaining its metrics endpoint.

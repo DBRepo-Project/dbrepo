@@ -387,14 +387,14 @@ class RestClient:
         raise ResponseCodeError(
             f'Failed to update database visibility: response code: {response.status_code} is not 202 (ACCEPTED)')
 
-    def update_database_owner(self, database_id: str, username: str) -> Database:
+    def update_database_owner(self, database_id: str, username: str) -> DatabaseBrief:
         """
         Updates the database owner of a database with the given database id.
 
         :param database_id: The database id.
         :param username: The username of the new owner.
 
-        :returns: The database, if successful.
+        :returns: The brief database response, if successful.
 
         :raises MalformedError: If the payload was rejected by the service.
         :raises ForbiddenError: If something went wrong with the authorization.
@@ -404,24 +404,24 @@ class RestClient:
         :raises ResponseCodeError: If something went wrong with the update.
         """
         url = f'/api/v1/database/{database_id}/owner'
-        response = self._wrapper(method="put", url=url, force_auth=True, payload=ModifyOwner(id=username))
+        response = self._wrapper(method="put", url=url, force_auth=True, payload=ModifyOwner(username=username))
         if response.status_code == 202:
             body = response.json()
-            return Database.model_validate(body)
+            return DatabaseBrief.model_validate(body)
         if response.status_code == 400:
-            raise MalformedError(f'Failed to update database visibility: {response.text}')
+            raise MalformedError(f'Failed to update database owner: {response.text}')
         if response.status_code == 403:
-            raise ForbiddenError(f'Failed to update database visibility: not allowed')
+            raise ForbiddenError(f'Failed to update database owner: not allowed')
         if response.status_code == 404:
-            raise NotExistsError(f'Failed to update database visibility: not found')
+            raise NotExistsError(f'Failed to update database owner: not found')
         if response.status_code == 502:
             raise ServiceConnectionError(
-                f'Failed to update database visibility: failed to establish connection to search service')
+                f'Failed to update database owner: failed to establish connection to search service')
         if response.status_code == 503:
             raise ServiceError(
-                f'Failed to update database visibility: failed to update in search service')
+                f'Failed to update database owner: failed to update in search service')
         raise ResponseCodeError(
-            f'Failed to update database visibility: response code: {response.status_code} is not 202 (ACCEPTED)')
+            f'Failed to update database owner: response code: {response.status_code} is not 202 (ACCEPTED)')
 
     def update_database_schema(self, database_id: str) -> DatabaseBrief:
         """

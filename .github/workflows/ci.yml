@@ -169,6 +169,7 @@ jobs:
           docker compose build dbrepo-ui
           docker run --name dbrepo-ui -e NODE_OPTIONS=--max_old_space_size=256 -p 3000:3000 -d dbrepo-ui:latest
           sleep 30
+          ENDPOINT=http://localhost:3000 node --test ./dbrepo-ui/tests/health.test.mjs
           ENDPOINT=http://localhost:3000 bash ./dbrepo-ui/tests/test_heap.sh
 
   docker-integration:

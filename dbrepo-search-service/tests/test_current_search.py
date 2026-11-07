@@ -501,3 +501,42 @@ def test_field_list_does_not_include_temporary_query_index(indexed, credentials,
     assert fields.get_json()
     assert SearchServiceClient.QUERY_FIELD not in fields.get_data(as_text=True)
     assert SearchServiceClient.EXPIRY_FIELD not in fields.get_data(as_text=True)
+
+
+@pytest.mark.parametrize('existing_index', [False, True])
+def test_raw_metadata_dates_work_with_fresh_and_existing_percolator(indexed, credentials, requests_mock, existing_index):
+    import time
+    backend = SearchServiceClient()._instance()
+    backend.indices.delete(index=SearchServiceClient.QUERY_INDEX, ignore=404)
+    if existing_index:
+        SearchServiceClient()._query_index(backend, time.monotonic() + 30)
+    payload = current_payload(indexed, 'owner')
+    payload['created'] = '2026-11-06 10:44:58'
+    payload['tables'][0]['created'] = '2026-11-06 10:44:58.123456'
+    payload['views'][0]['created'] = '2026-11-06T10:44:58Z'
+    authority(requests_mock, [payload])
+    with app.test_client() as client:
+        headers = credentials('owner')
+        responses = [client.get('/api/v1/search?q=Current', headers=headers),
+                     client.post('/api/v1/search/database', json={}, headers=headers),
+                     client.get('/api/v1/search/database', headers=headers)]
+    for response in responses:
+        assert response.status_code == 200
+        assert response.get_json()[0]['id'] == indexed.id
+    assert payload['tables'][0]['created'] == '2026-11-06 10:44:58.123456'
+    assert backend.count(index=SearchServiceClient.QUERY_INDEX)['count'] == 0
+
+
+def test_date_normalization_keeps_text_and_custom_formats():
+    from dbrepo.core.client.search import percolator_document
+    value = {'created': '2026-11-06 10:44:58', 'name': '2026-11-06 10:44:58',
+             'custom': '06/11/2026', 'epoch': 1234567890, 'epoch_string': '20261107',
+             'iso': '2026-11-06T10:44:58Z', 'nanos': '2026-11-06 10:44:58.123456789'}
+    mapping = {'properties': {'created': {'type': 'date'}, 'name': {'type': 'text'},
+                              'custom': {'type': 'date', 'format': 'dd/MM/yyyy'},
+                              'epoch': {'type': 'date'}, 'epoch_string': {'type': 'date'},
+                              'iso': {'type': 'date'}, 'nanos': {'type': 'date_nanos'}}}
+    result = percolator_document(value, mapping)
+    assert result == {**value, 'created': '2026-11-06T10:44:58',
+                      'nanos': '2026-11-06T10:44:58.123456789'}
+    assert value['created'] == '2026-11-06 10:44:58'

@@ -340,7 +340,7 @@ public class DatabaseEndpoint extends RestEndpoint {
     }
 
     @PutMapping("/{databaseId}/owner")
-    @Transactional(rollbackFor = {DashboardServiceException.class, DashboardServiceConnectionException.class})
+    @Transactional(rollbackFor = Exception.class)
     @PreAuthorize("hasAuthority('modify-database-owner')")
     @Observed(name = "dbrepo_database_transfer")
     @Operation(summary = "Update database owner",
@@ -356,7 +356,7 @@ public class DatabaseEndpoint extends RestEndpoint {
                     description = "Owner payload is malformed",
                     content = {@Content}),
             @ApiResponse(responseCode = "404",
-                    description = "Database could not be found",
+                    description = "Database, target user or access could not be found",
                     content = {@Content}),
             @ApiResponse(responseCode = "403",
                     description = "Transfer of ownership is not permitted",
@@ -372,13 +372,14 @@ public class DatabaseEndpoint extends RestEndpoint {
                                                      @Valid @RequestBody DatabaseTransferDto data,
                                                      Principal principal) throws NotAllowedException,
             DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
-            SearchServiceConnectionException, DashboardServiceException, DashboardServiceConnectionException {
+            SearchServiceConnectionException, DashboardServiceException, DashboardServiceConnectionException, UserNotFoundException, AccessNotFoundException {
         log.debug("endpoint transfer database, databaseId={}, transferDto.username={}", databaseId, data.getUsername());
         final Database database = databaseService.findForUpdateById(databaseId);
         if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to transfer database: not owner");
             throw new NotAllowedException("Failed to transfer database: not owner");
         }
+        userService.findByUsername(data.getUsername());
         if (database.getIsDashboardEnabled() && !database.getIsPublic() && !database.getIsSchemaPublic()) {
             dashboardService.requireUser(data.getUsername());
         }

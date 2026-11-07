@@ -78,7 +78,9 @@ class DashboardAccessPersistenceTest extends BaseTest {
         databases.saveAndFlush(DATABASE_1.toBuilder().accesses(new LinkedList<>()).isPublic(false)
                 .isSchemaPublic(false).isDashboardEnabled(false).build());
         final UserRepresentation user = new UserRepresentation();
+        user.setId(USER_2_ID.toString());
         user.setUsername(USER_2_USERNAME);
+        user.setAttributes(java.util.Map.of());
         user.setRealmRoles(List.of());
         when(keycloak.findByUsername(USER_2_USERNAME)).thenReturn(user);
         when(dashboardHttp.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
@@ -119,6 +121,13 @@ class DashboardAccessPersistenceTest extends BaseTest {
             throws Exception {
         databaseEndpoint.transfer(DATABASE_1_ID, DatabaseTransferDto.builder().username(USER_2_USERNAME).build(),
                 USER_1_PRINCIPAL);
+        assertEquals(1, memberGrants());
+        // Keep the legacy owner-without-grant scenario for installations created before transfer granted access.
+        new TransactionTemplate(transactions).executeWithoutResult(status -> {
+            final Database database = databases.findById(DATABASE_1_ID).orElseThrow();
+            database.getAccesses().removeIf(access -> USER_2_USERNAME.equals(access.getUsername()));
+            databases.saveAndFlush(database);
+        });
         assertEquals(0, memberGrants());
         clearInvocations(dataGateway, searchGateway, dashboardHttp);
         if (failFirst) {
@@ -274,8 +283,9 @@ class DashboardAccessPersistenceTest extends BaseTest {
                         "Concurrent mutation must preserve the committed owner");
                 assertNotNull(denied, "Former owner's mutation must be rejected after transfer");
                 assertInstanceOf(NotAllowedException.class, denied.getCause());
-                assertEquals(0, memberGrants());
-                verify(dataGateway, never()).createAccess(any(), anyString(), any());
+                assertEquals(1, memberGrants());
+                verify(dataGateway, times(1)).createAccess(DATABASE_1_ID, USER_2_USERNAME, AccessTypeDto.WRITE_ALL);
+                verify(dataGateway, never()).createAccess(DATABASE_1_ID, USER_2_USERNAME, AccessTypeDto.READ);
                 verify(dashboardHttp, times(1)).exchange(anyString(), eq(HttpMethod.PUT),
                         any(HttpEntity.class), eq(Void.class));
             } finally {
