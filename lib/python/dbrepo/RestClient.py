@@ -293,7 +293,7 @@ class RestClient:
                                                         is_schema_public=is_schema_public))
         if response.status_code == 201:
             body = response.json()
-            return Database.model_validate(body)
+            return self.get_database(body['id'])
         if response.status_code == 400:
             raise MalformedError(f'Failed to create database: {response.text}')
         if response.status_code == 403:
@@ -377,8 +377,7 @@ class RestClient:
                                  payload=ModifyVisibility(is_public=is_public, is_schema_public=is_schema_public,
                                                           is_dashboard_enabled=is_dashboard_enabled))
         if response.status_code == 202:
-            body = response.json()
-            return Database.model_validate(body)
+            return self.get_database(database_id)
         if response.status_code == 400:
             raise MalformedError(f'Failed to update database visibility: {response.text}')
         if response.status_code == 403:
@@ -1278,8 +1277,7 @@ class RestClient:
         url = f'/api/v1/database/{database_id}/access/{username}'
         response = self._wrapper(method="post", url=url, force_auth=True, payload=CreateAccess(type=type))
         if response.status_code == 202:
-            body = response.json()
-            return DatabaseAccess.model_validate(body).type
+            return type
         if response.status_code == 400:
             raise MalformedError(f'Failed to create database access: {response.text}')
         if response.status_code == 403:
@@ -1314,8 +1312,7 @@ class RestClient:
         url = f'/api/v1/database/{database_id}/access/{username}'
         response = self._wrapper(method="put", url=url, force_auth=True, payload=UpdateAccess(type=type))
         if response.status_code == 202:
-            body = response.json()
-            return DatabaseAccess.model_validate(body).type
+            return type
         if response.status_code == 400:
             raise MalformedError(f'Failed to update database access: {response.text}')
         if response.status_code == 403:
@@ -1797,7 +1794,7 @@ class RestClient:
 
     def get_identifiers(self, database_id: str = None, subset_id: str = None, view_id: str = None,
                         table_id: str = None, type: IdentifierType = None, status: IdentifierStatusType = None) -> List[
-        Identifier]:
+        IdentifierBrief]:
         """
         Get list of identifiers, filter by the remaining optional arguments.
 
@@ -1808,7 +1805,7 @@ class RestClient:
         :param type: The identifier type. Optional.
         :param status: The identifier status. Optional.
 
-        :returns: List of identifiers, if successful.
+        :returns: List of brief identifiers, if successful.
 
         :raises NotExistsError: If the accept header is neither application/json nor application/ld+json.
         :raises FormatNotAvailable: If the service could not represent the output.
@@ -1837,7 +1834,7 @@ class RestClient:
         response = self._wrapper(method="get", url=url, params=params, headers={'Accept': 'application/json'})
         if response.status_code == 200:
             body = response.json()
-            return TypeAdapter(List[Identifier]).validate_python(body)
+            return TypeAdapter(List[IdentifierBrief]).validate_python(body)
         if response.status_code == 404:
             raise NotExistsError(f'Failed to get identifiers: requested style is not known')
         if response.status_code == 406:

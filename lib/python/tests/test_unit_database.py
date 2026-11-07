@@ -149,13 +149,16 @@ class DatabaseUnitTest(unittest.TestCase):
         )
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/v1/database', json=exp.model_dump(), status_code=201)
+            mock.post('/api/v1/database', json={'id': exp.id}, status_code=201)
+            mock.get('/api/v1/database/' + exp.id, json=exp.model_dump())
             # test
             client = RestClient(username="a", password="b")
             response = RestClient(username="a", password="b").create_database(name='test',
                                                                               container_id="44d811a8-4019-46ba-bd57-ea10a2eb0c74",
                                                                               is_public=True)
             self.assertEqual(response.name, 'test')
+            self.assertIsInstance(response, Database)
+            self.assertEqual([r.method for r in mock.request_history], ['POST', 'GET'])
 
     def test_create_database_400_fails(self):
         with requests_mock.Mocker() as mock:
@@ -277,8 +280,9 @@ class DatabaseUnitTest(unittest.TestCase):
         )
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/visibility', json=exp.model_dump(),
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/visibility', json={'id': exp.id},
                      status_code=202)
+            mock.get('/api/v1/database/' + exp.id, json=exp.model_dump())
             # test
             response = RestClient(username="a", password="b").update_database_visibility(
                 database_id="6bd39359-b154-456d-b9c2-caa516a45732",
@@ -286,6 +290,8 @@ class DatabaseUnitTest(unittest.TestCase):
                 is_schema_public=True,
                 is_dashboard_enabled=True)
             self.assertEqual(response.is_public, True)
+            self.assertIsInstance(response, Database)
+            self.assertEqual([r.method for r in mock.request_history], ['PUT', 'GET'])
 
     def test_update_database_visibility_400_fails(self):
         with requests_mock.Mocker() as mock:
@@ -706,7 +712,7 @@ class DatabaseUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.post('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
-                      json=exp.model_dump(),
+                      
                       status_code=202)
             # test
             response = RestClient(username="a", password="b").create_database_access(
@@ -818,7 +824,7 @@ class DatabaseUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
-                     json=exp.model_dump(),
+                     
                      status_code=202)
             # test
             response = RestClient(username="a", password="b").update_database_access(

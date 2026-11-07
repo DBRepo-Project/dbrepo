@@ -5,7 +5,7 @@ from dataclasses import field
 from enum import Enum
 from typing import List, Optional, Annotated
 
-from pydantic import BaseModel, PlainSerializer, model_validator
+from pydantic import BaseModel, PlainSerializer, model_validator, field_validator
 
 Timestamp = Annotated[
     datetime.datetime, PlainSerializer(lambda v: v.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z', return_type=str)
@@ -1047,6 +1047,11 @@ class Query(BaseModel):
     query_normalized: str
     result_number: Optional[int] = None
     identifiers: List[IdentifierBrief] = field(default_factory=list)
+
+    @field_validator("identifiers", mode="before")
+    @classmethod
+    def normalize_identifiers(cls, value):
+        return [] if value is None else value
 
 
 class Links(BaseModel):
