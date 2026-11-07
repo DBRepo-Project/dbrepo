@@ -46,3 +46,12 @@ The DOI-profile persistence tests stub the provider transport and verify the exa
 resource and request ID, local readback and rollback on a provider failure. They
 must run alongside the default-profile tests; disabling DOI does not exercise the
 provider update path.
+
+## Table removal
+
+The portable runner and its offline tests are in `.scripts/client-live-test.py`
+and `.scripts/test-client-live-test.py`. Select `--table-deletion physical` for main
+or `--table-deletion archive` for an integration build with commit `f39b2cbb9`.
+The default is physical deletion. See the [runner guide](../../.scripts/client-live-test.md)
+for required fixtures and historical-read assertions. The selected contract is
+recorded, and a mismatch cannot silently change the expected outcome.

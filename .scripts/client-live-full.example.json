@@ -1,0 +1,17 @@
+{
+  "endpoint": "https://YOUR-CUSTOMER-INSTANCE",
+  "profile": "full",
+  "owner": {"username": "test-owner", "password_env": "DBREPO_TEST_PASSWORD"},
+  "peer": {"username": "test-peer", "password_env": "DBREPO_PEER_PASSWORD"},
+  "admin": {"username": "test-admin", "password_env": "DBREPO_ADMIN_PASSWORD"},
+  "system": {"username": "YOUR-SYSTEM-USERNAME", "password_env": "DBREPO_SYSTEM_PASSWORD"},
+  "oidc": {"client_id": "dbrepo-client", "client_secret_env": "DBREPO_OIDC_CLIENT_SECRET"},
+  "amqp": {"broker_host": "YOUR-REACHABLE-BROKER-HOST", "broker_port": 5672, "broker_virtual_host": "dbrepo"},
+  "test_container": {
+    "host": "HOST-REACHABLE-FROM-DATA-SERVICE",
+    "port": 3306,
+    "image_id": "EXISTING-IMAGE-UUID",
+    "privileged_username": "DATABASE-ADMIN-USERNAME",
+    "privileged_password": "SET-IN-YOUR-PROTECTED-CONFIGURATION"
+  }
+}
