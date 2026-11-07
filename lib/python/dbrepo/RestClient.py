@@ -293,7 +293,7 @@ class RestClient:
                                                         is_schema_public=is_schema_public))
         if response.status_code == 201:
             body = response.json()
-            return Database.model_validate(body)
+            return self.get_database(body['id'])
         if response.status_code == 400:
             raise MalformedError(f'Failed to create database: {response.text}')
         if response.status_code == 403:
@@ -378,7 +378,7 @@ class RestClient:
                                                           is_dashboard_enabled=is_dashboard_enabled))
         if response.status_code == 202:
             body = response.json()
-            return Database.model_validate(body)
+            return self.get_database(database_id)
         if response.status_code == 400:
             raise MalformedError(f'Failed to update database visibility: {response.text}')
         if response.status_code == 403:
