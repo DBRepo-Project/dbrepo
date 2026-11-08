@@ -5,6 +5,11 @@ import org.springframework.security.authentication.BadCredentialsException;
 
 public interface KeycloakGateway {
 
+    /** Require a current, enabled AMQP publisher with the ordinary tuple-write role. */
+    void validatePublisher(String username) throws at.ac.tuwien.ifs.dbrepo.core.exception.NotAllowedException,
+            at.ac.tuwien.ifs.dbrepo.core.exception.RemoteUnavailableException;
+
+
     /**
      * Obtains a user token from the Auth Service for a user with given username and password existing in the given
      * realm for a client with given client id and client secret.

@@ -499,6 +499,13 @@
       "excluded": null
     },
     {
+      "operation": "POST /api/v1/database/{id}/table/{id}/data/ingest",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
+      ],
+      "excluded": "Internal Consumer write; requires the system identity and a broker-validated publisher."
+    },
+    {
       "operation": "POST /api/v1/database/{id}/view",
       "sources": [
         "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/ViewEndpoint.java",

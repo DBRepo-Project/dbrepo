@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpException;
+import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -100,12 +101,16 @@ public class RabbitConfig {
             final MessageProperties properties = message.getMessageProperties();
             final TypeReference<HashMap<String, Object>> typeRef = new TypeReference<>() {
             };
-            if (!properties.getReceivedRoutingKey().contains(".")) {
+            final String publisher = properties.getReceivedUserId();
+            if (publisher == null || publisher.isBlank()) {
+                throw new AmqpRejectAndDontRequeueException("Missing broker-validated publisher identity");
+            }
+            if (properties.getReceivedRoutingKey() == null || !properties.getReceivedRoutingKey().contains(".")) {
                 log.error("Failed to map database and table names from routing key: {}", properties.getReceivedRoutingKey());
                 return;
             }
             final String[] parts = properties.getReceivedRoutingKey().split("\\.");
-            if (parts.length != 3) {
+            if (parts.length != 3 || !"dbrepo".equals(parts[0])) {
                 log.error("Failed to map database and table names from routing key: is not 3-part");
                 return;
             }
@@ -114,7 +119,7 @@ public class RabbitConfig {
                         .data(objectMapper.readValue(message.getBody(), typeRef))
                         .build();
                 log.trace("received message of {} bytes with keys: {}", message.getMessageProperties().getContentLength(), payload.getData().keySet());
-                dataServiceGateway.insertRawTuple(UUID.fromString(parts[1]), UUID.fromString(parts[2]), payload);
+                dataServiceGateway.insertRawTuple(UUID.fromString(parts[1]), UUID.fromString(parts[2]), payload, publisher);
             } catch (IOException e) {
                 log.error("Failed to read object: {}", e.getMessage());
             } catch (TableNotFoundException | DataServiceException | RemoteUnavailableException e) {

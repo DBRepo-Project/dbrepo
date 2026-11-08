@@ -98,6 +98,7 @@ def source_inventory(root):
     found['GET /pid/{id}'] = ['dbrepo-gateway-service/dbrepo.conf']
     found['GET /health'] = ['dbrepo-gateway-service/dbrepo.conf']
     internal = {
+        'POST /api/v1/database/{id}/table/{id}/data/ingest': 'Internal Consumer write; requires the system identity and a broker-validated publisher.',
         'PUT /api/v1/database/{id}': 'Internal Data Service operation; gateway routes database metadata to Metadata.',
         'GET /api/v1/image/{id}/analyse/schema/{id}': 'Internal Data Service image analysis; not routed by the public gateway.',
     }
