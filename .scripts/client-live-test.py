@@ -556,7 +556,7 @@ c.publish_dataframe(v['key'],pd.DataFrame([{'id':5,'value':50,'label':'amqp-fram
         step('image.create',lambda:self.http('POST','/api/v1/image',spec,role='admin',expected=(201,)),reason=reason,resource='image')
         image=self.resources.get('image','missing')
         step('image.get',lambda:call('get_image',image),need=('image',))
-        step('image.update',lambda:self.http('PUT','/api/v1/image/'+image,spec,role='admin',expected=(202,)),need=('image',),reason=reason)
+        step('image.update',lambda:self.http('PUT','/api/v1/image/'+image,{k:v for k,v in spec.items() if k not in ('name','version')},role='admin',expected=(202,)),need=('image',),reason=reason)
         container=self.config.get('test_container')
         step('container.create',lambda:call('create_container',name=self.run_id,role='admin',**container),reason=reason or (None if container else 'test_container connection settings required'),resource='extra_container')
         if 'extra_container' not in self.resources:
