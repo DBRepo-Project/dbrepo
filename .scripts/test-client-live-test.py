@@ -198,6 +198,20 @@ class LiveRunnerTest(unittest.TestCase):
         self.assertFalse(result['contracts_match'])
         self.assertEqual('contract_mismatch', result['cases'][0]['state'])
 
+    def test_public_schema_analysis_counts_as_passed_endpoint_coverage(self):
+        path='/api/v1/image/2360f3c4-85e0-4fac-a7c6-73b296b9dde2/analyse/schema/synthetic.csv'
+        operation='GET /api/v1/image/{id}/analyse/schema/{id}'
+        self.runner.original_request=lambda **kwargs:self.response(200, {'columns':[]})
+        with patch.object(requests,'request',self.runner.transport):
+            self.runner.step('analysis.analyse_schema',lambda:self.runner.http('GET',path))
+        report=json.loads(self.runner.output.read_text())
+        endpoint=next(v for v in report['endpoint_coverage'] if v['operation']==operation)
+        self.assertIsNone(endpoint['excluded'])
+        self.assertEqual('passed',endpoint['state'])
+        self.assertEqual(1,endpoint['attempts'])
+        self.assertTrue(next(v for v in report['endpoint_coverage'] if v['operation'].endswith('/data/ingest'))['excluded'])
+        self.assertTrue(next(v for v in report['endpoint_coverage'] if v['operation']=='PUT /api/v1/database/{id}')['excluded'])
+
     def test_inventory_matches_current_source(self):
         root=Path(__file__).resolve().parents[1]
         self.assertEqual(json.loads((live.HERE/'client-live-endpoints.json').read_text()),live.source_inventory(root))

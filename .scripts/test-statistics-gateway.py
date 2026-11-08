@@ -43,6 +43,9 @@ def main():
                     url=prefix+'/'+suffix
                     with urlopen(Request(base+url,method=method),timeout=5) as response: value=json.load(response)
                     assert value=={'service':target,'method':method,'uri':url}, (source,suffix,method,value)
+                analysis='/api/v1/image/'+database+'/analyse/schema/'+table
+                with urlopen(base+analysis,timeout=5) as response: value=json.load(response)
+                assert value=={'service':'data','method':'GET','uri':analysis}, (source,analysis,value)
             finally:
                 subprocess.run(['docker','rm','-f',name],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
         print('PASS:',source)

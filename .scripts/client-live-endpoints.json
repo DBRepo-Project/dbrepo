@@ -262,7 +262,7 @@
       "sources": [
         "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/AnalyseEndpoint.java"
       ],
-      "excluded": "Internal Data Service image analysis; not routed by the public gateway."
+      "excluded": null
     },
     {
       "operation": "GET /api/v1/license",
