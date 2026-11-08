@@ -58,6 +58,7 @@ jobs:
       - name: Check Grafana plugin pins
         run: |
           python3 .scripts/test-grafana-plugins.py
+          python3 .scripts/test-statistics-gateway.py
           python3 -m pip install PyYAML
           python3 .scripts/test-dashboard-config.py
 
