@@ -152,6 +152,9 @@ jobs:
           "$RUNNER_TEMP/dbrepo-wheel/bin/python" -c "from dbrepo.RestClient import RestClient; from dbrepo.MqttClient import MqttClient"
       - name: Run tests
         run: ${{ matrix.test_cmd }}
+      - name: Check optional Bearer headers
+        if: matrix.name == 'search-service'
+        run: python .scripts/test-auth-headers.py
 
   ui:
     runs-on: ubuntu-latest
