@@ -61,6 +61,7 @@ jobs:
           python3 .scripts/test-statistics-gateway.py
           python3 -m pip install PyYAML
           python3 .scripts/test-dashboard-config.py
+          python3 .scripts/test-consumer-error-config.py
 
   java-services:
     runs-on: ubuntu-latest
@@ -152,6 +153,9 @@ jobs:
           "$RUNNER_TEMP/dbrepo-wheel/bin/python" -c "from dbrepo.RestClient import RestClient; from dbrepo.MqttClient import MqttClient"
       - name: Run tests
         run: ${{ matrix.test_cmd }}
+      - name: Check optional Bearer headers
+        if: matrix.name == 'search-service'
+        run: python .scripts/test-auth-headers.py
 
   ui:
     runs-on: ubuntu-latest

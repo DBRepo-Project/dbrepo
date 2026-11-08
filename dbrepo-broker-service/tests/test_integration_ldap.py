@@ -30,8 +30,7 @@ def ready(name, command):
     deadline = time.monotonic() + 120
     while time.monotonic() < deadline:
         try:
-            docker('exec', name, *command, timeout=15)
-            return
+            return docker('exec', name, *command, timeout=15)
         except (RuntimeError, subprocess.TimeoutExpired):
             time.sleep(1)
     raise RuntimeError('Disposable service did not become ready')
@@ -45,15 +44,14 @@ def main():
     password_hash = base64.b64encode(salt + hashlib.sha256(salt + internal_password.encode()).digest()).decode()
     with tempfile.TemporaryDirectory(prefix='dbrepo-ldap-test-') as directory:
         definitions = Path(directory) / 'definitions.json'
-        definitions.write_text(json.dumps({
-            'users': [{'name':'fixture-reader', 'password_hash':password_hash,
-                       'hashing_algorithm':'rabbit_password_hashing_sha256', 'tags':[]}],
-            'vhosts':[{'name':'dbrepo'}],
-            'permissions':[{'user':'fixture-reader','vhost':'dbrepo','configure':'.*','write':'.*','read':'.*'}],
-            'exchanges':[{'name':'dbrepo','vhost':'dbrepo','type':'topic','durable':True,'auto_delete':False,'arguments':{}}],
-            'queues':[{'name':'probe','vhost':'dbrepo','durable':False,'auto_delete':False,'arguments':{}}],
-            'bindings':[{'source':'dbrepo','vhost':'dbrepo','destination':'probe','destination_type':'queue',
-                         'routing_key':'dbrepo.#','arguments':{}}]}))
+        initial = json.loads((ROOT/'dbrepo-broker-service/definitions.json').read_text())
+        initial['users'] = [{'name':'fixture-reader', 'password_hash':password_hash,
+                             'hashing_algorithm':'rabbit_password_hashing_sha256', 'tags':[]}]
+        initial['permissions'] = [{'user':'fixture-reader','vhost':'dbrepo','configure':'.*','write':'.*','read':'.*'}]
+        initial['queues'].append({'name':'probe','vhost':'dbrepo','durable':False,'auto_delete':False,'arguments':{}})
+        initial['bindings'].append({'source':'dbrepo','vhost':'dbrepo','destination':'probe','destination_type':'queue',
+                                    'routing_key':'dbrepo.#','arguments':{}})
+        definitions.write_text(json.dumps(initial))
         definitions.chmod(0o644)
         mounts = []
         for name in ('rabbitmq.conf','advanced.config','enabled_plugins'):
@@ -77,7 +75,10 @@ def main():
                    *[arg for source,target in mounts for arg in ('-v', str(source)+':'+target+':ro')],
                    *[arg for key in broker_env for arg in ('--env', key)],
                    'docker.io/bitnamilegacy/rabbitmq:3.13.7', env=broker_env)
-            ready(broker, ['rabbitmq-diagnostics','-q','check_running'])
+            ready(broker, ['rabbitmq-diagnostics', '-q', 'check_running'])
+            flags = ready(broker, ['rabbitmqctl', '-q', 'list_feature_flags'])
+            assert any('stream_queue' in line and 'enabled' in line for line in flags.splitlines()), 'Fresh broker lacks stream_queue feature'
+
             port = int(docker('port', broker, '5672/tcp').rsplit(':', 1)[1])
             # Environment overrides must not substitute another publishing account.
             for key in list(os.environ):
@@ -95,6 +96,39 @@ def main():
                     assert method is not None, 'A published row did not arrive'
                     rows.append(json.loads(body))
                 assert rows == [{'id':1,'value':10}, {'id':2,'value':20}], 'Published rows differ'
+                source, _, source_body = channel.basic_get('dbrepo', auto_ack=False)
+                assert source is not None, 'Fresh definitions did not route the source delivery'
+                channel.basic_nack(source.delivery_tag, requeue=False)
+                deadline = time.monotonic() + 20
+                while time.monotonic() < deadline:
+                    retained, properties, body = channel.basic_get('dbrepo.consumer.errors', auto_ack=True)
+                    if retained is not None: break
+                    time.sleep(.2)
+                assert retained is not None and body==source_body, 'Fresh definitions did not retain rejected source delivery'
+                assert properties.user_id=='publisher' and properties.headers.get('x-death'), 'Dead lettering lost identity or diagnostics'
+
+                channel.basic_publish(exchange='', routing_key='dbrepo.consumer.errors', body=b'operator-only-marker')
+                public = pika.BlockingConnection(pika.ConnectionParameters(host='127.0.0.1', port=port,
+                    virtual_host='dbrepo', credentials=pika.PlainCredentials('publisher', password)))
+                try:
+                    rejected = False
+                    try: public.channel().basic_get('dbrepo.consumer.errors', auto_ack=True)
+                    except pika.exceptions.ChannelClosedByBroker as error:
+                        assert error.reply_code == 403
+                        rejected = True
+                    assert rejected, 'LDAP publisher could read retained error payloads'
+                    rejected = False
+                    try:
+                        untrusted = public.channel(); untrusted.confirm_delivery()
+                        untrusted.basic_publish(exchange='dbrepo.consumer.errors', routing_key='failed', body=b'untrusted')
+                    except pika.exceptions.ChannelClosedByBroker as error:
+                        assert error.reply_code == 403
+                        rejected = True
+                    assert rejected, 'LDAP publisher could write to the reserved error exchange'
+                finally: public.close()
+                method, _, body = channel.basic_get('dbrepo.consumer.errors', auto_ack=True)
+                assert method is not None and body == b'operator-only-marker', 'Internal operator could not read retained failure'
+
             finally:
                 connection.close()
             rejected = False
@@ -104,7 +138,7 @@ def main():
             except pika.exceptions.ProbableAuthenticationError:
                 rejected = True
             assert rejected, 'Invalid credentials were accepted'
-            print('LDAP publisher: single row and dataframe received; invalid credentials rejected')
+            print('LDAP publisher: rows received, invalid credentials rejected, retained error queue denied; internal operator can inspect')
         finally:
             for name in (broker, ldap):
                 subprocess.run(['docker','rm','-f','-v',name], capture_output=True, timeout=30)

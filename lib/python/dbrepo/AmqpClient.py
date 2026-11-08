@@ -62,7 +62,7 @@ class AmqpClient:
         connection = pika.BlockingConnection(parameters)
         channel = connection.channel()
         channel.basic_publish(exchange=exchange, routing_key=routing_key, body=json.dumps(data),
-                              properties=pika.BasicProperties(user_id=self.username))
+                              properties=pika.BasicProperties(user_id=self.username, delivery_mode=2))
         connection.close()
 
     def publish_dataframe(self, routing_key: str, data: DataFrame, exchange: str = 'dbrepo') -> None:
@@ -84,5 +84,5 @@ class AmqpClient:
         for idx, row in data.iterrows():
             body = row.to_json()
             channel.basic_publish(exchange=exchange, routing_key=routing_key, body=body,
-                                  properties=pika.BasicProperties(user_id=self.username))
+                                  properties=pika.BasicProperties(user_id=self.username, delivery_mode=2))
         connection.close()

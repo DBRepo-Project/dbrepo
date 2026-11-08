@@ -15,8 +15,9 @@ def test_both_publish_methods_attach_connection_identity():
         calls = connection.return_value.channel.return_value.basic_publish.call_args_list
         assert len(calls) == 3
         assert all(c.kwargs['properties'].user_id == 'publisher' for c in calls)
+        assert all(c.kwargs['properties'].delivery_mode == 2 for c in calls)
 
 
 if __name__ == "__main__":
     test_both_publish_methods_attach_connection_identity()
-    print("PASS: both AMQP publication paths attach the authenticated connection username")
+    print("PASS: both AMQP publication paths attach the authenticated connection username and persistent delivery mode")
