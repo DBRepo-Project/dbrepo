@@ -49,6 +49,8 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
         } catch (ResourceAccessException | HttpServerErrorException e) {
             log.error("Failed to insert raw tuple: {}", e.getMessage());
             throw new RemoteUnavailableException("Failed to insert raw tuple: " + e.getMessage(), e);
+        } catch (HttpClientErrorException.TooManyRequests e) {
+            throw new RemoteUnavailableException("Ingestion backend rate limited the request");
         } catch (HttpClientErrorException.NotFound e) {
             log.error("Failed to find table with id {}: {}", tableId, e.getMessage());
             throw new TableNotFoundException("Failed to find table: " + e.getMessage(), e);

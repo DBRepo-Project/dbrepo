@@ -43,4 +43,18 @@ class DataServiceGatewayUnitTest {
 
         server.verify();
     }
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(ints={429,500,503})
+    void transientHttpFailuresRemainRetryable(int status) {
+        final RestTemplate http = new RestTemplate();
+        http.setUriTemplateHandler(new DefaultUriBuilderFactory("http://data-service:8080"));
+        final MockRestServiceServer server=MockRestServiceServer.bindTo(http).build();
+        server.expect(org.springframework.test.web.client.match.MockRestRequestMatchers.anything())
+                .andRespond(withStatus(HttpStatus.valueOf(status)));
+        org.junit.jupiter.api.Assertions.assertThrows(at.ac.tuwien.ifs.dbrepo.core.exception.RemoteUnavailableException.class,
+                ()->new DataServiceGatewayImpl(http).insertRawTuple(UUID.randomUUID(),UUID.randomUUID(),
+                        TupleDto.builder().data(Map.of("id",1)).build(),"publisher"));
+        server.verify();
+    }
+
 }

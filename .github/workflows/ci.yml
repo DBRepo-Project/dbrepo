@@ -61,6 +61,7 @@ jobs:
           python3 .scripts/test-statistics-gateway.py
           python3 -m pip install PyYAML
           python3 .scripts/test-dashboard-config.py
+          python3 .scripts/test-consumer-error-config.py
 
   java-services:
     runs-on: ubuntu-latest
