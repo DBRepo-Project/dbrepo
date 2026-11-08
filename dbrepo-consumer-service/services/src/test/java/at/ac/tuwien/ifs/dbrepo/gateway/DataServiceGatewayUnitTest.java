@@ -30,15 +30,16 @@ class DataServiceGatewayUnitTest {
         final UUID tableId = UUID.fromString("d7c63353-b6a9-4ce3-b2f1-7fd2131e3cd6");
 
         server.expect(requestTo("http://data-service:8080/api/v1/database/"
-                        + databaseId + "/table/" + tableId + "/data"))
+                        + databaseId + "/table/" + tableId + "/data/ingest"))
                 .andExpect(method(HttpMethod.POST))
+                .andExpect(org.springframework.test.web.client.match.MockRestRequestMatchers.header("X-DBRepo-Publisher", "owner"))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(content().json("{\"data\":{\"temperature\":21.5}}"))
                 .andRespond(withStatus(HttpStatus.CREATED));
 
         gateway.insertRawTuple(databaseId, tableId, TupleDto.builder()
                 .data(Map.of("temperature", 21.5))
-                .build());
+                .build(), "owner");
 
         server.verify();
     }

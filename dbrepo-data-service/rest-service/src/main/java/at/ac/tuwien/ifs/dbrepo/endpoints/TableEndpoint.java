@@ -7,6 +7,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
+import at.ac.tuwien.ifs.dbrepo.gateway.KeycloakGateway;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.AnalyseService;
 import at.ac.tuwien.ifs.dbrepo.service.DataService;
@@ -37,6 +38,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
@@ -62,13 +65,14 @@ public class TableEndpoint {
     private final MetadataService metadataService;
     private final EndpointValidator endpointValidator;
     private final MetadataServiceGateway metadataServiceGateway;
+    private final KeycloakGateway keycloakGateway;
 
     private static final String MEDIA_TYPE_TEXT_CSV = "text/csv";
 
     @Autowired
     public TableEndpoint(DataService dataService, TableService tableService,
                          MariaDbMapper mariaDbMapper, AnalyseService analyseService, MetadataService metadataService,
-                         EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway, StorageService storageService) {
+                         EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway, StorageService storageService, KeycloakGateway keycloakGateway) {
         this.dataService = dataService;
         this.tableService = tableService;
         this.storageService = storageService;
@@ -77,6 +81,7 @@ public class TableEndpoint {
         this.metadataService = metadataService;
         this.endpointValidator = endpointValidator;
         this.metadataServiceGateway = metadataServiceGateway;
+        this.keycloakGateway = keycloakGateway;
     }
 
     @PostMapping
@@ -391,6 +396,34 @@ public class TableEndpoint {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
         }
+    }
+
+    @PostMapping("/{tableId}/data/ingest")
+    @PreAuthorize("hasAuthority('system')")
+    @Operation(summary = "Insert a broker tuple", hidden = true)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Created broker table data"),
+            @ApiResponse(responseCode = "400", description = "Malformed tuple or publisher identity", content = {@Content}),
+            @ApiResponse(responseCode = "403", description = "Caller or publisher cannot write this table", content = {@Content}),
+            @ApiResponse(responseCode = "404", description = "Database, current table or upload not found", content = {@Content}),
+            @ApiResponse(responseCode = "503", description = "Metadata, database or storage unavailable", content = {@Content})
+    })
+    public ResponseEntity<Void> ingestTuple(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                             @NotNull @PathVariable("tableId") UUID tableId,
+                                             @Valid @RequestBody TupleDto data,
+                                             @RequestHeader("X-DBRepo-Publisher") String publisher,
+                                             Principal principal)
+            throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
+            TableMalformedException, QueryMalformedException, NotAllowedException, StorageUnavailableException,
+            StorageNotFoundException, MetadataServiceException, DatabaseNotFoundException {
+        if (!AuthUtil.isSystem(principal) || publisher == null || publisher.isBlank()) {
+            throw new NotAllowedException("An internal caller and broker-validated publisher are required");
+        }
+        keycloakGateway.validatePublisher(publisher);
+        // The worker is authenticated separately; database/table and upload checks use the publisher.
+        final User user = new User(publisher, "", List.of());
+        final Principal actor = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+        return insertRawTuple(databaseId, tableId, data, actor);
     }
 
     @PutMapping("/{tableId}/data")

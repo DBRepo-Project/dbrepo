@@ -54,8 +54,12 @@ public class ContainerImage {
     @Column(nullable = false)
     private Integer defaultPort;
 
-    @Column(nullable = false, unique = true, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private Boolean isDefault = false;
+
+    @Column(name = "default_image", insertable = false, updatable = false, unique = true,
+            columnDefinition = "TINYINT GENERATED ALWAYS AS (CASE WHEN is_default THEN 1 ELSE NULL END)")
+    private Integer defaultImage;
 
     @ToString.Exclude
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "image")

@@ -32,6 +32,17 @@ class LiveRunnerTest(unittest.TestCase):
         response.headers['Content-Type'] = 'application/json'
         return response
 
+    def test_image_update_sends_only_change_fields(self):
+        self.runner.resources['image'] = 'synthetic-image'
+        def step(name, action, **kwargs):
+            if name == 'image.update': action()
+        with patch.object(self.runner, 'http') as http:
+            self.runner.admin_steps(step, lambda *args, **kwargs: None)
+        method, path, payload = http.call_args.args
+        self.assertEqual('PUT', method)
+        self.assertEqual('/api/v1/image/synthetic-image', path)
+        self.assertEqual({'registry','default_port','driver_class','dialect','jdbc_method'}, set(payload))
+
     def test_roles_ignore_owner_environment_and_requests_have_timeout(self):
         with patch.dict(os.environ, {'REST_API_USERNAME':'owner','REST_API_PASSWORD':'environment-secret','REST_API_ENDPOINT':'https://wrong.invalid','REST_API_SECURE':'False'}):
             peer = live.make_client(self.runner.endpoint, {'username':'peer','password':'peer-secret'})
