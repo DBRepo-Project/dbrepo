@@ -953,6 +953,8 @@ public class BaseTest {
             .uiAdditionalFlags(CONTAINER_1_UI_ADDITIONAL_FLAGS)
             .privilegedUsername(CONTAINER_1_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_1_PRIVILEGED_PASSWORD)
+            .readonlyUsername(CONTAINER_1_READONLY_USERNAME)
+            .readonlyPassword(CONTAINER_1_READONLY_PASSWORD)
             .databases(new LinkedList<>())
             .build();
 
@@ -1013,6 +1015,8 @@ public class BaseTest {
             .databases(new LinkedList<>(List.of()))
             .privilegedUsername(CONTAINER_2_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_2_PRIVILEGED_PASSWORD)
+            .readonlyUsername(CONTAINER_1_READONLY_USERNAME)
+            .readonlyPassword(CONTAINER_1_READONLY_PASSWORD)
             .build();
 
     public final ContainerDto CONTAINER_2_DTO = ContainerDto.builder()
@@ -1069,6 +1073,8 @@ public class BaseTest {
             .databases(new LinkedList<>())
             .privilegedUsername(CONTAINER_3_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_3_PRIVILEGED_PASSWORD)
+            .readonlyUsername(CONTAINER_1_READONLY_USERNAME)
+            .readonlyPassword(CONTAINER_1_READONLY_PASSWORD)
             .build();
 
     public final static UUID CONTAINER_4_ID = UUID.fromString("67aee75c-791c-410b-abbb-175c11ddd252");
@@ -1093,6 +1099,8 @@ public class BaseTest {
             .quota(CONTAINER_4_QUOTA)
             .privilegedUsername(CONTAINER_4_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_4_PRIVILEGED_PASSWORD)
+            .readonlyUsername(CONTAINER_1_READONLY_USERNAME)
+            .readonlyPassword(CONTAINER_1_READONLY_PASSWORD)
             .databases(null) /* DATABASE_4 */
             .build();
 

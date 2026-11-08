@@ -323,6 +323,7 @@ public interface MetadataMapper {
         return attr;
     }
 
+    @Mapping(target = "count", expression = "java(data.getDatabases().size())")
     ContainerDto containerToContainerDto(Container data);
 
     @Mappings({

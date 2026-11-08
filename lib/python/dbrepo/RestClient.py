@@ -305,7 +305,8 @@ class RestClient:
                                 f'201 (CREATED): {response.text}')
 
     def create_container(self, name: str, host: str, image_id: str, privileged_username: str, privileged_password: str,
-                         port: int = None, ui_host: str = None, ui_port: int = None) -> Container:
+                         port: int = None, ui_host: str = None, ui_port: int = None, quota: int = 50,
+                         readonly_username: str = None, readonly_password: str = None) -> Container:
         """
         Register a container instance executing a given container image. Note that this does not create a container,
         but only saves it in the metadata database to be used within DBRepo. The container still needs to be created
@@ -320,6 +321,10 @@ class RestClient:
         :param ui_host: The container hostname displayed in the user interface. Optional. Default: value of `host`.
         :param ui_port: The container port displayed in the user interface. Optional. Default: `default_port` of image.
 
+        :param quota: Maximum number of databases on this container. Default: 50.
+        :param readonly_username: Dedicated read-only database username. Required by the server.
+        :param readonly_password: Plaintext password for that read-only user. Required by the server.
+
         :returns: The container, if successful.
 
         :raises MalformedError: If the payload was rejected by the service.
@@ -333,7 +338,9 @@ class RestClient:
                                  payload=CreateContainer(name=name, host=host, image_id=image_id,
                                                          privileged_username=privileged_username,
                                                          privileged_password=privileged_password, port=port,
-                                                         ui_host=ui_host, ui_port=ui_port))
+                                                         ui_host=ui_host, ui_port=ui_port, quota=quota,
+                                                         readonly_username=readonly_username,
+                                                         readonly_password=readonly_password))
         if response.status_code == 201:
             body = response.json()
             return Container.model_validate(body)

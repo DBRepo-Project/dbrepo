@@ -12,6 +12,9 @@
     "port": 3306,
     "image_id": "EXISTING-IMAGE-UUID",
     "privileged_username": "DATABASE-ADMIN-USERNAME",
-    "privileged_password": "SET-IN-YOUR-PROTECTED-CONFIGURATION"
+    "privileged_password": "SET-IN-YOUR-PROTECTED-CONFIGURATION",
+    "readonly_username": "DEDICATED-READONLY-USERNAME",
+    "readonly_password": "SET-IN-YOUR-PROTECTED-CONFIGURATION",
+    "quota": 50
   }
 }

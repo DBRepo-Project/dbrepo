@@ -62,7 +62,7 @@ public class Container {
     })
     private List<Database> databases = new LinkedList<>();
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.ALL, CascadeType.PERSIST})
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinColumns({
             @JoinColumn(name = "image_id", referencedColumnName = "id")
     })
@@ -79,16 +79,18 @@ public class Container {
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;
 
-    @Column
+    @Column(nullable = false)
     private String privilegedUsername;
 
-    @Column
+    @Column(nullable = false)
+    @ToString.Exclude
     private String privilegedPassword;
 
-    @Column
+    @Column(nullable = false)
     private String readonlyUsername;
 
-    @Column
+    @Column(nullable = false)
+    @ToString.Exclude
     private String readonlyPassword;
 
     @PrePersist

@@ -53,6 +53,9 @@ class CreateContainer(BaseModel):
     image_id: str
     privileged_username: str
     privileged_password: str
+    quota: int = 50
+    readonly_username: Optional[str] = None
+    readonly_password: Optional[str] = None
     ui_host: Optional[str] = None
     ui_port: Optional[int] = None
     port: Optional[int] = None
