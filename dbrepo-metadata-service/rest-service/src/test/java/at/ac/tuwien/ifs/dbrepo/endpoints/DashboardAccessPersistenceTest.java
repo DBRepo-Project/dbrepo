@@ -8,6 +8,7 @@ import org.mockito.ArgumentCaptor;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.AccessType;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.DatabaseAccess;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.View;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
@@ -49,11 +50,12 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 @WithMockUser(username = BaseTest.USER_1_USERNAME, authorities = {
-        "create-database-access", "delete-database-access", "modify-database-visibility", "modify-database-owner", "modify-database-image"})
+        "create-database-access", "delete-database-access", "modify-database-visibility", "modify-database-owner", "modify-database-image", "modify-view-visibility"})
 class DashboardAccessPersistenceTest extends BaseTest {
 
     @Autowired private AccessEndpoint accessEndpoint;
     @Autowired private DatabaseEndpoint databaseEndpoint;
+    @Autowired private ViewEndpoint viewEndpoint;
     @Autowired private DatabaseRepository databases;
     @Autowired private ContainerRepository containers;
     @Autowired private LicenseRepository licenses;
@@ -296,6 +298,82 @@ class DashboardAccessPersistenceTest extends BaseTest {
 
     private DatabaseModifyVisibilityDto privateEnabled() {
         return DatabaseModifyVisibilityDto.builder().isPublic(false).isSchemaPublic(false).isDashboardEnabled(true).build();
+    }
+
+    @Test
+    void dashboardFailureRollsBackViewVisibilityAndAllowsRetry() throws Exception {
+        seedView();
+        when(dashboardHttp.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
+                .thenThrow(HttpServerErrorException.create(HttpStatus.SERVICE_UNAVAILABLE, "Synthetic outage",
+                        HttpHeaders.EMPTY, new byte[0], StandardCharsets.UTF_8))
+                .thenReturn(ResponseEntity.accepted().build());
+        final ViewUpdateDto request = ViewUpdateDto.builder().isPublic(false).isSchemaPublic(false).build();
+        assertThrows(DashboardServiceConnectionException.class, () ->
+                viewEndpoint.update(DATABASE_1_ID, VIEW_1_ID, request, USER_1_PRINCIPAL));
+        assertTrue(viewIsPublic());
+        viewEndpoint.update(DATABASE_1_ID, VIEW_1_ID, request, USER_1_PRINCIPAL);
+        assertFalse(viewIsPublic());
+    }
+
+    @Test
+    void concurrentViewChangeWaitsForPublicationAndUsesCommittedVisibility() throws Exception {
+        seedView();
+        final CountDownLatch publicationAtGrafana = new CountDownLatch(1);
+        final CountDownLatch releasePublication = new CountDownLatch(1);
+        final CountDownLatch viewStarted = new CountDownLatch(1);
+        when(dashboardHttp.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
+                .thenAnswer(call -> {
+                    if (!call.getArgument(0, String.class).endsWith("/content")) {
+                        publicationAtGrafana.countDown();
+                        assertTrue(releasePublication.await(10, TimeUnit.SECONDS));
+                    }
+                    return ResponseEntity.accepted().build();
+                });
+        try (ExecutorService workers = Executors.newFixedThreadPool(2)) {
+            final Future<?> publication = workers.submit(new DelegatingSecurityContextCallable<>(() ->
+                    databaseEndpoint.visibility(DATABASE_1_ID, DatabaseModifyVisibilityDto.builder()
+                            .isPublic(true).isSchemaPublic(true).isDashboardEnabled(true).build(), USER_1_PRINCIPAL)));
+            try {
+                assertTrue(publicationAtGrafana.await(10, TimeUnit.SECONDS));
+                final Future<?> change = workers.submit(new DelegatingSecurityContextCallable<>(() -> {
+                    viewStarted.countDown();
+                    return viewEndpoint.update(DATABASE_1_ID, VIEW_1_ID,
+                            ViewUpdateDto.builder().isPublic(false).isSchemaPublic(false).build(), USER_1_PRINCIPAL);
+                }));
+                assertTrue(viewStarted.await(10, TimeUnit.SECONDS));
+                assertThrows(TimeoutException.class, () -> change.get(250, TimeUnit.MILLISECONDS));
+                releasePublication.countDown();
+                publication.get(10, TimeUnit.SECONDS);
+                change.get(10, TimeUnit.SECONDS);
+            } finally {
+                releasePublication.countDown();
+            }
+        }
+        final ArgumentCaptor<HttpEntity> sent = ArgumentCaptor.forClass(HttpEntity.class);
+        verify(dashboardHttp).exchange(endsWith("/content"), eq(HttpMethod.PUT), sent.capture(), eq(Void.class));
+        final DatabaseDto content = (DatabaseDto) sent.getValue().getBody();
+        assertTrue(content.getIsPublic());
+        assertTrue(content.getIsSchemaPublic());
+        assertFalse(content.getViews().getFirst().getIsPublic());
+        assertFalse(content.getViews().getFirst().getIsSchemaPublic());
+        assertFalse(viewIsPublic());
+    }
+
+    private void seedView() {
+        new TransactionTemplate(transactions).executeWithoutResult(status -> {
+            final Database database = databases.findById(DATABASE_1_ID).orElseThrow();
+            database.setIsDashboardEnabled(true);
+            database.getViews().add(View.builder().id(VIEW_1_ID).database(database).ownedBy(USER_1_USERNAME)
+                    .name("Synthetic view").internalName("synthetic_view").query("SELECT 1").queryHash("synthetic")
+                    .isPublic(true).isSchemaPublic(true).isInitialView(false)
+                    .identifiers(new LinkedList<>()).columns(new LinkedList<>()).build());
+            databases.saveAndFlush(database);
+        });
+    }
+
+    private boolean viewIsPublic() {
+        return new TransactionTemplate(transactions).execute(status -> databases.findById(DATABASE_1_ID)
+                .orElseThrow().getViews().getFirst().getIsPublic());
     }
 
     private int memberGrants() {

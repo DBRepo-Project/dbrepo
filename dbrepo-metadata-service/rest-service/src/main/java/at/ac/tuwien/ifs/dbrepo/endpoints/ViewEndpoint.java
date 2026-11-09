@@ -126,7 +126,7 @@ public class ViewEndpoint extends RestEndpoint {
             UserNotFoundException, SearchServiceException, SearchServiceConnectionException, TableNotFoundException,
             ImageNotFoundException, ViewExistsException, DashboardServiceException, DashboardServiceConnectionException, ColumnNotFoundException {
         log.debug("endpoint create view, databaseId={}, data.name={}", databaseId, data.getName());
-        final Database database = databaseService.findById(databaseId);
+        final Database database = databaseService.findForUpdateById(databaseId);
         if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to create view: not the database owner");
             throw new NotAllowedException("Failed to create view: not the database owner");
@@ -222,7 +222,7 @@ public class ViewEndpoint extends RestEndpoint {
             SearchServiceConnectionException, UserNotFoundException, DashboardServiceException,
             DashboardServiceConnectionException {
         log.debug("endpoint delete view, databaseId={}, viewId={}", databaseId, viewId);
-        final Database database = databaseService.findById(databaseId);
+        final Database database = databaseService.findForUpdateById(databaseId);
         if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to delete view: not the database owner {}", database.getOwnedBy());
             throw new NotAllowedException("Failed to delete view: not the database owner " + database.getOwnedBy());
@@ -235,7 +235,7 @@ public class ViewEndpoint extends RestEndpoint {
     }
 
     @PutMapping("/{viewId}")
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @PreAuthorize("hasAuthority('modify-view-visibility')")
     @Observed(name = "dbrepo_view_update")
     @Operation(summary = "Update view",
@@ -268,7 +268,7 @@ public class ViewEndpoint extends RestEndpoint {
             SearchServiceConnectionException, UserNotFoundException, DashboardServiceException,
             DashboardServiceConnectionException {
         log.debug("endpoint update view, databaseId={}, viewId={}", databaseId, viewId);
-        final Database database = databaseService.findById(databaseId);
+        final Database database = databaseService.findForUpdateById(databaseId);
         final View view = viewService.findById(database, viewId);
         if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal)) && !view.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to update view: not the database- or view owner");

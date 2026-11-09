@@ -12,6 +12,9 @@ The update procedure is:
    new [Helm Chart](/infrastructures/dbrepo/1.13/maintainer-guide/install-kubernetes/).
 4. Restart the application.
 
+Existing database dashboards also need a [generated-content refresh](../admin-guide/dashboard-content-upgrade.md)
+before dashboard access resumes. Deploying new images alone leaves the previous dashboard JSON in Grafana.
+
 
 ## Dashboard identity and datasource upgrade
 
