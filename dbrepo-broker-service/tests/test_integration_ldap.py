@@ -60,6 +60,7 @@ def main():
             copy.chmod(0o644)
             mounts.append((copy, '/etc/rabbitmq/'+name))
         mounts.append((definitions, '/app/definitions.json'))
+        mounts.append((ROOT/'dbrepo-broker-service/sync-service-password.sh', '/app/sync-service-password.sh'))
         try:
             docker('network', 'create', network)
             ldap_env = {'LDAP_ROOT':'dc=dbrepo,dc=at', 'LDAP_ADMIN_PASSWORD':bind_password,
@@ -71,11 +72,12 @@ def main():
             broker_env = {'RABBITMQ_LDAP_ADMIN_DN':ldap_env['LDAP_ADMIN_DN'],
                           'RABBITMQ_LDAP_ADMIN_PASSWORD':bind_password,
                           'RABBITMQ_USERNAME':'fixture-reader', 'RABBITMQ_PASSWORD':internal_password}
-            docker('run', '-d', '--name', broker, '--network', network, '-p', '127.0.0.1::5672',
+            docker('run', '-d', '--entrypoint', '/bin/bash', '--name', broker, '--network', network, '-p', '127.0.0.1::5672',
                    *[arg for source,target in mounts for arg in ('-v', str(source)+':'+target+':ro')],
                    *[arg for key in broker_env for arg in ('--env', key)],
-                   'docker.io/bitnamilegacy/rabbitmq:3.13.7', env=broker_env)
-            ready(broker, ['rabbitmq-diagnostics', '-q', 'check_running'])
+                   'docker.io/bitnamilegacy/rabbitmq:3.13.7', '/app/sync-service-password.sh',
+                   '/opt/bitnami/scripts/rabbitmq/run.sh', env=broker_env)
+            ready(broker, ['bash', '/app/sync-service-password.sh', '--check'])
             flags = ready(broker, ['rabbitmqctl', '-q', 'list_feature_flags'])
             assert any('stream_queue' in line and 'enabled' in line for line in flags.splitlines()), 'Fresh broker lacks stream_queue feature'
 
