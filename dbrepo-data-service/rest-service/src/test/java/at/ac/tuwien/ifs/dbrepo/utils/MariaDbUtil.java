@@ -340,6 +340,7 @@ public class MariaDbUtil {
             final Statement statement = connection.createStatement();
             statement.executeUpdate("DROP SEQUENCE IF EXISTS `qs_queries_seq`;");
             statement.executeUpdate("DROP TABLE IF EXISTS `qs_queries`;");
+            statement.executeUpdate("DROP TABLE IF EXISTS `qs_metadata_lock`;");
             statement.executeUpdate("DROP PROCEDURE IF EXISTS `hash_table`;");
             statement.executeUpdate("DROP PROCEDURE IF EXISTS `store_query`;");
             statement.executeUpdate("DROP PROCEDURE IF EXISTS `_store_query`;");
