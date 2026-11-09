@@ -20,6 +20,17 @@ def migration(databases):
         if not re.fullmatch(r"[A-Za-z0-9_]+", database):
             raise ValueError("Use the internal research database name")
         result.append(f"USE `{database}`$dbrepo$")
+        lock_ddl = (RESOURCES / "create_metadata_lock.sql").read_text().strip().rstrip(";")
+        result.append("BEGIN NOT ATOMIC\n"
+            "IF NOT EXISTS (SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='qs_metadata_lock') THEN\n"
+            "SET @_dbrepo_lock_ddl=CONVERT(0x" + lock_ddl.encode().hex() + " USING utf8mb4);\n"
+            "PREPARE dbrepo_lock FROM @_dbrepo_lock_ddl; EXECUTE dbrepo_lock; DEALLOCATE PREPARE dbrepo_lock;\n"
+            "ELSEIF NOT EXISTS (SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='qs_metadata_lock' AND ENGINE='InnoDB' AND TABLE_COMMENT='dbrepo:qs-metadata-lock:v1') "
+            "OR (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='qs_metadata_lock') <> 1 "
+            "OR NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='qs_metadata_lock' AND COLUMN_NAME='id' AND DATA_TYPE='tinyint' AND COLUMN_KEY='PRI' AND IS_NULLABLE='NO') THEN\n"
+            "SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Existing qs_metadata_lock conflicts with the reviewed Query Store table';\n"
+            "END IF;\nEND$dbrepo$")
+
         for routine in ROUTINES:
             sql = (RESOURCES / (routine + ".sql")).read_text().strip().rstrip(";")
             body = re.sub(r"^CREATE(?: DEFINER\s*=\s*'root')? PROCEDURE\s+", "", sql)
