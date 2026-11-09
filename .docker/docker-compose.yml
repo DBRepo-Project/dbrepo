@@ -251,10 +251,10 @@ services:
       BROKER_EXCHANGE_NAME: ${BROKER_EXCHANGE_NAME:-dbrepo}
       BROKER_QUEUE_NAME: ${BROKER_QUEUE_NAME:-dbrepo}
       BROKER_HOST: "${BROKER_ENDPOINT:-broker-service}"
-      BROKER_PASSWORD: ${BROKER_SERVICE_PASSWORD:-admin}
+      BROKER_PASSWORD: ${BROKER_SERVICE_PASSWORD-admin}
       BROKER_PORT: ${BROKER_PORT:-5672}
       BROKER_SERVICE_ENDPOINT: ${BROKER_SERVICE_ENDPOINT:-http://broker-service:15672}
-      BROKER_USERNAME: ${BROKER_SERVICE_USERNAME:-admin}
+      BROKER_USERNAME: ${BROKER_SERVICE_USERNAME-admin}
       BROKER_VIRTUALHOST: "${BROKER_VIRTUALHOST:-dbrepo}"
       CACHE_DB_PROVIDER: "${CACHE_DB_PROVIDER:-valkey}"
       CACHE_DB_HOST: "${CACHE_DB_HOST:-cache-db}"
@@ -303,6 +303,8 @@ services:
     container_name: dbrepo-broker-service
     hostname: broker-service
     image: docker.io/bitnamilegacy/rabbitmq:3.13.7
+    entrypoint: ["/bin/bash", "/app/sync-service-password.sh"]
+    command: ["/opt/bitnami/scripts/rabbitmq/run.sh"]
     ports:
       - 5672:5672
       - 1883:1883
@@ -311,8 +313,11 @@ services:
       - ./config/advanced.config:/etc/rabbitmq/advanced.config
       - ./config/enabled_plugins:/etc/rabbitmq/enabled_plugins
       - ./config/definitions.json:/app/definitions.json
+      - ./config/sync-service-password.sh:/app/sync-service-password.sh:ro
       - broker-service-data:/bitnami/rabbitmq/mnesia
     environment:
+      RABBITMQ_USERNAME: "${BROKER_SERVICE_USERNAME-admin}"
+      RABBITMQ_PASSWORD: "${BROKER_SERVICE_PASSWORD-admin}"
       RABBITMQ_ERL_COOKIE: "${BROKER_SERVICE_ERL_COOKIE:-dbrepo}"
       RABBITMQ_LDAP_ADMIN_DN: "${IDENTITY_SERVICE_ADMIN_DN:-cn=admin,dc=dbrepo,dc=at}"
       RABBITMQ_LDAP_ADMIN_PASSWORD: "${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin}"
@@ -320,7 +325,7 @@ services:
       dbrepo-identity-service:
         condition: service_healthy
     healthcheck:
-      test: rabbitmq-diagnostics -q is_running | grep 'is fully booted and running'
+      test: ["CMD", "bash", "/app/sync-service-password.sh", "--check"]
       <<: *healthcheck-params
     logging:
       driver: json-file
@@ -567,10 +572,10 @@ services:
       BROKER_EXCHANGE_NAME: "${BROKER_EXCHANGE_NAME:-dbrepo}"
       BROKER_QUEUE_NAME: "${BROKER_QUEUE_NAME:-dbrepo}"
       BROKER_HOST: "${BROKER_ENDPOINT:-broker-service}"
-      BROKER_PASSWORD: "${BROKER_SERVICE_PASSWORD:-admin}"
+      BROKER_PASSWORD: "${BROKER_SERVICE_PASSWORD-admin}"
       BROKER_PORT: ${BROKER_PORT:-5672}
       BROKER_SERVICE_ENDPOINT: "${BROKER_SERVICE_ENDPOINT:-http://broker-service:15672}"
-      BROKER_USERNAME: "${BROKER_SERVICE_USERNAME:-admin}"
+      BROKER_USERNAME: "${BROKER_SERVICE_USERNAME-admin}"
       BROKER_VIRTUALHOST: "${BROKER_VIRTUALHOST:-dbrepo}"
       CACHE_DB_PROVIDER: "${CACHE_DB_PROVIDER:-valkey}"
       CACHE_DB_HOST: "${CACHE_DB_HOST:-cache-db}"

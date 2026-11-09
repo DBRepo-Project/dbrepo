@@ -15,6 +15,9 @@ The update procedure is:
 Existing database dashboards also need a [generated-content refresh](../admin-guide/dashboard-content-upgrade.md)
 before dashboard access resumes. Deploying new images alone leaves the previous dashboard JSON in Grafana.
 
+Compose upgrades must also install the [broker credential entry point](../admin-guide/broker-password-rotation.md)
+and its matching broker configuration. Preserve existing definitions and the broker data volume.
+
 
 ## Dashboard identity and datasource upgrade
 

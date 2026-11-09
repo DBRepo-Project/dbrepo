@@ -90,7 +90,7 @@
   "users": [
     {
       "name": "admin",
-      "password_hash": "dI+aj+LWJNHsKvowmxgHKBJhkXgZ67SX1XRPOBGjl5fnwbZB",
+      "password_hash": "",
       "tags": [
         "administrator"
       ]

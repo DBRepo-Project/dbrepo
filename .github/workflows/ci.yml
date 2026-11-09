@@ -191,12 +191,13 @@ jobs:
         script:
           - ./dbrepo-broker-service/tests/test_integration_feature_flags.sh
           - ./dbrepo-broker-service/tests/test_integration_ldap.sh
+          - ./dbrepo-broker-service/tests/test_integration_password.sh
           - ./.scripts/test-query-worktables.sh
           - ./dbrepo-storage-service/init/tests/test_integration_expire.sh
     steps:
       - uses: actions/checkout@v5
       - name: Install broker test dependencies
-        if: matrix.script == './dbrepo-broker-service/tests/test_integration_ldap.sh'
+        if: matrix.script == './dbrepo-broker-service/tests/test_integration_ldap.sh' || matrix.script == './dbrepo-broker-service/tests/test_integration_password.sh'
         run: python3 -m pip install pika pandas
       - name: Install extra tooling
         if: matrix.script == './dbrepo-storage-service/init/tests/test_integration_expire.sh'

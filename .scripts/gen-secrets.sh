@@ -1,9 +1,5 @@
 #!/bin/bash
 
-function gen_rabbit_key() {
-  rabbitmqadmin passwords salt_and_hash $1 --table-style borderless | sed -n 2p | grep -oP "([^ ]+)" | sed -n 3p
-}
-
 function gen_pw() {
   LENGTH=16
   if [ ! -z $1 ]; then
@@ -12,14 +8,7 @@ function gen_pw() {
   openssl rand -hex $LENGTH
 }
 
-BROKER_SERVICE_PASSWORD="admin"
-RABBIT_HASH="dI+aj+LWJNHsKvowmxgHKBJhkXgZ67SX1XRPOBGjl5fnwbZB"
-if ! [ -x "$(command -v rabbitmqadmin)" ]; then
-  echo "[🚨] Cannot generate broker service user secret(s) as rabbitmqadmin seems not to be installed or could not be found"
-else
-  BROKER_SERVICE_PASSWORD=$(gen_pw)
-  RABBIT_HASH=$(gen_rabbit_key $BROKER_SERVICE_PASSWORD)
-fi
+BROKER_SERVICE_PASSWORD=$(gen_pw)
 
 CERT_PATH=./config
 if [ ! -z $IS_DEV ]; then
@@ -167,7 +156,7 @@ cat <<EOF > $SECRET_PATH/definitions.json
   "users": [
     {
       "name": "admin",
-      "password_hash": "$RABBIT_HASH",
+      "password_hash": "",
       "tags": [
         "administrator"
       ]
