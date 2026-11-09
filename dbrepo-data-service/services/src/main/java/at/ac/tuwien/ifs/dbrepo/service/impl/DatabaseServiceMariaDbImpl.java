@@ -68,6 +68,8 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
             long start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.queryStoreCreateTableRawQuery())
                     .execute();
+            connection.prepareStatement(mariaDbMapper.queryStoreCreateMetadataLockRawQuery())
+                    .execute();
             log.atDebug()
                     .setMessage("created query store in database: " + databaseName)
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)

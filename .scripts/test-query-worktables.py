@@ -32,6 +32,7 @@ def main():
         else:raise RuntimeError("MariaDB fixture did not start")
         sql("CREATE DATABASE fixture; USE fixture; CREATE TABLE _tmp(marker INT); INSERT INTO _tmp VALUES(94817);")
         fixture=(ROOT/"dbrepo-data-service/rest-service/src/test/resources/init/querystore.sql").read_text()
+        fixture=fixture.replace("DECLARE _sql TEXT; SELECT", "DECLARE _sql TEXT; SET @fixture_hash_calls=COALESCE(@fixture_hash_calls,0)+1; SELECT")
         sql("USE fixture;\nDELIMITER $$\n"+"\n".join(line.rstrip(";")+"$$" for line in fixture.splitlines() if line.strip())+"\nDELIMITER ;")
         spec=importlib.util.spec_from_file_location("migration",ROOT/".scripts/query-worktables-migration.py")
         module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
@@ -42,6 +43,8 @@ def main():
             out=sql("USE fixture; "+call).stdout.strip().split("\t")
             assert out[-1]=="1"
             assert sql("SELECT marker FROM fixture._tmp").stdout.strip()=="94817"
+        # Make metadata inserts overlap instead of relying on runner timing.
+        sql("USE fixture; CREATE TRIGGER fixture_overlap BEFORE INSERT ON qs_queries FOR EACH ROW DO SLEEP(0.15)")
         def hashed(value):
             query=f"SELECT {value} AS sample WHERE SLEEP(0.03)=0"
             if value % 3 == 0:
@@ -53,6 +56,60 @@ def main():
             out=sql("USE fixture; "+call).stdout.strip()
             assert out==hashlib.sha256(str(value).encode()).hexdigest()+"\t1", "Concurrent result differs"
         with ThreadPoolExecutor(max_workers=4) as pool:list(pool.map(hashed,range(12)))
+        for empty in (False,True):
+            query="SELECT 77 AS sample"+(" WHERE 1=0" if empty else "")
+            def persisted(_):
+                return sql("USE fixture; CALL store_query('"+query+"','"+query+"',NOW(),@id); SELECT @id").stdout.strip()
+            with ThreadPoolExecutor(max_workers=4) as pool: ids=list(pool.map(persisted,range(8)))
+            assert len(set(ids))==1 and ids[0] not in ("","NULL"), "Concurrent persistence duplicated query identity"
+            assert sql("SELECT COUNT(*) FROM fixture.qs_queries WHERE id='"+ids[0]+"'").stdout.strip()=="1"
+        sql("USE fixture; DROP TRIGGER fixture_overlap")
+        sql("CREATE DATABASE other_fixture; CREATE USER outsider@'%' IDENTIFIED BY '"+password+"'; GRANT SELECT ON other_fixture.* TO outsider@'%'")
+        denied=sql("START TRANSACTION; SELECT id FROM fixture.qs_metadata_lock FOR UPDATE",expect=False,user="outsider")
+        assert denied.returncode != 0 and "1142" in denied.stderr, "Unrelated SQL user reached the metadata guard"
+        # Holding the discarded server-global name cannot obstruct the row-locked implementation.
+        lock="dbrepo:qs:"+hashlib.sha256(b"fixture").hexdigest()[:54]
+        with ThreadPoolExecutor(max_workers=1) as pool:
+            held=pool.submit(sql,"DO GET_LOCK('"+lock+"',0); DO SLEEP(5); DO RELEASE_LOCK('"+lock+"')",user="outsider")
+            for _ in range(100):
+                if sql("SELECT IS_USED_LOCK('"+lock+"') IS NOT NULL").stdout.strip()=="1":break
+                time.sleep(0.02)
+            else:raise AssertionError("Fixture advisory lock was not acquired")
+            start=time.monotonic()
+            assert sql("USE fixture; CALL store_query('SELECT 900 AS sample','SELECT 900 AS sample',NOW(),@id); SELECT @id IS NOT NULL").stdout.strip()=="1"
+            assert time.monotonic()-start < 3, "Unrelated SQL account blocked Query Store via a named lock"
+            held.result()
+        sql("""USE fixture;
+DELIMITER $$
+CREATE TRIGGER fixture_failure BEFORE INSERT ON qs_queries FOR EACH ROW
+ SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='fixture metadata failure'$$
+CREATE PROCEDURE fixture_capture_failure() BEGIN
+ DECLARE failed BOOLEAN DEFAULT FALSE;
+ DECLARE CONTINUE HANDLER FOR SQLSTATE '45000' SET failed=TRUE;
+ CALL store_query('SELECT 901 AS sample','SELECT 901 AS sample',NOW(),@id);
+ SELECT failed,@fixture_hash_calls,@@in_transaction,@@SESSION.innodb_lock_wait_timeout;
+END$$
+DELIMITER ;""")
+        assert sql("USE fixture; SET SESSION innodb_lock_wait_timeout=17; CALL fixture_capture_failure()").stdout.strip()=="1\t1\t0\t17"
+        sql("USE fixture; DROP TRIGGER fixture_failure")
+        assert sql("USE fixture; CALL _store_query('fixture','SELECT 902 AS sample','SELECT 902 AS sample',NOW(),@id); SELECT @fixture_hash_calls,@id IS NOT NULL,@@in_transaction,@@SESSION.innodb_lock_wait_timeout").stdout.strip()=="1\t1\t0\t50"
+        before_count=sql("SELECT COUNT(*) FROM fixture.qs_queries").stdout.strip()
+        with ThreadPoolExecutor(max_workers=1) as pool:
+            held=pool.submit(sql,"START TRANSACTION; SELECT id FROM fixture.qs_metadata_lock FOR UPDATE; DO GET_LOCK('fixture-row-held',0); DO SLEEP(13); ROLLBACK")
+            for _ in range(100):
+                if sql("SELECT IS_USED_LOCK('fixture-row-held') IS NOT NULL").stdout.strip()=="1":break
+                time.sleep(0.02)
+            else:raise AssertionError("Fixture row lock was not acquired")
+            failed=sql("USE fixture; CALL store_query('SELECT 903 AS sample','SELECT 903 AS sample',NOW(),@id)",expect=False)
+            assert failed.returncode!=0 and "1205" in failed.stderr, "Contended metadata row must time out"
+            held.result()
+        assert sql("SELECT COUNT(*) FROM fixture.qs_queries").stdout.strip()==before_count
+        # Missing guard data must fail closed, never persist without coordination.
+        sql("DELETE FROM fixture.qs_metadata_lock")
+        failed=sql("USE fixture; CALL store_query('SELECT 904 AS sample','SELECT 904 AS sample',NOW(),@id)",expect=False)
+        assert failed.returncode != 0 and "lock row is missing" in failed.stderr
+        assert sql("SELECT COUNT(*) FROM fixture.qs_queries").stdout.strip()==before_count
+        sql("INSERT INTO fixture.qs_metadata_lock VALUES(1)")
         sql("USE fixture; CREATE OR REPLACE PROCEDURE hash_table(IN n VARCHAR(255), OUT h VARCHAR(255), OUT c BIGINT) SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='fixture hash failure';")
         for call in ["CALL hash_query('SELECT 1 AS sample',@h)",
                      "CALL store_query('SELECT 1 AS sample','SELECT 1 AS sample',NOW(),@id)",
@@ -72,7 +129,11 @@ def main():
         assert denied.returncode != 0 and "1370" in denied.stderr
         allowed=sql("CALL fixture.hash_query('SELECT 1 AS sample',@h)",expect=False,user="service_fixture")
         assert "fixture hash failure" in allowed.stderr, "Existing service EXECUTE grant was lost"
-        print("PASS: all three callers preserve _tmp, concurrent results stay isolated, failures clean up, migration repeats and reader EXECUTE stays denied")
+        sql("CREATE DATABASE conflict_fixture; CREATE TABLE conflict_fixture.qs_metadata_lock(marker INT); INSERT INTO conflict_fixture.qs_metadata_lock VALUES(9817)")
+        conflict=sql(module.migration(["conflict_fixture"]),expect=False)
+        assert conflict.returncode != 0 and "conflicts" in conflict.stderr
+        assert sql("SELECT marker FROM conflict_fixture.qs_metadata_lock").stdout.strip()=="9817"
+        print("PASS: isolated work tables, overlapping metadata writes, nullable deduplication, database-scoped row locking, cleanup and migration/grant preservation")
     finally:
         subprocess.run(["docker","rm","-f","-v",name],capture_output=True,timeout=30)
 

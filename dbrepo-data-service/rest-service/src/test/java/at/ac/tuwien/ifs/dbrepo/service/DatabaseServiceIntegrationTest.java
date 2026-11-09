@@ -70,6 +70,8 @@ public class DatabaseServiceIntegrationTest extends BaseTest {
         databaseService.createQueryStore(CONTAINER_1_CACHE, DATABASE_1_INTERNAL_NAME);
         final List<Map<String, Object>> queryStore = MariaDbUtil.listQueryStore(DATABASE_1_CACHE);
         assertEquals(0, queryStore.size());
+        assertEquals("1", MariaDbUtil.selectQuery(DATABASE_1_CACHE, "SELECT id FROM qs_metadata_lock",
+                java.util.Set.of("id")).getFirst().get("id"));
     }
 
     @Test

@@ -169,13 +169,17 @@ public interface MariaDbMapper {
         return statement;
     }
 
-    private String queryStoreRoutine(String name) {
+    private String queryStoreResource(String name) {
         try (var input = MariaDbMapper.class.getResourceAsStream("/query-store/" + name + ".sql")) {
             if (input == null) throw new IllegalStateException("Missing query-store routine: " + name);
             return new String(input.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
         } catch (java.io.IOException error) {
             throw new java.io.UncheckedIOException(error);
         }
+    }
+
+    default String queryStoreCreateMetadataLockRawQuery() {
+        return queryStoreResource("create_metadata_lock");
     }
 
     default String queryStoreCreateHashTableProcedureRawQuery() {
@@ -185,15 +189,15 @@ public interface MariaDbMapper {
     }
 
     default String queryStoreCreateStoreQueryProcedureRawQuery() {
-        return queryStoreRoutine("store_query");
+        return queryStoreResource("store_query");
     }
 
     default String queryStoreCreateInternalStoreQueryProcedureRawQuery() {
-        return queryStoreRoutine("_store_query");
+        return queryStoreResource("_store_query");
     }
 
     default String queryStoreCreateInternalHashQueryProcedureRawQuery() {
-        return queryStoreRoutine("hash_query");
+        return queryStoreResource("hash_query");
     }
 
     default String queryStoreStoreQueryRawQuery() {
