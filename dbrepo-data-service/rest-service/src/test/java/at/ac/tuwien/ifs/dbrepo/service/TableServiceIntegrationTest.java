@@ -208,15 +208,15 @@ public class TableServiceIntegrationTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(storageService.getBytes("s3key"))
-                .thenReturn(Files.toByteArray(new File("src/test/resources/csv/keyboard.csv")));
+        when(storageService.getObject("s3key"))
+                .thenReturn(new java.io.ByteArrayInputStream(Files.toByteArray(new File("src/test/resources/csv/keyboard.csv"))));
 
         /* test */
         tableService.createTuple(DATABASE_3_CACHE, TABLE_8_CACHE, request);
         final List<Map<String, byte[]>> result = MariaDbUtil.selectQueryByteArr(DATABASE_3_CACHE, "SELECT raw FROM mfcc WHERE raw IS NOT NULL", Set.of("raw"));
         assertNotNull(result.get(0).get("raw"));
         assertArrayEquals(Files.toByteArray(new File("src/test/resources/csv/keyboard.csv")), result.get(0).get("raw"));
-        org.mockito.Mockito.verify(storageService).getBytes("s3key");
+        org.mockito.Mockito.verify(storageService).getObject("s3key");
         org.mockito.Mockito.verifyNoMoreInteractions(storageService);
     }
 

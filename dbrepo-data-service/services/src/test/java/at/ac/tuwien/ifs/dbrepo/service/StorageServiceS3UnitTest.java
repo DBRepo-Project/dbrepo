@@ -107,6 +107,14 @@ class StorageServiceS3UnitTest {
     }
 
     @Test
+    void getObject_classifiesTransportFailureAsUnavailable() {
+        when(client.getObject(any(GetObjectRequest.class)))
+                .thenThrow(software.amazon.awssdk.core.exception.SdkClientException.create("fixture unavailable"));
+        assertThrows(at.ac.tuwien.ifs.dbrepo.core.exception.StorageUnavailableException.class,
+                () -> service.getObject("sample.csv"));
+    }
+
+    @Test
     void getBytes_closesResponseAfterReading() throws Exception {
         final ResponseInputStream<GetObjectResponse> response = mock(ResponseInputStream.class);
         when(client.getObject(any(GetObjectRequest.class))).thenReturn(response);

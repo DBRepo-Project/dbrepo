@@ -207,7 +207,7 @@ public class AccessServiceIntegrationTest extends BaseTest {
             @Override
             public ComboPooledDataSource getDataSource(Database database) {
                 ComboPooledDataSource source = super.getDataSource(database);
-                source.setJdbcUrl(source.getJdbcUrl() + "?useServerPrepStmts=true");
+                source.setJdbcUrl(source.getJdbcUrl() + "&useServerPrepStmts=true");
                 return source;
             }
         };
@@ -230,7 +230,7 @@ public class AccessServiceIntegrationTest extends BaseTest {
         addLegacyRoutineGrants();
         accessService.delete(DATABASE_1_CACHE, USER_1_CACHE);
         try (Connection reader = DriverManager.getConnection(
-                "jdbc:mariadb://" + CONTAINER_1_CACHE.getHost() + ":" + CONTAINER_1_CACHE.getPort(),
+                "jdbc:mariadb://" + CONTAINER_1_CACHE.getHost() + ":" + CONTAINER_1_CACHE.getPort() + "?sslMode=disable",
                 USER_1_USERNAME, USER_1_PASSWORD); Statement query = reader.createStatement()) {
             assertThrows(SQLException.class, () -> query.executeQuery("SELECT * FROM `" + DATABASE_1_INTERNAL_NAME + "`.qs_queries"));
             assertEquals(1370, assertThrows(SQLException.class, () -> query.execute(
@@ -240,13 +240,13 @@ public class AccessServiceIntegrationTest extends BaseTest {
 
     private Connection adminConnection() throws SQLException {
         return DriverManager.getConnection("jdbc:mariadb://" + CONTAINER_1_CACHE.getHost() + ":"
-                + CONTAINER_1_CACHE.getPort() + "/" + DATABASE_1_INTERNAL_NAME,
+                + CONTAINER_1_CACHE.getPort() + "/" + DATABASE_1_INTERNAL_NAME + "?sslMode=disable",
                 CONTAINER_1_CACHE.getUsername(), CONTAINER_1_CACHE.getPassword());
     }
 
     private Connection readerConnection() throws SQLException {
         return DriverManager.getConnection("jdbc:mariadb://" + CONTAINER_1_CACHE.getHost() + ":"
-                + CONTAINER_1_CACHE.getPort() + "/" + DATABASE_1_INTERNAL_NAME,
+                + CONTAINER_1_CACHE.getPort() + "/" + DATABASE_1_INTERNAL_NAME + "?sslMode=disable",
                 USER_1_USERNAME, USER_1_PASSWORD);
     }
 

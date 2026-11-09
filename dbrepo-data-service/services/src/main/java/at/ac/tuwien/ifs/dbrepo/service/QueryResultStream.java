@@ -78,8 +78,20 @@ public class QueryResultStream implements AutoCloseable {
                     if (i > 0) {
                         writer.write(',');
                     }
-                    final Object value = getValue(i);
-                    writer.write(escapeCsv(value == null ? "" : toCsvString(value)));
+                    if (isBinary(i)) {
+                        writer.flush();
+                        try (InputStream input = resultSet.getBinaryStream(i + 1)) {
+                            if (input != null) {
+                                try (OutputStream encoded = Base64.getEncoder().wrap(
+                                        org.apache.commons.io.output.CloseShieldOutputStream.wrap(out))) {
+                                    input.transferTo(encoded);
+                                }
+                            }
+                        }
+                    } else {
+                        final Object value = getValue(i);
+                        writer.write(escapeCsv(value == null ? "" : toCsvString(value)));
+                    }
                 }
                 writer.write(System.lineSeparator());
             }
@@ -104,7 +116,14 @@ public class QueryResultStream implements AutoCloseable {
                 generator.writeStartObject();
                 for (int i = 0; i < types.length; i++) {
                     generator.writeFieldName(columns.get(i));
-                    writeJsonValue(generator, getValue(i));
+                    if (isBinary(i)) {
+                        try (InputStream input = resultSet.getBinaryStream(i + 1)) {
+                            if (input == null) generator.writeNull();
+                            else generator.writeBinary(com.fasterxml.jackson.core.Base64Variants.getDefaultVariant(), input, -1);
+                        }
+                    } else {
+                        writeJsonValue(generator, getValue(i));
+                    }
                 }
                 generator.writeEndObject();
             }
@@ -165,14 +184,20 @@ public class QueryResultStream implements AutoCloseable {
                 value = timestamp == null ? null : TIMESTAMP_FORMATTER.format(timestamp);
             }
             case Types.BINARY, Types.VARBINARY, Types.LONGVARBINARY, Types.BLOB -> {
-                final byte[] bytes = resultSet.getBytes(column);
-                value = bytes == null ? null : Base64.getEncoder().encodeToString(bytes);
+                throw new SQLException("Binary columns must use streaming output");
             }
             case Types.TINYINT, Types.SMALLINT, Types.INTEGER, Types.BIGINT, Types.REAL, Types.FLOAT, Types.DOUBLE ->
                     value = resultSet.getObject(column);
             default -> value = resultSet.getString(column);
         }
         return resultSet.wasNull() ? null : value;
+    }
+
+    private boolean isBinary(int i) {
+        return switch (types[i]) {
+            case Types.BINARY, Types.VARBINARY, Types.LONGVARBINARY, Types.BLOB -> true;
+            default -> false;
+        };
     }
 
     private static String toCsvString(Object value) {
