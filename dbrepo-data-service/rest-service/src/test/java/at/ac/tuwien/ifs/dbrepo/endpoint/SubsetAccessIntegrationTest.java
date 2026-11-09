@@ -172,7 +172,7 @@ class SubsetAccessIntegrationTest extends BaseTest {
 
     private int storedCount() throws Exception {
         try (var connection = DriverManager.getConnection("jdbc:mariadb://" + CONTAINER_1_CACHE.getHost() + ":" +
-                CONTAINER_1_CACHE.getPort() + "/" + DATABASE_1_INTERNAL_NAME,
+                CONTAINER_1_CACHE.getPort() + "/" + DATABASE_1_INTERNAL_NAME + "?sslMode=disable",
                 CONTAINER_1_CACHE.getUsername(), CONTAINER_1_CACHE.getPassword());
              var statement = connection.createStatement();
              var rows = statement.executeQuery("SELECT COUNT(*) FROM qs_queries")) {

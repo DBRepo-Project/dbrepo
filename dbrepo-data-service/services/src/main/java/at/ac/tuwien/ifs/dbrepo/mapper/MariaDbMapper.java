@@ -12,7 +12,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.*;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Operator;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
-import at.ac.tuwien.ifs.dbrepo.service.StorageService;
+import at.ac.tuwien.ifs.dbrepo.service.BlobParameters;
 import at.ac.tuwien.ifs.dbrepo.utils.MariaDbUtil;
 import org.jooq.*;
 import org.jooq.Record;
@@ -22,7 +22,6 @@ import org.mapstruct.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -227,8 +226,9 @@ public interface MariaDbMapper {
         return statement;
     }
 
-    default String analyseTableRawQuery() {
-        final String statement = "ANALYZE TABLE `?`.`?` PERSISTENT FOR ALL;";
+    default String analyseTableRawQuery(String databaseName, String tableName) {
+        final String statement = "ANALYZE TABLE `" + databaseName.replace("`", "``") + "`.`"
+                + tableName.replace("`", "``") + "` PERSISTENT FOR ALL;";
         log.trace("mapped analyse table statement: {}", statement);
         return statement;
     }
@@ -609,18 +609,17 @@ public interface MariaDbMapper {
         }
         /* parameterized query for prepared statement */
         final StringBuilder statement = new StringBuilder("DELETE FROM `")
-                .append(databaseName)
+                .append(databaseName.replace("`", "``"))
                 .append("`.`")
-                .append(table.getInternalName())
+                .append(table.getInternalName().replace("`", "``"))
                 .append("` WHERE ");
         final int[] idx = new int[]{0};
         data.getKeys()
                 .forEach((key, value) -> statement.append(idx[0]++ == 0 ? "" : " AND ")
                         .append("`")
-                        .append(key)
+                        .append(key.replace("`", "``"))
                         .append("` ")
-                        .append(data.getKeys().get(key) == null ? "IS" : "=")
-                        .append(" ?"));
+                        .append(value == null ? "IS NULL" : "= ?"));
         log.trace("mapped delete tuple query {}", statement);
         return statement.toString();
     }
@@ -632,16 +631,16 @@ public interface MariaDbMapper {
         }
         /* parameterized query for prepared statement */
         final StringBuilder statement = new StringBuilder("UPDATE `")
-                .append(databaseName)
+                .append(databaseName.replace("`", "``"))
                 .append("`.`")
-                .append(table.getInternalName())
+                .append(table.getInternalName().replace("`", "``"))
                 .append("` SET ");
         final int[] idx = new int[]{0};
         data.getData()
                 .forEach((key, value) -> {
                     statement.append(idx[0]++ == 0 ? "" : ", ")
                             .append("`")
-                            .append(key)
+                            .append(key.replace("`", "``"))
                             .append("` = ?");
                 });
         statement.append(" WHERE ");
@@ -650,7 +649,7 @@ public interface MariaDbMapper {
                 .forEach((key, value) -> {
                     statement.append(jdx[0] == 0 ? "" : " AND ")
                             .append("`")
-                            .append(key)
+                            .append(key.replace("`", "``"))
                             .append("`");
                     if (value == null) {
                         statement.append(" IS NULL");
@@ -670,9 +669,9 @@ public interface MariaDbMapper {
         }
         /* parameterized query for prepared statement */
         final StringBuilder statement = new StringBuilder("INSERT INTO `")
-                .append(databaseName)
+                .append(databaseName.replace("`", "``"))
                 .append("`.`")
-                .append(table.getInternalName())
+                .append(table.getInternalName().replace("`", "``"))
                 .append("` (");
         final int[] idx = new int[]{0};
         data.getData()
@@ -686,7 +685,7 @@ public interface MariaDbMapper {
                     }
                     statement.append(idx[0]++ == 0 ? "" : ", ")
                             .append("`")
-                            .append(key)
+                            .append(key.replace("`", "``"))
                             .append("`");
                 });
         statement.append(") VALUES (");
@@ -708,7 +707,7 @@ public interface MariaDbMapper {
         return statement.toString();
     }
 
-    default void prepareStatementWithColumnTypeObject(StorageService storageService, PreparedStatement statement,
+    default void prepareStatementWithColumnTypeObject(BlobParameters blobs, PreparedStatement statement,
                                                       ColumnType columnType, int idx, String columnName, Object value)
             throws SQLException, StorageUnavailableException, StorageNotFoundException {
         switch (columnType) {
@@ -717,8 +716,7 @@ public interface MariaDbMapper {
                     statement.setNull(idx, Types.BLOB);
                     break;
                 }
-                final byte[] data = storageService.getBytes(String.valueOf(value));
-                statement.setBlob(idx, new ByteArrayInputStream(data));
+                statement.setBinaryStream(idx, blobs.open(String.valueOf(value)));
                 break;
             case TEXT, CHAR, VARCHAR, TINYTEXT, MEDIUMTEXT, LONGTEXT, ENUM, SET:
                 if (value == null) {

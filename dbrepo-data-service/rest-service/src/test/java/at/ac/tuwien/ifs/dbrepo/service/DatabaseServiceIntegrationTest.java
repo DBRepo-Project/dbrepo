@@ -73,6 +73,34 @@ public class DatabaseServiceIntegrationTest extends BaseTest {
     }
 
     @Test
+    public void newlyCreatedQueryStore_persistsThroughCurrentJdbcDriver() throws Exception {
+        MariaDbUtil.dropQueryStore(DATABASE_1_CACHE);
+        databaseService.createQueryStore(CONTAINER_1_CACHE, DATABASE_1_INTERNAL_NAME);
+        final String url = "jdbc:mariadb://" + CONTAINER_1_CACHE.getHost() + ":" + CONTAINER_1_CACHE.getPort()
+                + "/" + DATABASE_1_INTERNAL_NAME + "?sslMode=disable&useServerPrepStmts=true";
+        try (var connection = java.sql.DriverManager.getConnection(url, CONTAINER_1_CACHE.getUsername(), CONTAINER_1_CACHE.getPassword())) {
+            String firstId = null;
+            for (boolean autoCommit : new boolean[]{true, false}) {
+                connection.setAutoCommit(autoCommit);
+                try (var call = connection.prepareCall("{call _store_query(?, ?, ?, ?, ?)}")) {
+                    call.setString(1, USER_1_USERNAME);
+                    call.setString(2, "SELECT 61 AS sample");
+                    call.setString(3, "SELECT 61 AS sample");
+                    call.setTimestamp(4, java.sql.Timestamp.valueOf(java.time.LocalDateTime.now()));
+                    call.registerOutParameter(5, java.sql.Types.VARCHAR);
+                    call.execute();
+                    final String id = call.getString(5);
+                    org.junit.jupiter.api.Assertions.assertNotNull(id);
+                    if (firstId == null) firstId = id;
+                    else assertEquals(firstId, id);
+                }
+                if (!autoCommit) connection.commit();
+            }
+        }
+        assertEquals(1, MariaDbUtil.listQueryStore(DATABASE_1_CACHE).size());
+    }
+
+    @Test
     public void create_succeeds() throws SQLException, DatabaseMalformedException {
 
         /* mock */

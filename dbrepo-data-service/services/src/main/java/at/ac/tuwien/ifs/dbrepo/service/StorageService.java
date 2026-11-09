@@ -36,6 +36,9 @@ public interface StorageService {
      */
     InputStream getObject(String bucket, String key) throws StorageUnavailableException, StorageNotFoundException;
 
+    /** Opens an object in the default upload bucket; the caller closes the stream. */
+    InputStream getObject(String key) throws StorageUnavailableException, StorageNotFoundException;
+
     /**
      * Loads an object of the default upload bucket from the storage service into a byte array.
      *

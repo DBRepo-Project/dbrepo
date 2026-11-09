@@ -53,7 +53,7 @@ class ViewAccessIntegrationTest extends BaseTest {
         MariaDbUtil.dropDatabase(CONTAINER_1_CACHE, DATABASE_1_INTERNAL_NAME);
         MariaDbUtil.createInitDatabase(DATABASE_1_CACHE);
         try (var connection = DriverManager.getConnection("jdbc:mariadb://" + CONTAINER_1_CACHE.getHost() + ":" +
-                CONTAINER_1_CACHE.getPort() + "/" + DATABASE_1_INTERNAL_NAME,
+                CONTAINER_1_CACHE.getPort() + "/" + DATABASE_1_INTERNAL_NAME + "?sslMode=disable",
                 CONTAINER_1_CACHE.getUsername(), CONTAINER_1_CACHE.getPassword())) {
             connection.createStatement().execute("CREATE OR REPLACE VIEW junit AS " + VIEW_1_QUERY);
         }
@@ -136,7 +136,7 @@ class ViewAccessIntegrationTest extends BaseTest {
     void executionUsesCurrentViewQueryAndInternalName() throws Exception {
         warm();
         try (var connection = DriverManager.getConnection("jdbc:mariadb://" + CONTAINER_1_CACHE.getHost() + ":" +
-                CONTAINER_1_CACHE.getPort() + "/" + DATABASE_1_INTERNAL_NAME,
+                CONTAINER_1_CACHE.getPort() + "/" + DATABASE_1_INTERNAL_NAME + "?sslMode=disable",
                 CONTAINER_1_CACHE.getUsername(), CONTAINER_1_CACHE.getPassword())) {
             connection.createStatement().execute("CREATE OR REPLACE VIEW current_view AS SELECT lat AS current_column FROM weather_location WHERE location = 'Albury'");
         }

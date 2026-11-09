@@ -171,10 +171,15 @@ public class StorageServiceS3Impl extends DataConnector implements StorageServic
         } catch (NoSuchKeyException | NoSuchBucketException e) {
             log.error("Failed to find object: not found: {}", e.getMessage());
             throw new StorageNotFoundException("Failed to find object: not found: " + e.getMessage(), e);
-        } catch (S3Exception e) {
+        } catch (SdkException e) {
             log.error("Failed to find object: other error: {}", e.getMessage());
             throw new StorageUnavailableException("Failed to find object: other error: " + e.getMessage(), e);
         }
+    }
+
+    @Override
+    public InputStream getObject(String key) throws StorageNotFoundException, StorageUnavailableException {
+        return getObject(s3Config.getS3Bucket(), key);
     }
 
     @Override
