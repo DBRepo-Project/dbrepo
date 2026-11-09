@@ -18,6 +18,9 @@ before dashboard access resumes. Deploying new images alone leaves the previous 
 Compose upgrades must also install the [broker credential entry point](../admin-guide/broker-password-rotation.md)
 and its matching broker configuration. Preserve existing definitions and the broker data volume.
 
+The Data Service also needs [temporary storage for streamed uploads](../admin-guide/upload-storage.md).
+Keep multipart spooling on disk and size the temporary filesystem for concurrent requests.
+
 
 ## Dashboard identity and datasource upgrade
 
