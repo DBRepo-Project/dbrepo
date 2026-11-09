@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.security.Principal;
 
 @Slf4j
@@ -59,11 +60,17 @@ public class UploadEndpoint {
             throws StorageUnavailableException, NotAllowedException {
         final String owner = UploadMetadata.ownerId(principal);
         try {
-            final String key = storageService.putUpload(file.getOriginalFilename(), file.getBytes(), owner);
-            final HttpHeaders headers = new HttpHeaders();
-            headers.set("Access-Control-Expose-Headers", "X-S3-Key");
-            headers.set("X-S3-Key", key);
-            return ResponseEntity.status(HttpStatus.CREATED).headers(headers).build();
+            final var temporary = Files.createTempFile("dbrepo-upload-", ".tmp");
+            try {
+                file.transferTo(temporary.toFile());
+                final String key = storageService.putUpload(file.getOriginalFilename(), temporary, owner);
+                final HttpHeaders headers = new HttpHeaders();
+                headers.set("Access-Control-Expose-Headers", "X-S3-Key");
+                headers.set("X-S3-Key", key);
+                return ResponseEntity.status(HttpStatus.CREATED).headers(headers).build();
+            } finally {
+                Files.deleteIfExists(temporary);
+            }
         } catch (IOException exception) {
             throw new StorageUnavailableException("Upload content could not be read", exception);
         }

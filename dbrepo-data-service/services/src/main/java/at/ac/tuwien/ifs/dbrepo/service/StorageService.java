@@ -5,11 +5,12 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.StorageObjectExistsException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.StorageUnavailableException;
 
 import java.io.InputStream;
+import java.nio.file.Path;
 
 public interface StorageService {
 
     /** Stores a new independent upload and returns its opaque object key. */
-    String putUpload(String originalFilename, byte[] content, String owner) throws StorageUnavailableException;
+    String putUpload(String originalFilename, Path content, String owner) throws StorageUnavailableException;
 
     /** Checks an uploaded object's owner before a caller-controlled key is consumed. */
     void requireUploadOwner(String key, String owner) throws StorageNotFoundException, StorageUnavailableException;

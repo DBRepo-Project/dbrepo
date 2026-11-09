@@ -16,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class UploadStorageUnitTest {
+    @org.junit.jupiter.api.io.TempDir java.nio.file.Path temporary;
     private static final String OWNER = "b3468012-3375-4d80-b6b0-58b72f96594f";
     private static final String KEY = "a3468012-3375-4d80-b6b0-58b72f96594f.csv";
     private static final HeadObjectRequest HEAD = HeadObjectRequest.builder().bucket("uploads").key(KEY).build();
@@ -67,8 +68,9 @@ class UploadStorageUnitTest {
 
     @Test void uploadWritesOwnerOriginalNameAndUniqueKeyWithoutReading() throws Exception {
         byte[] bytes = "data".getBytes(java.nio.charset.StandardCharsets.UTF_8);
-        String first = service.putUpload("O'Brien ä.csv.gz", bytes, OWNER);
-        String second = service.putUpload("O'Brien ä.csv.gz", bytes, OWNER);
+        var file = java.nio.file.Files.write(temporary.resolve("content"), bytes);
+        String first = service.putUpload("O'Brien ä.csv.gz", file, OWNER);
+        String second = service.putUpload("O'Brien ä.csv.gz", file, OWNER);
         assertNotEquals(first, second);
         assertTrue(UploadMetadata.isUploadKey(first));
         var request = org.mockito.ArgumentCaptor.forClass(PutObjectRequest.class);
@@ -79,14 +81,22 @@ class UploadStorageUnitTest {
                 request.getValue().metadata().get(UploadMetadata.FILENAME)), java.nio.charset.StandardCharsets.UTF_8));
         assertEquals(java.util.List.of("*"), request.getValue().overrideConfiguration().orElseThrow().headers().get("If-None-Match"));
         assertEquals(org.apache.commons.codec.digest.DigestUtils.sha256Hex(bytes), request.getValue().metadata().get("sha256"));
+        assertEquals(org.apache.commons.codec.digest.DigestUtils.sha1Hex(bytes), request.getValue().metadata().get("sha1"));
+        assertEquals(org.apache.commons.codec.digest.DigestUtils.md5Hex(bytes), request.getValue().metadata().get("md5"));
         try (var stream = body.getValue().contentStreamProvider().newStream()) {
             assertArrayEquals(bytes, stream.readAllBytes());
         }
         verifyNoMoreInteractions(client);
     }
-    @Test void failedUploadDoesNotReturnAKey() {
+    @Test void failedUploadDoesNotReturnAKey() throws Exception {
+        var file = java.nio.file.Files.write(temporary.resolve("content"), new byte[]{1});
         when(client.putObject(any(PutObjectRequest.class), any(software.amazon.awssdk.core.sync.RequestBody.class)))
                 .thenThrow(SdkClientException.create("unavailable"));
-        assertThrows(StorageUnavailableException.class, () -> service.putUpload("data.csv", new byte[]{1}, OWNER));
+        assertThrows(StorageUnavailableException.class, () -> service.putUpload("data.csv", file, OWNER));
+    }
+
+    @Test void unreadableContentFailsBeforeCallingS3() {
+        assertThrows(StorageUnavailableException.class, () -> service.putUpload("data.csv", temporary.resolve("absent"), OWNER));
+        verifyNoInteractions(client);
     }
 }
