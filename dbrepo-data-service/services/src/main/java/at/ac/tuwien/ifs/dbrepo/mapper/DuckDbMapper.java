@@ -22,7 +22,7 @@ public interface DuckDbMapper {
                 .append(" database=")
                 .append(data.getInternalName())
                 .append("' AS mysqldb (TYPE mysql);");
-        log.debug("mapped attach mysql statement: {}", statement);
+        log.debug("mapped database attachment for database {}", data.getId());
         return statement.toString();
     }
 
@@ -56,7 +56,7 @@ public interface DuckDbMapper {
                 .append(" = '")
                 .append(value)
                 .append("';");
-        log.debug("mapped set variable statement: {}", statement);
+        log.debug("mapped setting for variable {}", key);
         return statement.toString();
     }
 
@@ -66,7 +66,7 @@ public interface DuckDbMapper {
                 .append("', SECRET '")
                 .append(secretKey)
                 .append("');");
-        log.debug("mapped set s3 secret statement: {}", statement.toString().replace(accessKey, stars).replace(secretKey, stars));
+        log.debug("mapped S3 credential setup");
         return statement.toString();
     }
 

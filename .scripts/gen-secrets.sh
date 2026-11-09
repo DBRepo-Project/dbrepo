@@ -27,7 +27,7 @@ if [ ! -z $IS_DEV ]; then
 fi
 
 function gen_aes_key() {
-  openssl enc -aes-256-cbc -k secret -P -pbkdf2 --nosalt | sed -n 1p | grep -oP "([A-F0-9]+)" | base64 -w 0
+  openssl rand 32 | openssl base64 -A
 }
 
 echo "[🙈] Generating random secrets ..."
@@ -38,6 +38,8 @@ S3_SECRET_ACCESS_KEY=$(gen_pw)
 S3_ADMIN_ACCESS_KEY_ID=$(gen_pw)
 S3_ADMIN_SECRET_ACCESS_KEY=$(gen_pw)
 CACHE_DB_PASSWORD=$(gen_pw)
+(umask 077; touch .env)
+chmod 600 .env
 cat <<EOF > .env
 #### SECRETS BELOW ARE AUTO-GENERATED ####
 AUTH_DB_PASSWORD=$(gen_pw)

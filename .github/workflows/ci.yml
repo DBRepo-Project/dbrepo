@@ -16,6 +16,10 @@ defaults:
 env:
   APP_VERSION: '1.14.1'
   DUCKDB_VERSION: '1.2.2'
+  # Explicit synthetic fixtures for disposable CI containers; deployments generate their own secrets.
+  NUXT_OIDC_TOKEN_KEY: 'data:;base64,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='
+  OIDC_AUTH_SESSION_SECRET: 'ci-only-disposable-auth-session-secret'
+  OIDC_SESSION_SECRET: 'ci-only-disposable-session-secret'
   GHCR_REGISTRY: 'ghcr.io'
   GHCR_NAMESPACE: 'dbrepo-project'
   GHCR_IMAGE_PREFIX: 'ghcr.io/dbrepo-project/dbrepo'
@@ -61,6 +65,8 @@ jobs:
           python3 .scripts/test-statistics-gateway.py
           python3 -m pip install PyYAML
           python3 .scripts/test-dashboard-config.py
+          python3 .scripts/test-ui-secrets.py
+          python3 .scripts/test-compose-credentials.py
           python3 .scripts/test-consumer-error-config.py
 
   java-services:
@@ -185,6 +191,7 @@ jobs:
         script:
           - ./dbrepo-broker-service/tests/test_integration_feature_flags.sh
           - ./dbrepo-broker-service/tests/test_integration_ldap.sh
+          - ./.scripts/test-query-worktables.sh
           - ./dbrepo-storage-service/init/tests/test_integration_expire.sh
     steps:
       - uses: actions/checkout@v5
