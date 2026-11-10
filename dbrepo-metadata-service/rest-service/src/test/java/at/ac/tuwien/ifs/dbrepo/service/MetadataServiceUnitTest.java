@@ -6,6 +6,8 @@ import at.ac.tuwien.ifs.dbrepo.core.api.user.external.ExternalMetadataDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.external.affiliation.ExternalAffiliationDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
+import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.Identifier;
+import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.IdentifierStatusType;
 import at.ac.tuwien.ifs.dbrepo.gateway.CrossRefGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.OrcidGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.RorGateway;
@@ -40,6 +42,10 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class MetadataServiceUnitTest extends BaseTest {
+
+    private final Identifier publishedIdentifier = IDENTIFIER_1.toBuilder()
+            .status(IdentifierStatusType.PUBLISHED)
+            .build();
 
     @MockitoBean
     private OrcidGateway orcidGateway;
@@ -78,7 +84,7 @@ public class MetadataServiceUnitTest extends BaseTest {
                 .build();
 
         when(identifierService.findAll())
-                .thenReturn(List.of(IDENTIFIER_1));
+                .thenReturn(List.of(publishedIdentifier));
 
         /* test */
         final String response = metadataService.listIdentifiers(parameters);
@@ -92,13 +98,37 @@ public class MetadataServiceUnitTest extends BaseTest {
                 .build();
 
         when(identifierService.findAll())
-                .thenReturn(List.of(IDENTIFIER_1));
+                .thenReturn(List.of(publishedIdentifier));
 
         /* test */
         final String response = metadataService.listRecords(parameters);
         assertTrue(response.contains("identifier"));
         assertTrue(response.contains("datestamp"));
         assertTrue(response.contains("record"));
+    }
+
+    @Test
+    public void lists_excludeDraftIdentifiers() {
+        when(identifierService.findAll()).thenReturn(List.of(publishedIdentifier, IDENTIFIER_2, IDENTIFIER_5));
+
+        final String identifiers = metadataService.listIdentifiers(OaiListIdentifiersParameters.builder().build());
+        final String records = metadataService.listRecords(OaiListRecordsParameters.builder().build());
+        for (String response : List.of(identifiers, records)) {
+            assertTrue(response.contains("doi:" + IDENTIFIER_1_DOI));
+            assertFalse(response.contains("oai:" + IDENTIFIER_2_ID));
+            assertFalse(response.contains("doi:" + IDENTIFIER_5_DOI));
+        }
+    }
+
+    @Test
+    public void getRecord_draft_rejectedByIdAndDoi() throws IdentifierNotFoundException {
+        when(identifierService.find(IDENTIFIER_5_ID)).thenReturn(IDENTIFIER_5);
+        when(identifierService.findByDoi(IDENTIFIER_5_DOI)).thenReturn(IDENTIFIER_5);
+
+        for (String identifier : List.of("oai:" + IDENTIFIER_5_ID, "doi:" + IDENTIFIER_5_DOI)) {
+            final OaiRecordParameters parameters = OaiRecordParameters.builder().identifier(identifier).build();
+            assertThrows(IdentifierNotFoundException.class, () -> metadataService.getRecord(parameters));
+        }
     }
 
     @Test
@@ -137,7 +167,7 @@ public class MetadataServiceUnitTest extends BaseTest {
 
         /* mock */
         when(identifierService.find(IDENTIFIER_1_ID))
-                .thenReturn(IDENTIFIER_1);
+                .thenReturn(publishedIdentifier);
 
         /* test */
         final String response = metadataService.getRecord(parameters);

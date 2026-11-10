@@ -100,7 +100,7 @@ public class ContainerEndpoint extends RestEndpoint {
     })
     public ResponseEntity<ContainerDto> create(@Valid @RequestBody CreateContainerDto data)
             throws ImageNotFoundException, ContainerAlreadyExistsException {
-        log.debug("endpoint create container, data={}", data);
+        log.debug("endpoint create container, name={}, host={}", data.getName(), data.getHost());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(metadataMapper.containerToContainerDto(containerService.create(data)));
     }

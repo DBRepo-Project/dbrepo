@@ -7,6 +7,7 @@ import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.endpoints.GrantEndpoint;
 import at.ac.tuwien.ifs.dbrepo.service.GrantService;
 import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
+import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -41,6 +42,9 @@ public class GrantEndpointUnitTest extends BaseTest {
     private MetadataService metadataService;
 
     @MockitoBean
+    private MetadataServiceGateway metadataServiceGateway;
+
+    @MockitoBean
     private GrantService grantService;
 
     @Test
@@ -50,7 +54,7 @@ public class GrantEndpointUnitTest extends BaseTest {
             DatabaseMalformedException, SQLException, AccessNotFoundException {
 
         /* mock */
-        when(metadataService.getDatabase(DATABASE_1_ID))
+        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
         when(metadataService.getUser(USER_1_USERNAME))
                 .thenReturn(USER_1_CACHE);
@@ -75,7 +79,7 @@ public class GrantEndpointUnitTest extends BaseTest {
             DatabaseMalformedException, SQLException, AccessNotFoundException {
 
         /* mock */
-        when(metadataService.getDatabase(DATABASE_2_ID))
+        when(metadataServiceGateway.getDatabaseById(DATABASE_2_ID))
                 .thenReturn(DATABASE_2_CACHE);
         when(metadataService.getUser(USER_1_USERNAME))
                 .thenReturn(USER_1_CACHE);
@@ -100,7 +104,7 @@ public class GrantEndpointUnitTest extends BaseTest {
             DatabaseMalformedException, SQLException, AccessNotFoundException {
 
         /* mock */
-        when(metadataService.getDatabase(DATABASE_1_ID))
+        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
         when(metadataService.getUser(USER_1_USERNAME))
                 .thenReturn(USER_1_CACHE);
@@ -120,7 +124,7 @@ public class GrantEndpointUnitTest extends BaseTest {
             RemoteUnavailableException, MetadataServiceException {
 
         /* mock */
-        when(metadataService.getDatabase(any(UUID.class)))
+        when(metadataServiceGateway.getDatabaseById(any(UUID.class)))
                 .thenReturn(DATABASE_1_CACHE);
         when(metadataService.getUser(USER_2_USERNAME))
                 .thenReturn(USER_2_CACHE);
@@ -139,7 +143,7 @@ public class GrantEndpointUnitTest extends BaseTest {
             RemoteUnavailableException, MetadataServiceException {
 
         /* mock */
-        when(metadataService.getDatabase(any(UUID.class)))
+        when(metadataServiceGateway.getDatabaseById(any(UUID.class)))
                 .thenReturn(DATABASE_1_CACHE);
         when(metadataService.getUser(USER_4_USERNAME))
                 .thenReturn(USER_4_CACHE);

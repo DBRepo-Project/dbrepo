@@ -14,6 +14,7 @@ import at.ac.tuwien.ifs.dbrepo.core.i18n.Constants;
 import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.DataService;
+import at.ac.tuwien.ifs.dbrepo.service.BlobParameters;
 import at.ac.tuwien.ifs.dbrepo.service.StorageService;
 import at.ac.tuwien.ifs.dbrepo.service.SubsetService;
 import at.ac.tuwien.ifs.dbrepo.service.TableService;
@@ -366,14 +367,16 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         /* prepare the statement */
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
-        try {
+        final var blobs = new BlobParameters(storageService);
+        try (blobs; PreparedStatement statement = connection.prepareStatement(mariaDbMapper.tupleToRawDeleteQuery(
+                database.getInternalName(), table, data))) {
             /* import tuple */
             final int[] idx = new int[]{1};
-            final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.tupleToRawDeleteQuery(
-                    database.getInternalName(), table, data));
             for (String column : data.getKeys().keySet()) {
-                mariaDbMapper.prepareStatementWithColumnTypeObject(storageService, statement,
-                        getColumnType(table.getColumns(), column), idx[0], column, data.getKeys().get(column));
+                final ColumnType type = getColumnType(table.getColumns(), column);
+                if (data.getKeys().get(column) == null) continue;
+                mariaDbMapper.prepareStatementWithColumnTypeObject(blobs, statement,
+                        type, idx[0], column, data.getKeys().get(column));
                 idx[0]++;
             }
             final long start = System.currentTimeMillis();
@@ -385,11 +388,12 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                     .log();
             connection.commit();
         } catch (SQLException e) {
-            connection.rollback();
+            try { connection.rollback(); } catch (SQLException rollback) { e.addSuppressed(rollback); }
+            blobs.rethrowTransferFailure(e);
             log.error("Failed to delete tuple: {}", e.getMessage());
             throw new QueryMalformedException("Failed to delete tuple: " + e.getMessage(), e);
         } finally {
-            dataSource.close();
+            try { connection.close(); } finally { dataSource.close(); }
         }
         log.info("Deleted tuple(s) from table: {}.{}", database.getInternalName(), table.getInternalName());
     }
@@ -399,30 +403,16 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     public void createTuple(Database database, Table table, TupleDto data) throws SQLException,
             QueryMalformedException, TableMalformedException, StorageUnavailableException, StorageNotFoundException {
         log.trace("create tuple: {}", data);
-        /* for each LOB-like data-column, retrieve the bytes and replace the value */
-        for (String key : data.getData().keySet()) {
-            final boolean found = table.getColumns()
-                    .stream()
-                    .filter(c -> List.of(ColumnTypeDto.BLOB, ColumnTypeDto.LONGBLOB, ColumnTypeDto.TINYBLOB, ColumnTypeDto.MEDIUMBLOB).contains(c.getColumnType()))
-                    .anyMatch(c -> c.getInternalName().equals(key));
-            if (!found || data.getData().get(key) == null) {
-                continue;
-            }
-            final byte[] blob = storageService.getBytes(String.valueOf(data.getData().get(key)));
-            log.debug("replaced S3 storage key {} with blob", key);
-            data.getData()
-                    .replace(key, blob);
-        }
         /* prepare the statement */
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
-        try {
+        final var blobs = new BlobParameters(storageService);
+        try (blobs; PreparedStatement statement = connection.prepareStatement(mariaDbMapper.tupleToRawCreateQuery(
+                database.getInternalName(), table, data))) {
             /* create tuple */
             final int[] idx = new int[]{1};
-            final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.tupleToRawCreateQuery(
-                    database.getInternalName(), table, data));
             for (Map.Entry<String, Object> entry : data.getData().entrySet()) {
-                mariaDbMapper.prepareStatementWithColumnTypeObject(storageService, statement,
+                mariaDbMapper.prepareStatementWithColumnTypeObject(blobs, statement,
                         getColumnType(table.getColumns(), entry.getKey()), idx[0], entry.getKey(), entry.getValue());
                 idx[0]++;
             }
@@ -435,11 +425,12 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                     .log();
             connection.commit();
         } catch (SQLException e) {
-            connection.rollback();
+            try { connection.rollback(); } catch (SQLException rollback) { e.addSuppressed(rollback); }
+            blobs.rethrowTransferFailure(e);
             log.error("Failed to create tuple: {}", e.getMessage());
             throw new QueryMalformedException("Failed to create tuple: " + e.getMessage(), e);
         } finally {
-            dataSource.close();
+            try { connection.close(); } finally { dataSource.close(); }
         }
         log.info("Created tuple(s) in table: {}.{}", database.getInternalName(), table.getInternalName());
     }
@@ -452,20 +443,22 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         /* prepare the statement */
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
-        try {
+        final var blobs = new BlobParameters(storageService);
+        try (blobs; PreparedStatement statement = connection.prepareStatement(mariaDbMapper.tupleToRawUpdateQuery(
+                database.getInternalName(), table, data))) {
             final int[] idx = new int[]{1};
-            final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.tupleToRawUpdateQuery(
-                    database.getInternalName(), table, data));
             /* set data */
             for (Map.Entry<String, Object> entry : data.getData().entrySet()) {
-                mariaDbMapper.prepareStatementWithColumnTypeObject(storageService, statement,
+                mariaDbMapper.prepareStatementWithColumnTypeObject(blobs, statement,
                         getColumnType(table.getColumns(), entry.getKey()), idx[0], entry.getKey(), entry.getValue());
                 idx[0]++;
             }
             /* set key(s) */
             for (Map.Entry<String, Object> entry : data.getKeys().entrySet()) {
-                mariaDbMapper.prepareStatementWithColumnTypeObject(storageService, statement,
-                        getColumnType(table.getColumns(), entry.getKey()), idx[0], entry.getKey(), entry.getValue());
+                final ColumnType type = getColumnType(table.getColumns(), entry.getKey());
+                if (entry.getValue() == null) continue;
+                mariaDbMapper.prepareStatementWithColumnTypeObject(blobs, statement,
+                        type, idx[0], entry.getKey(), entry.getValue());
                 idx[0]++;
             }
             final long start = System.currentTimeMillis();
@@ -477,11 +470,12 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                     .log();
             connection.commit();
         } catch (SQLException e) {
-            connection.rollback();
+            try { connection.rollback(); } catch (SQLException rollback) { e.addSuppressed(rollback); }
+            blobs.rethrowTransferFailure(e);
             log.error("Failed to update tuple: {}", e.getMessage());
             throw new QueryMalformedException("Failed to update tuple: " + e.getMessage(), e);
         } finally {
-            dataSource.close();
+            try { connection.close(); } finally { dataSource.close(); }
         }
         log.info("Updated tuple(s) from table: {}.{}", database.getInternalName(), table.getInternalName());
     }
@@ -534,9 +528,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         try {
             /* obtain only table metadata */
             long start = System.currentTimeMillis();
-            final PreparedStatement statement0 = connection.prepareStatement(mariaDbMapper.analyseTableRawQuery());
-            statement0.setString(1, database.getInternalName());
-            statement0.setString(2, tableName);
+            final PreparedStatement statement0 = connection.prepareStatement(mariaDbMapper.analyseTableRawQuery(database.getInternalName(), tableName));
             log.trace("1={}, 2={}", database.getInternalName(), tableName);
             statement0.execute();
             log.atDebug()

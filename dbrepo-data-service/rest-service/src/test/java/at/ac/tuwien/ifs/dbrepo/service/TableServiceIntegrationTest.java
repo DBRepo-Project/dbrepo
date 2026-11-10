@@ -208,14 +208,16 @@ public class TableServiceIntegrationTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(storageService.getBytes("s3key"))
-                .thenReturn(Files.toByteArray(new File("src/test/resources/csv/keyboard.csv")));
+        when(storageService.getObject("s3key"))
+                .thenReturn(new java.io.ByteArrayInputStream(Files.toByteArray(new File("src/test/resources/csv/keyboard.csv"))));
 
         /* test */
         tableService.createTuple(DATABASE_3_CACHE, TABLE_8_CACHE, request);
         final List<Map<String, byte[]>> result = MariaDbUtil.selectQueryByteArr(DATABASE_3_CACHE, "SELECT raw FROM mfcc WHERE raw IS NOT NULL", Set.of("raw"));
         assertNotNull(result.get(0).get("raw"));
         assertArrayEquals(Files.toByteArray(new File("src/test/resources/csv/keyboard.csv")), result.get(0).get("raw"));
+        org.mockito.Mockito.verify(storageService).getObject("s3key");
+        org.mockito.Mockito.verifyNoMoreInteractions(storageService);
     }
 
     @Test
@@ -429,7 +431,7 @@ public class TableServiceIntegrationTest extends BaseTest {
         assertColumn(columns.get(4), null, null, DATABASE_1_ID, "age", "age", ColumnTypeDto.INT, 10L, 0L, false, null);
         final ConstraintsDto constraints = response.getConstraints();
         assertNotNull(constraints);
-        final Set<PrimaryKeyDto> primaryKey = constraints.getPrimaryKey();
+        final List<PrimaryKeyDto> primaryKey = constraints.getPrimaryKey();
         assertEquals(1, primaryKey.size());
         final Set<String> checks = constraints.getChecks();
         assertEquals(1, checks.size());
@@ -783,7 +785,7 @@ public class TableServiceIntegrationTest extends BaseTest {
         assertColumn(columns2.get(2), null, null, DATABASE_1_ID, "bool_tinyint_unsigned", "bool_tinyint_unsigned", ColumnTypeDto.BOOL, null, 0L, false, null);
         final ConstraintsDto constraints2 = table2.getConstraints();
         assertNotNull(constraints2);
-        final Set<PrimaryKeyDto> primaryKey2 = constraints2.getPrimaryKey();
+        final List<PrimaryKeyDto> primaryKey2 = constraints2.getPrimaryKey();
         Assertions.assertEquals(1, primaryKey2.size());
         final Set<String> checks2 = constraints2.getChecks();
         Assertions.assertEquals(0, checks2.size());
@@ -806,7 +808,7 @@ public class TableServiceIntegrationTest extends BaseTest {
         assertColumn(columns3.get(4), null, null, DATABASE_1_ID, "age", "age", ColumnTypeDto.INT, 10L, 0L, false, null);
         final ConstraintsDto constraints3 = table3.getConstraints();
         assertNotNull(constraints3);
-        final Set<PrimaryKeyDto> primaryKey3 = constraints3.getPrimaryKey();
+        final List<PrimaryKeyDto> primaryKey3 = constraints3.getPrimaryKey();
         Assertions.assertEquals(1, primaryKey3.size());
         final Set<String> checks3 = constraints3.getChecks();
         Assertions.assertEquals(1, checks3.size());
@@ -833,7 +835,7 @@ public class TableServiceIntegrationTest extends BaseTest {
         assertColumn(columns.get(1), null, null, DATABASE_1_ID, "value", "value", ColumnTypeDto.DECIMAL, 10L, 10L, true, null);
         final ConstraintsDto constraints = response.getConstraints();
         assertNotNull(constraints);
-        final Set<PrimaryKeyDto> primaryKey = constraints.getPrimaryKey();
+        final List<PrimaryKeyDto> primaryKey = constraints.getPrimaryKey();
         Assertions.assertEquals(1, primaryKey.size());
         final Set<String> checks = constraints.getChecks();
         Assertions.assertEquals(0, checks.size());
@@ -885,7 +887,7 @@ public class TableServiceIntegrationTest extends BaseTest {
                                 .nullAllowed(false)
                                 .build()))
                 .constraints(CreateTableConstraintsDto.builder()
-                        .primaryKey(Set.of("lat", "lng"))
+                        .primaryKey(List.of("lat", "lng"))
                         .foreignKeys(List.of())
                         .checks(Set.of())
                         .uniques(List.of())

@@ -97,7 +97,11 @@ public class GatewayConfig {
 
     @Bean("dashboardServiceRestTemplate")
     public RestTemplate dashboardServiceRestTemplate() {
-        final RestTemplate restTemplate = new RestTemplate();
+        final org.springframework.http.client.SimpleClientHttpRequestFactory factory =
+                new org.springframework.http.client.SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(3000);
+        factory.setReadTimeout(30000);
+        final RestTemplate restTemplate = new RestTemplate(factory);
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(dashboardEndpoint));
         restTemplate.getInterceptors()
                 .add(new BasicRequestInterceptor(this));

@@ -73,6 +73,8 @@ public interface DatabaseService {
      */
     Database findById(UUID databaseId) throws DatabaseNotFoundException;
 
+    Database findForUpdateById(UUID databaseId) throws DatabaseNotFoundException;
+
     /**
      * Creates a new database with minimal metadata in the metadata database and creates a new database on the
      * container.
@@ -130,7 +132,7 @@ public interface DatabaseService {
      * @throws SearchServiceConnectionException The connection with the search service could not be established.
      */
     Database modifyOwner(Database database, String username) throws DatabaseNotFoundException, SearchServiceException,
-            SearchServiceConnectionException;
+            SearchServiceConnectionException, DataServiceException, DataServiceConnectionException, AccessNotFoundException;
 
     /**
      * Modify image of database with given id.

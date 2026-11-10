@@ -2,6 +2,7 @@
 omit =
     # omit tests
     ./tests/*
+    ./integration/*
 
 [html]
 directory = htmlcov

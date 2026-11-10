@@ -109,7 +109,7 @@
             <template v-slot:item.qualified_name="{ item }">
               <span
                 v-if="item && item.user">
-                {{ item.user.qualified_name }}
+                {{ qualifiedName(item) }}
               </span>
             </template>
             <template v-slot:item.grants="{ item }">
@@ -710,6 +710,14 @@ export default {
       this.username = item.user.username
       this.accessType = item.type
       this.editAccessDialog = true
+    },
+    qualifiedName (access) {
+      const username = access?.user?.username
+      if (!username) {
+        return null
+      }
+      const user = this.users.find(u => u.username === username)
+      return user?.qualified_name || access.user.qualified_name || username
     },
     loadUsers () {
       this.loadingUsers = true

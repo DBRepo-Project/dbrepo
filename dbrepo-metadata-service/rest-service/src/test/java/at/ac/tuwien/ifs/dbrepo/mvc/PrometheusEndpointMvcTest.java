@@ -199,7 +199,7 @@ public class PrometheusEndpointMvcTest extends BaseTest {
             /* ignore */
         }
         try {
-            databaseEndpoint.findPreviewImage(DATABASE_1_ID);
+            databaseEndpoint.findPreviewImage(DATABASE_1_ID, USER_1_PRINCIPAL);
         } catch (Exception e) {
             /* ignore */
         }

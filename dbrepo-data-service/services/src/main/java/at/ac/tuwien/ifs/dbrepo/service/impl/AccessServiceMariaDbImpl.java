@@ -52,13 +52,14 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
             }
             statement.setString(1, user.getUsername());
             statement.setString(2, user.getPassword());
-            log.trace("1={}, 2={}", user.getUsername(), user.getPassword());
+            log.trace("creating database account for user {}", user.getUsername());
             statement.execute();
             log.atDebug()
                     .setMessage("create user in database: " + database.getInternalName())
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "create_user")
                     .log();
+            revokeQueryStoreAccess(connection, database, user);
             /* grant access */
             final String grants = access != AccessTypeDto.READ ? grantDefaultWrite : grantDefaultRead;
             start = System.currentTimeMillis();
@@ -69,15 +70,6 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, Constants.GRANT_USER_PRIVILEGES)
                     .log();
-            /* grant query store */
-            start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.databaseGrantProcedureQuery(user.getUsername(), "store_query"))
-                    .execute();
-            log.atDebug()
-                    .setMessage("grant procedure privileges in database: " + database.getInternalName())
-                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
-                    .addKeyValue(Constants.ACTION, "grant_procedure_privileges")
-                    .log();
             /* apply access rights */
             start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.databaseFlushPrivilegesQuery());
@@ -87,10 +79,12 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
                     .addKeyValue(Constants.ACTION, "flush_privileges")
                     .log();
             connection.commit();
+            closeUserConnections(connection, database, user);
         } catch (SQLException e) {
             connection.rollback();
-            log.error("Failed to give database access: {}", e.getMessage());
-            throw new DatabaseMalformedException("Failed to give database access: " + e.getMessage(), e);
+            log.error("Failed to give database access (SQLState={}, code={})", e.getSQLState(), e.getErrorCode());
+            throw new DatabaseMalformedException("Failed to give database access (SQLState=" + e.getSQLState()
+                    + ", code=" + e.getErrorCode() + ")");
         } finally {
             dataSource.close();
         }
@@ -104,6 +98,7 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
+            revokeQueryStoreAccess(connection, database, user);
             /* grant access */
             final String grants = access != AccessTypeDto.READ ? grantDefaultWrite : grantDefaultRead;
             final long start = System.currentTimeMillis();
@@ -117,6 +112,7 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
             /* apply access rights */
             connection.prepareStatement(mariaDbMapper.databaseFlushPrivilegesQuery());
             connection.commit();
+            closeUserConnections(connection, database, user);
         } catch (SQLException e) {
             connection.rollback();
             log.error("Failed to modify database access: {}", e.getMessage());
@@ -133,6 +129,7 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
+            revokeQueryStoreAccess(connection, database, user);
             /* revoke access */
             long start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.databaseRevokePrivilegesQuery(database.getInternalName(), user.getUsername()))
@@ -152,6 +149,7 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
                     .addKeyValue(Constants.ACTION, "flush_privileges")
                     .log();
             connection.commit();
+            closeUserConnections(connection, database, user);
         } catch (SQLException e) {
             connection.rollback();
             log.error("Failed to revoke database access: {}", e.getMessage());
@@ -160,6 +158,33 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
             dataSource.close();
         }
         log.info("Deleted access to database with id {} for user with id {}", database.getId(), user.getId());
+    }
+
+    private void closeUserConnections(Connection connection, Database database, User user) throws SQLException {
+        if (user.getUsername().equals(database.getContainer().getUsername())) {
+            return;
+        }
+        // Open sessions cache database privileges until they reconnect.
+        // MariaDB cannot bind KILL USER on the server; let its JDBC driver bind the account.
+        try (PreparedStatement statement = connection.prepareStatement("/*client prepare*/ KILL USER ?@'%'")) {
+            statement.setString(1, user.getUsername());
+            statement.execute();
+        }
+    }
+
+    private void revokeQueryStoreAccess(Connection connection, Database database, User user) throws SQLException {
+        // Database-level EXECUTE and routine-specific grants are independent in MariaDB.
+        for (String procedure : new String[]{null, "store_query", "_store_query", "hash_query", "hash_table"}) {
+            try (PreparedStatement statement = connection.prepareStatement(
+                    mariaDbMapper.databaseRevokeExecuteQuery(database.getInternalName(), user.getUsername(), procedure))) {
+                statement.execute();
+            } catch (SQLException error) {
+                // Missing grants and absent routines already deny execution.
+                if (error.getErrorCode() != 1141 && error.getErrorCode() != 1305 && error.getErrorCode() != 1403) {
+                    throw error;
+                }
+            }
+        }
     }
 
 }

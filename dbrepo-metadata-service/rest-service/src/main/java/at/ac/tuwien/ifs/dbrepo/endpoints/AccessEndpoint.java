@@ -2,6 +2,7 @@ package at.ac.tuwien.ifs.dbrepo.endpoints;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateAccessDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseAccessDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.AccessType;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.DatabaseAccess;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
@@ -53,6 +54,32 @@ public class AccessEndpoint extends RestEndpoint {
         this.dashboardService = dashboardService;
     }
 
+    @GetMapping
+    @Transactional(readOnly = true)
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Get current user access",
+            description = "Returns the authenticated user's effective database access. Owners have write_all access.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Current user access",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = DatabaseAccessDto.class))),
+            @ApiResponse(responseCode = "403", description = "Authentication required", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Database or current user grant not found", content = @Content),
+    })
+    public ResponseEntity<DatabaseAccessDto> current(@PathVariable("databaseId") UUID databaseId,
+                                                    Principal principal)
+            throws DatabaseNotFoundException, AccessNotFoundException, NotAllowedException {
+        final String username = AuthUtil.getUsername(principal);
+        if (username == null) {
+            throw new NotAllowedException("Authentication required to read database access");
+        }
+        final Database database = databaseService.findById(databaseId);
+        final DatabaseAccess access = username.equals(database.getOwnedBy())
+                ? DatabaseAccess.builder().hdbid(databaseId).username(username).type(AccessType.WRITE_ALL).build()
+                : accessService.find(database, username);
+        return ResponseEntity.ok(metadataMapper.databaseAccessToDatabaseAccessDto(access));
+    }
+
     @PostMapping("/{username}")
     @Transactional
     @Observed(name = "dbrepo_access_give")
@@ -91,19 +118,23 @@ public class AccessEndpoint extends RestEndpoint {
             DashboardServiceException, DashboardServiceConnectionException {
         log.debug("endpoint give access to database, databaseId={}, username={}, access.type={}", databaseId, username,
                 data.getType());
-        final Database database = databaseService.findById(databaseId);
+        final Database database = databaseService.findForUpdateById(databaseId);
         if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to create access: not owner");
             throw new NotAllowedException("Failed to create access: not owner");
         }
         try {
-            accessService.find(database, username);
-            log.error("Failed to create access to user {}: already has access", username);
-            throw new NotAllowedException("Failed to create access to user " + username + ": already has access");
+            final DatabaseAccess existing = accessService.find(database, username);
+            if (existing.getType() != metadataMapper.accessTypeDtoToAccessType(data.getType())) {
+                throw new NotAllowedException("Failed to create access to user " + username + ": already has access");
+            }
+            final UserRepresentation user = keycloakGateway.findByUsername(username);
+            if (user.getRealmRoles() != null && user.getRealmRoles().contains("system")) {
+                throw new NotAllowedException("Failed to create access to a protected system user: already has access");
+            }
         } catch (AccessNotFoundException e) {
-            /* ignore */
+            accessService.create(database, username, data.getType());
         }
-        accessService.create(database, username, data.getType());
         dashboardService.updateAccess(database, username, data.getType());
         return ResponseEntity.accepted()
                 .build();
@@ -144,7 +175,7 @@ public class AccessEndpoint extends RestEndpoint {
             DashboardServiceException, DashboardServiceConnectionException {
         log.debug("endpoint modify database access, databaseId={}, username={}, access.type={}", databaseId, username,
                 data.getType());
-        final Database database = databaseService.findById(databaseId);
+        final Database database = databaseService.findForUpdateById(databaseId);
         if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to update access: not owner");
             throw new NotAllowedException("Failed to update access: not owner");
@@ -230,7 +261,7 @@ public class AccessEndpoint extends RestEndpoint {
             DatabaseNotFoundException, AccessNotFoundException, SearchServiceException, DataServiceConnectionException,
             UserNotFoundException {
         log.debug("endpoint revoke database access, databaseId={}, username={}", databaseId, username);
-        final Database database = databaseService.findById(databaseId);
+        final Database database = databaseService.findForUpdateById(databaseId);
         if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to revoke access: not owner");
             throw new NotAllowedException("Failed to revoke access: not owner");
@@ -244,8 +275,12 @@ public class AccessEndpoint extends RestEndpoint {
             log.error("Failed to revoke access: the internal user must have write-all access");
             throw new NotAllowedException("Failed to revoke access: the internal user must have write-all access");
         }
-        accessService.find(database, username);
-        accessService.delete(database, username);
+        try {
+            accessService.find(database, username);
+            accessService.delete(database, username);
+        } catch (AccessNotFoundException e) {
+            // A previous request may have committed the deletion before Grafana failed.
+        }
         dashboardService.updateAccess(database, username, null);
         return ResponseEntity.accepted()
                 .build();

@@ -17,6 +17,7 @@ import at.ac.tuwien.ifs.dbrepo.service.UserService;
 import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,13 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class AccessEndpointUnitTest extends BaseTest {
+
+    @BeforeEach
+    void lockingLookupUsesFixture() throws Exception {
+        when(databaseService.findForUpdateById(any(UUID.class)))
+                .thenAnswer(call -> databaseService.findById(call.getArgument(0)));
+    }
+
 
     @MockitoBean
     private AccessService accessService;
@@ -105,12 +113,10 @@ public class AccessEndpointUnitTest extends BaseTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-database-access"})
-    public void create_alreadyAccess_fails() {
-
-        /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            generic_create(USER_1_PRINCIPAL, USER_1_DTO, USER_2_USERNAME, USER_2_DTO, DATABASE_1_USER_2_READ_ACCESS);
-        });
+    public void create_sameAccess_retriesDashboard() throws Exception {
+        generic_create(USER_1_PRINCIPAL, USER_1_DTO, USER_2_USERNAME, USER_2_DTO, DATABASE_1_USER_2_READ_ACCESS);
+        verify(accessService, never()).create(any(), anyString(), any());
+        verify(dashboardService).updateAccess(DATABASE_1, USER_2_USERNAME, AccessTypeDto.READ);
     }
 
     @Test
@@ -361,6 +367,10 @@ public class AccessEndpointUnitTest extends BaseTest {
                     .when(userService)
                     .findById(any(UUID.class));
         }
+        final UserRepresentation target = new UserRepresentation();
+        target.setUsername(username);
+        target.setRealmRoles(List.of());
+        when(keycloakGateway.findByUsername(username)).thenReturn(target);
         when(dashboardService.create(DATABASE_1))
                 .thenReturn(CreateDashboardResponseDto.builder()
                         .uid(DATABASE_1_DASHBOARD_UID)

@@ -180,9 +180,6 @@ authservice:
           ephemeral-storage: 2Gi
   ## @param authservice.resourcesPreset The container resource presets
   resourcesPreset: "small"
-  jwt:
-    ## @param authservice.jwt.pubkey The JWT public key from the `dbrepo-client`.
-    pubkey: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB"
   metrics:
     ## @skip authservice.metrics.enabled
     enabled: true
@@ -661,9 +658,9 @@ dataservice:
   ## @skip dataservice.resources
   grant:
     ## @param dataservice.grant.read The default database permissions for users with read access.
-    read: SELECT, EXECUTE
+    read: SELECT
     ## @param dataservice.grant.write The default database permissions for users with write access.
-    write: SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, EXECUTE, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE
+    write: SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE
   rabbitmq:
     ## @param dataservice.rabbitmq.consumerConcurrentMin The minimal number of RabbitMQ consumers.
     consumerConcurrentMin: 2
@@ -950,14 +947,14 @@ ui:
   image:
     ## @skip ui.image.name
     name: ghcr.io/dbrepo-project/dbrepo/ui:1.14.1
-  ## https://stackblitz.com/edit/nuxt-oidc-auth-keygen?file=index.js
+  ## Supply private installation values. These keys are required when UI is enabled; see docs/admin-guide/rotate-ui-secrets.md.
   oidc:
     ## @param ui.oidc.authSessionSecret This should be a at least 48 characters random string. It is used to encrypt the user session.
-    authSessionSecret: qJteD-fvcHNafjwDtJOT3pF7IrN1OEzQRcIyPO0xAT4gzct0
+    authSessionSecret: ""
     ## @param ui.oidc.sessionSecret This should be a at least 48 characters random string. It is used to encrypt the user session.
-    sessionSecret: TjOH1lFnocixYmy5ol2I5cOdsYUdrd5_jZsGxo6aMVPNNDkh
+    sessionSecret: ""
     ## @param ui.oidc.tokenKey This needs to be a random cryptographic AES key in base64. Used to encrypt the server side token store. You can generate a key in JS with await subtle.exportKey('raw', await subtle.generateKey({ name: 'AES-GCM', length: 256, }, true, ['encrypt', 'decrypt'])). You just have to encode it to base64 afterwards.
-    tokenKey: data:;base64,ntxOAfrF6yw22Ec1AFHK21iFz7L3PZmz9857Uqwyme0=
+    tokenKey: ""
   ## @param ui.podAnnotations the pod annotations. Evaluated as a template
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: { }
@@ -1151,6 +1148,18 @@ dashboardservice:
 ## @section Dashboard UI
 
 dashboardui:
+  ## Research org receives anonymous/OAuth viewers; monitoring contains only server administrators.
+  organizationId: 1
+  ## Internal URL reachable from Grafana; browser URLs remain separate.
+  dataEndpoint: http://gateway-service
+  researchOrganizationName: "Main Org."
+  monitoringOrganizationName: "DBRepo Monitoring"
+  monitoringOrganizationId: ""
+  ## Optional Secret containing system-dashboards.json exported before a protected upgrade.
+  migrationExportSecret: ""
+  oauthClientId: dbrepo-grafana
+  ## Empty generates a dedicated secret on install and reuses it from the existing Kubernetes Secret on upgrade.
+  oauthClientSecret: ""
   ## @param dashboardui.enabled Enable the Dashboard UI.
   enabled: true
   ## @skip dashboardui.fullnameOverride

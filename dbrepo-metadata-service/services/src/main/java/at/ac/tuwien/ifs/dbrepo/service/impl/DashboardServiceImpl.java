@@ -2,6 +2,7 @@ package at.ac.tuwien.ifs.dbrepo.service.impl;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.grafana.CreateDashboardResponseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.grafana.PermissionTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DashboardServiceConnectionException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DashboardServiceException;
@@ -27,11 +28,19 @@ public class DashboardServiceImpl implements DashboardService {
 
     @Override
     public void update(Database database) throws DashboardServiceException, DashboardServiceConnectionException {
-        if (!database.getIsDashboardEnabled()) {
-            log.trace("database does not manage their dashboard, skip");
-            return;
-        }
         dashboardServiceGateway.update(metadataMapper.databaseToDatabaseDto(database));
+    }
+
+    @Override
+    public void updateContent(Database database) throws DashboardServiceException, DashboardServiceConnectionException {
+        if (database.getIsDashboardEnabled()) {
+            dashboardServiceGateway.updateContent(metadataMapper.databaseToDatabaseDto(database));
+        }
+    }
+
+    @Override
+    public void requireUser(String username) throws DashboardServiceException, DashboardServiceConnectionException {
+        dashboardServiceGateway.requireUser(username);
     }
 
     @Override
@@ -44,7 +53,8 @@ public class DashboardServiceImpl implements DashboardService {
     public void updateAccess(Database database, String username, AccessTypeDto access) throws DashboardServiceException,
             DashboardServiceConnectionException {
         dashboardServiceGateway.updateAccess(database.getDashboardUid(), username,
-                metadataMapper.accessTypeDtoToPermissionTypeDto(access));
+                database.getOwnedBy().equals(username) ? PermissionTypeDto.ADMIN :
+                        metadataMapper.accessTypeDtoToPermissionTypeDto(access));
     }
 
 }

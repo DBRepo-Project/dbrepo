@@ -1131,6 +1131,8 @@ public class TableEndpointUnitTest extends BaseTest {
             DashboardServiceConnectionException {
 
         /* mock */
+        when(databaseService.findForUpdateById(DATABASE_1_ID))
+                .thenReturn(DATABASE_1);
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
         when(tableService.findById(any(Database.class), any(UUID.class)))

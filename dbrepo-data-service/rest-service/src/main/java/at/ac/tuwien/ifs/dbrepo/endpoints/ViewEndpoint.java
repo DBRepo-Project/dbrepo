@@ -8,6 +8,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.View;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
+import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.service.*;
 import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
 import at.ac.tuwien.ifs.dbrepo.validation.EndpointValidator;
@@ -53,12 +54,14 @@ public class ViewEndpoint {
     private final MariaDbMapper mariaDbMapper;
     private final AnalyseService analyseService;
     private final MetadataService metadataService;
+    private final MetadataServiceGateway metadataServiceGateway;
     private final EndpointValidator endpointValidator;
 
     @Autowired
     public ViewEndpoint(DSLContext context, DataService dataService, ViewService viewService,
                         TableService tableService, MariaDbMapper mariaDbMapper, AnalyseService analyseService,
-                        MetadataService metadataService, EndpointValidator endpointValidator) {
+                        MetadataService metadataService, EndpointValidator endpointValidator,
+                        MetadataServiceGateway metadataServiceGateway) {
         this.context = context;
         this.dataService = dataService;
         this.viewService = viewService;
@@ -66,6 +69,7 @@ public class ViewEndpoint {
         this.mariaDbMapper = mariaDbMapper;
         this.analyseService = analyseService;
         this.metadataService = metadataService;
+        this.metadataServiceGateway = metadataServiceGateway;
         this.endpointValidator = endpointValidator;
     }
 
@@ -251,9 +255,9 @@ public class ViewEndpoint {
             timestamp = Instant.now();
             log.debug("timestamp not set: default to {}", timestamp);
         }
-        final View view = metadataService.getView(databaseId, viewId);
-        final Database database = metadataService.getDatabase(databaseId);
-        if (!view.getIsPublic()) {
+        final Database database = metadataServiceGateway.getDatabaseById(databaseId);
+        final View view = currentView(database, databaseId, viewId);
+        if (!Boolean.TRUE.equals(view.getIsPublic())) {
             if (principal == null) {
                 log.error("Failed to get data from view: unauthorized");
                 throw new NotAllowedException("Failed to get data from view: unauthorized");
@@ -332,9 +336,9 @@ public class ViewEndpoint {
             MetadataServiceException, TableMalformedException, DatabaseNotFoundException, ViewNotFoundException,
             NotAllowedException {
         log.debug("endpoint generate view statistic, databaseId={}, viewId={}", databaseId, viewId);
-        final View view = metadataService.getView(databaseId, viewId);
-        final Database database = metadataService.getDatabase(databaseId);
-        if (!view.getIsPublic()) {
+        final Database database = metadataServiceGateway.getDatabaseById(databaseId);
+        final View view = currentView(database, databaseId, viewId);
+        if (!Boolean.TRUE.equals(view.getIsPublic())) {
             if (principal == null) {
                 log.error("Failed to get statistic from view: unauthorized");
                 throw new NotAllowedException("Failed to get statistic from view: unauthorized");
@@ -349,6 +353,16 @@ public class ViewEndpoint {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database", e);
         }
+    }
+
+    private View currentView(Database database, UUID databaseId, UUID viewId) throws ViewNotFoundException {
+        if (!databaseId.equals(database.getId()) || database.getViews() == null) {
+            throw new ViewNotFoundException("Failed to find view in database");
+        }
+        return database.getViews().stream()
+                .filter(view -> viewId.equals(view.getId()) && databaseId.equals(view.getDatabaseId()))
+                .findFirst()
+                .orElseThrow(() -> new ViewNotFoundException("Failed to find view in database"));
     }
 
 }
