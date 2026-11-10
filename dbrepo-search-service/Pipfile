@@ -20,6 +20,7 @@ grafana-client = "*"
 dbrepo = { path = "./lib/dbrepo-1.13.4.tar.gz" }
 gunicorn = "*"
 ecs_logging = "*"
+numpy = "<2.5"
 
 [dev-packages]
 coverage = "*"
