@@ -32,6 +32,47 @@ docker compose up -d
 Since DBRepo is intended to be a publicly available repository, an optional fixed/static IP-address with optional
 SSL/TLS certificate is recommended. Follow the [Secure Installation](#secure-installation) guide.
 
+## Upgrade: preserve SeaweedFS uploads
+
+The Compose configuration introduced in [#135](https://github.com/DBRepo-Project/dbrepo/pull/135)
+stores SeaweedFS data in the named volume `storage-service-data`. Older installations use an
+anonymous volume. Switching to the new configuration without copying that volume makes existing
+S3 objects unavailable. This affects uploads that have not been imported yet; imported database
+rows are stored separately.
+
+For the first upgrade to this configuration, copy the data before starting the new storage service.
+Run the following commands in the directory containing your installation's `docker-compose.yml`,
+using the same shell throughout. Keep your existing `.env` and Compose project name.
+
+First, record the old volume and stop the stack. Do this before replacing the Compose file or
+removing any containers:
+
+```shell
+set -eu
+OLD=$(docker inspect "$(docker compose ps -a -q dbrepo-storage-service)" \
+  --format '{{range .Mounts}}{{if eq .Destination "/data"}}{{.Name}}{{end}}{{end}}')
+test -n "$OLD"
+docker compose stop
+```
+
+Update `docker-compose.yml` to the new version. Then create the replacement container without
+starting it, copy the old data, and start the stack:
+
+```shell
+docker compose create --no-deps dbrepo-storage-service
+NEW=$(docker inspect "$(docker compose ps -a -q dbrepo-storage-service)" \
+  --format '{{range .Mounts}}{{if eq .Destination "/data"}}{{.Name}}{{end}}{{end}}')
+test -n "$NEW"
+test "$OLD" != "$NEW"
+docker run --rm -v "$OLD":/from:ro -v "$NEW":/to alpine cp -a /from/. /to/
+docker compose up -d
+```
+
+Verify that pending uploads can still be imported before removing the old volume. Keep it until
+verification is complete; do not run volume pruning or `docker compose down -v` during migration.
+The new configuration disables disk preallocation and uses 64 MB SeaweedFS volumes. This is a
+per-volume setting, not an upload-size or total-storage limit. Helm installations are unaffected.
+
 ## Uninstall
 
 Remove DBRepo by stopping and removing all containers and volumes:
