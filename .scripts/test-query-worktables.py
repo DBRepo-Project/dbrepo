@@ -17,8 +17,9 @@ def main():
     password = secrets.token_urlsafe(24)
     env = {**os.environ, "MARIADB_ROOT_PASSWORD":password}
     def sql(text, expect=True, user="root"):
+        # The temporary bootstrap server has no TCP listener.
         result = subprocess.run(["docker", "exec", "-i", "-e", "MYSQL_PWD", name,
-            "mariadb", "-u"+user, "--batch", "--skip-column-names"],
+            "mariadb", "--protocol=TCP", "--host=127.0.0.1", "-u"+user, "--batch", "--skip-column-names"],
             env={**os.environ,"MYSQL_PWD":password},input=text, text=True,capture_output=True,timeout=45)
         if expect and result.returncode:
             raise AssertionError("MariaDB fixture operation failed: " + result.stderr.replace(password,"[redacted]")[:500])

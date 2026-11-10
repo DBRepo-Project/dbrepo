@@ -86,6 +86,22 @@ If the baseline cannot create its own database, dependent operations remain unte
 
 ## Reports and cleanup
 
+The named cases `catalog.get_units`, `catalog.get_ontologies` and `catalog.get_concepts`
+check the current SDK's removed-method contract. Each must raise `NotImplementedError`
+with guidance to `get_table()` and `update_table_column()` for `concept_uri/unit_uri`,
+without sending an HTTP request. Reports label these assertions with
+`contract: removed_sdk_method`. A pass confirms the documented removal; it does
+not count as a successful catalog read or HTTP coverage. An unexpected return,
+another exception, missing guidance or an HTTP request fails the case. Other SDK
+methods keep their normal success checks. Use the same client and runner for both
+targets; old reports retain their original outcomes.
+
+The supported replacement is checked on a column in the run's own synthetic table:
+write nonempty concept and unit URIs, read both back, clear both and confirm the
+cleared values through another table read. These checks use `example.invalid`
+URIs and require no registry or external ontology service. The added readback and
+clear cases increase the standard case count from 144 to 147.
+
 The default report name includes hostname, profile and UTC timestamp. `--output PATH` selects a file. After each case the JSON file is replaced atomically. It contains case outcomes, HTTP statuses, durations, API error codes, validation field locations, coverage, resource IDs and setup status. Passwords, tokens and request/response bodies are not written to it.
 
 Exit codes are `0` for a completed passing selected profile, `1` when a case fails, and `2` for blocked setup or incomplete selected coverage. `not_in_profile` distinguishes excluded profile scope from skipped required cases. `completed` distinguishes a finished run from a partial report. Multiple failed cases can share one underlying cause.
@@ -96,7 +112,7 @@ TLS verification stays enabled. `--ca-bundle /path/company-ca.pem` supports priv
 
 ## Endpoint inventory and offline tests
 
-The main catalogue contains 98 operations, covering literal Spring/Flask API mappings, separate OAI verbs, gateway health and PID routes. Two non-routed internal Data operations are explicitly excluded. All 62 public RestClient methods are listed. Framework-generated OPTIONS/HEAD variants, third-party administration, UI routes, metrics and replication APIs absent from main are outside this HTTP catalogue. The user profile further excludes privileged lifecycles and optional connections that were not configured.
+The main catalogue contains 99 operations, covering literal Spring/Flask API mappings, separate OAI verbs, gateway health and PID routes. Two non-routed internal Data operations are explicitly excluded. All 62 public RestClient methods are listed. Framework-generated OPTIONS/HEAD variants, third-party administration, UI routes, metrics and replication APIs absent from main are outside this HTTP catalogue. The user profile further excludes privileged lifecycles and optional connections that were not configured.
 
 Existing client methods are called as shipped. Missing methods use the client's transport. A successful API write followed by a client DTO error stays failed; a returned new resource ID is retained so independent tests can continue. There is no client/server patch to turn a failed contract into a pass.
 
