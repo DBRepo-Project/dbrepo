@@ -540,3 +540,22 @@ def test_date_normalization_keeps_text_and_custom_formats():
     assert result == {**value, 'created': '2026-11-06T10:44:58',
                       'nanos': '2026-11-06T10:44:58.123456789'}
     assert value['created'] == '2026-11-06 10:44:58'
+
+
+@pytest.mark.parametrize("existing", [False, True])
+def test_replica_mappings_do_not_break_current_search(indexed, credentials, requests_mock, existing):
+    backend = SearchServiceClient()._instance()
+    backend.indices.delete(index=SearchServiceClient.QUERY_INDEX, ignore=404)
+    if existing:
+        backend.indices.create(index=SearchServiceClient.QUERY_INDEX,
+                               body={'mappings': {'properties': {'search_query': {'type': 'percolator'}}}})
+    current = current_payload(indexed, 'anonymous')
+    current['replica_urls'] = {'https://peer.example': str(uuid4()), 'https://pending.example': None}
+    current['tables'][0]['replica_urls'] = {'https://peer.example': str(uuid4())}
+    authority(requests_mock, [current])
+    with app.test_client() as client:
+        response = client.get('/api/v1/search?q=Current')
+    assert response.status_code == 200
+    assert response.headers['X-Count'] == '1'
+    assert response.get_json()[0]['id'] == indexed.id
+    assert response.get_json()[0]['replica_urls'] == current['replica_urls']
