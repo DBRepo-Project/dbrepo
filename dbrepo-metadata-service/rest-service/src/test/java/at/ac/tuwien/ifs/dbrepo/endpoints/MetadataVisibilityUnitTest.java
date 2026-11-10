@@ -1,6 +1,8 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnBriefDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.primary.PrimaryKeyDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.*;
 import at.ac.tuwien.ifs.dbrepo.service.DashboardService;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -20,6 +22,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -96,6 +100,26 @@ class MetadataVisibilityUnitTest extends BaseTest {
         databaseEndpoint.filterTableMetadata(dto, databaseEndpoint.visibleColumns(List.of(TABLE_1, TABLE_2)), null);
         assertTrue(dto.getConstraints().getForeignKeys().isEmpty());
         assertEquals(1, TABLE_2.getConstraints().getForeignKeys().size());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void compositePrimaryKeyKeepsItsOrderAfterVisibilityFiltering(boolean hideColumn) {
+        final var dto = mapper.tableToTableDto(TABLE_2);
+        final var table = dto.getConstraints().getPrimaryKey().getFirst().getTable();
+        final var columnOrder = List.of(COLUMN_2_3_ID, COLUMN_2_1_ID, COLUMN_2_2_ID);
+        final var keys = columnOrder.stream().map(id -> PrimaryKeyDto.builder()
+                .table(table)
+                .column(ColumnBriefDto.builder().id(id).tableId(TABLE_2_ID).build())
+                .build()).toList();
+        dto.getConstraints().setPrimaryKey(keys);
+        final var visible = hideColumn ? Set.of(COLUMN_2_3_ID, COLUMN_2_2_ID) : Set.copyOf(columnOrder);
+
+        databaseEndpoint.filterTableMetadata(dto, Map.of(TABLE_2_ID, visible), null);
+
+        assertEquals(hideColumn ? List.of(COLUMN_2_3_ID, COLUMN_2_2_ID) : columnOrder,
+                dto.getConstraints().getPrimaryKey().stream().map(key -> key.getColumn().getId()).toList());
+        assertEquals(columnOrder, keys.stream().map(key -> key.getColumn().getId()).toList());
     }
 
     @ParameterizedTest
