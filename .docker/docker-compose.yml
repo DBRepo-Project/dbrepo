@@ -385,6 +385,8 @@ services:
       NUXT_OIDC_PROVIDERS_KEYCLOAK_REDIRECT_URI: "${BASE_URL:-http://localhost}/auth/keycloak/callback"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_TOKEN_URL: "${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}/realms/dbrepo/protocol/openid-connect/token"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_USER_INFO_URL: "${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}/realms/dbrepo/protocol/openid-connect/userinfo"
+      NUXT_OIDC_PROVIDERS_KEYCLOAK_OPEN_ID_CONFIGURATION_ISSUER: "${BASE_URL:-http://localhost}/realms/dbrepo"
+      NUXT_OIDC_PROVIDERS_KEYCLOAK_OPEN_ID_CONFIGURATION_JWKS_URI: "${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}/realms/dbrepo/protocol/openid-connect/certs"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_LOGOUT_URL: "${BASE_URL:-http://localhost}/realms/dbrepo/protocol/openid-connect/logout"
       NUXT_OIDC_TOKEN_KEY: "${NUXT_OIDC_TOKEN_KEY:?Generate or rotate the UI secrets before starting Compose}"
       NUXT_OIDC_SESSION_SECRET: "${OIDC_SESSION_SECRET:?Generate or rotate the UI secrets before starting Compose}"

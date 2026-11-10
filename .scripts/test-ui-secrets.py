@@ -24,6 +24,16 @@ def render(compose, env_file):
                            "config", "--format", "json"], env=ENV, capture_output=True, text=True)
 
 
+def check_helm_oidc(docs, issuer, jwks):
+    secrets = {v["metadata"]["name"]: v["stringData"] for v in docs
+               if v and v.get("kind") == "Secret" and "stringData" in v}
+    for name in ("metadata-service-secret", "data-service-secret", "consumer-service-secret"):
+        assert secrets[name]["OAUTH_ISSUER_URI"] == issuer
+        assert secrets[name]["OAUTH_JWK_SET_URI"] == jwks
+    assert secrets["ui-secret"]["NUXT_OIDC_PROVIDERS_KEYCLOAK_OPEN_ID_CONFIGURATION_ISSUER"] == issuer
+    assert secrets["ui-secret"]["NUXT_OIDC_PROVIDERS_KEYCLOAK_OPEN_ID_CONFIGURATION_JWKS_URI"] == jwks
+
+
 def main():
     script = (ROOT/".scripts/gen-secrets.sh").read_text()
     script = script[:script.index('echo "[🙉]')]
@@ -39,6 +49,8 @@ def main():
             file = work/".env"
             with file.open("a") as stream:
                 stream.write("AUTH_SERVICE_CLIENT=synthetic-client-id\nAUTH_SERVICE_CLIENT_SECRET=synthetic-confidential-secret\n")
+                if index:
+                    stream.write("BASE_URL=https://review.example\nAUTH_SERVICE_ENDPOINT=http://internal-keycloak:8080\n")
             values = read_env(file)
             assert file.stat().st_mode & 0o777 == 0o600
             assert len(base64.b64decode(values[KEYS[0]].split(",",1)[1], validate=True)) == 32
@@ -52,17 +64,32 @@ def main():
                 assert ui["NUXT_OIDC_TOKEN_KEY"] == values[KEYS[0]]
                 assert ui["NUXT_OIDC_AUTH_SESSION_SECRET"] == values[KEYS[1]]
                 assert ui["NUXT_OIDC_SESSION_SECRET"] == values[KEYS[2]]
+                if compose in ("docker-compose.yml", ".docker/docker-compose.yml"):
+                    assert ui["NUXT_OIDC_PROVIDERS_KEYCLOAK_OPEN_ID_CONFIGURATION_ISSUER"] == \
+                        values.get("BASE_URL", "http://localhost") + "/realms/dbrepo"
+                    assert ui["NUXT_OIDC_PROVIDERS_KEYCLOAK_OPEN_ID_CONFIGURATION_JWKS_URI"] == \
+                        values.get("AUTH_SERVICE_ENDPOINT", "http://auth-service:8080") + "/realms/dbrepo/protocol/openid-connect/certs"
                 for missing in KEYS:
                     file.write_text("\n".join(f"{k}={v}" for k,v in values.items() if k != missing)+"\n")
                     assert render(compose, file).returncode != 0, "Missing UI secret accepted"
                 file.write_text("\n".join(f"{k}={v}" for k,v in values.items())+"\n")
             helm_values = {"ui": {"oidc": dict(zip(("tokenKey", "authSessionSecret", "sessionSecret"), (values[k] for k in KEYS)))}}
+            if index:
+                helm_values.update({"hostname": "review.example", "authservice": {"endpoint": "http://internal-keycloak:8080/"}})
             helm_file = work/"ui-values.yaml"
             helm_file.write_text(yaml.safe_dump(helm_values))
             args = ["helm", "template", "audit", str(ROOT/"helm/dbrepo"), "-f", str(helm_file)]
             rendered = subprocess.run(args, env=ENV, capture_output=True, text=True)
             assert rendered.returncode == 0, "Helm rendering failed"
             docs = [v for v in yaml.safe_load_all(rendered.stdout) if v]
+            check_helm_oidc(docs, "https://" + ("review.example" if index else "example.com") + "/realms/dbrepo",
+                            ("http://internal-keycloak:8080" if index else "http://auth-service") + "/realms/dbrepo/protocol/openid-connect/certs")
+            if index:
+                overridden = subprocess.run(args + ["--set-string", "authservice.issuerUri=https://login.example/custom-realm",
+                    "--set-string", "authservice.jwkUri=https://keys.example/jwks"], env=ENV, capture_output=True, text=True)
+                assert overridden.returncode == 0, "Helm OIDC override rendering failed"
+                check_helm_oidc(list(yaml.safe_load_all(overridden.stdout)),
+                                "https://login.example/custom-realm", "https://keys.example/jwks")
             ui = next(v["stringData"] for v in docs if v.get("kind") == "Secret" and v["metadata"]["name"] == "ui-secret")
             assert [ui[k] for k in ("NUXT_OIDC_TOKEN_KEY", "NUXT_OIDC_AUTH_SESSION_SECRET", "NUXT_OIDC_SESSION_SECRET")] == [values[k] for k in KEYS]
             for missing in ("tokenKey", "authSessionSecret", "sessionSecret"):
@@ -74,7 +101,7 @@ def main():
             assert {k:v for k,v in values.items() if k not in KEYS} == {k:v for k,v in rotated.items() if k not in KEYS}
             assert file.stat().st_mode & 0o777 == 0o600
         assert all(all_values[0][k] != all_values[1][k] for k in KEYS)
-    print("PASS: independent random UI secrets, exact Compose/Helm wiring, missing-secret rejection and isolated rotation")
+    print("PASS: random UI secrets, Compose/Helm OIDC defaults and overrides, missing-secret rejection and isolated rotation")
 
 
 if __name__ == "__main__": main()
