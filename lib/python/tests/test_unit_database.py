@@ -149,13 +149,16 @@ class DatabaseUnitTest(unittest.TestCase):
         )
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/v1/database', json=exp.model_dump(), status_code=201)
+            mock.post('/api/v1/database', json={'id': exp.id}, status_code=201)
+            mock.get('/api/v1/database/' + exp.id, json=exp.model_dump())
             # test
             client = RestClient(username="a", password="b")
             response = RestClient(username="a", password="b").create_database(name='test',
                                                                               container_id="44d811a8-4019-46ba-bd57-ea10a2eb0c74",
                                                                               is_public=True)
             self.assertEqual(response.name, 'test')
+            self.assertIsInstance(response, Database)
+            self.assertEqual([r.method for r in mock.request_history], ['POST', 'GET'])
 
     def test_create_database_with_replica_urls_succeeds(self):
         exp = Database(
@@ -184,7 +187,8 @@ class DatabaseUnitTest(unittest.TestCase):
             creation_location='https://site-a.example'
         )
         with requests_mock.Mocker() as mock:
-            mock.post('/api/v1/database', json=exp.model_dump(), status_code=201)
+            mock.post('/api/v1/database', json={'id': exp.id}, status_code=201)
+            mock.get('/api/v1/database/' + exp.id, json=exp.model_dump(), status_code=200)
 
             response = RestClient(username="a", password="b").create_database(
                 name='test',
@@ -193,7 +197,7 @@ class DatabaseUnitTest(unittest.TestCase):
                 replica_urls=['https://site-b.example']
             )
 
-            self.assertEqual(['https://site-b.example'], mock.last_request.json()['replica_urls'])
+            self.assertEqual(['https://site-b.example'], mock.request_history[0].json()['replica_urls'])
             self.assertEqual(exp.replica_urls, response.replica_urls)
             self.assertEqual(exp.creation_location, response.creation_location)
 
@@ -317,8 +321,9 @@ class DatabaseUnitTest(unittest.TestCase):
         )
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/visibility', json=exp.model_dump(),
+            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/visibility', json={'id': exp.id},
                      status_code=202)
+            mock.get('/api/v1/database/' + exp.id, json=exp.model_dump())
             # test
             response = RestClient(username="a", password="b").update_database_visibility(
                 database_id="6bd39359-b154-456d-b9c2-caa516a45732",
@@ -326,6 +331,8 @@ class DatabaseUnitTest(unittest.TestCase):
                 is_schema_public=True,
                 is_dashboard_enabled=True)
             self.assertEqual(response.is_public, True)
+            self.assertIsInstance(response, Database)
+            self.assertEqual([r.method for r in mock.request_history], ['PUT', 'GET'])
 
     def test_update_database_visibility_400_fails(self):
         with requests_mock.Mocker() as mock:
@@ -445,13 +452,31 @@ class DatabaseUnitTest(unittest.TestCase):
         )
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/owner', json=exp.model_dump(), status_code=202)
+            brief = DatabaseBrief(**exp.model_dump(), owned_by='bar')
+            mock.put('/api/v1/database/' + exp.id + '/owner', json=brief.model_dump(), status_code=202)
             # test
             client = RestClient(username="a", password="b")
             response = RestClient(username="a", password="b").update_database_owner(
                 database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                 username='bar')
-            self.assertEqual(response.owner.id, 'abdbf897-e599-4e5a-a3f0-7529884ea011')
+            self.assertEqual(response.owned_by, 'bar')
+            self.assertIsInstance(response, DatabaseBrief)
+            self.assertEqual({'username': 'bar'}, mock.last_request.json())
+            self.assertEqual(1, len(mock.request_history))
+
+    def test_owner_transfer_same_user_and_invalid_targets(self):
+        brief = dict(id='db', name='test', internal_name='test_db', owned_by='owner',
+                     contact={'username': 'owner'}, is_public=False, is_schema_public=False)
+        with requests_mock.Mocker() as mock:
+            mock.put('/api/v1/database/db/owner', json=brief, status_code=202)
+            result = RestClient(username='owner', password='test').update_database_owner('db', 'owner')
+            self.assertEqual('owner', result.owned_by)
+            self.assertEqual({'username': 'owner'}, mock.last_request.json())
+        for username, status, error in [('', 400, MalformedError), ('unknown', 404, NotExistsError)]:
+            with self.subTest(username=username), requests_mock.Mocker() as mock:
+                mock.put('/api/v1/database/db/owner', status_code=status)
+                with self.assertRaises(error):
+                    RestClient(username='owner', password='test').update_database_owner('db', username)
 
     def test_update_database_owner_400_fails(self):
         with requests_mock.Mocker() as mock:
@@ -746,7 +771,7 @@ class DatabaseUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.post('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
-                      json=exp.model_dump(),
+                      
                       status_code=202)
             # test
             response = RestClient(username="a", password="b").create_database_access(
@@ -858,7 +883,7 @@ class DatabaseUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.put('/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/access/bar',
-                     json=exp.model_dump(),
+                     
                      status_code=202)
             # test
             response = RestClient(username="a", password="b").update_database_access(

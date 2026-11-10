@@ -43,6 +43,15 @@ public class MetadataMapperUnitTest extends BaseTest {
     private MetadataMapper metadataMapper;
 
     @Test
+    void identifierBriefPreservesOwnerAndAllowsMissingOwner() {
+        final IdentifierDto dto = metadataMapper.identifierToIdentifierDto(IDENTIFIER_1);
+        dto.setOwner(UserBriefDto.builder().username(USER_1_USERNAME).build());
+        assertEquals(USER_1_USERNAME, metadataMapper.identifierDtoToIdentifierBriefDto(dto).getOwnedBy());
+        dto.setOwner(null);
+        assertNull(metadataMapper.identifierDtoToIdentifierBriefDto(dto).getOwnedBy());
+    }
+
+    @Test
     public void mapMariaDbInstant_succeeds() {
         final String timestamp = "2023-01-08 08:49:29";
         final Instant compare = Instant.ofEpochSecond(1673167769);

@@ -50,6 +50,7 @@ class ReplicaWritePolicyUnitTest {
             ReflectionTestUtils.setField(endpoint, "replicationSiteUrl", "https://local.example");
         }
         when(databaseService.findById(replica.getId())).thenReturn(replica);
+        when(databaseService.findForUpdateById(replica.getId())).thenReturn(replica);
         when(tableService.findById(replica, table.getId())).thenReturn(table);
     }
 

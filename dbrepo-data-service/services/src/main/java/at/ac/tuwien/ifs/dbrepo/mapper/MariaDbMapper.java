@@ -12,7 +12,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.*;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Operator;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
-import at.ac.tuwien.ifs.dbrepo.service.StorageService;
+import at.ac.tuwien.ifs.dbrepo.service.BlobParameters;
 import at.ac.tuwien.ifs.dbrepo.utils.MariaDbUtil;
 import org.jooq.*;
 import org.jooq.Record;
@@ -22,7 +22,6 @@ import org.mapstruct.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -68,7 +67,7 @@ public interface MariaDbMapper {
                 .append("`@`%` IDENTIFIED BY '")
                 .append(password)
                 .append("';");
-        log.trace("mapped set password statement: {}", statement);
+        log.trace("mapped password update for user {}", username);
         return statement.toString();
     }
 
@@ -119,6 +118,9 @@ public interface MariaDbMapper {
     }
 
     default String databaseGrantPrivilegesQuery(String database, String username, String grants) {
+        if (Pattern.compile("(?i)\\b(?:EXECUTE|ALL)\\b").matcher(grants).find()) {
+            throw new IllegalArgumentException("Database access grants must not include EXECUTE or ALL privileges");
+        }
         final StringBuilder statement = new StringBuilder("GRANT ")
                 .append(grants)
                 .append(" ON `")
@@ -140,19 +142,11 @@ public interface MariaDbMapper {
         return statement.toString();
     }
 
-    default String databaseRevokeProcedureQuery(String database, String username, String procedure) {
-        return "REVOKE EXECUTE ON PROCEDURE `" + database.replace("`", "``") + "`.`"
-                + procedure.replace("`", "``") + "` FROM `" + username.replace("`", "``") + "`@`%`;";
-    }
-
-    default String databaseGrantProcedureQuery(String username, String procedure) {
-        final StringBuilder statement = new StringBuilder("GRANT EXECUTE ON PROCEDURE `")
-                .append(procedure)
-                .append("` TO `")
-                .append(username)
-                .append("`@`%`;");
-        log.trace("mapped grant privileges statement: {}", statement);
-        return statement.toString();
+    default String databaseRevokeExecuteQuery(String database, String username, String procedure) {
+        final String target = "`" + database.replace("`", "``") + "`";
+        final String account = "`" + username.replace("`", "``") + "`@`%`";
+        return procedure == null ? "REVOKE EXECUTE ON " + target + ".* FROM " + account
+                : "REVOKE EXECUTE ON PROCEDURE " + target + ".`" + procedure.replace("`", "``") + "` FROM " + account;
     }
 
     default String databaseFlushPrivilegesQuery() {
@@ -212,6 +206,19 @@ public interface MariaDbMapper {
                     next_attempt = IF(VALUES(revision) > revision, UTC_TIMESTAMP(6), next_attempt),
                     revision = GREATEST(revision, VALUES(revision))
                 """;
+    }
+
+    private String queryStoreResource(String name) {
+        try (var input = MariaDbMapper.class.getResourceAsStream("/query-store/" + name + ".sql")) {
+            if (input == null) throw new IllegalStateException("Missing query-store routine: " + name);
+            return new String(input.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+        } catch (java.io.IOException error) {
+            throw new java.io.UncheckedIOException(error);
+        }
+    }
+
+    default String queryStoreCreateMetadataLockRawQuery() {
+        return queryStoreResource("create_metadata_lock");
     }
 
     default String queryStoreCreateHashTableProcedureRawQuery() {
@@ -288,13 +295,13 @@ public interface MariaDbMapper {
                     DECLARE query_digest CHAR(64) DEFAULT SHA2(original_query,256);
                     DECLARE result_digest VARCHAR(255);
                     DECLARE result_count BIGINT;
-                    DECLARE identity_lock CHAR(64);
-                    DECLARE lock_acquired BOOLEAN DEFAULT FALSE;
+                    DECLARE metadata_guard TINYINT;
+                    DECLARE previous_lock_timeout INT DEFAULT @@SESSION.innodb_lock_wait_timeout;
                     DECLARE EXIT HANDLER FOR SQLEXCEPTION
                     BEGIN
                         ROLLBACK;
                         EXECUTE IMMEDIATE CONCAT('DROP TABLE IF EXISTS `', work_table, '`');
-                        IF lock_acquired THEN DO RELEASE_LOCK(identity_lock); END IF;
+                        SET SESSION innodb_lock_wait_timeout = previous_lock_timeout;
                         RESIGNAL;
                     END;
                     IF selected_at IS NULL OR normalized_query IS NULL OR normalized_query = '' THEN
@@ -303,13 +310,13 @@ public interface MariaDbMapper {
                     EXECUTE IMMEDIATE CONCAT('CREATE TABLE `', work_table, '` AS (',
                         COALESCE(@dbrepo_subset_execution_sql, normalized_query), ')');
                     CALL hash_table(work_table, result_digest, result_count);
-                    SET identity_lock = SHA2(CONCAT(DATABASE(), ':', COALESCE(@dbrepo_subset_origin, ''),
-                        ':', query_digest, ':', result_digest),256);
-                    SET lock_acquired = GET_LOCK(identity_lock, 10);
-                    IF lock_acquired IS NULL OR NOT lock_acquired THEN
-                        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Query identity is busy; retry';
-                    END IF;
+                    EXECUTE IMMEDIATE CONCAT('DROP TABLE `', work_table, '`');
+                    SET SESSION innodb_lock_wait_timeout = 10;
                     START TRANSACTION;
+                    SELECT id INTO metadata_guard FROM qs_metadata_lock WHERE id = 1 FOR UPDATE;
+                    IF metadata_guard IS NULL THEN
+                        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Query Store metadata lock row is missing';
+                    END IF;
                     SET queryId = (SELECT id FROM qs_queries
                         WHERE query_hash = query_digest AND result_hash = result_digest
                             AND creation_location <=> @dbrepo_subset_origin
@@ -328,8 +335,7 @@ public interface MariaDbMapper {
                 """ + queryStoreEnqueueSubsetRawQuery().replace("?", "queryId") + ";\n" + """
                     END IF;
                     COMMIT;
-                    EXECUTE IMMEDIATE CONCAT('DROP TABLE `', work_table, '`');
-                    DO RELEASE_LOCK(identity_lock);
+                    SET SESSION innodb_lock_wait_timeout = previous_lock_timeout;
                 END
                 """;
     }
@@ -383,8 +389,9 @@ public interface MariaDbMapper {
         return statement;
     }
 
-    default String analyseTableRawQuery() {
-        final String statement = "ANALYZE TABLE `?`.`?` PERSISTENT FOR ALL;";
+    default String analyseTableRawQuery(String databaseName, String tableName) {
+        final String statement = "ANALYZE TABLE `" + databaseName.replace("`", "``") + "`.`"
+                + tableName.replace("`", "``") + "` PERSISTENT FOR ALL;";
         log.trace("mapped analyse table statement: {}", statement);
         return statement;
     }
@@ -765,16 +772,17 @@ public interface MariaDbMapper {
         }
         /* parameterized query for prepared statement */
         final StringBuilder statement = new StringBuilder("DELETE FROM `")
-                .append(databaseName)
+                .append(databaseName.replace("`", "``"))
                 .append("`.`")
-                .append(table.getInternalName())
+                .append(table.getInternalName().replace("`", "``"))
                 .append("` WHERE ");
         final int[] idx = new int[]{0};
         data.getKeys()
                 .forEach((key, value) -> statement.append(idx[0]++ == 0 ? "" : " AND ")
                         .append("`")
-                        .append(key)
-                        .append("` <=> ?"));
+                        .append(key.replace("`", "``"))
+                        .append("` ")
+                        .append(value == null ? "IS NULL" : "= ?"));
         log.trace("mapped delete tuple query {}", statement);
         return statement.toString();
     }
@@ -786,16 +794,16 @@ public interface MariaDbMapper {
         }
         /* parameterized query for prepared statement */
         final StringBuilder statement = new StringBuilder("UPDATE `")
-                .append(databaseName)
+                .append(databaseName.replace("`", "``"))
                 .append("`.`")
-                .append(table.getInternalName())
+                .append(table.getInternalName().replace("`", "``"))
                 .append("` SET ");
         final int[] idx = new int[]{0};
         data.getData()
                 .forEach((key, value) -> {
                     statement.append(idx[0]++ == 0 ? "" : ", ")
                             .append("`")
-                            .append(key)
+                            .append(key.replace("`", "``"))
                             .append("` = ?");
                 });
         statement.append(" WHERE ");
@@ -804,7 +812,7 @@ public interface MariaDbMapper {
                 .forEach((key, value) -> {
                     statement.append(jdx[0] == 0 ? "" : " AND ")
                             .append("`")
-                            .append(key)
+                            .append(key.replace("`", "``"))
                             .append("`");
                     if (value == null) {
                         statement.append(" IS NULL");
@@ -824,9 +832,9 @@ public interface MariaDbMapper {
         }
         /* parameterized query for prepared statement */
         final StringBuilder statement = new StringBuilder("INSERT INTO `")
-                .append(databaseName)
+                .append(databaseName.replace("`", "``"))
                 .append("`.`")
-                .append(table.getInternalName())
+                .append(table.getInternalName().replace("`", "``"))
                 .append("` (");
         final int[] idx = new int[]{0};
         data.getData()
@@ -840,7 +848,7 @@ public interface MariaDbMapper {
                     }
                     statement.append(idx[0]++ == 0 ? "" : ", ")
                             .append("`")
-                            .append(key)
+                            .append(key.replace("`", "``"))
                             .append("`");
                 });
         statement.append(") VALUES (");
@@ -862,7 +870,7 @@ public interface MariaDbMapper {
         return statement.toString();
     }
 
-    default void prepareStatementWithColumnTypeObject(StorageService storageService, PreparedStatement statement,
+    default void prepareStatementWithColumnTypeObject(BlobParameters blobs, PreparedStatement statement,
                                                       ColumnType columnType, int idx, String columnName, Object value)
             throws SQLException, StorageUnavailableException, StorageNotFoundException {
         switch (columnType) {
@@ -871,8 +879,7 @@ public interface MariaDbMapper {
                     statement.setNull(idx, Types.BLOB);
                     break;
                 }
-                final byte[] data = storageService.getBytes(String.valueOf(value));
-                statement.setBlob(idx, new ByteArrayInputStream(data));
+                statement.setBinaryStream(idx, blobs.open(String.valueOf(value)));
                 break;
             case TEXT, CHAR, VARCHAR, TINYTEXT, MEDIUMTEXT, LONGTEXT, ENUM, SET:
                 if (value == null) {

@@ -336,6 +336,9 @@ public class IdentifierEndpoint extends RestEndpoint {
             TableNotFoundException, ExternalServiceException {
         log.debug("endpoint save identifier, identifierId={}, data.id={}", identifierId,
                 data.getId());
+        if (!identifierId.equals(data.getId())) {
+            throw new MalformedException("Identifier ID must match the request path");
+        }
         final Database database = databaseService.findById(data.getDatabaseId());
         final Identifier identifier = identifierService.find(identifierId);
         /* check owner */

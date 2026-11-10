@@ -63,27 +63,45 @@ public class AnalyseServiceDuckDbImpl extends DataConnector implements AnalyseSe
         /* https://duckdb.org/docs/stable/guides/performance/how_to_tune_workloads.html#larger-than-memory-workloads-out-of-core-processing */
         connection.prepareStatement(duckDbMapper.queryToRawSetVariableQuery("temp_directory", duckDbConfig.getTmpDirectory()))
                 .execute();
-        connection.prepareStatement(duckDbMapper.queryToRawSetS3SecretQuery(s3Config.getS3aAccessKey(), s3Config.getS3aSecretKey()))
-                .execute();
+        executeCredentialStatement(connection,
+                duckDbMapper.queryToRawSetS3SecretQuery(s3Config.getS3aAccessKey(), s3Config.getS3aSecretKey()));
+    }
+
+    private void executeCredentialStatement(Connection connection, String sql) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.execute();
+        } catch (SQLException error) {
+            // Driver errors can include the credential-bearing SQL. Preserve diagnostic codes only.
+            throw new SQLException("Database credential operation failed", error.getSQLState(), error.getErrorCode());
+        }
     }
 
     @Override
     public SchemaAnalysisResultDto determineS3CsvDataTypes(Image image, String key) throws AnalyseDataTypesException,
             DatabaseUnavailableException, StorageNotFoundException, ColumnNotFoundException, ImageInvalidException {
-        /* download sample from storage service */
+        final String path = "s3://" + s3Config.getS3Bucket() + "/" + key;
+        // DuckDB treats these characters as file patterns even when the path is bound.
+        if (path.indexOf('*') >= 0 || path.indexOf('?') >= 0 || path.indexOf('[') >= 0) {
+            throw new AnalyseDataTypesException("CSV analysis requires a single object key without wildcard characters");
+        }
         try (Connection connection = getDuckDbConnection()) {
             setup(connection);
-            final PreparedStatement statement1 = connection.prepareStatement(duckDbMapper.queryToRawDescribeCsvQuery(s3Config.getS3Bucket(), key));
-            final DuckDBResultSet resultSet1 = (DuckDBResultSet) statement1.executeQuery();
-            final SchemaAnalysisResultDto schema = dataMapper.resultSetToSchemaAnalysisResult(resultSet1);
+            final SchemaAnalysisResultDto schema;
+            try (PreparedStatement statement = connection.prepareStatement(duckDbMapper.queryToRawDescribeCsvQuery())) {
+                statement.setString(1, path);
+                try (DuckDBResultSet result = (DuckDBResultSet) statement.executeQuery()) {
+                    schema = dataMapper.resultSetToSchemaAnalysisResult(result);
+                }
+            }
             log.debug("determined csv schema of: s3://{}/{}", s3Config.getS3Bucket(), key);
-            statement1.close();
-            /* detect schema */
-            final PreparedStatement statement2 = connection.prepareStatement(duckDbMapper.queryToRawDescribeS3TableQuery(s3Config.getS3Bucket(), key));
-            final DuckDBResultSet resultSet2 = (DuckDBResultSet) statement2.executeQuery();
-            log.debug("determined data types of s3://" + s3Config.getS3Bucket() + "/" + key);
-            final Map<String, ColumnAnalysisResultDto> constraints = dataMapper.resultSetToConstraintResult(resultSet2);
-            resultSet2.close();
+            final Map<String, ColumnAnalysisResultDto> constraints;
+            try (PreparedStatement statement = connection.prepareStatement(duckDbMapper.queryToRawDescribeS3TableQuery())) {
+                statement.setString(1, path);
+                try (DuckDBResultSet result = (DuckDBResultSet) statement.executeQuery()) {
+                    constraints = dataMapper.resultSetToConstraintResult(result);
+                }
+            }
+            log.debug("determined data types of s3://{}/{}", s3Config.getS3Bucket(), key);
             for (int i = 0; i < schema.getColumns().size(); i++) {
                 final ColumnAnalysisResultDto column = schema.getColumns()
                         .get(i);
@@ -122,9 +140,7 @@ public class AnalyseServiceDuckDbImpl extends DataConnector implements AnalyseSe
             final long start = System.currentTimeMillis();
             setup(connection);
             /* attach to mariadb in duckdb */
-            final PreparedStatement statement1 = connection.prepareStatement(duckDbMapper.databaseDtoToRawAttachQuery(database));
-            statement1.executeUpdate();
-            statement1.close();
+            executeCredentialStatement(connection, duckDbMapper.databaseDtoToRawAttachQuery(database));
             final PreparedStatement statement2 = connection.prepareStatement(statement);
             final DuckDBResultSet resultSet2 = (DuckDBResultSet) statement2.executeQuery();
             final Map<String, ColumnAnalysisResultDto> schema = dataMapper.resultSetToConstraintResult(resultSet2);

@@ -19,7 +19,26 @@ parameters:
     required: true
     schema:
       type: string
+requestBody:
+  required: true
+  content:
+    application/json:
+      schema:
+        type: object
+        required: [permission]
+        properties:
+          permission:
+            type: string
+            enum: [View, Edit, Editor, Admin, ""]
 responses:
+  400:
+    description: Malformed request
+  502:
+    description: Dashboard backend request failed
+  404:
+    description: Dashboard or exact-login account not found
+  409:
+    description: Dashboard is in an operator-managed folder
   202:
     description: Updated dashboard access successfully
     content:

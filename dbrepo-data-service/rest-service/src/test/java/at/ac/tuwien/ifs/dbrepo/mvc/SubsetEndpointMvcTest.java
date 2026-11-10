@@ -39,7 +39,7 @@ class SubsetEndpointMvcTest extends BaseTest {
     @Test
     void findById_publicDatabase_returnsSubsetMetadata() throws Exception {
         final Subset subset = Subset.builder().id(QUERY_7_ID).databaseId(DATABASE_4_ID).build();
-        when(metadataService.getDatabase(DATABASE_4_ID)).thenReturn(DATABASE_4_CACHE);
+        when(metadataServiceGateway.getDatabaseById(DATABASE_4_ID)).thenReturn(DATABASE_4_CACHE);
         when(subsetService.findById(DATABASE_4_CACHE, QUERY_7_ID)).thenReturn(subset);
         when(metadataMapper.subsetToQueryDto(subset)).thenReturn(QUERY_7_DTO);
 
@@ -54,12 +54,12 @@ class SubsetEndpointMvcTest extends BaseTest {
     @Test
     void findById_privateDatabase_rejectsAnonymousRequest() throws Exception {
         DATABASE_4_CACHE.setIsPublic(false);
-        when(metadataService.getDatabase(DATABASE_4_ID)).thenReturn(DATABASE_4_CACHE);
+        when(metadataServiceGateway.getDatabaseById(DATABASE_4_ID)).thenReturn(DATABASE_4_CACHE);
 
         mockMvc.perform(get("/api/v1/database/" + DATABASE_4_ID + "/subset/" + QUERY_7_ID)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
-        verifyNoInteractions(subsetService, metadataMapper, metadataServiceGateway);
+        verifyNoInteractions(subsetService, metadataMapper, metadataService);
     }
 
 }

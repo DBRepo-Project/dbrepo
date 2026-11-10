@@ -243,7 +243,8 @@ public class ReplicationInboxService extends DataConnector {
                 .map(Column::getInternalName).toList();
         final var compared = table.getColumns().stream()
                 .filter(column -> !floating.contains(column.getInternalName())).toList();
-        final String selected = floating.isEmpty() ? "1" : floating.stream().map(this::quote)
+        // Compare MariaDB's decimal rendering identically for text and prepared-statement results.
+        final String selected = floating.isEmpty() ? "1" : floating.stream().map(column -> "CAST(" + quote(column) + " AS CHAR) AS " + quote(column))
                 .collect(java.util.stream.Collectors.joining(","));
         final String predicates = compared.stream().map(column -> switch (column.getColumnType()) {
                     case CHAR, VARCHAR, TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT, ENUM, SET ->

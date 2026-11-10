@@ -31,10 +31,10 @@ class MariaDbReplicationBindingTest {
         final StorageService storage = mock(StorageService.class);
         int position = 1;
         for (Object value : List.of(EXACT, new BigDecimal(EXACT), 42, "-0.000000000000000000000000000001", "1E+30")) {
-            mapper.prepareStatementWithColumnTypeObject(storage, statement, ColumnType.DECIMAL, position, "amount", value);
+            mapper.prepareStatementWithColumnTypeObject(new at.ac.tuwien.ifs.dbrepo.service.BlobParameters(storage), statement, ColumnType.DECIMAL, position, "amount", value);
             verify(statement).setBigDecimal(position++, new BigDecimal(String.valueOf(value)));
         }
-        mapper.prepareStatementWithColumnTypeObject(storage, statement, ColumnType.DECIMAL, position, "amount", null);
+        mapper.prepareStatementWithColumnTypeObject(new at.ac.tuwien.ifs.dbrepo.service.BlobParameters(storage), statement, ColumnType.DECIMAL, position, "amount", null);
         verify(statement).setNull(position, Types.DECIMAL);
         verifyNoMoreInteractions(statement);
         verifyNoInteractions(storage);
@@ -46,17 +46,17 @@ class MariaDbReplicationBindingTest {
         keys.put("key_text", null);
         keys.put("amount", EXACT);
         final String sql = mapper.tupleToRawDeleteQuery("subset_replication_test", table, new TupleDeleteDto(keys));
-        assertEquals("DELETE FROM `subset_replication_test`.`mapper_binding_test` WHERE `key_text` <=> ? AND `amount` <=> ?", sql);
+        assertEquals("DELETE FROM `subset_replication_test`.`mapper_binding_test` WHERE `key_text` IS NULL AND `amount` = ?", sql);
         keys.put("key_text", "present");
         keys.put("amount", null);
-        assertEquals(sql, mapper.tupleToRawDeleteQuery("subset_replication_test", table, new TupleDeleteDto(keys)));
+        assertEquals("DELETE FROM `subset_replication_test`.`mapper_binding_test` WHERE `key_text` = ? AND `amount` IS NULL", mapper.tupleToRawDeleteQuery("subset_replication_test", table, new TupleDeleteDto(keys)));
     }
 
     @Test
     @EnabledIfEnvironmentVariable(named = "SUBSET_SQL_TEST_PORT", matches = "[0-9]+")
     void mariaDbRoundTripsExactDecimalAndExecutesMixedNullableDeleteKeys() throws Exception {
         final String url = "jdbc:mariadb://127.0.0.1:" + System.getenv("SUBSET_SQL_TEST_PORT");
-        try (Connection connection = DriverManager.getConnection(url, "root", System.getenv("SUBSET_SQL_TEST_PASSWORD"));
+        try (Connection connection = DriverManager.getConnection(url + "?sslMode=disable", "root", System.getenv("SUBSET_SQL_TEST_PASSWORD"));
              Statement statement = connection.createStatement()) {
             statement.execute("CREATE DATABASE IF NOT EXISTS subset_replication_test");
             connection.setCatalog("subset_replication_test");
@@ -90,6 +90,7 @@ class MariaDbReplicationBindingTest {
                 mapper.tupleToRawDeleteQuery("subset_replication_test", table, new TupleDeleteDto(keys)))) {
             int position = 1;
             for (var key : keys.entrySet()) {
+                if (key.getValue() == null) continue;
                 mapper.prepareStatementWithColumnTypeObject(null, statement,
                         key.getKey().equals("amount") ? ColumnType.DECIMAL : ColumnType.VARCHAR,
                         position++, key.getKey(), key.getValue());

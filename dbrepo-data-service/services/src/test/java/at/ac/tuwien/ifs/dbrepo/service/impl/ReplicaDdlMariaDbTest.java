@@ -171,7 +171,7 @@ class ReplicaDdlMariaDbTest {
     }
 
     private Connection connect() throws SQLException {
-        final Connection connection = DriverManager.getConnection(url, "root", password);
+        final Connection connection = DriverManager.getConnection(url + "?sslMode=disable", "root", password);
         connection.setAutoCommit(false);
         return connection;
     }

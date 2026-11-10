@@ -25,6 +25,7 @@ package-config: ## Package the config files
 	cp ./dbrepo-broker-service/enabled_plugins ./.docker/config
 	cp ./dbrepo-broker-service/definitions.json ./.docker/config
 	cp ./dbrepo-broker-service/advanced.config ./.docker/config
+	cp ./dbrepo-broker-service/sync-service-password.sh ./.docker/config
 	cp ./dbrepo-gateway-service/dbrepo.conf ./.docker/config
 	cp ./dbrepo-cache-db/valkey.conf ./.docker/config
 	cp -r ./dbrepo-dashboard-ui/dashboards ./.docker/config

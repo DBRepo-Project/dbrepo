@@ -35,6 +35,6 @@ public class CreateTableConstraintsDto {
     @NotNull
     @JsonProperty("primary_key")
     @Schema(description = "The list of primary key column(s)", example = "[\"id\"]")
-    private Set<String> primaryKey;
+    private List<String> primaryKey;
 
 }

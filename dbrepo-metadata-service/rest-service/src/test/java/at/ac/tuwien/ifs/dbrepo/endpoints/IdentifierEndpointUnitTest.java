@@ -1768,4 +1768,11 @@ public class IdentifierEndpointUnitTest extends BaseTest {
         assertNull(response.getBody());
     }
 
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = "create-identifier")
+    public void metadataUpdateRejectsDifferentPathAndBodyIds() {
+        assertThrows(MalformedException.class,
+                () -> identifierEndpoint.save(java.util.UUID.randomUUID(), IDENTIFIER_1_SAVE_DTO, USER_1_PRINCIPAL));
+    }
 }

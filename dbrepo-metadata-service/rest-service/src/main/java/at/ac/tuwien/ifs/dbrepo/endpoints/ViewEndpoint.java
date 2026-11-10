@@ -205,8 +205,7 @@ public class ViewEndpoint extends RestEndpoint {
             UserNotFoundException, SearchServiceException, SearchServiceConnectionException, TableNotFoundException,
             ImageNotFoundException, ViewExistsException, DashboardServiceException, DashboardServiceConnectionException, ColumnNotFoundException {
         log.debug("endpoint create view, databaseId={}, data.name={}", databaseId, data.getName());
-        final Database database = databaseService.findById(databaseId);
-        databaseService.lockForUpdate(database);
+        final Database database = databaseService.findForUpdateById(databaseId);
         validatePrimaryWriteLocation(database);
         if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to create view: not the database owner");
@@ -217,7 +216,7 @@ public class ViewEndpoint extends RestEndpoint {
             throw new ViewExistsException("Failed to create view: name exists");
         }
         final View view = viewService.create(database, AuthUtil.getUsername(principal), data);
-        dashboardService.update(view.getDatabase());
+        dashboardService.updateContent(view.getDatabase());
         if (replicationService != null && hasReplicaLocations(database)) {
             try {
                 replicationService.replicateView(view);
@@ -265,14 +264,14 @@ public class ViewEndpoint extends RestEndpoint {
                     .filter(a -> a.getUsername().equals(AuthUtil.getUsername(principal)))
                     .findFirst();
             if (view.getIsPublic() || view.getIsSchemaPublic() || optional.isPresent()) {
-                return ResponseEntity.ok(metadataMapper.viewToViewDto(view));
+                return ResponseEntity.ok(filterViewMetadata(metadataMapper.viewToViewDto(view), principal));
             }
         }
         if (!view.getIsPublic() && !view.getIsSchemaPublic()) {
             log.error("Failed to find view: not public and no access found");
             throw new NotAllowedException("Failed to find view: not public and no access found");
         }
-        return ResponseEntity.ok(metadataMapper.viewToViewDto(view));
+        return ResponseEntity.ok(filterViewMetadata(metadataMapper.viewToViewDto(view), principal));
     }
 
     @DeleteMapping("/{viewId}")
@@ -311,8 +310,7 @@ public class ViewEndpoint extends RestEndpoint {
             SearchServiceConnectionException, UserNotFoundException, DashboardServiceException,
             DashboardServiceConnectionException {
         log.debug("endpoint delete view, databaseId={}, viewId={}", databaseId, viewId);
-        final Database database = databaseService.findById(databaseId);
-        databaseService.lockForUpdate(database);
+        final Database database = databaseService.findForUpdateById(databaseId);
         validatePrimaryWriteLocation(database);
         if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to delete view: not the database owner {}", database.getOwnedBy());
@@ -326,13 +324,13 @@ public class ViewEndpoint extends RestEndpoint {
         if (hasReplicaLocations(database)) {
             replicationService.replicateView(view);
         }
-        dashboardService.update(databaseService.findById(databaseId));
+        dashboardService.updateContent(databaseService.findForUpdateById(databaseId));
         return ResponseEntity.accepted()
                 .build();
     }
 
     @PutMapping("/{viewId}")
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @PreAuthorize("hasAuthority('modify-view-visibility')")
     @Observed(name = "dbrepo_view_update")
     @Operation(summary = "Update view",
@@ -365,7 +363,7 @@ public class ViewEndpoint extends RestEndpoint {
             SearchServiceConnectionException, UserNotFoundException, DashboardServiceException,
             DashboardServiceConnectionException {
         log.debug("endpoint update view, databaseId={}, viewId={}", databaseId, viewId);
-        final Database database = databaseService.findById(databaseId);
+        final Database database = databaseService.findForUpdateById(databaseId);
         validatePrimaryWriteLocation(database);
         final View view = viewService.findById(database, viewId);
         if (view.getArchivedAt() != null) {
@@ -376,7 +374,7 @@ public class ViewEndpoint extends RestEndpoint {
             throw new NotAllowedException("Failed to update view: not the database- or view owner");
         }
         final View view1 = viewService.update(view, data);
-        dashboardService.update(view1.getDatabase());
+        dashboardService.updateContent(view1.getDatabase());
         return ResponseEntity.accepted()
                 .body(metadataMapper.viewToViewBriefDto(view1));
     }

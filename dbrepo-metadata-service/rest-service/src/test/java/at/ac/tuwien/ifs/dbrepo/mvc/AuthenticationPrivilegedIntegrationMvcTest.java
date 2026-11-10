@@ -138,4 +138,28 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends BaseTest {
                 .andExpect(status().isOk());
     }
 
+
+    @Autowired private at.ac.tuwien.ifs.dbrepo.auth.BasicAuthenticationProvider basicProvider;
+    @Autowired private at.ac.tuwien.ifs.dbrepo.auth.BearerAuthenticationProvider bearerProvider;
+    @Autowired private org.keycloak.admin.client.Keycloak keycloak;
+    @Autowired private at.ac.tuwien.ifs.dbrepo.config.KeycloakConfig keycloakConfig;
+
+    @Test
+    void uploadOwnerUsesSameRealKeycloakSubjectForBasicAndBearer() throws Exception {
+        keycloakUtils.createUser(USER_1_ID, USER_1_KEYCLOAK_SIGNUP_REQUEST);
+        var users = keycloak.realm(keycloakConfig.getKeycloakRealm()).users()
+                .searchByUsername(USER_1_USERNAME, true);
+        org.junit.jupiter.api.Assertions.assertEquals(1, users.size());
+        org.junit.jupiter.api.Assertions.assertEquals(USER_1_USERNAME, users.getFirst().getUsername());
+        String subject = users.getFirst().getId();
+        var basic = basicProvider.authenticate(org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+                .unauthenticated(USER_1_USERNAME, USER_1_PASSWORD));
+        String token = keycloakGateway.getUserToken(USER_1_USERNAME, USER_1_PASSWORD).getAccessToken();
+        var bearer = bearerProvider.authenticate(new org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthenticationToken(token));
+        org.junit.jupiter.api.Assertions.assertEquals(subject, at.ac.tuwien.ifs.dbrepo.core.storage.UploadMetadata.ownerId(basic));
+        org.junit.jupiter.api.Assertions.assertEquals(subject, at.ac.tuwien.ifs.dbrepo.core.storage.UploadMetadata.ownerId(bearer));
+        var jwt = (org.springframework.security.oauth2.jwt.Jwt) bearer.getPrincipal();
+        org.junit.jupiter.api.Assertions.assertEquals(USER_1_ID.toString(), jwt.getClaimAsString("uid"));
+        org.junit.jupiter.api.Assertions.assertNotEquals(jwt.getClaimAsString("uid"), subject);
+    }
 }

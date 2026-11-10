@@ -1,0 +1,21 @@
+tags:
+  - dashboard-endpoint
+summary: Check dashboard owner account
+operationId: check_dashboard_user
+description: Requires an active Grafana account with this exact login. Requires role `system`.
+parameters:
+  - name: username
+    in: path
+    required: true
+    schema:
+      type: string
+responses:
+  204:
+    description: Active exact-login account found
+  404:
+    description: Account is missing, disabled or has a different login
+  502:
+    description: Dashboard backend request failed
+security:
+  - bearerAuth: []
+  - basicAuth: []

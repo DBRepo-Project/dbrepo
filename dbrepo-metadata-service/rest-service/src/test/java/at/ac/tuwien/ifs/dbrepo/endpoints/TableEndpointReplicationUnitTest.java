@@ -101,6 +101,7 @@ public class TableEndpointReplicationUnitTest extends BaseTest {
 
         when(databaseService.findById(DATABASE_3_ID))
                 .thenReturn(database);
+        when(databaseService.findForUpdateById(DATABASE_3_ID)).thenReturn(database);
         when(accessService.find(database, USER_1_USERNAME))
                 .thenReturn(DATABASE_3_USER_1_WRITE_OWN_ACCESS);
         when(tableService.createTable(database, request, USER_1_PRINCIPAL))
@@ -146,6 +147,7 @@ public class TableEndpointReplicationUnitTest extends BaseTest {
 
         when(databaseService.findById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3);
+        when(databaseService.findForUpdateById(DATABASE_3_ID)).thenReturn(DATABASE_3);
         when(tableService.findLocalTableIdByReplicaTableId(creationId))
                 .thenReturn(new LocalTableIdDto(TABLE_1_ID, creationId));
         when(tableService.findById(DATABASE_3, TABLE_1_ID))
@@ -199,6 +201,7 @@ public class TableEndpointReplicationUnitTest extends BaseTest {
                 .build();
         ReflectionTestUtils.setField(tableEndpoint, "replicationSiteUrl", "http://local.test");
         when(databaseService.findById(DATABASE_3_ID)).thenReturn(database);
+        when(databaseService.findForUpdateById(DATABASE_3_ID)).thenReturn(database);
         when(tableService.findById(database, TABLE_1_ID)).thenReturn(table);
 
         final ResponseEntity<Void> response = tableEndpoint.delete(DATABASE_3_ID, TABLE_1_ID, USER_1_PRINCIPAL);
@@ -221,6 +224,7 @@ public class TableEndpointReplicationUnitTest extends BaseTest {
                 .build();
         ReflectionTestUtils.setField(tableEndpoint, "replicationSiteUrl", "http://local.test");
         when(databaseService.findById(DATABASE_3_ID)).thenReturn(database);
+        when(databaseService.findForUpdateById(DATABASE_3_ID)).thenReturn(database);
         when(tableService.findById(database, TABLE_1_ID)).thenReturn(table);
 
         assertThrows(NotAllowedException.class,
@@ -234,6 +238,7 @@ public class TableEndpointReplicationUnitTest extends BaseTest {
         final Database database = Database.builder().id(DATABASE_3_ID).build();
         final Table table = Table.builder().id(TABLE_1_ID).build();
         when(databaseService.findById(DATABASE_3_ID)).thenReturn(database);
+        when(databaseService.findForUpdateById(DATABASE_3_ID)).thenReturn(database);
         when(tableService.findById(database, TABLE_1_ID)).thenReturn(table);
 
         final java.time.Instant archivedAt = java.time.Instant.parse("2026-10-03T10:00:00.123456Z");
@@ -250,6 +255,7 @@ public class TableEndpointReplicationUnitTest extends BaseTest {
     public void deleteReplica_missingTable_isIdempotent() throws Exception {
         final Database database = Database.builder().id(DATABASE_3_ID).build();
         when(databaseService.findById(DATABASE_3_ID)).thenReturn(database);
+        when(databaseService.findForUpdateById(DATABASE_3_ID)).thenReturn(database);
         when(tableService.findById(database, TABLE_1_ID))
                 .thenThrow(new TableNotFoundException("already deleted"));
 

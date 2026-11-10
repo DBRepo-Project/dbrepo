@@ -17,6 +17,8 @@ volumes:
   edge-service-data:
   edge-service-config:
 
+  storage-service-data:
+
 services:
   dbrepo-edge-service:
     profiles:
@@ -301,10 +303,10 @@ services:
       BROKER_EXCHANGE_NAME: ${BROKER_EXCHANGE_NAME:-dbrepo}
       BROKER_QUEUE_NAME: ${BROKER_QUEUE_NAME:-dbrepo}
       BROKER_HOST: "${BROKER_ENDPOINT:-broker-service}"
-      BROKER_PASSWORD: ${BROKER_SERVICE_PASSWORD:-admin}
+      BROKER_PASSWORD: ${BROKER_SERVICE_PASSWORD-admin}
       BROKER_PORT: ${BROKER_PORT:-5672}
       BROKER_SERVICE_ENDPOINT: ${BROKER_SERVICE_ENDPOINT:-http://broker-service:15672}
-      BROKER_USERNAME: ${BROKER_SERVICE_USERNAME:-admin}
+      BROKER_USERNAME: ${BROKER_SERVICE_USERNAME-admin}
       BROKER_VIRTUALHOST: "${BROKER_VIRTUALHOST:-dbrepo}"
       CACHE_DB_PROVIDER: "${CACHE_DB_PROVIDER:-valkey}"
       CACHE_DB_HOST: "${CACHE_DB_HOST:-cache-db}"
@@ -353,6 +355,8 @@ services:
     container_name: dbrepo-broker-service
     hostname: broker-service
     image: docker.io/bitnamilegacy/rabbitmq:3.13.7
+    entrypoint: ["/bin/bash", "/app/sync-service-password.sh"]
+    command: ["/opt/bitnami/scripts/rabbitmq/run.sh"]
     ports:
       - 15672:15672
       - 5672:5672
@@ -362,8 +366,11 @@ services:
       - ./dbrepo-broker-service/advanced.config:/etc/rabbitmq/advanced.config
       - ./dbrepo-broker-service/enabled_plugins:/etc/rabbitmq/enabled_plugins
       - ./dbrepo-broker-service/definitions.json:/app/definitions.json
+      - ./dbrepo-broker-service/sync-service-password.sh:/app/sync-service-password.sh:ro
       - broker-service-data:/bitnami/rabbitmq/mnesia
     environment:
+      RABBITMQ_USERNAME: "${BROKER_SERVICE_USERNAME-admin}"
+      RABBITMQ_PASSWORD: "${BROKER_SERVICE_PASSWORD-admin}"
       RABBITMQ_ERL_COOKIE: "${BROKER_SERVICE_ERL_COOKIE:-dbrepo}"
       RABBITMQ_LDAP_ADMIN_DN: "${IDENTITY_SERVICE_ADMIN_DN:-cn=admin,dc=dbrepo,dc=at}"
       RABBITMQ_LDAP_ADMIN_PASSWORD: "${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin}"
@@ -371,7 +378,7 @@ services:
       dbrepo-identity-service:
         condition: service_healthy
     healthcheck:
-      test: rabbitmq-diagnostics -q is_running | grep 'is fully booted and running'
+      test: ["CMD", "bash", "/app/sync-service-password.sh", "--check"]
       <<: *healthcheck-params
     logging:
       driver: json-file
@@ -430,18 +437,19 @@ services:
       NUXT_STORAGE_OIDC_USERNAME: "${CACHE_DB_USERNAME:-default}"
       NUXT_STORAGE_OIDC_PASSWORD: "${CACHE_DB_PASSWORD:-valkey}"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_BASE_URL: "${BASE_URL:-http://localhost}/realms/dbrepo"
-      NUXT_OIDC_PROVIDERS_KEYCLOAK_OPEN_ID_CONFIGURATION_ISSUER: "${BASE_URL:-http://localhost}/realms/dbrepo"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_AUTHORIZATION_URL: "${BASE_URL:-http://localhost}/realms/dbrepo/protocol/openid-connect/auth"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_LOGOUT_REDIRECT_URI: "${BASE_URL:-http://localhost}"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_CLIENT_ID: "${AUTH_SERVICE_CLIENT:-dbrepo-client}"
-      NUXT_OIDC_PROVIDERS_KEYCLOAK_CLIENT_SECRET: "${AUTH_SERVICE_CLIENT:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}"
+      NUXT_OIDC_PROVIDERS_KEYCLOAK_CLIENT_SECRET: "${AUTH_SERVICE_CLIENT_SECRET:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_REDIRECT_URI: "${BASE_URL:-http://localhost}/auth/keycloak/callback"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_TOKEN_URL: "${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}/realms/dbrepo/protocol/openid-connect/token"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_USER_INFO_URL: "${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}/realms/dbrepo/protocol/openid-connect/userinfo"
+      NUXT_OIDC_PROVIDERS_KEYCLOAK_OPEN_ID_CONFIGURATION_ISSUER: "${BASE_URL:-http://localhost}/realms/dbrepo"
+      NUXT_OIDC_PROVIDERS_KEYCLOAK_OPEN_ID_CONFIGURATION_JWKS_URI: "${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}/realms/dbrepo/protocol/openid-connect/certs"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_LOGOUT_URL: "${BASE_URL:-http://localhost}/realms/dbrepo/protocol/openid-connect/logout"
-      NUXT_OIDC_TOKEN_KEY: "${OIDC_TOKEN_KEY:-data:;base64,aOy1Sqlm3S41V824iZg+nuTDmEOv9QZuCGPB5I3oX48=}"
-      NUXT_OIDC_SESSION_SECRET: "${OIDC_SESSION_SECRET:-T1eUAWRG3A7UAfLKBP1vc-ydKa4xIJR4k_0JIeG7m8EG9zri}"
-      NUXT_OIDC_AUTH_SESSION_SECRET: "${NUXT_OIDC_AUTH_SESSION_SECRET:-P2g0Yb8G0bE_0pRAy5AayM5Yr7OmnIIrnsYqyud6JD6_L4FI}"
+      NUXT_OIDC_TOKEN_KEY: "${NUXT_OIDC_TOKEN_KEY:?Generate or rotate the UI secrets before starting Compose}"
+      NUXT_OIDC_SESSION_SECRET: "${OIDC_SESSION_SECRET:?Generate or rotate the UI secrets before starting Compose}"
+      NUXT_OIDC_AUTH_SESSION_SECRET: "${OIDC_AUTH_SESSION_SECRET:?Generate or rotate the UI secrets before starting Compose}"
       NUXT_PUBLIC_API_CLIENT: "${BASE_URL:-http://localhost}"
       NUXT_PUBLIC_API_SERVER: "${BASE_URL:-http://gateway-service}"
       NUXT_PUBLIC_DASHBOARD_URL: "${BASE_URL:-http://localhost}/dashboard"
@@ -542,9 +550,22 @@ services:
     container_name: dbrepo-dashboard-service-init
     image: dbrepo-dashboard-service-init:latest
     build:
-      context: ./dbrepo-dashboard-service
-      dockerfile: init.Dockerfile
+      context: .
+      dockerfile: dbrepo-dashboard-service/init.Dockerfile
     environment:
+      DASHBOARD_DATA_ENDPOINT: "${DASHBOARD_DATA_ENDPOINT:-http://gateway-service:8080}"
+      DASHBOARD_MIGRATION_EXPORT: "${DASHBOARD_MIGRATION_EXPORT:-}"
+      DASHBOARD_PUBLIC_URL: "${DASHBOARD_PUBLIC_URL:-${BASE_URL:-http://localhost}/dashboard/}"
+      DASHBOARD_OAUTH_SECRET: "${DASHBOARD_OAUTH_SECRET:-}"
+      DASHBOARD_OAUTH_CLIENT_ID: "${DASHBOARD_OAUTH_CLIENT_ID:-dbrepo-grafana}"
+      AUTH_SERVICE_ADMIN_PASSWORD: "${AUTH_SERVICE_ADMIN_PASSWORD:-admin}"
+      AUTH_SERVICE_ADMIN: "${AUTH_SERVICE_ADMIN:-admin}"
+      AUTH_SERVICE_ENDPOINT: "${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}"
+      DASHBOARD_MONITORING_ORG_ID: "${DASHBOARD_MONITORING_ORG_ID:-}"
+      DASHBOARD_MONITORING_ORG_NAME: "${DASHBOARD_MONITORING_ORG_NAME:-DBRepo Monitoring}"
+      DASHBOARD_RESEARCH_ORG_NAME: "${DASHBOARD_RESEARCH_ORG_NAME:-Main Org.}"
+      DASHBOARD_ORG_ID: "${DASHBOARD_ORG_ID:-1}"
+      BASE_URL: "${BASE_URL:-http://localhost}"
       LOG_APPLICATION_LEVEL: ${LOG_APPLICATION_LEVEL:-info}
       DASHBOARD_UI_ENDPOINT: "${DASHBOARD_UI_ENDPOINT:-http://dashboard-ui:3000}"
       DASHBOARD_UI_PASSWORD: "${DASHBOARD_UI_PASSWORD:-admin}"
@@ -565,8 +586,9 @@ services:
     container_name: dbrepo-storage-service
     hostname: storage-service
     image: docker.io/chrislusf/seaweedfs:4.13
-    command: [ "server", "-s3", "-s3.port=9000", "-s3.config=/app/s3_config.json", "-metricsPort=9090" ]
+    command: [ "server", "-s3", "-s3.port=9000", "-s3.config=/app/s3_config.json", "-metricsPort=9090", "-master.volumeSizeLimitMB=64", "-master.volumePreallocate=false" ]
     volumes:
+      - storage-service-data:/data
       - ./dbrepo-storage-service/s3_config.json:/app/s3_config.json
     ports:
       - "9000:9000"
@@ -614,10 +636,10 @@ services:
       BROKER_EXCHANGE_NAME: "${BROKER_EXCHANGE_NAME:-dbrepo}"
       BROKER_QUEUE_NAME: "${BROKER_QUEUE_NAME:-dbrepo}"
       BROKER_HOST: "${BROKER_ENDPOINT:-broker-service}"
-      BROKER_PASSWORD: "${BROKER_SERVICE_PASSWORD:-admin}"
+      BROKER_PASSWORD: "${BROKER_SERVICE_PASSWORD-admin}"
       BROKER_PORT: ${BROKER_PORT:-5672}
       BROKER_SERVICE_ENDPOINT: "${BROKER_SERVICE_ENDPOINT:-http://broker-service:15672}"
-      BROKER_USERNAME: "${BROKER_SERVICE_USERNAME:-admin}"
+      BROKER_USERNAME: "${BROKER_SERVICE_USERNAME-admin}"
       BROKER_VIRTUALHOST: "${BROKER_VIRTUALHOST:-dbrepo}"
       CACHE_DB_PROVIDER: "${CACHE_DB_PROVIDER:-valkey}"
       CACHE_DB_HOST: "${CACHE_DB_HOST:-cache-db}"
@@ -627,8 +649,8 @@ services:
       COMPUTE_SERVICE_ENDPOINT: "${COMPUTE_SERVICE_ENDPOINT:-local[*]}"
       EXCHANGE_NAME: "${EXCHANGE_NAME:-dbrepo}"
       METADATA_SERVICE_ENDPOINT: "${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}"
-      GRANT_DEFAULT_READ: "${GRANT_DEFAULT_READ:-SELECT, EXECUTE}"
-      GRANT_DEFAULT_WRITE: "${GRANT_DEFAULT_WRITE:-SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, EXECUTE, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE}"
+      GRANT_DEFAULT_READ: "${GRANT_DEFAULT_READ:-SELECT}"
+      GRANT_DEFAULT_WRITE: "${GRANT_DEFAULT_WRITE:-SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE}"
       LOG_APPLICATION_LEVEL: ${LOG_APPLICATION_LEVEL:-info}
       LOG_ROOT_LEVEL: ${LOG_ROOT_LEVEL:-warn}
       QUEUE_NAME: ${QUEUE_NAME:-dbrepo}
@@ -668,24 +690,39 @@ services:
     hostname: dashboard-ui
     image: docker.io/grafana/grafana:11.6.16
     volumes:
-      - ./dbrepo-dashboard-ui/dashboards:/app/dashboards
       - ./dbrepo-dashboard-ui/grafana.ini:/etc/grafana/grafana.ini
-      - ./dbrepo-dashboard-ui/provisioning/dashboards/provider.yaml:/etc/grafana/provisioning/dashboards/provider.yaml
       - ./dbrepo-dashboard-ui/provisioning/datasources/infinity.yaml:/etc/grafana/provisioning/datasources/infinity.yaml
-      - ./dbrepo-dashboard-ui/provisioning/datasources/prometheus.yaml:/etc/grafana/provisioning/datasources/prometheus.yaml
-      - ./dbrepo-dashboard-ui/provisioning/datasources/opensearch.yaml:/etc/grafana/provisioning/datasources/opensearch.yaml
     environment:
+      GF_RBAC_PERMISSION_CACHE: "false"
+      GF_AUTH_OAUTH_ALLOW_INSECURE_EMAIL_LOOKUP: "false"
+      GF_AUTH_GENERIC_OAUTH_USE_REFRESH_TOKEN: "true"
+      GF_AUTH_GENERIC_OAUTH_USE_PKCE: "true"
+      GF_AUTH_GENERIC_OAUTH_ALLOW_ASSIGN_GRAFANA_ADMIN: "false"
+      GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_PATH: "'Viewer'"
+      GF_AUTH_GENERIC_OAUTH_EMAIL_ATTRIBUTE_PATH: "email"
+      GF_AUTH_GENERIC_OAUTH_LOGIN_ATTRIBUTE_PATH: "preferred_username"
+      GF_AUTH_GENERIC_OAUTH_API_URL: "${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}/realms/dbrepo/protocol/openid-connect/userinfo"
+      GF_AUTH_GENERIC_OAUTH_TOKEN_URL: "${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}/realms/dbrepo/protocol/openid-connect/token"
+      GF_AUTH_GENERIC_OAUTH_AUTH_URL: "${BASE_URL:-http://localhost}/realms/dbrepo/protocol/openid-connect/auth"
+      GF_AUTH_GENERIC_OAUTH_SCOPES: "openid profile email"
+      GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET: "${DASHBOARD_OAUTH_SECRET:-}"
+      GF_AUTH_GENERIC_OAUTH_CLIENT_ID: "${DASHBOARD_OAUTH_CLIENT_ID:-dbrepo-grafana}"
+      GF_AUTH_GENERIC_OAUTH_ALLOW_SIGN_UP: "true"
+      GF_AUTH_GENERIC_OAUTH_NAME: "DBRepo"
+      GF_AUTH_GENERIC_OAUTH_ENABLED: "true"
+      GF_USERS_AUTO_ASSIGN_ORG_ROLE: "Viewer"
+      GF_USERS_AUTO_ASSIGN_ORG_ID: "${DASHBOARD_ORG_ID:-1}"
+      GF_AUTH_ANONYMOUS_ORG_NAME: "${DASHBOARD_RESEARCH_ORG_NAME:-Main Org.}"
+      DASHBOARD_ORG_ID: "${DASHBOARD_ORG_ID:-1}"
       BASE_URL: "${BASE_URL:-http://localhost}"
       DASHBOARD_DB_NAME: "${DASHBOARD_DB_NAME:-grafana}"
       DASHBOARD_DB_USERNAME: "${DASHBOARD_DB_USERNAME:-grafana}"
       DASHBOARD_DB_PASSWORD: "${DASHBOARD_DB_PASSWORD:-dbrepo}"
-      GF_SERVER_ROOT_URL: http://dashboard-ui:3000/dashboard/
+      GF_SERVER_ROOT_URL: "${DASHBOARD_PUBLIC_URL:-${BASE_URL:-http://localhost}/dashboard/}"
       GF_SECURITY_ADMIN_USER: "${DASHBOARD_UI_USERNAME:-admin}"
       GF_SECURITY_ADMIN_PASSWORD: "${DASHBOARD_UI_PASSWORD:-admin}"
       GF_INSTALL_PLUGINS: "yesoreyeram-infinity-datasource 4.0.0,grafana-opensearch-datasource 2.34.4"
       GF_PLUGINS_PREINSTALL_DISABLED: "true"
-      READONLY_USERNAME: "${READONLY_USERNAME:-readonly}"
-      READONLY_PASSWORD: "${READONLY_PASSWORD:-readonly}"
     healthcheck:
       test: curl -fsSL --head 127.0.0.1:3000
       <<: *healthcheck-params
@@ -702,6 +739,7 @@ services:
     build:
       context: ./dbrepo-dashboard-service
     environment:
+      DASHBOARD_ORG_ID: "${DASHBOARD_ORG_ID:-1}"
       AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
       BASE_URL: "${BASE_URL:-http://localhost}"
       DASHBOARD_UI_ENDPOINT: "${DASHBOARD_UI_ENDPOINT:-http://dashboard-ui:3000}"

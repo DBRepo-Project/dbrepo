@@ -39,7 +39,7 @@ class TupleReplicationJournalIntegrationTest {
     @BeforeEach
     void schema() throws Exception {
         assertTrue(List.of("journal_replication_test", "recovery_tuple_test").contains(SCHEMA));
-        try (Connection c = DriverManager.getConnection(URL, "root", password())) {
+        try (Connection c = DriverManager.getConnection(URL + "?sslMode=disable", "root", password())) {
             sql(c, "DROP DATABASE IF EXISTS " + SCHEMA);
             sql(c, "CREATE DATABASE " + SCHEMA);
         }
@@ -377,7 +377,7 @@ class TupleReplicationJournalIntegrationTest {
     }
 
     private Connection connection() throws SQLException {
-        final Connection c = DriverManager.getConnection(URL + SCHEMA, "root", password());
+        final Connection c = DriverManager.getConnection(URL + SCHEMA + "?sslMode=disable", "root", password());
         sql(c, "SET SESSION innodb_lock_wait_timeout=5");
         return c;
     }

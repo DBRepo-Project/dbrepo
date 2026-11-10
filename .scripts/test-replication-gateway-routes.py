@@ -35,7 +35,12 @@ class ReplicationGatewayRoutesTest(unittest.TestCase):
                 with self.subTest(config=filename, path=path):
                     block = next((body for pattern, body in locations if re.search(pattern, path)), None)
                     self.assertIsNotNone(block, path)
-                    self.assertRegex(block, rf"proxy_pass\s+http://{service}(?::8080)?;")
+                    if "http://$table_backend;" in block:
+                        self.assertEqual(service, "data-service")
+                        self.assertIn("default table_data_backend;", config)
+                        self.assertRegex(config, r"upstream table_data_backend \{ server data-service(?::8080)?;")
+                    else:
+                        self.assertRegex(block, rf"proxy_pass\s+http://{service}(?::8080)?;")
                     self.assertNotIn("limit_except", block)
 
 

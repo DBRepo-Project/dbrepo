@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.LinkedList;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -54,14 +55,21 @@ public class ContainerServiceImpl implements ContainerService {
             throw new ImageNotFoundException("Failed to find image in metadata database");
         }
         /* entity */
+        final Integer port = data.getPort() == null ? optional2.get().getDefaultPort() : data.getPort();
         Container container = Container.builder()
                 .image(optional2.get())
                 .name(data.getName())
                 .internalName(containerName)
                 .host(data.getHost())
-                .port(data.getPort())
+                .port(port)
                 .privilegedUsername(data.getPrivilegedUsername())
                 .privilegedPassword(data.getPrivilegedPassword())
+                .readonlyUsername(data.getReadonlyUsername())
+                .readonlyPassword(data.getReadonlyPassword())
+                .quota(data.getQuota() == null ? null : Math.toIntExact(data.getQuota()))
+                .uiHost(data.getUiHost() == null ? data.getHost() : data.getUiHost())
+                .uiPort(data.getUiPort() == null ? port : data.getUiPort())
+                .databases(new LinkedList<>())
                 .build();
         container = containerRepository.save(container);
         log.info("Created container with id {}", container.getId());

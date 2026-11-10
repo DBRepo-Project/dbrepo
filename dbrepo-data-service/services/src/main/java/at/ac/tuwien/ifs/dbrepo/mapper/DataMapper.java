@@ -233,8 +233,8 @@ public interface DataMapper {
             constraints.put(columnName, ColumnAnalysisResultDto.builder()
                     .name(columnName)
                     .datatype(duckDbDataTypeToMariaDbColumnTypeDto(columnType))
-                    .nullAllowed(nullAllowed != null && columnName.equals("YES"))
-                    .primaryKey(key != null && key.equals("YES"))
+                    .nullAllowed("YES".equals(nullAllowed))
+                    .primaryKey("PRI".equals(key))
                     .build());
         }
         return constraints;
@@ -446,7 +446,7 @@ public interface DataMapper {
                         .build())
                 .constraints(ConstraintsDto.builder()
                         .foreignKeys(new LinkedList<>())
-                        .primaryKey(new LinkedHashSet<>())
+                        .primaryKey(new LinkedList<>())
                         .uniques(new LinkedList<>())
                         .checks(new LinkedHashSet<>())
                         .build())

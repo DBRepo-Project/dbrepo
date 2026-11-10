@@ -77,11 +77,10 @@ public class TableEndpointSaturationIntegrationTest extends BaseTest {
     @Test
     public void getData_executorSaturated_closesConnection() throws Exception {
         TABLE_1_CACHE.setIsPublic(true);
+        DATABASE_1_CACHE.setTables(List.of(TABLE_1_CACHE));
 
         /* mock */
-        when(metadataService.getTable(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_CACHE);
-        when(metadataService.getDatabase(DATABASE_1_ID))
+        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_CACHE);
         final long before = countConnections();
         final CountDownLatch release = new CountDownLatch(1);
@@ -125,7 +124,7 @@ public class TableEndpointSaturationIntegrationTest extends BaseTest {
 
     private static long countConnections() throws SQLException {
         try (Connection connection = DriverManager.getConnection("jdbc:mariadb://127.0.0.1:" + CONTAINER_1_PORT + "/" +
-                DATABASE_1_INTERNAL_NAME, CONTAINER_1_PRIVILEGED_USERNAME, CONTAINER_1_PRIVILEGED_PASSWORD);
+                DATABASE_1_INTERNAL_NAME + "?sslMode=disable", CONTAINER_1_PRIVILEGED_USERNAME, CONTAINER_1_PRIVILEGED_PASSWORD);
              Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM information_schema.PROCESSLIST " +
                      "WHERE `DB` = 'weather' AND `ID` <> CONNECTION_ID()")) {

@@ -51,6 +51,7 @@ spring:
         queue-capacity: 0
   servlet:
     multipart:
+      file-size-threshold: 0B
       max-file-size: "${MAX_UPLOAD_SIZE:2GB}"
       max-request-size: "${MAX_UPLOAD_SIZE:2GB}"
   main:
@@ -118,8 +119,8 @@ dbrepo:
     clientSecret: "${AUTH_SERVICE_CLIENT_SECRET:MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}"
   grant:
     default:
-      read: "${GRANT_DEFAULT_READ:SELECT, EXECUTE}"
-      write: "${GRANT_DEFAULT_WRITE:SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, EXECUTE, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE}"
+      read: "${GRANT_DEFAULT_READ:SELECT}"
+      write: "${GRANT_DEFAULT_WRITE:SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE}"
   exchangeName: "${BROKER_EXCHANGE_NAME:dbrepo}"
   connectionTimeout: "${SPARQL_CONNECTION_TIMEOUT:10000}"
   baseUrl: "${BASE_URL:http://localhost}"

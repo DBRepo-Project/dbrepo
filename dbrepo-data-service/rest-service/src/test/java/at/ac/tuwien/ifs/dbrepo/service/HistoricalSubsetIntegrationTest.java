@@ -26,7 +26,7 @@ class HistoricalSubsetIntegrationTest extends BaseTest {
     @BeforeEach
     void schema() throws Exception {
         DATABASE_1_CACHE.setInternalName("historical_subset_test");
-        try (Connection connection = DriverManager.getConnection(url, "root", password)) {
+        try (Connection connection = DriverManager.getConnection(url + "?sslMode=disable", "root", password)) {
             connection.createStatement().execute("DROP DATABASE IF EXISTS historical_subset_test");
             connection.createStatement().execute("CREATE DATABASE historical_subset_test");
             connection.setCatalog("historical_subset_test");
@@ -39,7 +39,7 @@ class HistoricalSubsetIntegrationTest extends BaseTest {
 
     @Test
     void joinedAndCommaSeparatedRelationsReplayTheirHistoricalVersions() throws Exception {
-        try (Connection connection = DriverManager.getConnection(url + "/historical_subset_test", "root", password)) {
+        try (Connection connection = DriverManager.getConnection(url + "/historical_subset_test" + "?sslMode=disable", "root", password)) {
             final Instant selection;
             try (var time = connection.createStatement().executeQuery("SELECT UNIX_TIMESTAMP(NOW(6))")) {
                 assertTrue(time.next());

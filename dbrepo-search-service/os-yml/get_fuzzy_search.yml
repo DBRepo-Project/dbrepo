@@ -13,15 +13,42 @@ parameters:
     required: true
     schema:
       type: string
+  - in: query
+    name: page
+    schema:
+      type: integer
+      minimum: 1
+      default: 1
+    description: Page number. Pagination is optional for POST and fuzzy search.
+  - in: query
+    name: results_per_page
+    schema:
+      type: integer
+      minimum: 1
+      maximum: 500
+      default: 50
+    description: Page size. Omitted POST and fuzzy pagination returns all matches.
 responses:
   200:
-    description: OK, contains the elements formatted as an array of JSON arrays
+    description: An array of current authorized database objects, ordered by ID.
+    headers:
+      X-Count:
+        description: Total authorized projected results before pagination.
+        schema:
+          type: integer
+      X-Total-Pages:
+        description: Number of pages when pagination is requested.
+        schema:
+          type: integer
     content:
       application/json:
         schema:
           type: array
-          properties:
-            id:
-              type: string
+          items:
+            type: object
   415:
     description: Wrong accept type
+  400:
+    description: Invalid search or pagination parameters.
+  503:
+    description: Current metadata or native matching could not be evaluated completely.

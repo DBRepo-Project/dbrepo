@@ -6,6 +6,7 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.duckdb.DuckDBConnection;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -27,6 +28,9 @@ public abstract class DataConnector {
             }
         }
     }
+    // Preserve existing connection behavior; deployments with TLS can select verify-full.
+    @Value("${dbrepo.jdbc.ssl-mode:disable}")
+    private String sslMode = "disable";
 
     public ComboPooledDataSource getDataSource(Container container, String databaseName) {
         final ComboPooledDataSource dataSource = new ComboPooledDataSource();
@@ -51,7 +55,7 @@ public abstract class DataConnector {
 
     public String getSparkJdbcUrl(Container container, String databaseName) {
         final StringBuilder sb = new StringBuilder(getJdbcUrl(container, databaseName))
-                .append("?sessionVariables=sql_mode='ANSI_QUOTES',time_zone='+00:00'");
+                .append("&sessionVariables=sql_mode='ANSI_QUOTES',time_zone='+00:00'");
         log.trace("mapped container to spark jdbc url: {}", sb);
         return sb.toString();
     }
@@ -80,6 +84,9 @@ public abstract class DataConnector {
             stringBuilder.append("/")
                     .append(databaseName);
         }
+        stringBuilder.append("?sslMode=")
+                .append(java.net.URLEncoder.encode(sslMode, java.nio.charset.StandardCharsets.UTF_8))
+                .append("&useServerPrepStmts=true");
         log.trace("mapped container to jdbc url: {}", stringBuilder);
         return stringBuilder.toString();
     }

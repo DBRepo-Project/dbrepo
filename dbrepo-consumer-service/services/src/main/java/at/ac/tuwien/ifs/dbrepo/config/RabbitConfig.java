@@ -13,21 +13,18 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
-import org.springframework.amqp.core.AcknowledgeMode;
-import org.springframework.amqp.core.Message;
-import org.springframework.amqp.rabbit.config.RetryInterceptorBuilder;
+import org.springframework.amqp.ImmediateRequeueAmqpException;
+import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.ConditionalRejectingErrorHandler;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
-import org.springframework.amqp.rabbit.retry.RejectAndDontRequeueRecoverer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.retry.support.RetryTemplate;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -100,49 +97,67 @@ public class RabbitConfig {
     public SimpleMessageListenerContainer container(ConnectionFactory factory) {
         final SimpleMessageListenerContainer container = new SimpleMessageListenerContainer(factory);
         container.setQueueNames(queueName);
-        container.setMessageListener(this::insertTuple);
-        container.setAcknowledgeMode(AcknowledgeMode.AUTO);
-        container.setAdviceChain(RetryInterceptorBuilder.stateless()
-                .retryOperations(RetryTemplate.builder()
-                        .maxAttempts(3)
-                        .exponentialBackoff(1000, 2, 2000)
-                        .retryOn(RemoteUnavailableException.class)
-                        .traversingCauses()
-                        .build())
-                .recoverer(new RejectAndDontRequeueRecoverer())
-                .build());
-        final ConditionalRejectingErrorHandler errorHandler = new ConditionalRejectingErrorHandler();
-        // A manually replayed dead letter must not be silently discarded on another failure.
-        errorHandler.setDiscardFatalsWithXDeath(false);
-        container.setErrorHandler(errorHandler);
+        final ConditionalRejectingErrorHandler errors = new ConditionalRejectingErrorHandler() {
+            @Override
+            protected void log(Throwable error) {
+                log.warn("Consumer delivery failed; retry/dead-letter policy determines its disposition");
+            }
+        };
+        errors.setDiscardFatalsWithXDeath(false);
+        container.setErrorHandler(errors);
+        container.setMessageListener(message -> {
+            final MessageProperties properties = message.getMessageProperties();
+            final TypeReference<HashMap<String, Object>> typeRef = new TypeReference<>() {
+            };
+            final String publisher = properties.getReceivedUserId();
+            if (publisher == null || publisher.isBlank()) {
+                throw new AmqpRejectAndDontRequeueException("Missing broker-validated publisher identity");
+            }
+            if (properties.getReceivedRoutingKey() == null || !properties.getReceivedRoutingKey().contains(".")) {
+                throw new AmqpRejectAndDontRequeueException("Missing ingestion routing key");
+            }
+            final String[] parts = properties.getReceivedRoutingKey().split("\\.", -1);
+            if (parts.length != 3 || !"dbrepo".equals(parts[0])) {
+                throw new AmqpRejectAndDontRequeueException("Invalid ingestion routing key");
+            }
+            final TupleDto payload;
+            final UUID databaseId, tableId;
+            try {
+                payload = TupleDto.builder().data(objectMapper.readerFor(typeRef).with(DeserializationFeature.FAIL_ON_TRAILING_TOKENS).readValue(message.getBody())).build();
+                if (payload.getData() == null) {
+                    throw new IllegalArgumentException("Tuple must be a JSON object");
+                }
+                databaseId = parseId(parts[1]);
+                tableId = parseId(parts[2]);
+            } catch (IOException | IllegalArgumentException e) {
+                throw new AmqpRejectAndDontRequeueException("Malformed ingestion tuple or target");
+            }
+            for (int attempt = 1; attempt <= 3; attempt++) {
+                try {
+                    dataServiceGateway.insertRawTuple(databaseId, tableId, payload, publisher);
+                    return;
+                } catch (RemoteUnavailableException e) {
+                    if (attempt == 3) {
+                        throw new AmqpRejectAndDontRequeueException("Ingestion backend unavailable after three attempts", e);
+                    }
+                    log.warn("Ingestion backend unavailable; retrying attempt {} of 3", attempt + 1);
+                    try {
+                        Thread.sleep(500L * attempt);
+                    } catch (InterruptedException interrupted) {
+                        Thread.currentThread().interrupt();
+                        throw new ImmediateRequeueAmqpException("Consumer stopped during ingestion retry", interrupted);
+                    }
+                } catch (TableNotFoundException | DataServiceException e) {
+                    throw new AmqpRejectAndDontRequeueException("Ingestion was rejected permanently", e);
+                }
+            }
+        });
         container.setConcurrentConsumers(minConcurrent);
         container.setMaxConcurrentConsumers(maxConcurrent);
         container.setDefaultRequeueRejected(false);
         container.setPrefetchCount(1);
         container.setReceiveTimeout(connectionTimeout);
         return container;
-    }
-
-    private void insertTuple(Message message) {
-        final String key = message.getMessageProperties().getReceivedRoutingKey();
-        final String[] parts = key == null ? new String[0] : key.split("\\.", -1);
-        if (parts.length != 3 || !"dbrepo".equals(parts[0])) {
-            throw new AmqpRejectAndDontRequeueException("Expected routing key dbrepo.<database UUID>.<table UUID>");
-        }
-        try {
-            final UUID databaseId = parseId(parts[1]);
-            final UUID tableId = parseId(parts[2]);
-            final HashMap<String, Object> data = objectMapper.readerFor(new TypeReference<HashMap<String, Object>>() {
-            }).with(DeserializationFeature.FAIL_ON_TRAILING_TOKENS).readValue(message.getBody());
-            if (data == null) {
-                throw new IllegalArgumentException("Tuple must be a JSON object");
-            }
-            dataServiceGateway.insertRawTuple(databaseId, tableId, TupleDto.builder().data(data).build());
-        } catch (RemoteUnavailableException e) {
-            throw new AmqpException("Data service temporarily unavailable", e);
-        } catch (IOException | IllegalArgumentException | TableNotFoundException | DataServiceException e) {
-            throw new AmqpRejectAndDontRequeueException("Tuple cannot be inserted", e);
-        }
     }
 
     private UUID parseId(String value) {

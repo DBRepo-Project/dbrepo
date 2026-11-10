@@ -18,6 +18,10 @@ public interface DashboardServiceGateway {
      */
     void update(DatabaseDto database) throws DashboardServiceConnectionException, DashboardServiceException;
 
+    void updateContent(DatabaseDto database) throws DashboardServiceConnectionException, DashboardServiceException;
+
+    void requireUser(String username) throws DashboardServiceConnectionException, DashboardServiceException;
+
     /**
      * Creates a dashboard by given metadata.
      * @param data The metadata.

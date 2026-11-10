@@ -337,7 +337,12 @@ public class HistorySnapshotService extends DataConnector {
     private Export export(Connection reader, Connection writer, Table table, UUID id, List<Column> columns)
             throws SQLException, IOException {
         final String relation = quote(table.getInternalName());
-        final String names = String.join(",", columns.stream().map(column -> "h." + quote(column.name())).toList());
+        // Keep floating-point wire values independent of JDBC's text/binary result protocol.
+        final String names = String.join(",", columns.stream().map(column -> switch (column.jdbcType()) {
+            case java.sql.Types.FLOAT, java.sql.Types.REAL, java.sql.Types.DOUBLE ->
+                    "CAST(h." + quote(column.name()) + " AS CHAR) AS " + quote(column.name());
+            default -> "h." + quote(column.name());
+        }).toList());
         final String rawSize = String.join("+", columns.stream()
                 .map(column -> "COALESCE(OCTET_LENGTH(" + quote(column.name()) + "),0)").toList());
         try (PreparedStatement bound = reader.prepareStatement("SELECT 1 FROM " + relation

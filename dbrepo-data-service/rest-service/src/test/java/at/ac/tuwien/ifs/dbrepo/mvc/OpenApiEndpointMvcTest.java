@@ -45,6 +45,11 @@ public class OpenApiEndpointMvcTest extends BaseTest {
     }
 
     @Test
+    public void openApiDocs_analyseEndpointApiResponses_succeeds() {
+        generic_openApiDocs(AnalyseEndpoint.class);
+    }
+
+    @Test
     public void openApiDocs_databaseEndpointApiResponses_succeeds() {
         generic_openApiDocs(DatabaseEndpoint.class);
     }

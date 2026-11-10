@@ -470,7 +470,7 @@ public class ViewEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(databaseService.findById(databaseId))
+        when(databaseService.findForUpdateById(databaseId))
                 .thenReturn(database);
         if (principal != null) {
             when(userService.findByUsername(username))
@@ -537,6 +537,8 @@ public class ViewEndpointUnitTest extends BaseTest {
             DashboardServiceException, DashboardServiceConnectionException {
 
         /* mock */
+        when(databaseService.findForUpdateById(databaseId))
+                .thenReturn(database);
         when(databaseService.findById(databaseId))
                 .thenReturn(database);
         if (access != null) {
@@ -571,7 +573,7 @@ public class ViewEndpointUnitTest extends BaseTest {
                 .build();
 
         /* mock */
-        when(databaseService.findById(DATABASE_1_ID))
+        when(databaseService.findForUpdateById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
         when(viewService.findById(DATABASE_1, VIEW_1_ID))
                 .thenReturn(VIEW_1);

@@ -216,7 +216,7 @@ public class DataServiceIntegrationTest extends BaseTest {
 
     private static Connection connect() throws SQLException {
         return DriverManager.getConnection("jdbc:mariadb://127.0.0.1:" + CONTAINER_1_PORT + "/" +
-                DATABASE_1_INTERNAL_NAME, CONTAINER_1_PRIVILEGED_USERNAME, CONTAINER_1_PRIVILEGED_PASSWORD);
+                DATABASE_1_INTERNAL_NAME + "?sslMode=disable", CONTAINER_1_PRIVILEGED_USERNAME, CONTAINER_1_PRIVILEGED_PASSWORD);
     }
 
 }

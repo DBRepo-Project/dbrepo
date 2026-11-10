@@ -28,12 +28,12 @@ class TupleVersionHistoryIntegrationTest {
 
     private Connection connection() throws SQLException {
         return DriverManager.getConnection("jdbc:mariadb://127.0.0.1:" + System.getenv("TUPLE_VERSION_SQL_PORT")
-                + "/tuple_version_test", "root", System.getenv("TUPLE_VERSION_SQL_PASSWORD"));
+                + "/tuple_version_test" + "?sslMode=disable", "root", System.getenv("TUPLE_VERSION_SQL_PASSWORD"));
     }
 
     @BeforeEach
     void setup() throws Exception {
-        try (var c = DriverManager.getConnection("jdbc:mariadb://127.0.0.1:" + System.getenv("TUPLE_VERSION_SQL_PORT"),
+        try (var c = DriverManager.getConnection("jdbc:mariadb://127.0.0.1:" + System.getenv("TUPLE_VERSION_SQL_PORT") + "?sslMode=disable",
                 "root", System.getenv("TUPLE_VERSION_SQL_PASSWORD")); var s = c.createStatement()) {
             s.execute("DROP DATABASE IF EXISTS tuple_version_test");
             s.execute("CREATE DATABASE tuple_version_test");

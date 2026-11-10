@@ -163,6 +163,7 @@
                   :loading="loading"
                   :submit-text="$t('navigation.continue')"
                   :columns="tableCreate.columns"
+                  :current-table-name="generatedTableName"
                   @close="createEmptyTableAndImport"/>
               </v-container>
             </v-stepper-window>

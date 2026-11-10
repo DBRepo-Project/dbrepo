@@ -57,7 +57,7 @@ class ReplicationTimestampServiceMariaDbIntegrationTest {
         password = System.getenv("TIMESTAMP_SQL_TEST_PASSWORD");
         assertNotNull(password, "TIMESTAMP_SQL_TEST_PASSWORD must be set explicitly");
         url = "jdbc:mariadb://127.0.0.1:" + port;
-        try (Connection connection = DriverManager.getConnection(url + "?connectTimeout=5000&socketTimeout=30000", "root", password)) {
+        try (Connection connection = DriverManager.getConnection(url + "?connectTimeout=5000&socketTimeout=30000" + "&sslMode=disable", "root", password)) {
             connection.createStatement().execute("CREATE DATABASE IF NOT EXISTS " + SCHEMA);
         }
         sql("DROP TABLE IF EXISTS tuple_replication_timestamps");
@@ -473,7 +473,7 @@ class ReplicationTimestampServiceMariaDbIntegrationTest {
 
     private Connection connection() throws SQLException {
         final Connection connection = DriverManager.getConnection(url + "/" + SCHEMA
-                + "?connectTimeout=5000&socketTimeout=30000", "root", password);
+                + "?connectTimeout=5000&socketTimeout=30000" + "&sslMode=disable", "root", password);
         try (var statement = connection.createStatement()) {
             statement.execute("SET time_zone='+00:00'");
         }

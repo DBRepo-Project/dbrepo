@@ -110,7 +110,7 @@ class IngestReplicationMariaDbIntegrationTest {
         service = new TableServiceMariaDbImpl(null, Mappers.getMapper(MariaDbMapper.class), null, storage,
                 new LocalCsvService(), replication);
         ReflectionTestUtils.setField(service, "baseUrl", ORIGIN);
-        try (Connection root = DriverManager.getConnection(url, "root", password);
+        try (Connection root = DriverManager.getConnection(url + "?sslMode=disable", "root", password);
              var statement = root.createStatement()) {
             statement.execute("DROP DATABASE IF EXISTS " + DATABASE);
             statement.execute("CREATE DATABASE " + DATABASE);
@@ -721,7 +721,7 @@ class IngestReplicationMariaDbIntegrationTest {
             @Override
             public ComboPooledDataSource getDataSource(Database target) {
                 final var pool = super.getDataSource(target);
-                pool.setJdbcUrl(pool.getJdbcUrl() + "?sessionVariables=time_zone='" + zone + "'");
+                pool.setJdbcUrl(pool.getJdbcUrl() + "&sessionVariables=time_zone='" + zone + "'");
                 return pool;
             }
         };
@@ -776,7 +776,7 @@ class IngestReplicationMariaDbIntegrationTest {
     }
 
     private Connection connection() throws Exception {
-        return DriverManager.getConnection(url + "/" + DATABASE, "root", password);
+        return DriverManager.getConnection(url + "/" + DATABASE + "?sslMode=disable", "root", password);
     }
 
     private long count(String relation) throws Exception {
@@ -810,6 +810,16 @@ class IngestReplicationMariaDbIntegrationTest {
         private final List<String> reads = new CopyOnWriteArrayList<>();
 
         @Override
+        public String putUpload(String filename, Path content, String owner) {
+            throw new UnsupportedOperationException("This SQL fixture does not serve uploads");
+        }
+
+        @Override
+        public void requireUploadOwner(String key, String owner) {
+            throw new UnsupportedOperationException("Upload authorization belongs to the endpoint tests");
+        }
+
+        @Override
         public void putObject(String key, byte[] content) {
             try {
                 Files.write(Path.of(key), content);
@@ -821,6 +831,16 @@ class IngestReplicationMariaDbIntegrationTest {
         @Override
         public InputStream getObject(String bucket, String key) throws StorageNotFoundException {
             return new ByteArrayInputStream(getBytes(key));
+        }
+
+        @Override
+        public InputStream getObject(String key) throws StorageNotFoundException {
+            reads.add(key);
+            try {
+                return Files.newInputStream(Path.of(key));
+            } catch (IOException e) {
+                throw new StorageNotFoundException("Missing local ingest object: " + key, e);
+            }
         }
 
         @Override

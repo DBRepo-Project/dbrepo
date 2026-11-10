@@ -520,4 +520,22 @@ public class IdentifierServicePersistenceTest extends BaseTest {
         assertEquals(expected.getDoi(), actual.getDoi());
         assertEquals(expected.getOwnedBy(), actual.getOwnedBy());
     }
+
+    @Test
+    public void metadataUpdatePreservesOmittedDoi() throws Exception {
+        IDENTIFIER_1_SAVE_DTO.setDoi(null);
+        final Identifier saved = identifierService.save(DATABASE_1, USER_1_USERNAME, IDENTIFIER_1_SAVE_DTO);
+        assertEquals(IDENTIFIER_1_ID, saved.getId());
+        assertEquals(IDENTIFIER_1_DOI, saved.getDoi());
+        assertEquals(DATABASE_1_ID, saved.getDatabase().getId());
+        assertEquals(IDENTIFIER_1_DOI, identifierService.find(IDENTIFIER_1_ID).getDoi());
+    }
+
+    @Test
+    public void metadataUpdateRejectsDoiReplacement() throws Exception {
+        IDENTIFIER_1_SAVE_DTO.setDoi("10.12345/replacement");
+        assertThrows(MalformedException.class,
+                () -> identifierService.save(DATABASE_1, USER_1_USERNAME, IDENTIFIER_1_SAVE_DTO));
+        assertEquals(IDENTIFIER_1_DOI, identifierService.find(IDENTIFIER_1_ID).getDoi());
+    }
 }

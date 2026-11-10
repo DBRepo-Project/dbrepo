@@ -32,7 +32,7 @@ class DataServiceGatewayUnitTest {
 
     private static final UUID DATABASE_ID = UUID.fromString("14904d0e-8ed5-4f41-9084-74cbb3e5b801");
     private static final UUID TABLE_ID = UUID.fromString("e4a2c1ab-4620-431d-a56b-f5b27c047b02");
-    private static final String URL = "/api/v1/database/" + DATABASE_ID + "/table/" + TABLE_ID + "/data";
+    private static final String URL = "/api/v1/database/" + DATABASE_ID + "/table/" + TABLE_ID + "/data/ingest";
     private static final TupleDto TUPLE = TupleDto.builder().data(Map.of("value", 42)).build();
     private MockRestServiceServer server;
     private DataServiceGateway gateway;
@@ -45,11 +45,12 @@ class DataServiceGatewayUnitTest {
     }
 
     @Test
-    void postsToNormalTupleEndpoint() {
+    void postsToIngestionEndpointWithPublisher() {
         server.expect(requestTo(URL)).andExpect(method(HttpMethod.POST))
+                .andExpect(org.springframework.test.web.client.match.MockRestRequestMatchers.header("X-DBRepo-Publisher", "alice"))
                 .andExpect(content().json("{\"data\":{\"value\":42}}"))
                 .andRespond(withStatus(HttpStatusCode.valueOf(201)));
-        assertDoesNotThrow(() -> gateway.insertRawTuple(DATABASE_ID, TABLE_ID, TUPLE));
+        assertDoesNotThrow(() -> gateway.insertRawTuple(DATABASE_ID, TABLE_ID, TUPLE, "alice"));
         server.verify();
     }
 
@@ -57,7 +58,7 @@ class DataServiceGatewayUnitTest {
     @ValueSource(ints = {408, 429, 500, 502, 503, 504})
     void temporaryHttpFailuresAreRetryable(int status) {
         server.expect(requestTo(URL)).andRespond(withStatus(HttpStatusCode.valueOf(status)));
-        assertThrows(RemoteUnavailableException.class, () -> gateway.insertRawTuple(DATABASE_ID, TABLE_ID, TUPLE));
+        assertThrows(RemoteUnavailableException.class, () -> gateway.insertRawTuple(DATABASE_ID, TABLE_ID, TUPLE, "alice"));
         server.verify();
     }
 
@@ -65,21 +66,21 @@ class DataServiceGatewayUnitTest {
     @ValueSource(ints = {200, 202, 204, 302, 400, 401, 403, 409, 422})
     void permanentOrUnexpectedResponsesAreNotSuccessful(int status) {
         server.expect(requestTo(URL)).andRespond(withStatus(HttpStatusCode.valueOf(status)));
-        assertThrows(DataServiceException.class, () -> gateway.insertRawTuple(DATABASE_ID, TABLE_ID, TUPLE));
+        assertThrows(DataServiceException.class, () -> gateway.insertRawTuple(DATABASE_ID, TABLE_ID, TUPLE, "alice"));
         server.verify();
     }
 
     @Test
     void missingTableIsPermanent() {
         server.expect(requestTo(URL)).andRespond(withStatus(HttpStatusCode.valueOf(404)));
-        assertThrows(TableNotFoundException.class, () -> gateway.insertRawTuple(DATABASE_ID, TABLE_ID, TUPLE));
+        assertThrows(TableNotFoundException.class, () -> gateway.insertRawTuple(DATABASE_ID, TABLE_ID, TUPLE, "alice"));
         server.verify();
     }
 
     @Test
     void networkTimeoutIsRetryable() {
         server.expect(requestTo(URL)).andRespond(withException(new SocketTimeoutException("timeout")));
-        assertThrows(RemoteUnavailableException.class, () -> gateway.insertRawTuple(DATABASE_ID, TABLE_ID, TUPLE));
+        assertThrows(RemoteUnavailableException.class, () -> gateway.insertRawTuple(DATABASE_ID, TABLE_ID, TUPLE, "alice"));
         server.verify();
     }
 

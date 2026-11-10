@@ -3,6 +3,7 @@ import os
 import sys
 from io import BytesIO
 from uuid import uuid4
+from urllib.parse import quote
 
 import requests
 from pandas import DataFrame
@@ -106,20 +107,14 @@ class RestClient:
                                 f'200 (OK): {response.text}')
 
     def get_units(self) -> List[UnitBrief]:
-        """
-        Get all units known to the metadata database.
+        """Removed server API. Use column concept_uri/unit_uri metadata instead.
 
-        :returns: List of units, if successful.
-
-        :raises ResponseCodeError: If something went wrong with the retrieval.
+        :raises NotImplementedError: The unit registry API was removed from the server.
         """
-        url = f'/api/v1/unit'
-        response = self._wrapper(method="get", url=url)
-        if response.status_code == 200:
-            body = response.json()
-            return TypeAdapter(List[UnitBrief]).validate_python(body)
-        raise ResponseCodeError(f'Failed to find units: response code: {response.status_code} is not '
-                                f'200 (OK): {response.text}')
+        raise NotImplementedError(
+            "get_units is unavailable: the server's unit registry API was removed. "
+            "Read concept_uri/unit_uri from get_table() columns or set them with update_table_column()."
+        )
 
     def get_user(self, username: str) -> User:
         """
@@ -295,7 +290,7 @@ class RestClient:
                                                         replica_urls=replica_urls))
         if response.status_code == 201:
             body = response.json()
-            return Database.model_validate(body)
+            return self.get_database(body['id'])
         if response.status_code == 400:
             raise MalformedError(f'Failed to create database: {response.text}')
         if response.status_code == 403:
@@ -382,7 +377,8 @@ class RestClient:
                                 f'200 (OK): {response.text}')
 
     def create_container(self, name: str, host: str, image_id: str, privileged_username: str, privileged_password: str,
-                         port: int = None, ui_host: str = None, ui_port: int = None) -> Container:
+                         port: int = None, ui_host: str = None, ui_port: int = None, quota: int = 50,
+                         readonly_username: str = None, readonly_password: str = None) -> Container:
         """
         Register a container instance executing a given container image. Note that this does not create a container,
         but only saves it in the metadata database to be used within DBRepo. The container still needs to be created
@@ -397,6 +393,10 @@ class RestClient:
         :param ui_host: The container hostname displayed in the user interface. Optional. Default: value of `host`.
         :param ui_port: The container port displayed in the user interface. Optional. Default: `default_port` of image.
 
+        :param quota: Maximum number of databases on this container. Default: 50.
+        :param readonly_username: Dedicated read-only database username. Required by the server.
+        :param readonly_password: Plaintext password for that read-only user. Required by the server.
+
         :returns: The container, if successful.
 
         :raises MalformedError: If the payload was rejected by the service.
@@ -410,7 +410,9 @@ class RestClient:
                                  payload=CreateContainer(name=name, host=host, image_id=image_id,
                                                          privileged_username=privileged_username,
                                                          privileged_password=privileged_password, port=port,
-                                                         ui_host=ui_host, ui_port=ui_port))
+                                                         ui_host=ui_host, ui_port=ui_port, quota=quota,
+                                                         readonly_username=readonly_username,
+                                                         readonly_password=readonly_password))
         if response.status_code == 201:
             body = response.json()
             return Container.model_validate(body)
@@ -449,8 +451,7 @@ class RestClient:
                                  payload=ModifyVisibility(is_public=is_public, is_schema_public=is_schema_public,
                                                           is_dashboard_enabled=is_dashboard_enabled))
         if response.status_code == 202:
-            body = response.json()
-            return Database.model_validate(body)
+            return self.get_database(database_id)
         if response.status_code == 400:
             raise MalformedError(f'Failed to update database visibility: {response.text}')
         if response.status_code == 403:
@@ -465,14 +466,14 @@ class RestClient:
         raise ResponseCodeError(
             f'Failed to update database visibility: response code: {response.status_code} is not 202 (ACCEPTED)')
 
-    def update_database_owner(self, database_id: str, username: str) -> Database:
+    def update_database_owner(self, database_id: str, username: str) -> DatabaseBrief:
         """
         Updates the database owner of a database with the given database id.
 
         :param database_id: The database id.
         :param username: The username of the new owner.
 
-        :returns: The database, if successful.
+        :returns: The brief database response, if successful.
 
         :raises MalformedError: If the payload was rejected by the service.
         :raises ForbiddenError: If something went wrong with the authorization.
@@ -482,24 +483,24 @@ class RestClient:
         :raises ResponseCodeError: If something went wrong with the update.
         """
         url = f'/api/v1/database/{database_id}/owner'
-        response = self._wrapper(method="put", url=url, force_auth=True, payload=ModifyOwner(id=username))
+        response = self._wrapper(method="put", url=url, force_auth=True, payload=ModifyOwner(username=username))
         if response.status_code == 202:
             body = response.json()
-            return Database.model_validate(body)
+            return DatabaseBrief.model_validate(body)
         if response.status_code == 400:
-            raise MalformedError(f'Failed to update database visibility: {response.text}')
+            raise MalformedError(f'Failed to update database owner: {response.text}')
         if response.status_code == 403:
-            raise ForbiddenError(f'Failed to update database visibility: not allowed')
+            raise ForbiddenError(f'Failed to update database owner: not allowed')
         if response.status_code == 404:
-            raise NotExistsError(f'Failed to update database visibility: not found')
+            raise NotExistsError(f'Failed to update database owner: not found')
         if response.status_code == 502:
             raise ServiceConnectionError(
-                f'Failed to update database visibility: failed to establish connection to search service')
+                f'Failed to update database owner: failed to establish connection to search service')
         if response.status_code == 503:
             raise ServiceError(
-                f'Failed to update database visibility: failed to update in search service')
+                f'Failed to update database owner: failed to update in search service')
         raise ResponseCodeError(
-            f'Failed to update database visibility: response code: {response.status_code} is not 202 (ACCEPTED)')
+            f'Failed to update database owner: response code: {response.status_code} is not 202 (ACCEPTED)')
 
     def update_database_schema(self, database_id: str) -> DatabaseBrief:
         """
@@ -1365,65 +1366,66 @@ class RestClient:
         raise ResponseCodeError(f'Failed to import table data: response code: {response.status_code} is not '
                                 f'202 (ACCEPTED): {response.text}')
 
-    def analyse_datatypes(self, dataframe: DataFrame, enum: bool = None, enum_tol: int = None) -> DatatypeAnalysis:
+    def analyse_schema(self, dataframe: DataFrame, image_id: str = None) -> SchemaAnalysis:
+        """Upload and analyse a CSV using the selected database engine image.
+
+        If image_id is omitted, use the unique default or sole registered image.
+        The response includes engine-specific types, CSV settings and key candidates.
         """
-        Import a csv dataset from a file and analyse it for the possible enums, line encoding and column data types.
-
-        :param dataframe: The dataframe.
-        :param enum: If set to `True`, enumerations should be guessed, otherwise no guessing. Optional.
-        :param enum_tol: The tolerance for guessing enumerations (ignored if enum=False). Optional.
-
-        :returns: The determined data types, if successful.
-
-        :raises MalformedError: If the payload is rejected by the service.
-        :raises NotExistsError: If the file was not found by the Analyse Service.
-        :raises ResponseCodeError: If something went wrong with the analysis.
-        """
-        params = [
-            ('filename', self._upload(dataframe)),
-            ('separator', ','),
-            ('enum', enum),
-            ('enum_tol', enum_tol)
-        ]
-        url = f'/api/v1/analyse/datatypes'
-        response = self._wrapper(method="get", url=url, params=params)
-        if response.status_code == 202:
-            body = response.json()
-            return DatatypeAnalysis.model_validate(body)
+        if image_id is None:
+            images = self.get_images()
+            defaults = [image for image in images if image.default]
+            if len(defaults) == 1:
+                image_id = defaults[0].id
+            elif not defaults and len(images) == 1:
+                image_id = images[0].id
+            else:
+                raise RequestError('Select image_id explicitly: no unambiguous default image is available')
+        key = self._upload(dataframe)
+        response = self._wrapper(method="get",
+                                 url=f'/api/v1/image/{quote(image_id, safe="")}/analyse/schema/{quote(key, safe="")}',
+                                 force_auth=True)
+        if response.status_code == 200:
+            return SchemaAnalysis.model_validate(response.json())
         if response.status_code == 400:
-            raise MalformedError(f'Failed to analyse data types: {response.text}')
+            raise MalformedError('Failed to analyse schema: invalid dataset or image')
+        if response.status_code == 403:
+            raise ForbiddenError('Failed to analyse schema: access denied')
         if response.status_code == 404:
-            raise NotExistsError(f'Failed to analyse data types: failed to find file in storage service')
-        raise ResponseCodeError(f'Failed to analyse data types: response code: {response.status_code} is not '
-                                f'202 (ACCEPTED): {response.text}')
+            raise NotExistsError('Failed to analyse schema: image or uploaded file not found')
+        if response.status_code == 503:
+            raise ServiceConnectionError('Failed to analyse schema: metadata or storage unavailable')
+        raise ResponseCodeError(f'Failed to analyse schema: HTTP {response.status_code}')
 
-    def analyse_keys(self, dataframe: DataFrame) -> KeyAnalysis:
+    def analyse_datatypes(self, dataframe: DataFrame, enum: bool = None, enum_tol: int = None,
+                          image_id: str = None) -> DatatypeAnalysis:
+        """Analyse CSV types through analyse_schema, retaining the datatype result type.
+
+        Legacy enum/enum_tol switches are unsupported by the current schema API.
+        Use analyse_schema to read the CSV settings and detected constraints.
         """
-        Import a csv dataset from a file and analyse it for the possible primary key.
+        if enum is not None or enum_tol is not None:
+            raise RequestError('enum/enum_tol are unsupported by the schema API; use analyse_schema()')
+        schema = self.analyse_schema(dataframe, image_id)
+        return DatatypeAnalysis(separator=schema.delimiter, line_termination=schema.newline_delimiter,
+                                columns={column.name: column.datatype for column in schema.columns})
 
-        :param dataframe: The dataframe.
+    def analyse_keys(self, dataframe: DataFrame, image_id: str = None) -> KeyAnalysis:
+        """Return server-detected key candidates ranked by distinct non-null values.
 
-        :returns: The determined ranking of the primary key candidates, if successful.
-
-        :raises MalformedError: If the payload is rejected by the service.
-        :raises NotExistsError: If the file was not found by the Analyse Service.
-        :raises ResponseCodeError: If something went wrong with the analysis.
+        Use analyse_schema for the complete constraint information. Column names
+        must be unique strings so that the server result maps back to the dataframe.
         """
-        params = [
-            ('filename', self._upload(dataframe)),
-            ('separator', ','),
-        ]
-        url = f'/api/v1/analyse/keys'
-        response = self._wrapper(method="get", url=url, params=params)
-        if response.status_code == 202:
-            body = response.json()
-            return KeyAnalysis.model_validate(body)
-        if response.status_code == 400:
-            raise MalformedError(f'Failed to analyse data keys: {response.text}')
-        if response.status_code == 404:
-            raise NotExistsError(f'Failed to analyse data keys: failed to find file in Storage Service')
-        raise ResponseCodeError(f'Failed to analyse data types: response code: {response.status_code} is not '
-                                f'202 (ACCEPTED): {response.text}')
+        if not dataframe.columns.is_unique or not all(isinstance(name, str) for name in dataframe.columns):
+            raise RequestError('Key analysis requires unique string column names')
+        schema = self.analyse_schema(dataframe, image_id)
+        keys = {}
+        for column in schema.columns:
+            if column.primary_key:
+                if column.name not in dataframe.columns:
+                    raise ResponseCodeError('Schema response contains an unknown key column')
+                keys[column.name] = int(dataframe[column.name].nunique())
+        return KeyAnalysis(keys=keys)
 
     def analyse_table_statistics(self, database_id: str, table_id: str) -> TableStatistics:
         """
@@ -1440,13 +1442,15 @@ class RestClient:
         :raises ServiceError: If something went wrong with obtaining the information in the search service.
         :raises ResponseCodeError: If something went wrong with the analysis.
         """
-        url = f'/api/v1/analyse/database/{database_id}/table/{table_id}/statistics'
+        url = f'/api/v1/database/{database_id}/table/{table_id}/statistic'
         response = self._wrapper(method="get", url=url)
-        if response.status_code == 202:
+        if response.status_code == 200:
             body = response.json()
             return TableStatistics.model_validate(body)
         if response.status_code == 400:
             raise MalformedError(f'Failed to analyse table statistics: {response.text}')
+        if response.status_code == 403:
+            raise ForbiddenError('Failed to analyse table statistics: not allowed')
         if response.status_code == 404:
             raise NotExistsError(f'Failed to analyse table statistics: separator error')
         if response.status_code == 502:
@@ -1455,7 +1459,7 @@ class RestClient:
         if response.status_code == 503:
             raise ServiceError(f'Failed to analyse table statistics: failed to save statistic in search service')
         raise ResponseCodeError(f'Failed to analyse table statistics: response code: {response.status_code} is not '
-                                f'202 (ACCEPTED): {response.text}')
+                                f'200 (OK): {response.text}')
 
     def update_table_statistics(self, database_id: str, table_id: str) -> None:
         """
@@ -1621,7 +1625,7 @@ class RestClient:
 
     def get_database_access(self, database_id: str) -> AccessType:
         """
-        Get access of a view in a database with the given database id and view id.
+        Get the authenticated user's effective database access.
 
         :param database_id: The database id.
 
@@ -1663,8 +1667,7 @@ class RestClient:
         url = f'/api/v1/database/{database_id}/access/{username}'
         response = self._wrapper(method="post", url=url, force_auth=True, payload=CreateAccess(type=type))
         if response.status_code == 202:
-            body = response.json()
-            return DatabaseAccess.model_validate(body).type
+            return type
         if response.status_code == 400:
             raise MalformedError(f'Failed to create database access: {response.text}')
         if response.status_code == 403:
@@ -1699,8 +1702,7 @@ class RestClient:
         url = f'/api/v1/database/{database_id}/access/{username}'
         response = self._wrapper(method="put", url=url, force_auth=True, payload=UpdateAccess(type=type))
         if response.status_code == 202:
-            body = response.json()
-            return DatabaseAccess.model_validate(body).type
+            return type
         if response.status_code == 400:
             raise MalformedError(f'Failed to update database access: {response.text}')
         if response.status_code == 403:
@@ -2153,36 +2155,28 @@ class RestClient:
                                 f'200 (OK): {response.text}')
 
     def get_ontologies(self) -> List[OntologyBrief]:
-        """
-        Get list of ontologies.
+        """Removed server API. Use column concept_uri/unit_uri metadata instead.
 
-        :returns: List of ontologies, if successful.
+        :raises NotImplementedError: The ontology registry API was removed from the server.
         """
-        url = f'/api/v1/ontology'
-        response = self._wrapper(method="get", url=url)
-        if response.status_code == 200:
-            body = response.json()
-            return TypeAdapter(List[OntologyBrief]).validate_python(body)
-        raise ResponseCodeError(f'Failed to get ontologies: response code: {response.status_code} is not '
-                                f'200 (OK): {response.text}')
+        raise NotImplementedError(
+            "get_ontologies is unavailable: the server's ontology registry API was removed. "
+            "Read concept_uri/unit_uri from get_table() columns or set them with update_table_column()."
+        )
 
     def get_concepts(self) -> List[ConceptBrief]:
-        """
-        Get list of concepts known to the metadata database.
+        """Removed server API. Use column concept_uri/unit_uri metadata instead.
 
-        :returns: List of concepts, if successful.
+        :raises NotImplementedError: The concept registry API was removed from the server.
         """
-        url = f'/api/v1/concept'
-        response = self._wrapper(method="get", url=url)
-        if response.status_code == 200:
-            body = response.json()
-            return TypeAdapter(List[ConceptBrief]).validate_python(body)
-        raise ResponseCodeError(f'Failed to get concepts: response code: {response.status_code} is not '
-                                f'200 (OK): {response.text}')
+        raise NotImplementedError(
+            "get_concepts is unavailable: the server's concept registry API was removed. "
+            "Read concept_uri/unit_uri from get_table() columns or set them with update_table_column()."
+        )
 
     def get_identifiers(self, database_id: str = None, subset_id: str = None, view_id: str = None,
                         table_id: str = None, type: IdentifierType = None, status: IdentifierStatusType = None) -> List[
-        Identifier]:
+        IdentifierBrief]:
         """
         Get list of identifiers, filter by the remaining optional arguments.
 
@@ -2193,7 +2187,7 @@ class RestClient:
         :param type: The identifier type. Optional.
         :param status: The identifier status. Optional.
 
-        :returns: List of identifiers, if successful.
+        :returns: List of brief identifiers, if successful.
 
         :raises NotExistsError: If the accept header is neither application/json nor application/ld+json.
         :raises FormatNotAvailable: If the service could not represent the output.
@@ -2222,7 +2216,7 @@ class RestClient:
         response = self._wrapper(method="get", url=url, params=params, headers={'Accept': 'application/json'})
         if response.status_code == 200:
             body = response.json()
-            return TypeAdapter(List[Identifier]).validate_python(body)
+            return TypeAdapter(List[IdentifierBrief]).validate_python(body)
         if response.status_code == 404:
             raise NotExistsError(f'Failed to get identifiers: requested style is not known')
         if response.status_code == 406:

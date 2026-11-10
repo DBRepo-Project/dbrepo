@@ -1,6 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.core.api.grafana;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 
@@ -26,6 +27,7 @@ public enum PermissionTypeDto {
         this.name = name;
     }
 
+    @JsonValue
     @Override
     public String toString() {
         return this.name;

@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -34,26 +35,29 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
 
     @Override
     @Observed(name = "dbrepo_consumer_insert_tuple")
-    public void insertRawTuple(UUID databaseId, UUID tableId, TupleDto tuple) throws RemoteUnavailableException,
+    public void insertRawTuple(UUID databaseId, UUID tableId, TupleDto tuple, String publisher) throws RemoteUnavailableException,
             TableNotFoundException, DataServiceException {
         final ResponseEntity<Void> response;
-        final String url = "/api/v1/database/" + databaseId + "/table/" + tableId + "/data";
+        final String url = "/api/v1/database/" + databaseId + "/table/" + tableId + "/data/ingest";
         log.debug("insert raw tuple into data service: {}", url);
+        if (publisher == null || publisher.isBlank()) {
+            throw new DataServiceException("Missing broker-validated publisher");
+        }
+        final HttpHeaders headers = new HttpHeaders();
+        headers.set("X-DBRepo-Publisher", publisher);
         try {
-            response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(tuple), Void.class);
+            response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(tuple, headers), Void.class);
         } catch (ResourceAccessException | HttpServerErrorException e) {
-            log.error("Failed to insert raw tuple: {}", e.getMessage());
-            throw new RemoteUnavailableException("Failed to insert raw tuple: " + e.getMessage(), e);
+            throw new RemoteUnavailableException("Failed to contact ingestion backend");
+        } catch (HttpClientErrorException.TooManyRequests e) {
+            throw new RemoteUnavailableException("Ingestion backend rate limited the request");
         } catch (HttpClientErrorException.NotFound e) {
-            log.error("Failed to find table with id {}: {}", tableId, e.getMessage());
-            throw new TableNotFoundException("Failed to find table: " + e.getMessage(), e);
+            throw new TableNotFoundException("Ingestion target not found");
         } catch (HttpClientErrorException e) {
-            if (e.getStatusCode() == HttpStatus.REQUEST_TIMEOUT || e.getStatusCode() == HttpStatus.TOO_MANY_REQUESTS) {
-                throw new RemoteUnavailableException("Data service temporarily rejected tuple", e);
+            if (e.getStatusCode() == HttpStatus.REQUEST_TIMEOUT) {
+                throw new RemoteUnavailableException("Ingestion backend timed out");
             }
-            throw new DataServiceException("Data service rejected tuple: " + e.getStatusCode(), e);
-        } catch (RestClientException e) {
-            throw new DataServiceException("Failed to send tuple to data service", e);
+            throw new DataServiceException("Data Service rejected ingestion (HTTP " + e.getStatusCode().value() + ")");
         }
         if (response.getStatusCode() != HttpStatus.CREATED) {
             log.error("Failed to insert raw tuple into data service: service responded unsuccessful: {}", response.getStatusCode());

@@ -230,7 +230,7 @@ class ReplicationActivationGaleraIntegrationTest {
     }
 
     private Connection connect(int node) throws SQLException {
-        final Connection connection = DriverManager.getConnection("jdbc:mariadb://127.0.0.1:" + ports[node] + "/", "root", password);
+        final Connection connection = DriverManager.getConnection("jdbc:mariadb://127.0.0.1:" + ports[node] + "/" + "?sslMode=disable", "root", password);
         try (var s = connection.createStatement()) {
             s.execute("SET time_zone='+00:00'");
             s.execute("SET SESSION wsrep_sync_wait=1");

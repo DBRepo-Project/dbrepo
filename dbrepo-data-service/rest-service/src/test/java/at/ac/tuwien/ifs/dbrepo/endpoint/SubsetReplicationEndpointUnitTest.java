@@ -40,7 +40,7 @@ class SubsetReplicationEndpointUnitTest {
         @Bean SubsetService service() { return mock(SubsetService.class); }
         @Bean MetadataService metadata() { return mock(MetadataService.class); }
         @Bean SubsetEndpoint endpoint(SubsetService service, MetadataService metadata) {
-            return new SubsetEndpoint(null, null, service, null, metadata, null, null);
+            return new SubsetEndpoint(null, null, service, null, metadata, null, null, null, null);
         }
     }
 

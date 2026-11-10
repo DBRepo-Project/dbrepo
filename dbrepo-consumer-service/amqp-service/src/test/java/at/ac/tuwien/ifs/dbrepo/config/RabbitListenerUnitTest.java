@@ -87,53 +87,53 @@ class RabbitListenerUnitTest {
         doAnswer(invocation -> {
             verify(channel, never()).basicAck(anyLong(), anyBoolean());
             return null;
-        }).when(gateway).insertRawTuple(any(), any(), any());
+        }).when(gateway).insertRawTuple(any(), any(), any(), eq("alice"));
         deliver(KEY, "{\"value\":42}");
         verify(channel, timeout(2000)).basicAck(1L, true);
         verify(channel, never()).basicNack(anyLong(), anyBoolean(), anyBoolean());
-        verify(gateway).insertRawTuple(DATABASE_ID, TABLE_ID, TupleDto.builder().data(Map.of("value", 42)).build());
+        verify(gateway).insertRawTuple(DATABASE_ID, TABLE_ID, TupleDto.builder().data(Map.of("value", 42)).build(), "alice");
     }
 
     @Test
     void permanentFailureNacksWithoutRetryOrAck() throws Exception {
-        doThrow(new DataServiceException("invalid tuple")).when(gateway).insertRawTuple(any(), any(), any());
+        doThrow(new DataServiceException("invalid tuple")).when(gateway).insertRawTuple(any(), any(), any(), eq("alice"));
         deliver(KEY, "{}");
         assertRejected(1);
     }
 
     @Test
     void missingTableNacksWithoutRetryOrAck() throws Exception {
-        doThrow(new TableNotFoundException("missing table")).when(gateway).insertRawTuple(any(), any(), any());
+        doThrow(new TableNotFoundException("missing table")).when(gateway).insertRawTuple(any(), any(), any(), eq("alice"));
         deliver(KEY, "{}");
         assertRejected(1);
     }
 
     @Test
     void unexpectedFailureNacksWithoutRetryOrAck() throws Exception {
-        doThrow(new IllegalStateException("unexpected")).when(gateway).insertRawTuple(any(), any(), any());
+        doThrow(new IllegalStateException("unexpected")).when(gateway).insertRawTuple(any(), any(), any(), eq("alice"));
         deliver(KEY, "{}");
         assertRejected(1);
     }
 
     @Test
     void transientFailureBacksOffThenNacksAfterThreeAttempts() throws Exception {
-        doThrow(new RemoteUnavailableException("unavailable")).when(gateway).insertRawTuple(any(), any(), any());
+        doThrow(new RemoteUnavailableException("unavailable")).when(gateway).insertRawTuple(any(), any(), any(), eq("alice"));
         final long start = System.nanoTime();
         deliver(KEY, "{}");
-        verify(gateway, timeout(1000)).insertRawTuple(any(), any(), any());
-        verify(gateway, after(200).times(1)).insertRawTuple(any(), any(), any());
+        verify(gateway, timeout(1000)).insertRawTuple(any(), any(), any(), eq("alice"));
+        verify(gateway, after(200).times(1)).insertRawTuple(any(), any(), any(), eq("alice"));
         verify(channel, never()).basicAck(anyLong(), anyBoolean());
         assertRejected(3);
-        assertTrue(System.nanoTime() - start >= TimeUnit.SECONDS.toNanos(3));
+        assertTrue(System.nanoTime() - start >= TimeUnit.MILLISECONDS.toNanos(1500));
     }
 
     @Test
     void transientFailureThenSuccessAcksOnce() throws Exception {
         doThrow(new RemoteUnavailableException("unavailable")).doNothing()
-                .when(gateway).insertRawTuple(any(), any(), any());
+                .when(gateway).insertRawTuple(any(), any(), any(), eq("alice"));
         deliver(KEY, "{}");
         verify(channel, timeout(4000)).basicAck(1L, true);
-        verify(gateway, times(2)).insertRawTuple(any(), any(), any());
+        verify(gateway, times(2)).insertRawTuple(any(), any(), any(), eq("alice"));
         verify(channel, never()).basicNack(anyLong(), anyBoolean(), anyBoolean());
     }
 
@@ -184,7 +184,7 @@ class RabbitListenerUnitTest {
     private void deliver(String key, String body) throws Exception {
         container.start();
         consumer.get(5, TimeUnit.SECONDS).handleDelivery("test-consumer", new Envelope(1, false, "dbrepo", key),
-                new AMQP.BasicProperties(), body.getBytes(StandardCharsets.UTF_8));
+                new AMQP.BasicProperties.Builder().userId("alice").build(), body.getBytes(StandardCharsets.UTF_8));
     }
 
     private void assertRejected(int attempts) throws Exception {
@@ -192,12 +192,13 @@ class RabbitListenerUnitTest {
         container.stop();
         verify(channel, never()).basicAck(anyLong(), anyBoolean());
         verify(channel, never()).basicNack(anyLong(), anyBoolean(), eq(true));
-        verify(gateway, times(attempts)).insertRawTuple(any(), any(), any());
+        verify(gateway, times(attempts)).insertRawTuple(any(), any(), any(), eq("alice"));
     }
 
     private Message message(String key, String body) {
         final MessageProperties properties = new MessageProperties();
         properties.setReceivedRoutingKey(key);
+        properties.setReceivedUserId("alice");
         return new Message(body.getBytes(StandardCharsets.UTF_8), properties);
     }
 }

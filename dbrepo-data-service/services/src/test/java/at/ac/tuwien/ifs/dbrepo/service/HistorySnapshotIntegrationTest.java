@@ -43,7 +43,7 @@ class HistorySnapshotIntegrationTest {
 
     @BeforeEach
     void schema() throws Exception {
-        try (Connection c = DriverManager.getConnection(URL, "root", password())) {
+        try (Connection c = DriverManager.getConnection(URL + "?sslMode=disable", "root", password())) {
             sql(c, "DROP DATABASE IF EXISTS " + SCHEMA);
             sql(c, "CREATE DATABASE " + SCHEMA + " CHARACTER SET utf8mb4 COLLATE utf8mb4_bin");
         }
@@ -483,7 +483,7 @@ class HistorySnapshotIntegrationTest {
         return new HistorySnapshotService(journal, site) {
             @Override public ComboPooledDataSource getDataSource(Database ignored) {
                 final var pool = new ComboPooledDataSource();
-                pool.setJdbcUrl(URL + SCHEMA); pool.setUser("root"); pool.setPassword(password());
+                pool.setJdbcUrl(URL + SCHEMA + "?sslMode=disable"); pool.setUser("root"); pool.setPassword(password());
                 pool.setMinPoolSize(2); pool.setInitialPoolSize(2); pool.setMaxPoolSize(3);
                 return pool;
             }
@@ -501,7 +501,7 @@ class HistorySnapshotIntegrationTest {
         try { return rows(chunk, columns); } catch (Exception e) { throw new AssertionError(e); }
     }
     private Connection connection() throws SQLException {
-        final Connection c = DriverManager.getConnection(URL + SCHEMA, "root", password());
+        final Connection c = DriverManager.getConnection(URL + SCHEMA + "?sslMode=disable", "root", password());
         sql(c, "SET time_zone='+00:00'");
         return c;
     }

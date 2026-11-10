@@ -2,6 +2,9 @@ import logging
 import os
 import time
 import unittest
+from unittest.mock import patch
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives import serialization
 
 import jwt
 from dbrepo.api.dto import Database, Table, Constraints, Column, ColumnType, ConceptBrief, UnitBrief, \
@@ -59,6 +62,15 @@ req = Database(id="209acf92-5c9b-4633-ad99-113c86f6e948",
 
 class AppIntegrationTest(unittest.TestCase):
 
+    def setUp(self):
+        private = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        self.signing_key = jwt.jwk_from_pem(private.private_bytes(serialization.Encoding.PEM,
+            serialization.PrivateFormat.PKCS8, serialization.NoEncryption()))
+        public = dict(self.signing_key.to_dict(), kid='test-key', use='sig', alg='RS256')
+        keys = patch('dbrepo.core.client.auth._realm_keys', return_value=[public])
+        keys.start()
+        self.addCleanup(keys.stop)
+
     def token(self, roles: [str], iat: int = int(time.time())):
         claims = {
             'iat': iat,
@@ -68,8 +80,7 @@ class AppIntegrationTest(unittest.TestCase):
                 'roles': roles
             }
         }
-        with open('./tests/rsa/rs256.key', 'rb') as fh:
-            return jwt.JWT().encode(claims, jwt.jwk_from_pem(fh.read()), alg='RS256')
+        return jwt.JWT().encode(claims, self.signing_key, alg='RS256', optional_headers={'kid': 'test-key'})
 
     def dashboard_client(self):
         return DashboardServiceClient(os.getenv('DASHBOARD_UI_ENDPOINT', 'http://localhost:3000'),

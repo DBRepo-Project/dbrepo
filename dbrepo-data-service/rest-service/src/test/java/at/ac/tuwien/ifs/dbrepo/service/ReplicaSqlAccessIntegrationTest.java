@@ -38,9 +38,9 @@ class ReplicaSqlAccessIntegrationTest {
                 .build();
         ReflectionTestUtils.setField(service, "baseUrl", "https://local.example");
         ReflectionTestUtils.setField(service, "replicationUsername", "replication");
-        ReflectionTestUtils.setField(service, "grantDefaultRead", "SELECT, EXECUTE");
-        ReflectionTestUtils.setField(service, "grantDefaultWrite", "SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, EXECUTE");
-        try (Connection root = DriverManager.getConnection(url, "root", password)) {
+        ReflectionTestUtils.setField(service, "grantDefaultRead", "SELECT");
+        ReflectionTestUtils.setField(service, "grantDefaultWrite", "SELECT, INSERT, UPDATE, DELETE, CREATE, DROP");
+        try (Connection root = DriverManager.getConnection(url + "?sslMode=disable", "root", password)) {
             root.createStatement().execute("DROP DATABASE IF EXISTS replica_access_test");
             root.createStatement().execute("DROP USER IF EXISTS replica_access_reader@'%'");
             root.createStatement().execute("CREATE DATABASE replica_access_test");
@@ -56,7 +56,7 @@ class ReplicaSqlAccessIntegrationTest {
     void replicaReaderCanSelectButCannotMutateOrCallDefinerProcedure() throws Exception {
         service.create(database, user, AccessTypeDto.READ);
         assertReadOnly();
-        try (Connection root = DriverManager.getConnection(url + "/replica_access_test", "root", password)) {
+        try (Connection root = DriverManager.getConnection(url + "/replica_access_test" + "?sslMode=disable", "root", password)) {
             assertDoesNotThrow(() -> root.createStatement().execute("CALL store_query()"));
         }
     }
@@ -65,6 +65,10 @@ class ReplicaSqlAccessIntegrationTest {
     void existingDatabaseAndProcedureWriteGrantsAreRemovedAndRepairIsRepeatable() throws Exception {
         database.setCreationLocation(null);
         service.create(database, user, AccessTypeDto.WRITE_ALL);
+        try (Connection root = DriverManager.getConnection(url + "?sslMode=disable", "root", password)) {
+            root.createStatement().execute("GRANT EXECUTE ON replica_access_test.* TO replica_access_reader@'%'");
+            root.createStatement().execute("GRANT EXECUTE ON PROCEDURE replica_access_test.store_query TO replica_access_reader@'%'");
+        }
         try (Connection reader = reader()) {
             reader.createStatement().execute("UPDATE data SET value = 11 WHERE id = 1");
             reader.createStatement().execute("CALL store_query()");
@@ -87,7 +91,7 @@ class ReplicaSqlAccessIntegrationTest {
 
     @Test
     void updatingAnExistingUserWithoutDatabaseGrantsIsRepeatable() throws Exception {
-        try (Connection root = DriverManager.getConnection(url, "root", password)) {
+        try (Connection root = DriverManager.getConnection(url + "?sslMode=disable", "root", password)) {
             root.createStatement().execute("CREATE USER replica_access_reader@'%' IDENTIFIED BY 'test-reader'");
         }
         service.update(database, user, AccessTypeDto.READ);
@@ -99,7 +103,7 @@ class ReplicaSqlAccessIntegrationTest {
     @Test
     void insufficientGrantAuthorityIsNotTreatedAsAnAbsentGrant() throws Exception {
         service.create(database, user, AccessTypeDto.READ);
-        try (Connection root = DriverManager.getConnection(url, "root", password)) {
+        try (Connection root = DriverManager.getConnection(url + "?sslMode=disable", "root", password)) {
             root.createStatement().execute("DROP USER IF EXISTS replica_access_operator@'%'");
             root.createStatement().execute("CREATE USER replica_access_operator@'%' IDENTIFIED BY 'test-operator'");
             root.createStatement().execute("GRANT SELECT ON replica_access_test.* TO replica_access_operator@'%'");
@@ -120,14 +124,14 @@ class ReplicaSqlAccessIntegrationTest {
         assertReadOnly();
         service.update(database, user, AccessTypeDto.WRITE_ALL);
         assertReadOnly();
-        try (Connection root = DriverManager.getConnection(url + "/replica_access_test", "root", password)) {
+        try (Connection root = DriverManager.getConnection(url + "/replica_access_test" + "?sslMode=disable", "root", password)) {
             assertEquals(1, root.createStatement().executeUpdate("UPDATE data SET value = 30 WHERE id = 1"));
         }
     }
 
     @Test
     void physicalDeleteCannotDestroyHistoricalRows() throws Exception {
-        try (Connection root = DriverManager.getConnection(url + "/replica_access_test", "root", password)) {
+        try (Connection root = DriverManager.getConnection(url + "/replica_access_test" + "?sslMode=disable", "root", password)) {
             root.createStatement().execute("ALTER TABLE data ADD SYSTEM VERSIONING");
             root.createStatement().execute("UPDATE data SET value = 20 WHERE id = 1");
             final var tables = new at.ac.tuwien.ifs.dbrepo.service.impl.TableServiceMariaDbImpl(null, null, null, null, null, null);
@@ -141,7 +145,7 @@ class ReplicaSqlAccessIntegrationTest {
     }
 
     private Connection reader() throws SQLException {
-        return DriverManager.getConnection(url + "/replica_access_test", user.getUsername(), user.getPassword());
+        return DriverManager.getConnection(url + "/replica_access_test" + "?sslMode=disable", user.getUsername(), user.getPassword());
     }
 
     private void assertReadOnly() throws SQLException {

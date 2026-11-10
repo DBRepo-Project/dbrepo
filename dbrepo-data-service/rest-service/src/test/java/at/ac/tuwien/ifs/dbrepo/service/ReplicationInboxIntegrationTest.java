@@ -60,7 +60,7 @@ class ReplicationInboxIntegrationTest {
                 .columns(List.of(Column.builder().internalName("replication_key").columnType(ColumnType.VARCHAR).build(),
                         Column.builder().internalName("sample_value").columnType(ColumnType.DECIMAL).build(),
                         Column.builder().internalName("data_blob").columnType(ColumnType.BLOB).build())).build();
-        try (Connection root = DriverManager.getConnection(url, "root", password)) {
+        try (Connection root = DriverManager.getConnection(url + "?sslMode=disable", "root", password)) {
             root.createStatement().execute("DROP DATABASE IF EXISTS replication_inbox_test");
             root.createStatement().execute("CREATE DATABASE replication_inbox_test");
             root.createStatement().execute("CREATE TABLE replication_inbox_test.samples "
@@ -540,7 +540,7 @@ class ReplicationInboxIntegrationTest {
     }
 
     private Connection connection() throws SQLException {
-        return DriverManager.getConnection(url + "/replication_inbox_test", "root", password);
+        return DriverManager.getConnection(url + "/replication_inbox_test" + "?sslMode=disable", "root", password);
     }
 
     private long count(String relation) throws SQLException {
