@@ -32,6 +32,62 @@ class LiveRunnerTest(unittest.TestCase):
         response.headers['Content-Type'] = 'application/json'
         return response
 
+    def test_catalog_cases_assert_removed_sdk_contract_without_http(self):
+        step = self.runner.step
+        def catalog_only(name, action, **kwargs):
+            if name in ('catalog.get_units', 'catalog.get_ontologies', 'catalog.get_concepts'):
+                return step(name, action, **kwargs)
+            if name == 'catalog.get_databases_count': raise StopIteration
+        with patch.object(self.runner, 'step', side_effect=catalog_only), patch.object(requests, 'request') as request:
+            with self.assertRaises(StopIteration): self.runner.run()
+        request.assert_not_called()
+        report = json.loads(self.runner.output.read_text())
+        self.assertEqual(3, len(report['cases']))
+        self.assertTrue(all(case['status'] == 'passed' and case['contract'] == 'removed_sdk_method' for case in report['cases']))
+        self.assertEqual([], report['requests'])
+        self.assertTrue(all(name in self.runner.methods for name in ('get_units', 'get_ontologies', 'get_concepts')))
+
+    def test_removed_catalog_rejects_silent_success_and_unexplained_errors(self):
+        for method in ('get_units', 'get_ontologies', 'get_concepts'):
+            for behavior in ({'return_value': []}, {'side_effect': NotImplementedError('Not implemented')},
+                             {'side_effect': requests.ConnectionError('offline')}):
+                with self.subTest(method=method, behavior=behavior), patch.object(self.runner.clients['owner'], method, **behavior):
+                    self.runner.step('catalog.' + method, lambda: self.runner.removed_catalog(method))
+                    self.assertEqual('failed', self.runner.results[-1]['status'])
+
+    def test_removed_catalog_rejects_http_before_replacement_error(self):
+        def call_then_raise():
+            self.runner.clients['owner']._wrapper('get', '/api/v1/unit')
+            raise NotImplementedError('get_units is unavailable: read concept_uri/unit_uri with get_table() or update_table_column()')
+        self.runner.original_request = lambda **kwargs: self.response()
+        with patch.object(requests, 'request', self.runner.transport), patch.object(self.runner.clients['owner'], 'get_units', side_effect=call_then_raise):
+            self.runner.step('catalog.get_units', lambda: self.runner.removed_catalog('get_units'))
+        self.assertEqual('failed', self.runner.results[-1]['status'])
+        self.assertEqual(1, len(self.runner.http_calls))
+
+    def test_column_semantics_checks_write_readback_and_clearing(self):
+        from types import SimpleNamespace
+        self.runner.resources = {'column': 'column'}
+        cases = {}
+        def record(name, action, **kwargs):
+            if name.startswith('table.column.semantics'):
+                cases[name] = kwargs['check']
+            if name == 'upload.csv': raise StopIteration
+        with patch.object(self.runner, 'step', side_effect=record):
+            with self.assertRaises(StopIteration): self.runner.run()
+        self.assertEqual({'table.column.semantics', 'table.column.semantics.readback',
+                          'table.column.semantics.clear', 'table.column.semantics.clear.readback'}, set(cases))
+        for clearing in (False, True):
+            prefix = 'table.column.semantics' + ('.clear' if clearing else '')
+            column = SimpleNamespace(id='column', concept_uri=None if clearing else f'https://example.invalid/{self.runner.run_id}/concept',
+                                     unit_uri=None if clearing else f'https://example.invalid/{self.runner.run_id}/unit')
+            table = SimpleNamespace(columns=[column])
+            self.assertTrue(cases[prefix](column))
+            self.assertTrue(cases[prefix + '.readback'](table))
+            column.unit_uri = 'https://example.invalid/wrong'
+            self.assertFalse(cases[prefix](column))
+            self.assertFalse(cases[prefix + '.readback'](table))
+
     def test_image_update_sends_only_change_fields(self):
         self.runner.resources['image'] = 'synthetic-image'
         def step(name, action, **kwargs):

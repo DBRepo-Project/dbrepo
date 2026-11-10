@@ -174,10 +174,11 @@ class Runner:
             entry['seconds'] = round(time.monotonic() - started, 3)
             self.http_calls.append(entry)
 
-    def step(self, name, action, need=(), reason=None, resource=None, check=None):
+    def step(self, name, action, need=(), reason=None, resource=None, check=None, contract=None):
         self.active, self.last_response = name, None
         started = time.monotonic()
         item = {'case': name}
+        if contract: item['contract'] = contract
         missing = [key for key in need if key not in self.resources]
         value = None
         full_only = (name == 'user.update.same_values' or name == 'oai.GetRecord' or
@@ -216,6 +217,18 @@ class Runner:
     def sdk(self, method, *args, role='owner', **kwargs):
         self.methods.add(method)
         return getattr(self.clients[role], method)(*args, **kwargs)
+
+    def removed_catalog(self, method):
+        calls = len(self.http_calls)
+        try:
+            self.sdk(method)
+        except NotImplementedError as error:
+            message = str(error)
+            assert f'{method} is unavailable:' in message, 'Missing removed-method explanation'
+            assert all(text in message for text in ('concept_uri/unit_uri', 'get_table()', 'update_table_column()')), 'Missing replacement guidance'
+            assert len(self.http_calls) == calls, 'Removed catalog method performed an HTTP request'
+            return
+        raise AssertionError('Removed catalog method did not raise NotImplementedError')
 
     def http(self, method, path, payload=None, expected=(200,), role='owner', **kwargs):
         response = self.clients[role]._wrapper(method=method.lower(), url=path,
@@ -275,7 +288,10 @@ class Runner:
         step('gateway.health',lambda:self.http('GET','/health',role='anonymous'),check=lambda r:r.json().get('status')=='UP')
         step('client.whoami', lambda: call('whoami'))
         for method in ('get_users', 'get_units', 'get_ontologies', 'get_concepts', 'get_licenses', 'get_images', 'get_messages', 'get_identifiers', 'get_databases', 'get_databases_count'):
-            step('catalog.' + method, lambda m=method: call(m))
+            if method in ('get_units', 'get_ontologies', 'get_concepts'):
+                step('catalog.' + method, lambda m=method: self.removed_catalog(m), contract='removed_sdk_method')
+            else:
+                step('catalog.' + method, lambda m=method: call(m))
         user = step('user.get', lambda: call('get_user', c.username), reason=None if c.username else 'Owner username required for account tests')
         step('user.head', lambda: self.http('HEAD', '/api/v1/user/' + quote(c.username, safe='')), reason=None if c.username else 'Owner username required')
         step('user.update.same_values', lambda: call('update_user', c.username, user.attributes.theme, user.attributes.language,
@@ -312,7 +328,16 @@ class Runner:
         step('table.statistics.http', lambda: self.http('GET', tp+'/statistic'), need=('table',))
         step('table.update.metadata', lambda: self.http('PUT', tp, {'description':'Synthetic live client test','is_public':False,'is_schema_public':False}, expected=(202,)), need=('table',))
         if table: self.resources['column'] = table.columns[0].id
-        step('table.column.semantics', lambda: call('update_table_column', db, tid, self.resources['column']), need=('table','column'))
+        concept_uri = f'https://example.invalid/{self.run_id}/concept'
+        unit_uri = f'https://example.invalid/{self.run_id}/unit'
+        step('table.column.semantics', lambda: call('update_table_column', db, tid, self.resources['column'], concept_uri=concept_uri, unit_uri=unit_uri),
+             need=('table','column'), check=lambda column: column.concept_uri == concept_uri and column.unit_uri == unit_uri)
+        step('table.column.semantics.readback', lambda: call('get_table', db, tid), need=('table','column'),
+             check=lambda value: any(column.id == self.resources['column'] and column.concept_uri == concept_uri and column.unit_uri == unit_uri for column in value.columns))
+        step('table.column.semantics.clear', lambda: call('update_table_column', db, tid, self.resources['column']),
+             need=('table','column'), check=lambda column: column.concept_uri is None and column.unit_uri is None)
+        step('table.column.semantics.clear.readback', lambda: call('get_table', db, tid), need=('table','column'),
+             check=lambda value: any(column.id == self.resources['column'] and column.concept_uri is None and column.unit_uri is None for column in value.columns))
         uploaded = step('upload.csv', lambda: c._upload(df.reset_index()))
         for method in ('analyse_schema', 'analyse_datatypes', 'analyse_keys'):
             step('analysis.'+method, lambda m=method: call(m, df.reset_index()))
