@@ -40,6 +40,7 @@ public class MariaDbContainerConfig extends BaseTest {
                 instance = new CustomMariaDBContainer(MARIADB_IMAGE);
                 instance.withImagePullPolicy(PullPolicy.defaultPolicy());
                 instance.addFixedExposedPort(BaseTest.CONTAINER_1_PORT, IMAGE_1_DEFAULT_PORT);
+                instance.withUrlParam("sslMode", "disable");
                 instance.withUsername(BaseTest.CONTAINER_1_PRIVILEGED_USERNAME);
                 instance.withPassword(BaseTest.CONTAINER_1_PRIVILEGED_PASSWORD);
                 instance.withInitScript("init/users.sql");

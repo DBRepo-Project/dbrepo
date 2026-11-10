@@ -7,6 +7,14 @@
       "routing_key": "dbrepo.#",
       "source": "dbrepo",
       "vhost": "dbrepo"
+    },
+    {
+      "source": "dbrepo.consumer.errors",
+      "vhost": "dbrepo",
+      "destination": "dbrepo.consumer.errors",
+      "destination_type": "queue",
+      "routing_key": "failed",
+      "arguments": {}
     }
   ],
   "exchanges": [
@@ -17,6 +25,14 @@
       "name": "dbrepo",
       "type": "topic",
       "vhost": "dbrepo"
+    },
+    {
+      "name": "dbrepo.consumer.errors",
+      "vhost": "dbrepo",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
     }
   ],
   "global_parameters": [],
@@ -30,7 +46,22 @@
       "write": ".*"
     }
   ],
-  "policies": [],
+  "policies": [
+    {
+      "vhost": "dbrepo",
+      "name": "dbrepo-consumer-errors",
+      "pattern": "^dbrepo$",
+      "apply-to": "queues",
+      "priority": 100,
+      "definition": {
+        "dead-letter-exchange": "dbrepo.consumer.errors",
+        "dead-letter-routing-key": "failed",
+        "dead-letter-strategy": "at-least-once",
+        "overflow": "reject-publish",
+        "delivery-limit": 10
+      }
+    }
+  ],
   "queues": [
     {
       "arguments": {
@@ -41,6 +72,16 @@
       "name": "dbrepo",
       "type": "quorum",
       "vhost": "dbrepo"
+    },
+    {
+      "name": "dbrepo.consumer.errors",
+      "vhost": "dbrepo",
+      "durable": true,
+      "auto_delete": false,
+      "type": "quorum",
+      "arguments": {
+        "x-queue-type": "quorum"
+      }
     }
   ],
   "rabbit_version": "3.10.25",
@@ -49,7 +90,7 @@
   "users": [
     {
       "name": "admin",
-      "password_hash": "dI+aj+LWJNHsKvowmxgHKBJhkXgZ67SX1XRPOBGjl5fnwbZB",
+      "password_hash": "",
       "tags": [
         "administrator"
       ]

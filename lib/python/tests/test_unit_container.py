@@ -39,8 +39,29 @@ class ContainerUnitTest(unittest.TestCase):
                                                                                    image_id="b104648b-54d2-4d72-9834-8e0e6d428b39",
                                                                                    privileged_username='root',
                                                                                    privileged_password='dbrepo',
-                                                                                   port=3306)
+                                                                                   port=3306, quota=37,
+                                                                                   readonly_username='fixture_reader',
+                                                                                   readonly_password='fixture-reader-password',
+                                                                                   ui_host='db.example', ui_port=443)
             self.assertEqual(exp, response)
+            self.assertEqual(37, mock.last_request.json()['quota'])
+            self.assertEqual('fixture_reader', mock.last_request.json()['readonly_username'])
+            self.assertEqual('fixture-reader-password', mock.last_request.json()['readonly_password'])
+            self.assertEqual('db.example', mock.last_request.json()['ui_host'])
+            self.assertEqual(443, mock.last_request.json()['ui_port'])
+
+    def test_create_container_default_quota_is_sent(self):
+        from unittest.mock import patch
+        from requests import Response
+        response = Response()
+        response.status_code = 400
+        with patch.object(RestClient, '_wrapper', return_value=response) as wrapper:
+            with self.assertRaises(MalformedError):
+                RestClient(username='fixture', password='fixture-password').create_container(
+                    name='fixture', host='db', image_id='fixture-image', privileged_username='root',
+                    privileged_password='fixture-root', readonly_username='fixture_reader',
+                    readonly_password='fixture-reader')
+            self.assertEqual(50, wrapper.call_args.kwargs['payload'].quota)
 
     def test_create_container_anonymous_fails(self):
         # test

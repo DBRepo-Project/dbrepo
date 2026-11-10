@@ -1,35 +1,12 @@
 import unittest
-
-import requests_mock
+from unittest.mock import patch
 
 from dbrepo.RestClient import RestClient
-from dbrepo.api.dto import UnitBrief
-from dbrepo.api.exceptions import ResponseCodeError
 
 
-class UserUnitTest(unittest.TestCase):
-
-    def test_get_units_succeeds(self):
-        with requests_mock.Mocker() as mock:
-            exp = [UnitBrief(id="d8eec1ab-7b37-4eb3-bdf7-b44a8b384c0b",
-                             uri='http://www.ontology-of-units-of-measure.org/resource/om-2/CelsiusTemperature',
-                             name='Celsius Temperature')]
-            # mock
-            mock.get('/api/v1/unit', json=[exp[0].model_dump()])
-            # test
-            response = RestClient().get_units()
-            self.assertEqual(exp, response)
-
-    def test_get_units_unknown_fails(self):
-        with requests_mock.Mocker() as mock:
-            # mock
-            mock.get('/api/v1/unit', status_code=202)
-            # test
-            try:
+class RemovedCatalogTest(unittest.TestCase):
+    def test_removed_catalog_has_actionable_error_without_http(self):
+        with patch.object(RestClient, '_wrapper') as request:
+            with self.assertRaisesRegex(NotImplementedError, 'update_table_column'):
                 RestClient().get_units()
-            except ResponseCodeError:
-                pass
-
-
-if __name__ == "__main__":
-    unittest.main()
+            request.assert_not_called()

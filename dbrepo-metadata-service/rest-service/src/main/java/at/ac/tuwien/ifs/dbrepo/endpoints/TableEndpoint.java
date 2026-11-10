@@ -382,7 +382,7 @@ public class TableEndpoint extends RestEndpoint {
             SearchServiceException, SearchServiceConnectionException, DashboardServiceException,
             DashboardServiceConnectionException {
         log.debug("endpoint delete table, databaseId={}, tableId={}", databaseId, tableId);
-        final Database database = databaseService.findById(databaseId);
+        final Database database = databaseService.findForUpdateById(databaseId);
         final Table table = tableService.findById(database, tableId);
         /* roles */
         if (!table.getOwnedBy().equals(AuthUtil.getUsername(principal)) && !AuthUtil.hasRole(principal, "delete-foreign-table")) {

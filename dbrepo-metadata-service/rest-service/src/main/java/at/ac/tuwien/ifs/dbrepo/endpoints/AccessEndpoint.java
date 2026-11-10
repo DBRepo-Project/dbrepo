@@ -2,6 +2,7 @@ package at.ac.tuwien.ifs.dbrepo.endpoints;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateAccessDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseAccessDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.AccessType;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.DatabaseAccess;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
@@ -51,6 +52,32 @@ public class AccessEndpoint extends RestEndpoint {
         this.databaseService = databaseService;
         this.keycloakGateway = keycloakGateway;
         this.dashboardService = dashboardService;
+    }
+
+    @GetMapping
+    @Transactional(readOnly = true)
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Get current user access",
+            description = "Returns the authenticated user's effective database access. Owners have write_all access.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Current user access",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = DatabaseAccessDto.class))),
+            @ApiResponse(responseCode = "403", description = "Authentication required", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Database or current user grant not found", content = @Content),
+    })
+    public ResponseEntity<DatabaseAccessDto> current(@PathVariable("databaseId") UUID databaseId,
+                                                    Principal principal)
+            throws DatabaseNotFoundException, AccessNotFoundException, NotAllowedException {
+        final String username = AuthUtil.getUsername(principal);
+        if (username == null) {
+            throw new NotAllowedException("Authentication required to read database access");
+        }
+        final Database database = databaseService.findById(databaseId);
+        final DatabaseAccess access = username.equals(database.getOwnedBy())
+                ? DatabaseAccess.builder().hdbid(databaseId).username(username).type(AccessType.WRITE_ALL).build()
+                : accessService.find(database, username);
+        return ResponseEntity.ok(metadataMapper.databaseAccessToDatabaseAccessDto(access));
     }
 
     @PostMapping("/{username}")

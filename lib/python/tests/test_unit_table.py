@@ -1203,18 +1203,24 @@ class TableUnitTest(unittest.TestCase):
                     "id": ColumnStatistic(name="id", val_min=1.0, val_max=9.0, mean=5.0, median=5.0, std_dev=2.73)})
             # mock
             mock.get(
-                '/api/v1/analyse/database/6bd39359-b154-456d-b9c2-caa516a45732/table/b3230b86-4743-498d-9015-3fad58049692/statistics',
-                json=exp.model_dump(), status_code=202)
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/table/b3230b86-4743-498d-9015-3fad58049692/statistic',
+                json={**exp.model_dump(), 'columns': [column.model_dump() for column in exp.columns.values()]}, status_code=200)
             # test
             response = RestClient().analyse_table_statistics(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                                                              table_id="b3230b86-4743-498d-9015-3fad58049692")
             self.assertEqual(exp, response)
 
+    def test_analyse_table_statistics_forbidden(self):
+        with requests_mock.Mocker() as mock:
+            mock.get('/api/v1/database/db/table/table/statistic', status_code=403)
+            with self.assertRaises(ForbiddenError):
+                RestClient().analyse_table_statistics('db', 'table')
+
     def test_analyse_table_statistics_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get(
-                '/api/v1/analyse/database/6bd39359-b154-456d-b9c2-caa516a45732/table/b3230b86-4743-498d-9015-3fad58049692/statistics',
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/table/b3230b86-4743-498d-9015-3fad58049692/statistic',
                 status_code=400)
             # test
             try:
@@ -1227,7 +1233,7 @@ class TableUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get(
-                '/api/v1/analyse/database/6bd39359-b154-456d-b9c2-caa516a45732/table/b3230b86-4743-498d-9015-3fad58049692/statistics',
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/table/b3230b86-4743-498d-9015-3fad58049692/statistic',
                 status_code=404)
             # test
             try:
@@ -1240,7 +1246,7 @@ class TableUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get(
-                '/api/v1/analyse/database/6bd39359-b154-456d-b9c2-caa516a45732/table/b3230b86-4743-498d-9015-3fad58049692/statistics',
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/table/b3230b86-4743-498d-9015-3fad58049692/statistic',
                 status_code=502)
             # test
             try:
@@ -1253,7 +1259,7 @@ class TableUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get(
-                '/api/v1/analyse/database/6bd39359-b154-456d-b9c2-caa516a45732/table/b3230b86-4743-498d-9015-3fad58049692/statistics',
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/table/b3230b86-4743-498d-9015-3fad58049692/statistic',
                 status_code=503)
             # test
             try:
@@ -1266,14 +1272,105 @@ class TableUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get(
-                '/api/v1/analyse/database/6bd39359-b154-456d-b9c2-caa516a45732/table/b3230b86-4743-498d-9015-3fad58049692/statistics',
-                status_code=200)
+                '/api/v1/database/6bd39359-b154-456d-b9c2-caa516a45732/table/b3230b86-4743-498d-9015-3fad58049692/statistic',
+                status_code=418)
             # test
             try:
                 RestClient().analyse_table_statistics(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                                                       table_id="b3230b86-4743-498d-9015-3fad58049692")
             except ResponseCodeError:
                 pass
+
+
+class SchemaAnalysisUnitTest(unittest.TestCase):
+    schema = dict(delimiter=',', quote='"', escape='"', newline_delimiter='\n', comment='',
+                  skip_rows=0, has_header=True, columns=[
+                      dict(name='id', datatype='bigint', primary_key=True, null_allowed=False),
+                      dict(name='label', datatype='varchar', primary_key=False, null_allowed=True)])
+    image = '44d811a8-4019-46ba-bd57-ea10a2eb0c74'
+
+    def setup_routes(self, mock, status=200):
+        mock.get('/api/v1/image', json=[dict(id=self.image, name='mariadb', version='11', default=True)])
+        mock.post('/api/v1/upload', status_code=201, headers={'X-S3-Key': 'owned-file.csv'})
+        return mock.get(f'/api/v1/image/{self.image}/analyse/schema/owned-file.csv',
+                        status_code=status, json=self.schema)
+
+    def test_schema_upload_and_type_compatibility(self):
+        from pandas import DataFrame
+        from dbrepo.api.dto import ColumnType
+        with requests_mock.Mocker() as mock:
+            route = self.setup_routes(mock)
+            result = RestClient(username='owner', password='test').analyse_datatypes(
+                DataFrame({'id': [1, 2], 'label': ['a', 'b']}))
+            self.assertEqual({'id': ColumnType.BIGINT, 'label': ColumnType.VARCHAR}, result.columns)
+            self.assertEqual(',', result.separator)
+            self.assertEqual('\n', result.line_termination)
+            self.assertEqual(1, route.call_count)
+            self.assertEqual(['GET', 'POST', 'GET'], [r.method for r in mock.request_history])
+            self.assertTrue(mock.last_request.headers.get('Authorization'))
+
+    def test_key_candidates_keep_distinct_value_scores(self):
+        from pandas import DataFrame
+        with requests_mock.Mocker() as mock:
+            self.setup_routes(mock)
+            result = RestClient(username='owner', password='test').analyse_keys(
+                DataFrame({'id': [1, 2], 'label': ['same', 'same']}), image_id=self.image)
+            self.assertEqual({'id': 2}, result.keys)
+            self.assertEqual(['POST', 'GET'], [r.method for r in mock.request_history])
+
+    def test_schema_forbidden_is_not_swallowed(self):
+        from pandas import DataFrame
+        with requests_mock.Mocker() as mock:
+            self.setup_routes(mock, 403)
+            with self.assertRaises(ForbiddenError):
+                RestClient(username='owner', password='test').analyse_schema(DataFrame({'id': [1]}), self.image)
+
+    def test_missing_default_does_not_upload(self):
+        from pandas import DataFrame
+        from dbrepo.api.exceptions import RequestError
+        with requests_mock.Mocker() as mock:
+            mock.get('/api/v1/image', json=[])
+            with self.assertRaises(RequestError):
+                RestClient(username='owner', password='test').analyse_schema(DataFrame({'id': [1]}))
+            self.assertEqual(1, len(mock.request_history))
+
+    def test_sole_nondefault_image_is_unambiguous(self):
+        from pandas import DataFrame
+        with requests_mock.Mocker() as mock:
+            self.setup_routes(mock)
+            mock.get('/api/v1/image', json=[dict(id=self.image, name='mariadb', version='11', default=False)])
+            result = RestClient(username='owner', password='test').analyse_schema(DataFrame({'id': [1]}))
+            self.assertEqual('id', result.columns[0].name)
+
+    def test_multiple_images_without_default_require_selection(self):
+        from pandas import DataFrame
+        from dbrepo.api.exceptions import RequestError
+        with requests_mock.Mocker() as mock:
+            mock.get('/api/v1/image', json=[dict(id=name, name=name, version='11', default=False)
+                                          for name in ('first', 'second')])
+            with self.assertRaises(RequestError):
+                RestClient(username='owner', password='test').analyse_schema(DataFrame({'id': [1]}))
+            self.assertEqual(1, len(mock.request_history))
+
+    def test_removed_enum_controls_fail_before_upload(self):
+        from pandas import DataFrame
+        from dbrepo.api.exceptions import RequestError
+        with requests_mock.Mocker() as mock:
+            with self.assertRaises(RequestError):
+                RestClient().analyse_datatypes(DataFrame({'id': [1]}), enum=False)
+            self.assertFalse(mock.called)
+
+    def test_image_schema_routes_precede_metadata_routes(self):
+        import re
+        from pathlib import Path
+        root = Path(__file__).resolve().parents[3]
+        for filename in ('dbrepo-gateway-service/dbrepo.conf', 'helm/dbrepo/files/dbrepo.conf'):
+            routes = re.findall(r'location ~ "([^"]+)"\s*\{.*?proxy_pass\s+([^;]+);',
+                                (root / filename).read_text(), re.S)
+            for path, service in [(f'/api/v1/image/{self.image}/analyse/schema/owned-file.csv', 'data-service'),
+                                  ('/api/v1/image', 'metadata-service')]:
+                upstream = next(upstream for pattern, upstream in routes if re.search(pattern, path))
+                self.assertIn(service, upstream)
 
 
 if __name__ == "__main__":

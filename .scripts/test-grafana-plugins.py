@@ -11,6 +11,8 @@ import subprocess
 ROOT = Path(__file__).resolve().parents[1]
 # Do not inherit deployment settings or Compose overrides from the calling shell.
 ENV = {key: os.environ[key] for key in ("PATH", "HOME") if key in os.environ}
+ENV.update(NUXT_OIDC_TOKEN_KEY='data:;base64,'+'A'*43+'=',
+           OIDC_AUTH_SESSION_SECRET='synthetic-auth-'+'a'*48, OIDC_SESSION_SECRET='synthetic-session-'+'b'*48)
 COMPOSE_FILES = (
     "docker-compose.yml",
     ".docker/docker-compose.yml",
@@ -24,7 +26,7 @@ PLUGINS = ["yesoreyeram-infinity-datasource 4.0.0", "grafana-opensearch-datasour
 def check():
     for compose in COMPOSE_FILES:
         result = subprocess.run(
-            ["docker", "compose", "-f", str(ROOT / compose), "config", "--format", "json"],
+            ["docker", "compose", "--env-file", "/dev/null", "-f", str(ROOT / compose), "config", "--format", "json"],
             env=ENV, capture_output=True, text=True, check=True,
         )
         service = json.loads(result.stdout)["services"]["dbrepo-dashboard-ui"]

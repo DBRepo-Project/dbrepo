@@ -28,7 +28,7 @@ import static scala.collection.JavaConverters.asScalaIteratorConverter;
 @Service
 public class DataServiceSparkImpl extends DataConnector implements DataService {
 
-    private static final int FETCH_SIZE = 1000;
+    private static final int FETCH_SIZE = Integer.MIN_VALUE;
 
     private final S3Config s3Config;
     private final SparkSession sparkSession;
@@ -47,10 +47,11 @@ public class DataServiceSparkImpl extends DataConnector implements DataService {
         Connection connection = null;
         try {
             final long start = System.currentTimeMillis();
-            connection = DriverManager.getConnection(getSparkJdbcUrl(database), database.getContainer().getUsername(),
+            // Sequential BLOB reads need the protocol ceiling, rather than a heap-derived buffer limit.
+            connection = DriverManager.getConnection(getSparkJdbcUrl(database) + "&maxAllowedPacket=1073741824", database.getContainer().getUsername(),
                     database.getContainer().getPassword());
-            final Statement statement = connection.createStatement();
-            /* stream the rows instead of loading the whole result into memory */
+            final Statement statement = connection.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
+            /* Sequential access also streams individual BLOB columns in Connector/J 4. */
             statement.setFetchSize(FETCH_SIZE);
             final QueryResultStream result = new QueryResultStream(connection, statement.executeQuery(query));
             log.atDebug()

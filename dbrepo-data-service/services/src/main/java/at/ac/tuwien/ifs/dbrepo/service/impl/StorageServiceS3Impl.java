@@ -18,6 +18,9 @@ import software.amazon.awssdk.services.s3.model.*;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HexFormat;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -63,18 +66,30 @@ public class StorageServiceS3Impl extends DataConnector implements StorageServic
     }
 
     @Override
-    public String putUpload(String originalFilename, byte[] content, String owner) throws StorageUnavailableException {
+    public String putUpload(String originalFilename, Path content, String owner) throws StorageUnavailableException {
         final String key = UploadMetadata.newKey(originalFilename);
         final var metadata = new HashMap<>(UploadMetadata.metadata(originalFilename, owner));
-        metadata.put(HASH_SHA256, DigestUtils.sha256Hex(content));
-        metadata.put(HASH_SHA1, DigestUtils.sha1Hex(content));
-        metadata.put(HASH_MD5, DigestUtils.md5Hex(content));
         try {
+            final var sha256 = DigestUtils.getSha256Digest();
+            final var sha1 = DigestUtils.getSha1Digest();
+            final var md5 = DigestUtils.getMd5Digest();
+            try (var input = Files.newInputStream(content)) {
+                final byte[] buffer = new byte[8192];
+                int count;
+                while ((count = input.read(buffer)) != -1) {
+                    sha256.update(buffer, 0, count);
+                    sha1.update(buffer, 0, count);
+                    md5.update(buffer, 0, count);
+                }
+            }
+            metadata.put(HASH_SHA256, HexFormat.of().formatHex(sha256.digest()));
+            metadata.put(HASH_SHA1, HexFormat.of().formatHex(sha1.digest()));
+            metadata.put(HASH_MD5, HexFormat.of().formatHex(md5.digest()));
             s3Client.putObject(PutObjectRequest.builder().bucket(s3Config.getS3Bucket()).key(key)
                     .metadata(metadata).overrideConfiguration(configuration -> configuration.putHeader("If-None-Match", "*"))
-                    .build(), RequestBody.fromBytes(content));
+                    .build(), RequestBody.fromFile(content));
             return key;
-        } catch (SdkException exception) {
+        } catch (IOException | SdkException exception) {
             throw new StorageUnavailableException("Upload could not be stored", exception);
         }
     }
@@ -156,10 +171,15 @@ public class StorageServiceS3Impl extends DataConnector implements StorageServic
         } catch (NoSuchKeyException | NoSuchBucketException e) {
             log.error("Failed to find object: not found: {}", e.getMessage());
             throw new StorageNotFoundException("Failed to find object: not found: " + e.getMessage(), e);
-        } catch (S3Exception e) {
+        } catch (SdkException e) {
             log.error("Failed to find object: other error: {}", e.getMessage());
             throw new StorageUnavailableException("Failed to find object: other error: " + e.getMessage(), e);
         }
+    }
+
+    @Override
+    public InputStream getObject(String key) throws StorageNotFoundException, StorageUnavailableException {
+        return getObject(s3Config.getS3Bucket(), key);
     }
 
     @Override

@@ -53,33 +53,29 @@ class AuthServiceClient:
             raise AssertionError("Failed to obtain user token(s)")
         return response.json()["access_token"]
 
-    def get_user_id(self, auth_header: str | None) -> (str | None, ApiError, int):
+    def _user_from_header(self, auth_header: str | None):
         if auth_header is None:
             return None, None, None
+        parts = auth_header.split()
+        if len(parts) != 2 or parts[0].lower() != 'bearer':
+            return None, ApiError(status='UNAUTHORIZED', message='A Bearer token is required',
+                                  code='search.user.unauthorized').model_dump(), 401
         try:
-            user = self.verify_jwt(auth_header.split(" ")[1])
-            logging.debug(f'mapped JWT to user.id {user.id}')
-            return user.id, None, None
+            return self.verify_jwt(parts[1]), None, None
         except JWTDecodeError as e:
             logging.error(f'Failed to decode JWT: {e}')
             if str(e) == 'JWT Expired':
-                return None, ApiError(status='UNAUTHORIZED', message=f'Token expired',
+                return None, ApiError(status='UNAUTHORIZED', message='Token expired',
                                       code='search.user.unauthorized').model_dump(), 401
             return None, ApiError(status='FORBIDDEN', message=str(e), code='search.user.forbidden').model_dump(), 403
 
+    def get_user_id(self, auth_header: str | None) -> (str | None, ApiError, int):
+        user, error, status = self._user_from_header(auth_header)
+        return user.id if user is not None else None, error, status
+
     def get_username(self, auth_header: str | None) -> (str | None, ApiError, int):
-        if auth_header is None:
-            return None, None, None
-        try:
-            user = self.verify_jwt(auth_header.split(" ")[1])
-            logging.debug(f'mapped JWT to user.username {user.username}')
-            return user.username, None, None
-        except JWTDecodeError as e:
-            logging.error(f'Failed to decode JWT: {e}')
-            if str(e) == 'JWT Expired':
-                return None, ApiError(status='UNAUTHORIZED', message=f'Token expired',
-                                      code='search.user.unauthorized').model_dump(), 401
-            return None, ApiError(status='FORBIDDEN', message=str(e), code='search.user.forbidden').model_dump(), 403
+        user, error, status = self._user_from_header(auth_header)
+        return user.username if user is not None else None, error, status
 
     def verify_jwt(self, access_token: str) -> User:
         try:

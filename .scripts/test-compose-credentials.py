@@ -12,6 +12,7 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[1]
 # Do not inherit deployment secrets or Compose overrides from the calling shell.
 ENV = {key: os.environ[key] for key in ("PATH", "HOME") if key in os.environ}
+ENV.update(NUXT_OIDC_TOKEN_KEY="data:;base64," + "A"*43 + "=", OIDC_AUTH_SESSION_SECRET="compose-test-auth-secret", OIDC_SESSION_SECRET="compose-test-session-secret")
 
 
 def check():

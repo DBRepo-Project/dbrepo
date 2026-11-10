@@ -207,9 +207,15 @@ class DashboardServiceClient:
         self._sync_owner_permissions(database.dashboard_uid, owner, database.accesses or [])
         if database.is_dashboard_enabled:
             self._update_content(database, dashboard['dashboard'])
-        elif 'managed' in dashboard['dashboard'].get('tags', []):
-            dashboard['dashboard']['tags'].remove('managed')
-            self.client.dashboard.update_dashboard(dict(folderUid='', overwrite=True, dashboard=dashboard['dashboard']))
+        else:
+            content = dashboard['dashboard']
+            if 'managed' in content.get('tags', []):
+                content['tags'].remove('managed')
+            try:
+                content['panels'] = content['panels'][:_get_start_index(content)]
+            except ValueError:
+                pass
+            self.client.dashboard.update_dashboard(dict(folderUid='', overwrite=False, dashboard=content))
         self.update_anonymous_read_access(database.dashboard_uid, database.is_public, database.is_schema_public)
 
     def update_content(self, database: Database) -> None:
@@ -217,6 +223,15 @@ class DashboardServiceClient:
             return
         dashboard = self.find(database.dashboard_uid)
         self._require_root(dashboard)
+        response = self.generic_get(f'/api/access-control/dashboards/{quote(database.dashboard_uid, safe="")}')
+        response.raise_for_status()
+        permissions = response.json()
+        if not isinstance(permissions, list):
+            raise DashboardAccessError('Grafana returned invalid dashboard permissions')
+        if any(p.get('builtInRole') in ('Viewer', 'Editor') and p.get('permission') in ('View', 'Edit', 'Admin')
+               for p in permissions):
+            # A content-only request may carry a snapshot from before publication.
+            database = database.model_copy(update={'is_public': True})
         self._update_content(database, dashboard['dashboard'])
 
     def reconcile(self, database: Database) -> None:
@@ -237,7 +252,7 @@ class DashboardServiceClient:
         # update panels
         dashboard['panels'] = self.get_panels(dashboard, database)
         payload = dict(folderUid='',
-                       overwrite=True,
+                       overwrite=False,
                        dashboard=dashboard)
         response = self.client.dashboard.update_dashboard(payload)
         logging.info(f"Updated dashboard with uid: {response['uid']}")
@@ -633,7 +648,9 @@ class DashboardServiceClient:
         panels.append(self.map_data_sources_panel(database.id, y=managed_offset))
         if database.preview_image is not None:
             panels.append(map_preview_image_panel(database.id, y=managed_offset))
-        for i, view in enumerate(database.views):
+        views = (view for view in database.views if not (database.is_public or database.is_schema_public)
+                 or view.is_public or view.is_schema_public)
+        for i, view in enumerate(views):
             # section
             panels.append(map_row(view.name, 0, y=i * section_height + managed_offset + 4))
             panels.append(self.map_overview_panel(database.id, view.id, 0, y=i * section_height + managed_offset + 8))

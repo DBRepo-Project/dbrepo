@@ -1,9 +1,5 @@
 #!/bin/bash
 
-function gen_rabbit_key() {
-  rabbitmqadmin passwords salt_and_hash $1 --table-style borderless | sed -n 2p | grep -oP "([^ ]+)" | sed -n 3p
-}
-
 function gen_pw() {
   LENGTH=16
   if [ ! -z $1 ]; then
@@ -12,14 +8,7 @@ function gen_pw() {
   openssl rand -hex $LENGTH
 }
 
-BROKER_SERVICE_PASSWORD="admin"
-RABBIT_HASH="dI+aj+LWJNHsKvowmxgHKBJhkXgZ67SX1XRPOBGjl5fnwbZB"
-if ! [ -x "$(command -v rabbitmqadmin)" ]; then
-  echo "[🚨] Cannot generate broker service user secret(s) as rabbitmqadmin seems not to be installed or could not be found"
-else
-  BROKER_SERVICE_PASSWORD=$(gen_pw)
-  RABBIT_HASH=$(gen_rabbit_key $BROKER_SERVICE_PASSWORD)
-fi
+BROKER_SERVICE_PASSWORD=$(gen_pw)
 
 CERT_PATH=./config
 if [ ! -z $IS_DEV ]; then
@@ -27,7 +16,7 @@ if [ ! -z $IS_DEV ]; then
 fi
 
 function gen_aes_key() {
-  openssl enc -aes-256-cbc -k secret -P -pbkdf2 --nosalt | sed -n 1p | grep -oP "([A-F0-9]+)" | base64 -w 0
+  openssl rand 32 | openssl base64 -A
 }
 
 echo "[🙈] Generating random secrets ..."
@@ -38,6 +27,8 @@ S3_SECRET_ACCESS_KEY=$(gen_pw)
 S3_ADMIN_ACCESS_KEY_ID=$(gen_pw)
 S3_ADMIN_SECRET_ACCESS_KEY=$(gen_pw)
 CACHE_DB_PASSWORD=$(gen_pw)
+(umask 077; touch .env)
+chmod 600 .env
 cat <<EOF > .env
 #### SECRETS BELOW ARE AUTO-GENERATED ####
 AUTH_DB_PASSWORD=$(gen_pw)
@@ -165,7 +156,7 @@ cat <<EOF > $SECRET_PATH/definitions.json
   "users": [
     {
       "name": "admin",
-      "password_hash": "$RABBIT_HASH",
+      "password_hash": "",
       "tags": [
         "administrator"
       ]

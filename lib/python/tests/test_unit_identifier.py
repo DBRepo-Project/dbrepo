@@ -3,7 +3,7 @@ import unittest
 import requests_mock
 
 from dbrepo.RestClient import RestClient
-from dbrepo.api.dto import Identifier, IdentifierType, SaveIdentifierTitle, Creator, IdentifierTitle, \
+from dbrepo.api.dto import IdentifierBrief, Identifier, IdentifierType, SaveIdentifierTitle, Creator, IdentifierTitle, \
     IdentifierDescription, SaveIdentifierDescription, Language, SaveIdentifierFunder, SaveRelatedIdentifier, \
     RelatedIdentifierRelation, RelatedIdentifierType, IdentifierFunder, RelatedIdentifier, UserBrief, \
     IdentifierStatusType, CreateIdentifierCreator, CreateIdentifierTitle, CreateIdentifierFunder, \
@@ -193,13 +193,16 @@ class IdentifierUnitTest(unittest.TestCase):
                               status=IdentifierStatusType.PUBLISHED,
                               owner=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'))]
             # mock
-            mock.get('/api/v1/identifier', json=[exp[0].model_dump()], headers={"Accept": "application/json"})
+            mock.get('/api/v1/identifier', json=[IdentifierBrief(**exp[0].model_dump(), owned_by=exp[0].owner.username).model_dump()], headers={"Accept": "application/json"})
             # test
             response = RestClient().get_identifiers(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                                                     view_id="e5229d24-584a-43e8-b9f6-d349c3053f9c",
                                                     type=IdentifierType.VIEW,
                                                     status=IdentifierStatusType.PUBLISHED)
-            self.assertEqual(exp, response)
+            self.assertEqual([IdentifierBrief(**exp[0].model_dump(), owned_by=exp[0].owner.username)], response)
+            self.assertIsInstance(response[0], IdentifierBrief)
+            self.assertEqual(response, RestClient().get_identifiers())
+            self.assertEqual(response, RestClient().get_identifiers(database_id=exp[0].database_id))
 
     def test_get_identifiers_subset_succeeds(self):
         with requests_mock.Mocker() as mock:

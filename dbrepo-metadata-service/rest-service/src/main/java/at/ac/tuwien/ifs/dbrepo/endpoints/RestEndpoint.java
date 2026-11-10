@@ -107,7 +107,7 @@ public abstract class RestEndpoint {
         if (constraints.getPrimaryKey() != null) {
             constraints.setPrimaryKey(constraints.getPrimaryKey().stream().filter(key ->
                     readableTable(key.getTable(), columns) && readableColumn(key.getColumn(), columns))
-                    .collect(Collectors.toSet()));
+                    .toList());
         }
         return table;
     }

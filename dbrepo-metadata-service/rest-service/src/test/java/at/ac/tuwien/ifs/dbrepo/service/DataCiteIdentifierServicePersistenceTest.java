@@ -241,6 +241,7 @@ public class DataCiteIdentifierServicePersistenceTest extends BaseTest {
     @Test
     public void publish_succeeds() throws MalformedException, DataServiceConnectionException, SearchServiceException,
             DatabaseNotFoundException, SearchServiceConnectionException, ExternalServiceException {
+        IDENTIFIER_7_DATA_CITE.getData().getAttributes().setDoi("10.12345/local-draft");
         final ResponseEntity<DataCiteBody<DataCiteDoi>> mock = ResponseEntity.status(HttpStatus.OK)
                 .body(IDENTIFIER_7_DATA_CITE);
 
@@ -248,11 +249,15 @@ public class DataCiteIdentifierServicePersistenceTest extends BaseTest {
         when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(dataCiteBodyParameterizedTypeReference)))
                 .thenReturn(mock);
 
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(dataCiteBodyParameterizedTypeReference)))
+                .thenReturn(ResponseEntity.status(HttpStatus.CREATED).body(IDENTIFIER_7_DATA_CITE));
+
         /* test */
         assertEquals(7, dataCiteIdentifierService.findAll().size());
         final Identifier response = dataCiteIdentifierService.publish(IDENTIFIER_7);
         assertEquals(IDENTIFIER_7.getId(), response.getId());
         assertEquals(IdentifierStatusType.PUBLISHED, response.getStatus());
+        assertEquals("10.12345/local-draft", response.getDoi());
         assertEquals(7, dataCiteIdentifierService.findAll().size());
     }
 
@@ -366,4 +371,53 @@ public class DataCiteIdentifierServicePersistenceTest extends BaseTest {
         dataCiteIdentifierService.delete(IDENTIFIER_1);
     }
 
+
+    @Autowired
+    private at.ac.tuwien.ifs.dbrepo.metadata.IdentifierRepository identifierRepository;
+
+    @Test
+    public void omittedDoiUsesExistingProviderResource() throws Exception {
+        IDENTIFIER_1_SAVE_DTO.setDoi(null);
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class),
+                eq(dataCiteBodyParameterizedTypeReference)))
+                .thenReturn(ResponseEntity.ok(IDENTIFIER_1_DATA_CITE));
+        final Identifier saved = dataCiteIdentifierService.save(DATABASE_1, USER_1_USERNAME, IDENTIFIER_1_SAVE_DTO);
+        assertEquals(IDENTIFIER_1_ID, saved.getId());
+        assertEquals(IDENTIFIER_1_DOI, saved.getDoi());
+        assertEquals(DATABASE_1_ID, saved.getDatabase().getId());
+        verify(restTemplate).exchange(org.mockito.ArgumentMatchers.endsWith("/dois/" + IDENTIFIER_1_DOI),
+                eq(HttpMethod.PUT), org.mockito.ArgumentMatchers.argThat((HttpEntity<?> request) -> {
+                    var body = (DataCiteBody<?>) request.getBody();
+                    return body != null && IDENTIFIER_1_DOI.equals(body.getData().getId());
+                }), eq(dataCiteBodyParameterizedTypeReference));
+        assertEquals(IDENTIFIER_1_DOI, dataCiteIdentifierService.find(IDENTIFIER_1_ID).getDoi());
+    }
+
+    @Test
+    public void localDraftWithoutDoiUpdatesWithoutProviderRequest() throws Exception {
+        final Identifier local = dataCiteIdentifierService.find(IDENTIFIER_1_ID);
+        local.setDoi(null);
+        identifierRepository.saveAndFlush(local);
+        IDENTIFIER_1_SAVE_DTO.setDoi(null);
+        final Identifier saved = dataCiteIdentifierService.save(DATABASE_1, USER_1_USERNAME, IDENTIFIER_1_SAVE_DTO);
+        assertNull(saved.getDoi());
+        assertNull(dataCiteIdentifierService.find(IDENTIFIER_1_ID).getDoi());
+        verifyNoInteractions(restTemplate);
+    }
+
+    @Test
+    public void providerFailureRollsBackMetadataUpdate() throws Exception {
+        final Integer year = dataCiteIdentifierService.find(IDENTIFIER_1_ID).getPublicationYear();
+        IDENTIFIER_1_SAVE_DTO.setDoi(null);
+        IDENTIFIER_1_SAVE_DTO.setPublicationYear(year + 1);
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class),
+                eq(dataCiteBodyParameterizedTypeReference)))
+                .thenThrow(new org.springframework.web.client.HttpServerErrorException(HttpStatus.SERVICE_UNAVAILABLE));
+        assertThrows(org.springframework.web.client.HttpServerErrorException.class,
+                () -> dataCiteIdentifierService.save(DATABASE_1, USER_1_USERNAME, IDENTIFIER_1_SAVE_DTO));
+        final Identifier current = dataCiteIdentifierService.find(IDENTIFIER_1_ID);
+        assertEquals(IDENTIFIER_1_DOI, current.getDoi());
+        assertEquals(year, current.getPublicationYear());
+        assertEquals(DATABASE_1_ID, current.getDatabase().getId());
+    }
 }

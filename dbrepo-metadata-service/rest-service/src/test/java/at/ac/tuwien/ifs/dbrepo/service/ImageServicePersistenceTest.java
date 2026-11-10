@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -52,6 +53,28 @@ public class ImageServicePersistenceTest extends BaseTest {
 
         /* test */
         imageService.create(request, USER_1_PRINCIPAL);
+    }
+
+    @Test
+    public void create_multipleOrdinaryImagesAndSingleDefault() throws Exception {
+        IMAGE_1.setIsDefault(true);
+        imageRepository.saveAndFlush(IMAGE_1);
+        final ImageCreateDto request = ImageCreateDto.builder()
+                .name(IMAGE_1_NAME)
+                .version("second-ordinary")
+                .registry(IMAGE_1.getRegistry())
+                .jdbcMethod(IMAGE_1_JDBC_METHOD)
+                .dialect(IMAGE_1_DIALECT)
+                .driverClass(IMAGE_1.getDriverClass())
+                .defaultPort(IMAGE_1_DEFAULT_PORT)
+                .build();
+        final var first = imageService.create(request, USER_1_PRINCIPAL);
+        request.setVersion("third-ordinary");
+        final var second = imageService.create(request, USER_1_PRINCIPAL);
+        assertFalse(first.getIsDefault());
+        assertFalse(second.getIsDefault());
+        first.setIsDefault(true);
+        assertThrows(DataIntegrityViolationException.class, () -> imageRepository.saveAndFlush(first));
     }
 
     @Test

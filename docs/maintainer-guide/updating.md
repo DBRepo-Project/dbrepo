@@ -12,6 +12,15 @@ The update procedure is:
    new [Helm Chart](/infrastructures/dbrepo/1.13/maintainer-guide/install-kubernetes/).
 4. Restart the application.
 
+Existing database dashboards also need a [generated-content refresh](../admin-guide/dashboard-content-upgrade.md)
+before dashboard access resumes. Deploying new images alone leaves the previous dashboard JSON in Grafana.
+
+Compose upgrades must also install the [broker credential entry point](../admin-guide/broker-password-rotation.md)
+and its matching broker configuration. Preserve existing definitions and the broker data volume.
+
+The Data Service also needs [temporary storage for streamed uploads](../admin-guide/upload-storage.md).
+Keep multipart spooling on disk and size the temporary filesystem for concurrent requests.
+
 
 ## Dashboard identity and datasource upgrade
 

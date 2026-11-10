@@ -953,6 +953,8 @@ public class BaseTest {
             .uiAdditionalFlags(CONTAINER_1_UI_ADDITIONAL_FLAGS)
             .privilegedUsername(CONTAINER_1_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_1_PRIVILEGED_PASSWORD)
+            .readonlyUsername(CONTAINER_1_READONLY_USERNAME)
+            .readonlyPassword(CONTAINER_1_READONLY_PASSWORD)
             .databases(new LinkedList<>())
             .build();
 
@@ -1013,6 +1015,8 @@ public class BaseTest {
             .databases(new LinkedList<>(List.of()))
             .privilegedUsername(CONTAINER_2_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_2_PRIVILEGED_PASSWORD)
+            .readonlyUsername(CONTAINER_1_READONLY_USERNAME)
+            .readonlyPassword(CONTAINER_1_READONLY_PASSWORD)
             .build();
 
     public final ContainerDto CONTAINER_2_DTO = ContainerDto.builder()
@@ -1069,6 +1073,8 @@ public class BaseTest {
             .databases(new LinkedList<>())
             .privilegedUsername(CONTAINER_3_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_3_PRIVILEGED_PASSWORD)
+            .readonlyUsername(CONTAINER_1_READONLY_USERNAME)
+            .readonlyPassword(CONTAINER_1_READONLY_PASSWORD)
             .build();
 
     public final static UUID CONTAINER_4_ID = UUID.fromString("67aee75c-791c-410b-abbb-175c11ddd252");
@@ -1093,6 +1099,8 @@ public class BaseTest {
             .quota(CONTAINER_4_QUOTA)
             .privilegedUsername(CONTAINER_4_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_4_PRIVILEGED_PASSWORD)
+            .readonlyUsername(CONTAINER_1_READONLY_USERNAME)
+            .readonlyPassword(CONTAINER_1_READONLY_PASSWORD)
             .databases(null) /* DATABASE_4 */
             .build();
 
@@ -1597,7 +1605,7 @@ public class BaseTest {
     public final CreateTableConstraintsDto TABLE_1_CREATE_TABLE_CONSTRAINTS_DTO =
             CreateTableConstraintsDto.builder()
                     .checks(new LinkedHashSet<>())
-                    .primaryKey(new LinkedHashSet<>(List.of("id")))
+                    .primaryKey(List.of("id"))
                     .foreignKeys(new LinkedList<>())
                     .uniques(new LinkedList<>(List.of(List.of("date"))))
                     .build();
@@ -1866,11 +1874,11 @@ public class BaseTest {
                             .name("uk_1")
                             .columns(new LinkedList<>(List.of(TABLE_2_COLUMNS_BRIEF_DTO.get(1))))
                             .build())))
-                    .primaryKey(new LinkedHashSet<>(Set.of(PrimaryKeyDto.builder()
+                    .primaryKey(List.of(PrimaryKeyDto.builder()
                             .table(TABLE_2_BRIEF_DTO)
                             .column(TABLE_2_COLUMNS_BRIEF_0_DTO)
                             .id(COLUMN_2_1_ID)
-                            .build())))
+                            .build()))
                     .build())
             .owner(USER_2_BRIEF_DTO)
             .avgRowLength(TABLE_2_AVG_ROW_LENGTH)
@@ -1979,14 +1987,14 @@ public class BaseTest {
 
     public final CreateTableConstraintsDto TABLE_3_CONSTRAINTS_CREATE_DTO = CreateTableConstraintsDto.builder()
             .checks(new LinkedHashSet<>())
-            .primaryKey(new LinkedHashSet<>())
+            .primaryKey(List.of())
             .foreignKeys(new LinkedList<>())
             .uniques(new LinkedList<>())
             .build();
 
     public final CreateTableConstraintsDto TABLE_3_CONSTRAINTS_INVALID_CREATE_DTO = CreateTableConstraintsDto.builder()
             .checks(new LinkedHashSet<>())
-            .primaryKey(new LinkedHashSet<>()) // <<<<
+            .primaryKey(List.of()) // <<<<
             .uniques(new LinkedList<>())
             .foreignKeys(List.of(CreateForeignKeyDto.builder()
                     .referencedTable("weather_location")
@@ -2400,7 +2408,7 @@ public class BaseTest {
 
     public final CreateTableConstraintsDto TABLE_4_CONSTRAINTS_CREATE_DTO = CreateTableConstraintsDto.builder()
             .checks(new LinkedHashSet<>())
-            .primaryKey(new LinkedHashSet<>(Set.of("Timestamp")))
+            .primaryKey(List.of("Timestamp"))
             .foreignKeys(new LinkedList<>())
             .uniques(new LinkedList<>(List.of(List.of("Timestamp"))))
             .build();
@@ -2676,11 +2684,11 @@ public class BaseTest {
             .checks(new LinkedHashSet<>())
             .foreignKeys(new LinkedList<>())
             .uniques(new LinkedList<>())
-            .primaryKey(new LinkedHashSet<>(Set.of(PrimaryKeyDto.builder()
+            .primaryKey(List.of(PrimaryKeyDto.builder()
                     .table(TABLE_9_BRIEF_DTO)
                     .column(TABLE_9_COLUMNS_BRIEF_0_DTO)
                     .id(COLUMN_9_1_ID)
-                    .build())))
+                    .build()))
             .build();
 
     public final static UUID QUERY_9_ID = UUID.fromString("df34f0b9-b64c-406c-9109-7a031f4a7f27");
@@ -3356,7 +3364,7 @@ public class BaseTest {
 
     public final CreateTableConstraintsDto TABLE_1_CONSTRAINTS_CREATE_INVALID_DTO = CreateTableConstraintsDto.builder()
             .checks(new LinkedHashSet<>())
-            .primaryKey(new LinkedHashSet<>())
+            .primaryKey(List.of())
             .foreignKeys(new LinkedList<>())
             .uniques(new LinkedList<>(List.of(List.of("date"))))
             .build();
@@ -5112,7 +5120,7 @@ public class BaseTest {
                     .build());
 
     public final CreateTableConstraintsDto TABLE_5_CREATE_CONSTRAINTS_DTO = CreateTableConstraintsDto.builder()
-            .primaryKey(Set.of("id"))
+            .primaryKey(List.of("id"))
             .uniques(new LinkedList<>(List.of(List.of("id"))))
             .checks(new LinkedHashSet<>())
             .foreignKeys(new LinkedList<>())
@@ -5321,7 +5329,7 @@ public class BaseTest {
             .uniques(TABLE_6_UNIQUES_CREATE)
             .foreignKeys(TABLE_6_FOREIGN_KEYS_CREATE)
             .checks(Set.of("firstname != lastname"))
-            .primaryKey(Set.of("id"))
+            .primaryKey(List.of("id"))
             .build();
 
     public final List<CreateTableColumnDto> TABLE_6_COLUMNS_CREATE = List.of(
@@ -9200,11 +9208,11 @@ public class BaseTest {
             .checks(new LinkedHashSet<>())
             .foreignKeys(new LinkedList<>())
             .uniques(new LinkedList<>())
-            .primaryKey(new LinkedHashSet<>(Set.of(PrimaryKeyDto.builder()
+            .primaryKey(List.of(PrimaryKeyDto.builder()
                     .id(UUID.fromString("b3f40a88-4f21-4de0-a595-3d15e63943aa"))
                     .table(TABLE_1_BRIEF_DTO)
                     .column(TABLE_1_COLUMNS_BRIEF_0_DTO)
-                    .build())))
+                    .build()))
             .build();
 
     public final Constraints TABLE_2_CONSTRAINTS = Constraints.builder()
@@ -9258,11 +9266,11 @@ public class BaseTest {
                     .name("uk_1")
                     .columns(new LinkedList<>(List.of(TABLE_2_COLUMNS_BRIEF_DTO.get(1))))
                     .build())))
-            .primaryKey(new LinkedHashSet<>(List.of(PrimaryKeyDto.builder()
+            .primaryKey(List.of(PrimaryKeyDto.builder()
                     .table(TABLE_2_BRIEF_DTO)
                     .column(TABLE_2_COLUMNS_BRIEF_DTO.get(0))
                     .id(COLUMN_2_1_ID)
-                    .build())))
+                    .build()))
             .build();
 
     public final Constraints TABLE_3_CONSTRAINTS = Constraints.builder()
@@ -9280,11 +9288,11 @@ public class BaseTest {
             .checks(new LinkedHashSet<>())
             .foreignKeys(new LinkedList<>())
             .uniques(new LinkedList<>())
-            .primaryKey(new LinkedHashSet<>(Set.of(PrimaryKeyDto.builder()
+            .primaryKey(List.of(PrimaryKeyDto.builder()
                     .table(TABLE_3_BRIEF_DTO)
                     .column(TABLE_3_COLUMNS_BRIEF_0_DTO)
                     .id(COLUMN_3_1_ID)
-                    .build())))
+                    .build()))
             .build();
 
     public final Constraints TABLE_4_CONSTRAINTS = Constraints.builder()
@@ -9302,11 +9310,11 @@ public class BaseTest {
             .checks(new LinkedHashSet<>())
             .foreignKeys(new LinkedList<>())
             .uniques(new LinkedList<>())
-            .primaryKey(new LinkedHashSet<>(Set.of(PrimaryKeyDto.builder()
+            .primaryKey(List.of(PrimaryKeyDto.builder()
                     .table(TABLE_4_BRIEF_DTO)
                     .column(TABLE_4_COLUMNS_BRIEF_0_DTO)
                     .id(COLUMN_4_1_ID)
-                    .build())))
+                    .build()))
             .build();
 
     public final Constraints TABLE_5_CONSTRAINTS = Constraints.builder()
@@ -9324,11 +9332,11 @@ public class BaseTest {
             .checks(new LinkedHashSet<>())
             .foreignKeys(new LinkedList<>())
             .uniques(new LinkedList<>())
-            .primaryKey(new LinkedHashSet<>(Set.of(PrimaryKeyDto.builder()
+            .primaryKey(List.of(PrimaryKeyDto.builder()
                     .table(TABLE_5_BRIEF_DTO)
                     .column(TABLE_5_COLUMNS_BRIEF_0_DTO)
                     .id(COLUMN_5_1_ID)
-                    .build())))
+                    .build()))
             .build();
 
     public final Constraints TABLE_6_CONSTRAINTS = Constraints.builder()
@@ -9346,11 +9354,11 @@ public class BaseTest {
             .checks(new LinkedHashSet<>())
             .foreignKeys(new LinkedList<>())
             .uniques(new LinkedList<>())
-            .primaryKey(new LinkedHashSet<>(Set.of(PrimaryKeyDto.builder()
+            .primaryKey(List.of(PrimaryKeyDto.builder()
                     .table(TABLE_6_BRIEF_DTO)
                     .column(TABLE_6_COLUMNS_BRIEF_0_DTO)
                     .id(COLUMN_6_1_ID)
-                    .build())))
+                    .build()))
             .build();
 
     public final Constraints TABLE_7_CONSTRAINTS = Constraints.builder()
@@ -9434,11 +9442,11 @@ public class BaseTest {
             .foreignKeys(new LinkedList<>(List.of(TABLE_7_CONSTRAINTS_FOREIGN_KEY_0_DTO,
                     TABLE_7_CONSTRAINTS_FOREIGN_KEY_1_DTO)))
             .uniques(new LinkedList<>())
-            .primaryKey(new LinkedHashSet<>(Set.of(PrimaryKeyDto.builder()
+            .primaryKey(List.of(PrimaryKeyDto.builder()
                     .table(TABLE_7_BRIEF_DTO)
                     .column(TABLE_7_COLUMNS_BRIEF_0_DTO)
                     .id(UUID.fromString("9969e13f-2a2f-45c7-bccf-a7df0ac813a8"))
-                    .build())))
+                    .build()))
             .build();
 
     public final Constraints TABLE_8_CONSTRAINTS = Constraints.builder()
@@ -9456,11 +9464,11 @@ public class BaseTest {
             .checks(new LinkedHashSet<>())
             .foreignKeys(new LinkedList<>())
             .uniques(new LinkedList<>())
-            .primaryKey(new LinkedHashSet<>(Set.of(PrimaryKeyDto.builder()
+            .primaryKey(List.of(PrimaryKeyDto.builder()
                     .table(TABLE_8_BRIEF_DTO)
                     .column(TABLE_8_COLUMNS_BRIEF_0_DTO)
                     .id(UUID.fromString("c61196d1-a902-405c-a825-0781c0c94df1"))
-                    .build())))
+                    .build()))
             .build();
 
     public final ExportResourceDto EXPORT_RESOURCE_DTO = ExportResourceDto.builder()

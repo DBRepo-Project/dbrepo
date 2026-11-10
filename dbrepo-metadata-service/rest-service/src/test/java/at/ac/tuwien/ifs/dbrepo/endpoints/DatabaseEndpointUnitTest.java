@@ -563,7 +563,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-database-owner"})
     public void transfer_hasRole_succeeds() throws DataServiceConnectionException, DataServiceException,
             NotAllowedException, UserNotFoundException, DatabaseNotFoundException, SearchServiceException,
-            SearchServiceConnectionException, DashboardServiceException, DashboardServiceConnectionException {
+            SearchServiceConnectionException, DashboardServiceException, DashboardServiceConnectionException, AccessNotFoundException {
         final DatabaseTransferDto request = DatabaseTransferDto.builder()
                 .username(USER_4_USERNAME)
                 .build();
@@ -742,7 +742,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
 
     @Test
     @WithAnonymousUser
-    public void findPreviewImage_anonymous_succeeds() throws DatabaseNotFoundException {
+    public void findPreviewImage_anonymous_succeeds() throws DatabaseNotFoundException, NotAllowedException {
 
         /* test */
         final ResponseEntity<byte[]> response = findPreviewImage_generic(DATABASE_1_ID, DATABASE_1);
@@ -754,7 +754,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME)
-    public void findPreviewImage_noRoles_succeeds() throws DatabaseNotFoundException {
+    public void findPreviewImage_noRoles_succeeds() throws DatabaseNotFoundException, NotAllowedException {
 
         /* test */
         final ResponseEntity<byte[]> response = findPreviewImage_generic(DATABASE_1_ID, DATABASE_1);
@@ -766,7 +766,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
 
     @Test
     @WithAnonymousUser
-    public void findPreviewImage_noImage_succeeds() throws DatabaseNotFoundException {
+    public void findPreviewImage_noImage_succeeds() throws DatabaseNotFoundException, NotAllowedException {
 
         /* test */
         final ResponseEntity<byte[]> response = findPreviewImage_generic(DATABASE_2_ID, DATABASE_2);
@@ -866,7 +866,7 @@ public class DatabaseEndpointUnitTest extends BaseTest {
     }
 
     public ResponseEntity<byte[]> findPreviewImage_generic(UUID databaseId, Database database)
-            throws DatabaseNotFoundException {
+            throws DatabaseNotFoundException, NotAllowedException {
 
         /* mock */
         if (database != null) {
@@ -878,8 +878,9 @@ public class DatabaseEndpointUnitTest extends BaseTest {
                     .findById(databaseId);
         }
 
+        if (database != null) database.setIsPublic(true);
         /* test */
-        return databaseEndpoint.findPreviewImage(databaseId);
+        return databaseEndpoint.findPreviewImage(databaseId, null);
     }
 
 

@@ -132,7 +132,7 @@ public interface DatabaseService {
      * @throws SearchServiceConnectionException The connection with the search service could not be established.
      */
     Database modifyOwner(Database database, String username) throws DatabaseNotFoundException, SearchServiceException,
-            SearchServiceConnectionException;
+            SearchServiceConnectionException, DataServiceException, DataServiceConnectionException, AccessNotFoundException;
 
     /**
      * Modify image of database with given id.

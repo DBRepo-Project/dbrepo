@@ -16,6 +16,10 @@ defaults:
 env:
   APP_VERSION: '1.14.1'
   DUCKDB_VERSION: '1.2.2'
+  # Explicit synthetic fixtures for disposable CI containers; deployments generate their own secrets.
+  NUXT_OIDC_TOKEN_KEY: 'data:;base64,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='
+  OIDC_AUTH_SESSION_SECRET: 'ci-only-disposable-auth-session-secret'
+  OIDC_SESSION_SECRET: 'ci-only-disposable-session-secret'
   GHCR_REGISTRY: 'ghcr.io'
   GHCR_NAMESPACE: 'dbrepo-project'
   GHCR_IMAGE_PREFIX: 'ghcr.io/dbrepo-project/dbrepo'
@@ -58,8 +62,12 @@ jobs:
       - name: Check Grafana plugin pins
         run: |
           python3 .scripts/test-grafana-plugins.py
+          python3 .scripts/test-statistics-gateway.py
           python3 -m pip install PyYAML
           python3 .scripts/test-dashboard-config.py
+          python3 .scripts/test-ui-secrets.py
+          python3 .scripts/test-compose-credentials.py
+          python3 .scripts/test-consumer-error-config.py
 
   java-services:
     runs-on: ubuntu-latest
@@ -115,7 +123,7 @@ jobs:
         include:
           - name: python-lib
             install_cmd: PIPENV_PIPFILE=./lib/python/Pipfile pipenv install --dev --system --deploy
-            test_cmd: cd ./lib/python && coverage run --rcfile=.coveragerc -m pytest tests/test_auth_signing_keys.py tests/test_unit_container.py tests/test_unit_messages.py tests/test_unit_image.py tests/test_unit_concept.py tests/test_unit_database.py tests/test_unit_identifier.py tests/test_unit_license.py tests/test_unit_query.py tests/test_unit_rest_client.py tests/test_unit_table.py tests/test_unit_user.py tests/test_unit_view.py tests/test_unit_unit.py && coverage report && python ../../.scripts/test-rotate-realm-keys.py
+            test_cmd: cd ./lib/python && coverage run --rcfile=.coveragerc -m pytest tests/test_auth_signing_keys.py tests/test_unit_container.py tests/test_unit_messages.py tests/test_unit_image.py tests/test_unit_concept.py tests/test_unit_database.py tests/test_unit_identifier.py tests/test_unit_license.py tests/test_unit_query.py tests/test_unit_rest_client.py tests/test_unit_table.py tests/test_unit_user.py tests/test_unit_view.py tests/test_unit_unit.py && coverage report && python ../../.scripts/test-rotate-realm-keys.py && PYTHONPATH=. python ../../.scripts/test-client-live-test.py && PYTHONPATH=. python ../../.scripts/client-live-test.py --check-source ../..
           - name: search-service
             install_cmd: PYTHON_LIB_VERSION=$(python3 -c "import tomllib; f=open('lib/python/pyproject.toml','rb'); print(tomllib.load(f)['project']['version'])") && cp ./lib/python/dist/dbrepo-$PYTHON_LIB_VERSION.tar.gz ./dbrepo-search-service/lib/dbrepo-$PYTHON_LIB_VERSION.tar.gz && PIPENV_PIPFILE=./dbrepo-search-service/Pipfile pipenv install --skip-lock --dev --system
             test_cmd: mkdir -p "$PWD/.logs/search" && export LOG_PATH="$PWD/.logs/search" && cd ./dbrepo-search-service && coverage run --rcfile=.coveragerc -m pytest tests/test_app.py tests/test_search_visibility.py tests/test_search_projections.py tests/test_current_search.py && coverage report
@@ -151,6 +159,9 @@ jobs:
           "$RUNNER_TEMP/dbrepo-wheel/bin/python" -c "from dbrepo.RestClient import RestClient; from dbrepo.MqttClient import MqttClient"
       - name: Run tests
         run: ${{ matrix.test_cmd }}
+      - name: Check optional Bearer headers
+        if: matrix.name == 'search-service'
+        run: python .scripts/test-auth-headers.py
 
   ui:
     runs-on: ubuntu-latest
@@ -169,6 +180,7 @@ jobs:
           docker compose build dbrepo-ui
           docker run --name dbrepo-ui -e NODE_OPTIONS=--max_old_space_size=256 -p 3000:3000 -d dbrepo-ui:latest
           sleep 30
+          ENDPOINT=http://localhost:3000 node --test ./dbrepo-ui/tests/health.test.mjs
           ENDPOINT=http://localhost:3000 bash ./dbrepo-ui/tests/test_heap.sh
 
   docker-integration:
@@ -178,9 +190,15 @@ jobs:
       matrix:
         script:
           - ./dbrepo-broker-service/tests/test_integration_feature_flags.sh
+          - ./dbrepo-broker-service/tests/test_integration_ldap.sh
+          - ./dbrepo-broker-service/tests/test_integration_password.sh
+          - ./.scripts/test-query-worktables.sh
           - ./dbrepo-storage-service/init/tests/test_integration_expire.sh
     steps:
       - uses: actions/checkout@v5
+      - name: Install broker test dependencies
+        if: matrix.script == './dbrepo-broker-service/tests/test_integration_ldap.sh' || matrix.script == './dbrepo-broker-service/tests/test_integration_password.sh'
+        run: python3 -m pip install pika pandas
       - name: Install extra tooling
         if: matrix.script == './dbrepo-storage-service/init/tests/test_integration_expire.sh'
         run: |

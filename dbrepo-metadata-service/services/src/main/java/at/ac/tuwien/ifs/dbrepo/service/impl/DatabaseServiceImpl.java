@@ -3,6 +3,7 @@ package at.ac.tuwien.ifs.dbrepo.service.impl;
 import at.ac.tuwien.ifs.dbrepo.cache.DatabaseCacheRepository;
 import at.ac.tuwien.ifs.dbrepo.config.RabbitConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateDatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseModifyVisibilityDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
@@ -191,9 +192,19 @@ public class DatabaseServiceImpl implements DatabaseService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public Database modifyOwner(Database database, String username) throws DatabaseNotFoundException, SearchServiceException,
-            SearchServiceConnectionException {
+            SearchServiceConnectionException, DataServiceException, DataServiceConnectionException, AccessNotFoundException {
+        final Optional<DatabaseAccess> existing = database.getAccesses().stream()
+                .filter(access -> username.equals(access.getUsername())).findFirst();
+        if (existing.isEmpty()) {
+            dataServiceGateway.createAccess(database.getId(), username, AccessTypeDto.WRITE_ALL);
+            database.getAccesses().add(DatabaseAccess.builder().database(database).hdbid(database.getId())
+                    .username(username).type(AccessType.WRITE_ALL).build());
+        } else if (existing.get().getType() != AccessType.WRITE_ALL) {
+            dataServiceGateway.updateAccess(database.getId(), username, AccessTypeDto.WRITE_ALL);
+            existing.get().setType(AccessType.WRITE_ALL);
+        }
         /* update in metadata database */
         database.setOwnedBy(username);
         database.setContactPerson(username);

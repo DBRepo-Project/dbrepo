@@ -124,7 +124,7 @@ public class TableEndpointSaturationIntegrationTest extends BaseTest {
 
     private static long countConnections() throws SQLException {
         try (Connection connection = DriverManager.getConnection("jdbc:mariadb://127.0.0.1:" + CONTAINER_1_PORT + "/" +
-                DATABASE_1_INTERNAL_NAME, CONTAINER_1_PRIVILEGED_USERNAME, CONTAINER_1_PRIVILEGED_PASSWORD);
+                DATABASE_1_INTERNAL_NAME + "?sslMode=disable", CONTAINER_1_PRIVILEGED_USERNAME, CONTAINER_1_PRIVILEGED_PASSWORD);
              Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM information_schema.PROCESSLIST " +
                      "WHERE `DB` = 'weather' AND `ID` <> CONNECTION_ID()")) {

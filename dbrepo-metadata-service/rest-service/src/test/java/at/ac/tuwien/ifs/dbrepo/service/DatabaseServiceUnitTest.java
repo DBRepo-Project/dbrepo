@@ -478,7 +478,7 @@ public class DatabaseServiceUnitTest extends BaseTest {
 
     @Test
     public void modifyOwner_succeeds() throws DatabaseNotFoundException, SearchServiceException,
-            SearchServiceConnectionException {
+            SearchServiceConnectionException, DataServiceException, DataServiceConnectionException, AccessNotFoundException {
 
         /* mock */
         when(databaseCacheRepository.save(any(at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database.class)))
@@ -492,7 +492,7 @@ public class DatabaseServiceUnitTest extends BaseTest {
 
     @Test
     public void modifyOwner_searchServiceError_fails() throws DatabaseNotFoundException, SearchServiceException,
-            SearchServiceConnectionException {
+            SearchServiceConnectionException, DataServiceException, DataServiceConnectionException, AccessNotFoundException {
 
         /* mock */
         doNothing()
@@ -510,7 +510,7 @@ public class DatabaseServiceUnitTest extends BaseTest {
 
     @Test
     public void modifyOwner_searchServiceNotFound_fails() throws DatabaseNotFoundException, SearchServiceException,
-            SearchServiceConnectionException {
+            SearchServiceConnectionException, DataServiceException, DataServiceConnectionException, AccessNotFoundException {
 
         /* mock */
         doNothing()
@@ -528,7 +528,7 @@ public class DatabaseServiceUnitTest extends BaseTest {
 
     @Test
     public void modifyOwner_searchServiceConnection_fails() throws DatabaseNotFoundException, SearchServiceException,
-            SearchServiceConnectionException {
+            SearchServiceConnectionException, DataServiceException, DataServiceConnectionException, AccessNotFoundException {
 
         /* mock */
         doNothing()
@@ -574,7 +574,7 @@ public class DatabaseServiceUnitTest extends BaseTest {
     }
 
     protected Database generic_modifyOwner(Database database, String newOwner) throws DatabaseNotFoundException,
-            SearchServiceException, SearchServiceConnectionException {
+            SearchServiceException, SearchServiceConnectionException, DataServiceException, DataServiceConnectionException, AccessNotFoundException {
 
         /* mock */
         when(databaseRepository.save(any(Database.class)))
