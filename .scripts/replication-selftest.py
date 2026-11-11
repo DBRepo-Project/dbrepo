@@ -601,6 +601,16 @@ class Checks(unittest.TestCase):
         peer.versions[table["id"]] = []
         for row in peer.inbox.values():
             row["receipt"] = {"applied": False, "data": {}, "replicationKey": runner.outage_key}
+        observations = [self.observed(runner, i, runner.outage_tables, runner.outage_key) for i in range(3)]
+        delayed = copy.deepcopy(observations)
+        delayed[2]["timestamps"] = []
+        with patch.object(runner, "observe", side_effect=delayed + observations) as observe:
+            runner.outage_history()
+            self.assertEqual(6, observe.call_count)
+        def divergent(index, *_):
+            return copy.deepcopy(delayed[index])
+        with patch.object(runner, "observe", side_effect=divergent), self.assertRaisesRegex(a.Failed, "Timed out"):
+            runner.outage_history()
         with patch.object(runner, "observe", side_effect=lambda *args: self.observed(runner, *args)):
             runner.outage_history()
             self.assertIn("outage_evidence_sha256", runner.report)

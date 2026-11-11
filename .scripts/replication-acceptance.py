@@ -556,9 +556,15 @@ class Acceptance:
     def outage_history(self):
         if not hasattr(self, "outage_tables"):
             raise Blocked("Outage/retry did not complete")
-        evidence = []
+        def converged_evidence():
+            observations = [self.observe(i, self.outage_tables, self.outage_key) for i in range(3)]
+            if observations[0]["timestamps"] == observations[1]["timestamps"] == observations[2]["timestamps"]:
+                return observations
+            return None
+        # Tuple delivery can finish before the separate timestamp-sync jobs.
+        evidence = self.wait(converged_evidence, "three-site timestamp evidence convergence")
         for i, site in enumerate(self.sites):
-            observed = self.observe(i, self.outage_tables, self.outage_key)
+            observed = evidence[i]
             if i == 0:
                 require(rows(observed["history"]) == rows([{"id": 1, "value": "original"}, {"id": 1, "value": "changed"}]),
                         "Source history lost a committed version")
@@ -583,9 +589,6 @@ class Acceptance:
                      and t["database"] == site.db["id"] and t["table"] == self.outage_tables[i]["id"]]
             require(sorted((t["start"], t["end"]) for t in local) ==
                     sorted((h["start"], h["end"]) for h in observed["history"]), "Local timestamp evidence differs from actual visibility")
-            evidence.append(observed)
-        require(evidence[0]["timestamps"] == evidence[1]["timestamps"] == evidence[2]["timestamps"],
-                "Three-site timestamp evidence has not converged")
         self.report["outage_evidence_sha256"] = fingerprint(evidence)
 
     def archive(self):
