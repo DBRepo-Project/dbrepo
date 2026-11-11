@@ -49,7 +49,7 @@ class FakeSite:
     def get(self, path, **kwargs):
         return self.request(path, **kwargs)[0]
 
-    def request(self, path, method="GET", body=None, role="user", expected=(200,)):
+    def request(self, path, method="GET", body=None, role="user", expected=(200,), parse_json=True):
         status, data, headers = 200, {}, {}
         query = a.urllib.parse.parse_qs(a.urllib.parse.urlsplit(path).query)
         path = path.split("?")[0]
@@ -92,13 +92,17 @@ class FakeSite:
                     created.append(table)
                 created[0]["replica_urls"] = {s.url: t["id"] for s, t in zip(self.peers[1:], created[1:])}
                 data = created[0]
+        elif path.endswith("/result"):
+            status = 403
         elif "/subset" in path:
             if path.endswith("/subset"):
                 status, key = 201, str(uuid.uuid4())
                 table = self.tables[body["datasource_ids"][0]]
                 data = a.rows(table["rows"])
                 self.subsets[key] = {"id": key, "rows": data, "result_hash": "v2:" + a.fingerprint(data),
-                                     "snapshot_hash": a.fingerprint(data), "is_persisted": False}
+                                     "query_hash": a.fingerprint(data), "query": "SELECT id,value FROM fixture",
+                                     "query_normalized": "SELECT id,value FROM fixture", "execution": "2026-10-03T12:00:01Z",
+                                     "creation_location": self.url, "result_number": len(data), "is_persisted": False}
             else:
                 key = path.split("/subset/")[1].split("/")[0]
                 if key not in self.subsets:
@@ -108,7 +112,7 @@ class FakeSite:
                     self.subsets[key]["is_persisted"] = body["persist"]
                 data = self.subsets[key]["rows"] if path.endswith("/data") else self.subsets[key]
             headers = {"x-id": key, "x-integrity": "verified", "x-result-hash": self.subsets[key]["result_hash"],
-                       "x-result-mode": "immutable-snapshot"}
+                       "x-result-mode": "historical-re-execution"}
         else:
             key = path.split("/table/")[1].split("/")[0]
             table = self.tables[key]
@@ -191,7 +195,7 @@ class Checks(unittest.TestCase):
         self.args = SimpleNamespace(report=Path(self.tmp.name) / "report.json", http_timeout=1, wait=0.01,
                                     poll=0.001, allow_faults=False, deadline=10, sync_wait=0.01)
         roles = ["create-table", "insert-table-data", "delete-table-data", "persist-query"]
-        self.config = {"dedicated_test_users": True, "strict_snapshot_activation": True, "parent_coordinated": True,
+        self.config = {"dedicated_test_users": True, "strict_history_activation": True, "parent_coordinated": True,
                        "primary_container_id": str(uuid.uuid4()),
                        "sites": [{"name": str(i), "url": "https://site%d.invalid" % i,
                                   "attested_user_roles": roles} for i in range(3)]}
@@ -313,7 +317,7 @@ class Checks(unittest.TestCase):
 
     def test_strict_activation_blocks_before_any_fixture_write(self):
         runner = self.runner()
-        self.config["strict_snapshot_activation"] = False
+        self.config["strict_history_activation"] = False
         with patch.object(runner.primary, "get") as get, self.assertRaises(a.Blocked):
             runner.setup()
         get.assert_not_called()
@@ -378,7 +382,7 @@ class Checks(unittest.TestCase):
         entry = {"id": job, "localTableId": runner.core[0]["id"], "targetSiteUrl": runner.sites[1].url,
                  "remoteDatabaseId": runner.sites[1].db["id"], "remoteTableId": runner.core[1]["id"],
                  "payloadJson": json.dumps(request)}
-        manifest = {"format": 1, "snapshotId": snapshot, "origin": runner.primary.url,
+        manifest = {"format": 3, "snapshotId": snapshot, "origin": runner.primary.url,
                     "sourceDatabaseId": runner.primary.db["id"], "sourceTableId": runner.core[0]["id"],
                     "base": None, "boundary": 3, "legacyThrough": 0, "rows": 2, "currentKeys": 0}
         envelope = {"manifest": manifest, "sha256": "a" * 64}
@@ -396,7 +400,8 @@ class Checks(unittest.TestCase):
             with self.subTest(receipt=wrong), patch.object(runner.primary, "get", return_value=envelope), \
                     patch.object(runner.sites[1], "get", return_value=wrong), self.assertRaises(a.Failed):
                 runner.snapshot_receipt(entry)
-        for wrong in (dict(manifest, rows=0), dict(manifest, currentKeys=1), dict(manifest, legacyThrough=1),
+        for wrong in (dict(manifest, format=1), dict(manifest, format=2),
+                      dict(manifest, rows=0), dict(manifest, currentKeys=1), dict(manifest, legacyThrough=1),
                       dict(manifest, base={"boundary": 1}), dict(manifest, sourceTableId=str(uuid.uuid4()))):
             with self.subTest(manifest=wrong), patch.object(runner.primary, "get", return_value=dict(envelope, manifest=wrong)), \
                     self.assertRaises(a.Failed):
@@ -545,7 +550,7 @@ class Checks(unittest.TestCase):
         with self.assertRaises(a.Failed):
             runner.replay(0, subset)
 
-    def test_citation_requires_immutable_mode_and_offline_gate_probes_origin(self):
+    def test_citation_requires_historical_mode_and_offline_gate_probes_origin(self):
         runner = self.runner()
         runner.setup()
         runner.crud()
@@ -560,6 +565,16 @@ class Checks(unittest.TestCase):
             return data, headers
         with patch.object(runner.sites[1], "request", side_effect=mutable), self.assertRaises(a.Failed):
             runner.replay(1, source)
+        def retired(path, **kwargs):
+            data, headers = original(path, **kwargs)
+            headers['x-result-mode'] = 'immutable-snapshot'
+            return data, headers
+        with patch.object(runner.sites[1], 'request', side_effect=retired), self.assertRaises(a.Failed):
+            runner.replay(1, source)
+        runner.sites[1].subsets[source['id']]['execution'] = '2026-10-04T12:00:01Z'
+        with self.assertRaises(a.Failed):
+            runner.replay(1, source)
+        runner.sites[1].subsets[source['id']]['execution'] = source['selection']['execution']
         self.args.allow_faults = True
         self.config.update(scoped_faults_coordinated=True, offline_hook=["unused"])
         with patch.object(a, "command", side_effect=lambda argv, payload, timeout: payload) as hook, \
@@ -627,6 +642,17 @@ class Checks(unittest.TestCase):
                 with self.assertRaises(a.Blocked) as raised:
                     site.request("/api/replication/status")
                 self.assertNotIn("never-print", str(raised.exception))
+            class Response:
+                status, headers = 200, {}
+                def __enter__(self): return self
+                def __exit__(self, *_): pass
+                def read(self, limit): return (b' ' * (5 * 1024 * 1024) + b'[]')[:limit]
+            with patch.object(site.http, 'open', return_value=Response()):
+                self.assertEqual([], site.get('/api/replication/outbox'))
+                with self.assertRaises(a.Failed):
+                    site.get('/api/v1/database')
+            self.assertEqual({'200': 1}, site.operations['GET /api/replication/outbox'])
+            self.assertNotIn('never-print', json.dumps(site.operations))
             for bad in ("http://site.invalid", "https://user:secret@site.invalid", "https://site.invalid/path"):
                 with self.subTest(url=bad), self.assertRaises(a.Blocked):
                     a.Site(dict(config, url=bad), 1)
