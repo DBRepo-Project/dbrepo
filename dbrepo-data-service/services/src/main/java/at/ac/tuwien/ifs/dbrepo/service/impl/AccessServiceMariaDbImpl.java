@@ -108,15 +108,7 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
         final Connection connection = dataSource.getConnection();
         try {
             // GRANT is additive; a downgrade must revoke the previous database privileges first.
-            try (PreparedStatement revoke = connection.prepareStatement(
-                    mariaDbMapper.databaseRevokePrivilegesQuery(database.getInternalName(), user.getUsername()))) {
-                try {
-                    revoke.execute();
-                } catch (SQLException e) {
-                    // ER_NONEXISTING_GRANT: nothing to revoke. Permission and other SQL errors must still fail.
-                    if (e.getErrorCode() != 1141 || !"42000".equals(e.getSQLState())) throw e;
-                }
-            }
+            revokeDatabaseAccess(connection, database, user);
             revokeQueryStoreAccess(connection, database, user);
             final long start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.databaseGrantPrivilegesQuery(database.getInternalName(), user.getUsername(), grants))
@@ -178,8 +170,7 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
             revokeQueryStoreAccess(connection, database, user);
             /* revoke access */
             long start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.databaseRevokePrivilegesQuery(database.getInternalName(), user.getUsername()))
-                    .execute();
+            revokeDatabaseAccess(connection, database, user);
             log.atDebug()
                     .setMessage("revoke privileges in database: " + database.getInternalName())
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
@@ -204,6 +195,16 @@ public class AccessServiceMariaDbImpl extends DataConnector implements AccessSer
             dataSource.close();
         }
         log.info("Deleted access to database with id {} for user with id {}", database.getId(), user.getId());
+    }
+
+    private void revokeDatabaseAccess(Connection connection, Database database, User user) throws SQLException {
+        try (PreparedStatement revoke = connection.prepareStatement(
+                mariaDbMapper.databaseRevokePrivilegesQuery(database.getInternalName(), user.getUsername()))) {
+            revoke.execute();
+        } catch (SQLException e) {
+            // A pending owner grant may not have reached SQL yet. Other SQL errors must still fail.
+            if (e.getErrorCode() != 1141 || !"42000".equals(e.getSQLState())) throw e;
+        }
     }
 
     private void closeUserConnections(Connection connection, Database database, User user) throws SQLException {

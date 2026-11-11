@@ -64,6 +64,24 @@ public class AccessServiceIntegrationTest extends BaseTest {
     }
 
     @Test
+    void repeatedSynchronizationCreatesTheAccountAndAppliesCurrentPrivileges() throws Exception {
+        try (Connection admin = adminConnection(); Statement statement = admin.createStatement()) {
+            statement.execute("DROP USER IF EXISTS '" + USER_5_USERNAME + "'@'%'");
+        }
+        for (AccessTypeDto type : new AccessTypeDto[]{AccessTypeDto.WRITE_ALL, AccessTypeDto.WRITE_ALL, AccessTypeDto.READ}) {
+            accessService.create(DATABASE_1_CACHE, USER_5_CACHE, type);
+            accessService.update(DATABASE_1_CACHE, USER_5_CACHE, type);
+            final Set<String> privileges = MariaDbUtil.getPrivileges(DATABASE_1_CACHE, USER_5_USERNAME);
+            assertTrue(privileges.contains("SELECT"));
+            assertEquals(type != AccessTypeDto.READ, privileges.contains("INSERT"));
+        }
+        accessService.delete(DATABASE_1_CACHE, USER_5_CACHE);
+        try (Connection admin = adminConnection(); Statement statement = admin.createStatement()) {
+            statement.execute("DROP USER IF EXISTS '" + USER_5_USERNAME + "'@'%'");
+        }
+    }
+
+    @Test
     public void create_read_succeeds() throws SQLException, DatabaseMalformedException {
 
         /* test */
@@ -136,12 +154,13 @@ public class AccessServiceIntegrationTest extends BaseTest {
     }
 
     @Test
-    public void delete_notFound_fails() {
-
-        /* test */
-        assertThrows(DatabaseMalformedException.class, () -> {
-            accessService.delete(DATABASE_1_CACHE, USER_5_CACHE);
-        });
+    public void delete_missingSqlGrant_succeeds() throws Exception {
+        // A committed transfer may be revoked before its deferred SQL grant is applied.
+        try (Connection admin = adminConnection(); Statement statement = admin.createStatement()) {
+            statement.execute("DROP USER IF EXISTS '" + USER_5_USERNAME + "'@'%'");
+        }
+        accessService.delete(DATABASE_1_CACHE, USER_5_CACHE);
+        accessService.delete(DATABASE_1_CACHE, USER_5_CACHE);
     }
 
     @Test

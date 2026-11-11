@@ -823,6 +823,13 @@
       "excluded": null
     },
     {
+      "operation": "PUT /api/v1/database/{id}/access/{id}/synchronize",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/AccessEndpoint.java"
+      ],
+      "excluded": "Internal grant synchronization; requires the system identity and committed metadata."
+    },
+    {
       "operation": "PUT /api/v1/database/{id}/image",
       "sources": [
         "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/DatabaseEndpoint.java"

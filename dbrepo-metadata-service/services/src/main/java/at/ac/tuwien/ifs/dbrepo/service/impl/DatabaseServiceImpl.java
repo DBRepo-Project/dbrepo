@@ -66,6 +66,9 @@ public class DatabaseServiceImpl implements DatabaseService {
     @Autowired
     private ReplicationService replicationService;
 
+    @Autowired
+    private at.ac.tuwien.ifs.dbrepo.service.SqlAccessSyncService sqlAccessSyncService;
+
     @Value("${dbrepo.baseUrl:http://localhost}")
     private String baseUrl;
 
@@ -266,12 +269,11 @@ public class DatabaseServiceImpl implements DatabaseService {
         final Optional<DatabaseAccess> existing = database.getAccesses().stream()
                 .filter(access -> username.equals(access.getUsername())).findFirst();
         if (existing.isEmpty()) {
-            dataServiceGateway.createAccess(database.getId(), username, AccessTypeDto.WRITE_ALL);
             database.getAccesses().add(DatabaseAccess.builder().database(database).hdbid(database.getId())
-                    .username(username).type(AccessType.WRITE_ALL).build());
+                    .username(username).type(AccessType.WRITE_ALL).sqlGrantPending(true).build());
         } else if (existing.get().getType() != AccessType.WRITE_ALL) {
-            dataServiceGateway.updateAccess(database.getId(), username, AccessTypeDto.WRITE_ALL);
             existing.get().setType(AccessType.WRITE_ALL);
+            existing.get().setSqlGrantPending(true);
         }
         /* update in metadata database */
         database.setOwnedBy(username);
@@ -281,7 +283,8 @@ public class DatabaseServiceImpl implements DatabaseService {
         databaseCacheRepository.deleteById(database.getId());
         /* save in search service */
         searchServiceGateway.update(database);
-        log.info("Updated database owner of database with id {}", database);
+        sqlAccessSyncService.afterCommit(database.getId());
+        log.info("Updated database owner of database with id {}", database.getId());
         return database;
     }
 

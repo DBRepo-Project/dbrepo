@@ -89,6 +89,40 @@ public class AccessEndpoint {
         }
     }
 
+    @PutMapping("/{username}/synchronize")
+    @PreAuthorize("hasAuthority('system')")
+    @Operation(summary = "Apply the committed metadata grant", hidden = true,
+            security = {@SecurityRequirement(name = "basicAuth")})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202", description = "Current grant applied or membership revoked"),
+            @ApiResponse(responseCode = "401", description = "Internal service identity required", content = {@Content}),
+            @ApiResponse(responseCode = "404", description = "Database or user not found", content = {@Content}),
+            @ApiResponse(responseCode = "417", description = "Failed to apply SQL privileges", content = {@Content}),
+            @ApiResponse(responseCode = "503", description = "Database or metadata service unavailable", content = {@Content})
+    })
+    public ResponseEntity<Void> synchronize(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                            @PathVariable("username") String username)
+            throws DatabaseNotFoundException, RemoteUnavailableException, MetadataServiceException,
+            UserNotFoundException, DatabaseMalformedException, DatabaseUnavailableException {
+        final Database database = metadataServiceGateway.getDatabaseById(databaseId);
+        final var access = database.getAccesses().stream()
+                .filter(member -> username.equals(member.getUsername())).findFirst();
+        // A revoked membership cancels a pending grant. No request payload can override it.
+        if (access.isEmpty()) {
+            return ResponseEntity.accepted().build();
+        }
+        final User user = metadataService.getUser(username);
+        final AccessTypeDto type = AccessTypeDto.valueOf(access.get().getType().name());
+        try {
+            // CREATE USER IF NOT EXISTS also handles a target with no previous SQL account.
+            accessService.create(database, user, type);
+            accessService.update(database, user, type);
+            return ResponseEntity.accepted().build();
+        } catch (SQLException e) {
+            throw new DatabaseUnavailableException("Failed to synchronize SQL access", e);
+        }
+    }
+
     @PutMapping("/{username}")
     @PreAuthorize("hasAuthority('system')")
     @Operation(summary = "Update access",

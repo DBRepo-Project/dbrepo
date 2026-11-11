@@ -98,6 +98,7 @@ def source_inventory(root):
     found['GET /pid/{id}'] = ['dbrepo-gateway-service/dbrepo.conf']
     found['GET /health'] = ['dbrepo-gateway-service/dbrepo.conf']
     internal = {
+        'PUT /api/v1/database/{id}/access/{id}/synchronize': 'Internal grant synchronization; requires the system identity and committed metadata.',
         'POST /api/v1/database/{id}/table/{id}/data/ingest': 'Internal Consumer write; requires the system identity and a broker-validated publisher.',
         'PUT /api/v1/database/{id}': 'Internal Data Service operation; gateway routes database metadata to Metadata.',
     }

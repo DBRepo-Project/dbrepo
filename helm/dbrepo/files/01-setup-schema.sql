@@ -471,6 +471,7 @@ CREATE TABLE IF NOT EXISTS `mdb_have_access`
     username    VARCHAR(255)                            NOT NULL,
     database_id VARCHAR(36)                             NOT NULL,
     access_type ENUM ('READ', 'WRITE_OWN', 'WRITE_ALL') NOT NULL,
+    sql_grant_pending BOOLEAN NOT NULL DEFAULT FALSE,
     created     TIMESTAMP                               NOT NULL DEFAULT NOW(),
     PRIMARY KEY (username, database_id),
     FOREIGN KEY (`database_id`) REFERENCES mdb_databases (`id`)

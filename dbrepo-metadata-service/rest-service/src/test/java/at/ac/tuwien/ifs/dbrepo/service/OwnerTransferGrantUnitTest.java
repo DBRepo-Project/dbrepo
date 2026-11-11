@@ -5,7 +5,7 @@ import at.ac.tuwien.ifs.dbrepo.config.RabbitConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.AccessType;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
-import at.ac.tuwien.ifs.dbrepo.core.exception.DataServiceException;
+import at.ac.tuwien.ifs.dbrepo.core.exception.SearchServiceConnectionException;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
@@ -22,11 +22,13 @@ class OwnerTransferGrantUnitTest extends BaseTest {
     private final DatabaseRepository repository = mock(DatabaseRepository.class);
     private final DataServiceGateway data = mock(DataServiceGateway.class);
     private final SearchServiceGateway search = mock(SearchServiceGateway.class);
+    private final SqlAccessSyncService sync = mock(SqlAccessSyncService.class);
     private final DatabaseServiceImpl service = new DatabaseServiceImpl(mock(RabbitConfig.class),
             mock(MetadataMapper.class), repository, data, search, mock(DatabaseCacheRepository.class));
 
     @BeforeEach
     void grantsMatchAnOwnedDatabaseAndReadOnlyMember() {
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "sqlAccessSyncService", sync);
         DATABASE_1.getAccesses().clear();
         DATABASE_1.getAccesses().add(DatabaseAccess.builder().database(DATABASE_1).hdbid(DATABASE_1_ID)
                 .username(USER_1_USERNAME).type(AccessType.WRITE_ALL).build());
@@ -42,7 +44,10 @@ class OwnerTransferGrantUnitTest extends BaseTest {
         DATABASE_1.getAccesses().removeIf(access -> USER_2_USERNAME.equals(access.getUsername()));
         saveReturnsArgument();
         service.modifyOwner(DATABASE_1, USER_2_USERNAME);
-        verify(data).createAccess(DATABASE_1_ID, USER_2_USERNAME, AccessTypeDto.WRITE_ALL);
+        verifyNoInteractions(data);
+        verify(sync).afterCommit(DATABASE_1_ID);
+        assertTrue(DATABASE_1.getAccesses().stream().filter(a -> USER_2_USERNAME.equals(a.getUsername()))
+                .findFirst().orElseThrow().isSqlGrantPending());
         assertEquals(USER_2_USERNAME, DATABASE_1.getOwnedBy());
         assertEquals(USER_2_USERNAME, DATABASE_1.getContactPerson());
         assertEquals(AccessType.WRITE_ALL, DATABASE_1.getAccesses().stream()
@@ -60,19 +65,18 @@ class OwnerTransferGrantUnitTest extends BaseTest {
         final var previousOwnerGrant = DATABASE_1.getAccesses().stream()
                 .filter(access -> USER_1_USERNAME.equals(access.getUsername())).findFirst().orElseThrow();
         service.modifyOwner(DATABASE_1, USER_2_USERNAME);
-        verify(data).updateAccess(DATABASE_1_ID, USER_2_USERNAME, AccessTypeDto.WRITE_ALL);
+        verifyNoInteractions(data);
+        assertTrue(DATABASE_1_USER_2_READ_ACCESS.isSqlGrantPending());
         assertTrue(DATABASE_1.getAccesses().contains(previousOwnerGrant));
         assertEquals(AccessType.WRITE_ALL, DATABASE_1_USER_2_READ_ACCESS.getType());
     }
 
     @Test
-    void failedGrantDoesNotChangeOwnershipOrSaveMetadata() throws Exception {
-        DATABASE_1.getAccesses().removeIf(access -> USER_2_USERNAME.equals(access.getUsername()));
-        doThrow(new DataServiceException("Unavailable")).when(data)
-                .createAccess(DATABASE_1_ID, USER_2_USERNAME, AccessTypeDto.WRITE_ALL);
-        assertThrows(DataServiceException.class, () -> service.modifyOwner(DATABASE_1, USER_2_USERNAME));
-        assertEquals(USER_1_USERNAME, DATABASE_1.getOwnedBy());
-        verifyNoInteractions(repository, search);
+    void failedSearchDoesNotApplyOrDispatchSqlGrant() throws Exception {
+        saveReturnsArgument();
+        doThrow(new SearchServiceConnectionException("Unavailable")).when(search).update(any(Database.class));
+        assertThrows(SearchServiceConnectionException.class, () -> service.modifyOwner(DATABASE_1, USER_2_USERNAME));
+        verifyNoInteractions(data, sync);
     }
 
     @Test

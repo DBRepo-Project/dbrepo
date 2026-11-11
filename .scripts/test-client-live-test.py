@@ -266,6 +266,7 @@ class LiveRunnerTest(unittest.TestCase):
         self.assertEqual('passed',endpoint['state'])
         self.assertEqual(1,endpoint['attempts'])
         self.assertTrue(next(v for v in report['endpoint_coverage'] if v['operation'].endswith('/data/ingest'))['excluded'])
+        self.assertTrue(next(v for v in report['endpoint_coverage'] if v['operation'].endswith('/synchronize'))['excluded'])
         self.assertTrue(next(v for v in report['endpoint_coverage'] if v['operation']=='PUT /api/v1/database/{id}')['excluded'])
 
     def test_inventory_matches_current_source(self):

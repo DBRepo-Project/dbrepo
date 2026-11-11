@@ -47,7 +47,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
+@SpringBootTest(properties = "dbrepo.access.retryDelayMs=3600000")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 @WithMockUser(username = BaseTest.USER_1_USERNAME, authorities = {
         "create-database-access", "delete-database-access", "modify-database-visibility", "modify-database-owner", "modify-database-image", "modify-view-visibility"})
@@ -60,6 +60,7 @@ class DashboardAccessPersistenceTest extends BaseTest {
     @Autowired private ContainerRepository containers;
     @Autowired private LicenseRepository licenses;
     @Autowired private PlatformTransactionManager transactions;
+    @Autowired private at.ac.tuwien.ifs.dbrepo.service.SqlAccessSyncService sqlSync;
     @MockitoBean private DataServiceGateway dataGateway;
     @MockitoBean private SearchServiceGateway searchGateway;
     @MockitoBean private DatabaseCacheRepository cache;
@@ -239,9 +240,93 @@ class DashboardAccessPersistenceTest extends BaseTest {
         assertThrows(DashboardServiceConnectionException.class, () ->
                 databaseEndpoint.transfer(DATABASE_1_ID, request, USER_1_PRINCIPAL));
         assertEquals(USER_1_USERNAME, databases.findById(DATABASE_1_ID).orElseThrow().getOwnedBy());
+        verifyNoInteractions(dataGateway);
+        assertTrue(databases.findPendingGrantDatabases().isEmpty());
         databaseEndpoint.transfer(DATABASE_1_ID, request, USER_1_PRINCIPAL);
         assertEquals(USER_2_USERNAME, databases.findById(DATABASE_1_ID).orElseThrow().getOwnedBy());
         verify(dashboardHttp, times(2)).exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class));
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void searchFailureDoesNotGrantSqlAccess(boolean existingReader) throws Exception {
+        if (existingReader) {
+            new TransactionTemplate(transactions).executeWithoutResult(status -> {
+                final Database database = databases.findById(DATABASE_1_ID).orElseThrow();
+                database.getAccesses().add(DatabaseAccess.builder().hdbid(DATABASE_1_ID).database(database)
+                        .username(USER_2_USERNAME).type(AccessType.READ).build());
+                databases.saveAndFlush(database);
+            });
+        }
+        doThrow(new SearchServiceConnectionException("Outage")).when(searchGateway).update(any(Database.class));
+        assertThrows(SearchServiceConnectionException.class, () -> databaseEndpoint.transfer(DATABASE_1_ID,
+                DatabaseTransferDto.builder().username(USER_2_USERNAME).build(), USER_1_PRINCIPAL));
+        verifyNoInteractions(dataGateway);
+        assertTrue(databases.findPendingGrantDatabases().isEmpty());
+        new TransactionTemplate(transactions).executeWithoutResult(status -> {
+            final Database database = databases.findById(DATABASE_1_ID).orElseThrow();
+            assertEquals(USER_1_USERNAME, database.getOwnedBy());
+            assertEquals(existingReader ? 1 : 0, database.getAccesses().size());
+            if (existingReader) assertEquals(AccessType.READ, database.getAccesses().getFirst().getType());
+        });
+    }
+
+    @Test
+    void failedCommitDoesNotApplySqlGrant() {
+        assertThrows(IllegalStateException.class, () -> new TransactionTemplate(transactions).executeWithoutResult(status -> {
+            try {
+                databaseEndpoint.transfer(DATABASE_1_ID,
+                        DatabaseTransferDto.builder().username(USER_2_USERNAME).build(), USER_1_PRINCIPAL);
+            } catch (Exception e) {
+                throw new AssertionError(e);
+            }
+            org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization(
+                    new org.springframework.transaction.support.TransactionSynchronization() {
+                        @Override public void beforeCommit(boolean readOnly) { throw new IllegalStateException("Commit failed"); }
+                    });
+        }));
+        verifyNoInteractions(dataGateway);
+        assertEquals(USER_1_USERNAME, databases.findById(DATABASE_1_ID).orElseThrow().getOwnedBy());
+        assertTrue(databases.findPendingGrantDatabases().isEmpty());
+    }
+
+    @Test
+    void committedGrantSurvivesOutageAndRetriesAfterRecovery() throws Exception {
+        doAnswer(call -> {
+            assertEquals(USER_2_USERNAME, databases.findById(DATABASE_1_ID).orElseThrow().getOwnedBy());
+            throw new org.springframework.web.client.ResourceAccessException("Data service unavailable");
+        }).doNothing().when(dataGateway).synchronizeAccess(DATABASE_1_ID, USER_2_USERNAME);
+        assertEquals(HttpStatus.ACCEPTED, databaseEndpoint.transfer(DATABASE_1_ID,
+                DatabaseTransferDto.builder().username(USER_2_USERNAME).build(), USER_1_PRINCIPAL).getStatusCode());
+        assertEquals(List.of(DATABASE_1_ID), databases.findPendingGrantDatabases());
+        sqlSync.retryPending();
+        assertTrue(databases.findPendingGrantDatabases().isEmpty());
+        verify(dataGateway, times(2)).synchronizeAccess(DATABASE_1_ID, USER_2_USERNAME);
+    }
+
+    @Test
+    void revocationCancelsPendingTransferGrant() throws Exception {
+        doThrow(new org.springframework.web.client.ResourceAccessException("Data service unavailable"))
+                .when(dataGateway).synchronizeAccess(DATABASE_1_ID, USER_2_USERNAME);
+        databaseEndpoint.transfer(DATABASE_1_ID,
+                DatabaseTransferDto.builder().username(USER_2_USERNAME).build(), USER_1_PRINCIPAL);
+        final UserRepresentation formerOwner = new UserRepresentation();
+        formerOwner.setId(USER_1_ID.toString());
+        formerOwner.setUsername(USER_1_USERNAME);
+        formerOwner.setAttributes(java.util.Map.of());
+        formerOwner.setRealmRoles(List.of());
+        when(keycloak.findByUsername(USER_1_USERNAME)).thenReturn(formerOwner);
+        databaseEndpoint.transfer(DATABASE_1_ID,
+                DatabaseTransferDto.builder().username(USER_1_USERNAME).build(), USER_2_PRINCIPAL);
+        new TransactionTemplate(transactions).executeWithoutResult(status -> {
+            final Database database = databases.findById(DATABASE_1_ID).orElseThrow();
+            assertFalse(database.getAccesses().stream().filter(a -> USER_1_USERNAME.equals(a.getUsername()))
+                    .findFirst().orElseThrow().isSqlGrantPending(), "A failed grant must not block another account");
+        });
+        accessEndpoint.revoke(DATABASE_1_ID, USER_2_USERNAME, USER_1_PRINCIPAL);
+        clearInvocations(dataGateway);
+        sqlSync.retryPending();
+        verify(dataGateway, never()).synchronizeAccess(DATABASE_1_ID, USER_2_USERNAME);
     }
 
     @ParameterizedTest
@@ -286,7 +371,7 @@ class DashboardAccessPersistenceTest extends BaseTest {
                 assertNotNull(denied, "Former owner's mutation must be rejected after transfer");
                 assertInstanceOf(NotAllowedException.class, denied.getCause());
                 assertEquals(1, memberGrants());
-                verify(dataGateway, times(1)).createAccess(DATABASE_1_ID, USER_2_USERNAME, AccessTypeDto.WRITE_ALL);
+                verify(dataGateway, times(1)).synchronizeAccess(DATABASE_1_ID, USER_2_USERNAME);
                 verify(dataGateway, never()).createAccess(DATABASE_1_ID, USER_2_USERNAME, AccessTypeDto.READ);
                 verify(dashboardHttp, times(1)).exchange(anyString(), eq(HttpMethod.PUT),
                         any(HttpEntity.class), eq(Void.class));

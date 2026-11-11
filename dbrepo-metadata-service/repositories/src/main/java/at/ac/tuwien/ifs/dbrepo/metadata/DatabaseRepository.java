@@ -23,6 +23,9 @@ public interface DatabaseRepository extends JpaRepository<Database, UUID> {
     @Query("select d from Database d where d.id = :id")
     Optional<Database> findForUpdateById(UUID id);
 
+    @Query("select distinct a.hdbid from DatabaseAccess a where a.sqlGrantPending = true order by a.hdbid")
+    List<UUID> findPendingGrantDatabases();
+
     List<Database> findAllDesc();
 
     List<Database> findAllPublicOrSchemaPublicDesc();

@@ -51,3 +51,29 @@ Preserve a working Grafana server administrator for setup and reconciliation. Be
 7. **Review preserved content and restart.** Operator-added panels may still reference datasources in the old organization. Review and rebind those references explicitly; unrelated datasources are not automatically moved. The native query checks do not execute every historical or custom panel. Restart every Grafana replica with the packaged permission-cache setting after setup, then verify ordinary authorized private charts, anonymous public charts and administrator-only monitoring before reopening traffic.
 
 The research organization keeps managed database dashboards in the root folder. Folder inheritance needs operator review. Owner reconciliation replaces direct per-user Admin exceptions with the current owner's permission; unrelated View/Edit grants remain. Metadata, SQL and Grafana do not share a transaction, so a failed stage is not a rollback of the complete upgrade. Use the saved export and the reported error to complete recovery while traffic stays paused.
+
+## Owner-transfer SQL grants
+
+Before starting the updated Metadata Service, apply
+`dbrepo-metadata-db/migration/owner-transfer-grants.sql` to the metadata database
+with an administrative connection. The replication migration includes the same
+change. Both scripts preserve system-versioned history and can be run again.
+Fresh Compose and Helm installations include the column already.
+
+Deploy the updated Data Service before the Metadata Service. Owner transfers now
+commit their metadata before applying SQL privileges. A failed search or dashboard
+update rolls back the transfer without granting SQL access. If the Data Service is
+unavailable after commit, the transfer remains accepted and direct SQL access may
+be delayed. Metadata retries pending grants every 30 seconds, including after a
+restart. Each retry uses the current membership and is serialized with revocation;
+a revoked membership cannot be recreated by a delayed retry.
+
+Pending work is visible with:
+
+```sql
+SELECT database_id, username FROM mdb_have_access WHERE sql_grant_pending = TRUE;
+```
+
+A persistent failure is logged as `SQL access synchronization ... remains pending`.
+Check Data Service connectivity and the target account before retrying. The
+`dbrepo.access.retryDelayMs` property controls the retry interval.
