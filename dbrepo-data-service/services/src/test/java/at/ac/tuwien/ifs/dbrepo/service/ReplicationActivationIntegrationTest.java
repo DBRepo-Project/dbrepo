@@ -277,7 +277,7 @@ class ReplicationActivationIntegrationTest {
             receiver.putChunk(target, snapshotId, source.readChunk(current.get(), snapshotId, index));
         }
         assertTrue(receiver.verifyImport(target, targetTable, snapshotId).historyVerified());
-        final var inbox = new ReplicationInboxService(Mappers.getMapper(MariaDbMapper.class), new ObjectMapper().findAndRegisterModules(), TARGET);
+        final var inbox = spy(new ReplicationInboxService(Mappers.getMapper(MariaDbMapper.class), new ObjectMapper().findAndRegisterModules(), TARGET));
         assertTrue(inbox.reconcile(target, targetTable, snapshotId, receiver).currentReconciled());
         assertTrue(inbox.reconcile(target, targetTable, snapshotId, receiver).currentReconciled());
         tables.createTuple(staleDatabase, staleTable, TupleDto.builder()
@@ -285,12 +285,47 @@ class ReplicationActivationIntegrationTest {
         final var entry = journal.findAll(current.get()).getFirst();
         final var event = new ObjectMapper().findAndRegisterModules().readValue(entry.getPayloadJson(),
                 at.ac.tuwien.ifs.dbrepo.core.api.replication.DataReplicationDto.class);
-        inbox.apply(target, targetTable, event, entry.getHttpMethod());
-        inbox.apply(target, targetTable, event, entry.getHttpMethod());
+        final var deadlock = new java.util.concurrent.atomic.AtomicBoolean(true);
+        final var rolledBack = new java.util.concurrent.atomic.AtomicInteger();
+        doAnswer(call -> {
+            final var delegate = (com.mchange.v2.c3p0.ComboPooledDataSource) call.callRealMethod();
+            final var pool = mock(com.mchange.v2.c3p0.ComboPooledDataSource.class, org.mockito.AdditionalAnswers.delegatesTo(delegate));
+            final var real = delegate.getConnection();
+            final var connection = mock(Connection.class, org.mockito.AdditionalAnswers.delegatesTo(real));
+            doAnswer(commit -> {
+                if (deadlock.getAndSet(false)) throw new SQLException("deadlock victim", "40001", 1213);
+                real.commit(); return null;
+            }).when(connection).commit();
+            doAnswer(rollback -> { rolledBack.incrementAndGet(); real.rollback(); return null; }).when(connection).rollback();
+            doReturn(connection).when(pool).getConnection();
+            return pool;
+        }).when(inbox).getDataSource(target);
+        final var receipt = inbox.apply(target, targetTable, event, entry.getHttpMethod());
+        assertEquals(1, rolledBack.get());
+        final var start = new CountDownLatch(1);
+        try (var executor = Executors.newFixedThreadPool(6)) {
+            final List<Future<?>> deliveries = new ArrayList<>();
+            for (int worker = 0; worker < 6; worker++) {
+                deliveries.add(executor.submit(() -> {
+                    assertTrue(start.await(10, TimeUnit.SECONDS));
+                    for (int repeat = 0; repeat < 4; repeat++) {
+                        assertEquals(receipt, inbox.apply(target, targetTable, event, entry.getHttpMethod()));
+                    }
+                    return null;
+                }));
+            }
+            start.countDown();
+            for (var delivery : deliveries) delivery.get(60, TimeUnit.SECONDS);
+        }
         try (Connection connection = connection(); Statement sql = connection.createStatement(); ResultSet row = sql.executeQuery(
                 "SELECT GROUP_CONCAT(sample_value ORDER BY sample_value) FROM " + SCHEMA + "_target.samples")) {
             assertTrue(row.next());
             assertEquals("2,10,42", row.getString(1));
+        }
+        try (Connection connection = connection(); Statement sql = connection.createStatement(); ResultSet row = sql.executeQuery(
+                "SELECT COUNT(*) FROM " + SCHEMA + "_target.samples FOR SYSTEM_TIME ALL")) {
+            assertTrue(row.next());
+            assertEquals(3, row.getInt(1));
         }
     }
 

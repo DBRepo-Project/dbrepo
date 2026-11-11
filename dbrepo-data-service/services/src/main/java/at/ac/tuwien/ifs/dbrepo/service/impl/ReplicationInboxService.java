@@ -56,6 +56,18 @@ public class ReplicationInboxService extends DataConnector {
 
     public TupleWithTimestampsDto apply(Database database, Table table, DataReplicationDto event, HttpMethod method)
             throws SQLException, TableMalformedException, StorageUnavailableException, StorageNotFoundException {
+        for (int attempt = 1; ; attempt++) {
+            try {
+                return applyAttempt(database, table, event, method);
+            } catch (SQLException failure) {
+                // MariaDB rolls back a deadlock victim; retry the whole delivery on a fresh connection.
+                if (failure.getErrorCode() != 1213 || attempt == 3) throw failure;
+            }
+        }
+    }
+
+    private TupleWithTimestampsDto applyAttempt(Database database, Table table, DataReplicationDto event, HttpMethod method)
+            throws SQLException, TableMalformedException, StorageUnavailableException, StorageNotFoundException {
         validate(database, table, event, method);
         if (event.getTuple().getInsertedAt() != null) {
             final var master = event.getTuple().getMasterSiteTs() == null
