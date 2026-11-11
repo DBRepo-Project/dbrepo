@@ -66,7 +66,7 @@ python .scripts/client-live-test.py --config /private/path/customer.json \
 
 `--publish` creates a separate synthetic database identifier, temporarily makes only the synthetic test database public, publishes the local identifier and checks OAI GetRecord. The identifier is immutable and remains after the run. The editable subset draft receives its own deletion test. On a DOI-enabled server, earlier draft creation can already contact DataCite. Use a provider stub or an approved sandbox; `--publish` is not a switch that disables every external write.
 
-`--external-doi` calls the application's external metadata retrieval endpoint. It can contact the external providers configured by that application. Both flags are inactive by default. The user profile excludes these publication/provider cases.
+`--external-doi` calls the application's external metadata retrieval endpoint. Its DOI handler supports Crossref funder identifiers, such as `10.13039/501100000780`; a journal article DOI is not a valid success fixture for that handler. It can contact the external providers configured by that application. Both flags are inactive by default. The user profile excludes these publication/provider cases.
 
 ## Three-site replication checks
 
