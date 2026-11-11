@@ -5,8 +5,8 @@ import org.springframework.security.authentication.BadCredentialsException;
 
 public interface KeycloakGateway {
 
-    /** Require a current, enabled AMQP publisher with the ordinary tuple-write role. */
-    void validatePublisher(String username) throws at.ac.tuwien.ifs.dbrepo.core.exception.NotAllowedException,
+    /** Return the stable subject of a current, enabled publisher with the tuple-write role. */
+    String validatePublisher(String username) throws at.ac.tuwien.ifs.dbrepo.core.exception.NotAllowedException,
             at.ac.tuwien.ifs.dbrepo.core.exception.RemoteUnavailableException;
 
 

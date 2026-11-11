@@ -33,7 +33,7 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
     }
 
     @Override
-    public void validatePublisher(String username) throws NotAllowedException, RemoteUnavailableException {
+    public String validatePublisher(String username) throws NotAllowedException, RemoteUnavailableException {
         try {
             final var users = keycloak.realm(keycloakConfig.getKeycloakRealm()).users();
             final var matches = users.searchByUsername(username, true).stream()
@@ -43,6 +43,7 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
                     .stream().noneMatch(role -> "insert-table-data".equals(role.getName()))) {
                 throw new NotAllowedException("Publisher account cannot insert table data");
             }
+            return matches.getFirst().getId();
         } catch (WebApplicationException | ProcessingException e) {
             throw new RemoteUnavailableException("Failed to verify current publisher account permissions");
         }

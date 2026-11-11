@@ -24,7 +24,7 @@ class PublisherAccountPermissionTest {
         when(users.searchByUsername("publisher",true)).thenReturn(List.of(publisher));
         when(users.get("fixture").roles().realmLevel().listEffective())
                 .thenReturn(List.of(new RoleRepresentation("insert-table-data","",false)));
-        assertDoesNotThrow(()->gateway.validatePublisher("publisher"));
+        assertEquals("fixture", gateway.validatePublisher("publisher"));
         publisher.setEnabled(false);
         assertThrows(NotAllowedException.class,()->gateway.validatePublisher("publisher"));
         publisher.setEnabled(true);

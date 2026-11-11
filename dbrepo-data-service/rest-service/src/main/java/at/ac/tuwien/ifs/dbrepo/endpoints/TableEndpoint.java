@@ -45,8 +45,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.User;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
@@ -548,10 +548,11 @@ public class TableEndpoint {
         if (!AuthUtil.isSystem(principal) || publisher == null || publisher.isBlank()) {
             throw new NotAllowedException("An internal caller and broker-validated publisher are required");
         }
-        keycloakGateway.validatePublisher(publisher);
-        // The worker is authenticated separately; database/table and upload checks use the publisher.
-        final User user = new User(publisher, "", List.of());
-        final Principal actor = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+        final String subject = keycloakGateway.validatePublisher(publisher);
+        // Resolve the subject from Keycloak; never inherit the worker's system authority.
+        final Jwt identity = Jwt.withTokenValue("amqp-publisher").header("alg", "none")
+                .subject(subject).claim("preferred_username", publisher).build();
+        final Principal actor = new JwtAuthenticationToken(identity, List.of());
         return insertRawTuple(databaseId, tableId, data, actor);
     }
 
