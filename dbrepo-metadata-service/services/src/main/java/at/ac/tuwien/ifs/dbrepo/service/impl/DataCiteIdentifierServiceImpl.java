@@ -48,6 +48,9 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
     @Override
     @Transactional(rollbackFor = {Exception.class})
     public Identifier publish(Identifier identifier) throws MalformedException, ExternalServiceException {
+        if (identifier.getDoi() == null || identifier.getDoi().isBlank()) {
+            identifier.setDoi(dataCiteGateway.create());
+        }
         identifier.setDoi(dataCiteGateway.save(identifier, DataCiteDoiEvent.PUBLISH));
         identifier.setStatus(IdentifierStatusType.PUBLISHED);
         return identifierRepository.save(identifier);
@@ -76,7 +79,9 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
             ViewNotFoundException, QueryNotFoundException, SearchServiceException, SearchServiceConnectionException,
             ExternalServiceException {
         final Identifier entity = identifierService.save(database, ownedBy, data);
-        dataCiteGateway.save(entity, null);
+        if (entity.getDoi() != null && !entity.getDoi().isBlank()) {
+            dataCiteGateway.save(entity, null);
+        }
         return entity;
     }
 

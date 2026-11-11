@@ -94,6 +94,7 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
             final boolean resumable = ReplicaDdl.isReplicaDatabase(connection, databaseName);
             long start = System.currentTimeMillis();
             ReplicaDdl.initialize(connection, mariaDbMapper.queryStoreCreateTableRawQuery(), resumable);
+            ReplicaDdl.initializeMetadataLock(connection, mariaDbMapper.queryStoreCreateMetadataLockRawQuery(), resumable);
             log.atDebug()
                     .setMessage("created query store in database: " + databaseName)
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
@@ -156,8 +157,9 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
-            log.error("Failed to update user password in database: {}", e.getMessage());
-            throw new DatabaseMalformedException("Failed to update user password in database: " + e.getMessage(), e);
+            log.error("Failed to update user password (SQLState={}, code={})", e.getSQLState(), e.getErrorCode());
+            throw new DatabaseMalformedException("Failed to update user password (SQLState=" + e.getSQLState()
+                    + ", code=" + e.getErrorCode() + ")");
         } finally {
             dataSource.close();
         }

@@ -438,14 +438,14 @@ public class TableEndpoint extends RestEndpoint {
                     .filter(a -> a.getUsername().equals(AuthUtil.getUsername(principal)))
                     .findFirst();
             if (table.getIsPublic() || table.getIsSchemaPublic() || optional.isPresent()) {
-                return ResponseEntity.ok(metadataMapper.tableToTableDto(table));
+                return ResponseEntity.ok(filterTableMetadata(metadataMapper.tableToTableDto(table), visibleColumns(filterTables(database, principal)), principal));
             }
         }
         if (!table.getIsPublic() && !table.getIsSchemaPublic()) {
             log.error("Failed to find table: not public and no access found");
             throw new NotAllowedException("Failed to find table: not public and no access found");
         }
-        return ResponseEntity.ok(metadataMapper.tableToTableDto(table));
+        return ResponseEntity.ok(filterTableMetadata(metadataMapper.tableToTableDto(table), visibleColumns(filterTables(database, principal)), principal));
     }
 
     @DeleteMapping("/{tableId}")
@@ -481,8 +481,7 @@ public class TableEndpoint extends RestEndpoint {
             SearchServiceException, SearchServiceConnectionException, DashboardServiceException,
             DashboardServiceConnectionException {
         log.debug("endpoint delete table, databaseId={}, tableId={}", databaseId, tableId);
-        final Database database = databaseService.findById(databaseId);
-        databaseService.lockForUpdate(database);
+        final Database database = databaseService.findForUpdateById(databaseId);
         final Table table = tableService.findById(database, tableId);
         /* roles */
         if (!table.getOwnedBy().equals(AuthUtil.getUsername(principal)) && !AuthUtil.hasRole(principal, "delete-foreign-table")) {
@@ -504,7 +503,7 @@ public class TableEndpoint extends RestEndpoint {
         }
         /* delete table */
         tableService.deleteTable(table);
-        dashboardService.update(databaseService.findById(databaseId));
+        dashboardService.updateContent(databaseService.findById(databaseId));
         return ResponseEntity.accepted()
                 .build();
     }

@@ -1,0 +1,12 @@
+{
+  "endpoint": "https://s93.datalab.tuwien.ac.at",
+  "profile": "user",
+  "owner": {
+    "username": "your-dedicated-test-user",
+    "password_env": "DBREPO_TEST_PASSWORD"
+  },
+  "peer": {
+    "username": "your-second-test-user",
+    "password_env": "DBREPO_PEER_PASSWORD"
+  }
+}

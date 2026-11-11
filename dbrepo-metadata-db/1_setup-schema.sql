@@ -11,11 +11,12 @@ CREATE TABLE IF NOT EXISTS `mdb_images`
     driver_class  VARCHAR(255) NOT NULL,
     jdbc_method   VARCHAR(255) NOT NULL,
     is_default    BOOLEAN      NOT NULL DEFAULT FALSE,
+    default_image TINYINT GENERATED ALWAYS AS (CASE WHEN is_default THEN 1 ELSE NULL END),
     created       TIMESTAMP    NOT NULL DEFAULT NOW(),
     last_modified TIMESTAMP,
     PRIMARY KEY (`id`),
     UNIQUE (`name`, `version`),
-    UNIQUE (`is_default`)
+    UNIQUE KEY `only_default_image` (`default_image`)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_containers`
@@ -470,6 +471,7 @@ CREATE TABLE IF NOT EXISTS `mdb_have_access`
     username    VARCHAR(255)                            NOT NULL,
     database_id VARCHAR(36)                             NOT NULL,
     access_type ENUM ('READ', 'WRITE_OWN', 'WRITE_ALL') NOT NULL,
+    sql_grant_pending BOOLEAN NOT NULL DEFAULT FALSE,
     created     TIMESTAMP                               NOT NULL DEFAULT NOW(),
     PRIMARY KEY (username, database_id),
     FOREIGN KEY (`database_id`) REFERENCES mdb_databases (`id`)

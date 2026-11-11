@@ -17,6 +17,9 @@ import java.util.UUID;
 
 public interface DataServiceGateway {
 
+    /** Apply the user's currently committed metadata grant; safe to retry. */
+    void synchronizeAccess(UUID databaseId, String username);
+
     /**
      * Create r/w access for a given user to a given database.
      *

@@ -10,6 +10,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
+import at.ac.tuwien.ifs.dbrepo.gateway.KeycloakGateway;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.AnalyseService;
 import at.ac.tuwien.ifs.dbrepo.service.DataService;
@@ -19,6 +20,9 @@ import at.ac.tuwien.ifs.dbrepo.service.ReplicationService;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationTimestampService;
 import at.ac.tuwien.ifs.dbrepo.service.impl.ReplicationInboxService;
 import at.ac.tuwien.ifs.dbrepo.service.TableService;
+import at.ac.tuwien.ifs.dbrepo.service.StorageService;
+import at.ac.tuwien.ifs.dbrepo.core.storage.UploadMetadata;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.ColumnType;
 import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
 import at.ac.tuwien.ifs.dbrepo.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
@@ -41,6 +45,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
@@ -50,6 +56,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.EnumSet;
 
 @Slf4j
 @RestController
@@ -59,6 +66,7 @@ public class TableEndpoint {
 
     private final DataService dataService;
     private final TableService tableService;
+    private final StorageService storageService;
     private final MariaDbMapper mariaDbMapper;
     private final AnalyseService analyseService;
     private final MetadataService metadataService;
@@ -67,6 +75,7 @@ public class TableEndpoint {
     private final ReplicationInboxService replicationInboxService;
     private final EndpointValidator endpointValidator;
     private final MetadataServiceGateway metadataServiceGateway;
+    private final KeycloakGateway keycloakGateway;
 
     private static final String MEDIA_TYPE_TEXT_CSV = "text/csv";
 
@@ -78,9 +87,10 @@ public class TableEndpoint {
                          MariaDbMapper mariaDbMapper, AnalyseService analyseService, MetadataService metadataService,
                          ReplicationService replicationService, ReplicationTimestampService replicationTimestampService,
                          ReplicationInboxService replicationInboxService,
-                         EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway) {
+                         EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway, StorageService storageService, KeycloakGateway keycloakGateway) {
         this.dataService = dataService;
         this.tableService = tableService;
+        this.storageService = storageService;
         this.mariaDbMapper = mariaDbMapper;
         this.analyseService = analyseService;
         this.metadataService = metadataService;
@@ -89,6 +99,7 @@ public class TableEndpoint {
         this.replicationInboxService = replicationInboxService;
         this.endpointValidator = endpointValidator;
         this.metadataServiceGateway = metadataServiceGateway;
+        this.keycloakGateway = keycloakGateway;
     }
 
     @PostMapping
@@ -274,9 +285,9 @@ public class TableEndpoint {
             timestamp = Instant.now();
             log.debug("timestamp not set: default to {}", timestamp);
         }
-        final Table table = metadataService.getTable(databaseId, tableId);
-        final Database database = metadataService.getDatabase(databaseId);
-        if (!table.getIsPublic()) {
+        final Database database = metadataServiceGateway.getDatabaseById(databaseId);
+        final Table table = currentTable(database, databaseId, tableId);
+        if (!Boolean.TRUE.equals(table.getIsPublic())) {
             if (principal == null) {
                 log.error("Failed find table data: authentication required");
                 throw new NotAllowedException("Failed to find table data: authentication required");
@@ -458,10 +469,11 @@ public class TableEndpoint {
             TableMalformedException, QueryMalformedException, NotAllowedException, StorageUnavailableException,
             StorageNotFoundException, MetadataServiceException, DatabaseNotFoundException {
         log.debug("endpoint insert raw table data, databaseId={}, tableId={}", databaseId, tableId);
-        final Table table = metadataService.getTable(databaseId, tableId);
-        final Database database = metadataService.getDatabase(databaseId);
+        final Database database = metadataServiceGateway.getDatabaseById(databaseId);
+        final Table table = currentTable(database, databaseId, tableId);
         endpointValidator.validateOnlyWriteAccess(database, table, principal);
         endpointValidator.validatePrimaryWriteLocation(database, table, principal);
+        validateUploadValues(table, data.getData(), principal);
         try {
             tableService.createTuple(database, table, data);
             return ResponseEntity.status(HttpStatus.CREATED)
@@ -515,6 +527,35 @@ public class TableEndpoint {
         }
     }
 
+    @PostMapping("/{tableId}/data/ingest")
+    @PreAuthorize("hasAuthority('system')")
+    @Operation(summary = "Insert a broker tuple", hidden = true)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Created broker table data"),
+            @ApiResponse(responseCode = "400", description = "Malformed tuple or publisher identity", content = {@Content}),
+            @ApiResponse(responseCode = "403", description = "Caller or publisher cannot write this table", content = {@Content}),
+            @ApiResponse(responseCode = "404", description = "Database, current table or upload not found", content = {@Content}),
+            @ApiResponse(responseCode = "503", description = "Metadata, database or storage unavailable", content = {@Content})
+    })
+    public ResponseEntity<Void> ingestTuple(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                             @NotNull @PathVariable("tableId") UUID tableId,
+                                             @Valid @RequestBody TupleDto data,
+                                             @RequestHeader("X-DBRepo-Publisher") String publisher,
+                                             Principal principal)
+            throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
+            TableMalformedException, QueryMalformedException, NotAllowedException, StorageUnavailableException,
+            StorageNotFoundException, MetadataServiceException, DatabaseNotFoundException {
+        if (!AuthUtil.isSystem(principal) || publisher == null || publisher.isBlank()) {
+            throw new NotAllowedException("An internal caller and broker-validated publisher are required");
+        }
+        final String subject = keycloakGateway.validatePublisher(publisher);
+        // Resolve the subject from Keycloak; never inherit the worker's system authority.
+        final Jwt identity = Jwt.withTokenValue("amqp-publisher").header("alg", "none")
+                .subject(subject).claim("preferred_username", publisher).build();
+        final Principal actor = new JwtAuthenticationToken(identity, List.of());
+        return insertRawTuple(databaseId, tableId, data, actor);
+    }
+
     @PutMapping("/{tableId}/data")
     @PreAuthorize("hasAuthority('insert-table-data')")
     @Observed(name = "dbrepo_table_data_update")
@@ -546,10 +587,12 @@ public class TableEndpoint {
             DatabaseNotFoundException, StorageUnavailableException, StorageNotFoundException {
         log.debug("endpoint update raw table data, databaseId={}, tableId={}, data.keys={}", databaseId, tableId,
                 data.getKeys());
-        final Table table = metadataService.getTable(databaseId, tableId);
-        final Database database = metadataService.getDatabase(databaseId);
+        final Database database = metadataServiceGateway.getDatabaseById(databaseId);
+        final Table table = currentTable(database, databaseId, tableId);
         endpointValidator.validateOnlyWriteAccess(database, table, principal);
         endpointValidator.validatePrimaryWriteLocation(database, table, principal);
+        validateUploadValues(table, data.getData(), principal);
+        validateUploadValues(table, data.getKeys(), principal);
         try {
             tableService.updateTuple(database, table, data);
             return ResponseEntity.status(HttpStatus.ACCEPTED)
@@ -633,10 +676,11 @@ public class TableEndpoint {
             DatabaseNotFoundException, StorageUnavailableException, StorageNotFoundException {
         log.debug("endpoint delete raw table data, databaseId={}, tableId={}, data.keys={}", databaseId, tableId,
                 data.getKeys());
-        final Table table = metadataService.getTable(databaseId, tableId);
-        final Database database = metadataService.getDatabase(databaseId);
+        final Database database = metadataServiceGateway.getDatabaseById(databaseId);
+        final Table table = currentTable(database, databaseId, tableId);
         endpointValidator.validateOnlyWriteAccess(database, table, principal);
         endpointValidator.validatePrimaryWriteLocation(database, table, principal);
+        validateUploadValues(table, data.getKeys(), principal);
         try {
             tableService.deleteTuple(database, table, data);
             return ResponseEntity.status(HttpStatus.ACCEPTED)
@@ -853,9 +897,9 @@ public class TableEndpoint {
             log.debug("size not set: default to 100L");
             size = 100L;
         }
-        final Table table = metadataService.getTable(databaseId, tableId);
-        final Database database = metadataService.getDatabase(databaseId);
-        if (!table.getIsPublic()) {
+        final Database database = metadataServiceGateway.getDatabaseById(databaseId);
+        final Table table = currentTable(database, databaseId, tableId);
+        if (!Boolean.TRUE.equals(table.getIsPublic())) {
             if (principal == null) {
                 log.error("Failed to find table history: no authentication found");
                 throw new NotAllowedException("Failed to find table history: no authentication found");
@@ -948,10 +992,11 @@ public class TableEndpoint {
                 .addKeyValue("table_id", tableId)
                 .addKeyValue("data", data)
                 .log();
-        final Table table = metadataService.getTable(databaseId, tableId);
-        final Database database = metadataService.getDatabase(databaseId);
+        final Database database = metadataServiceGateway.getDatabaseById(databaseId);
+        final Table table = currentTable(database, databaseId, tableId);
         endpointValidator.validateOnlyWriteAccess(database, table, principal);
         endpointValidator.validatePrimaryWriteLocation(database, table, principal);
+        storageService.requireUploadOwner(data.getLocation(), UploadMetadata.ownerId(principal));
         if (data.getLineTermination() == null) {
             data.setLineTermination("\\r\\n");
             log.debug("line termination not present, default to {}", data.getLineTermination());
@@ -997,9 +1042,9 @@ public class TableEndpoint {
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             MetadataServiceException, TableMalformedException, DatabaseNotFoundException, NotAllowedException {
         log.debug("endpoint generate table statistic, databaseId={}, tableId={}", databaseId, tableId);
-        final Table table = metadataService.getTable(databaseId, tableId);
-        final Database database = metadataService.getDatabase(databaseId);
-        if (!table.getIsPublic()) {
+        final Database database = metadataServiceGateway.getDatabaseById(databaseId);
+        final Table table = currentTable(database, databaseId, tableId);
+        if (!Boolean.TRUE.equals(table.getIsPublic())) {
             if (principal == null) {
                 log.error("Failed to get statistic from table: unauthorized");
                 throw new NotAllowedException("Failed to get statistic from table: unauthorized");
@@ -1014,6 +1059,28 @@ public class TableEndpoint {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database", e);
         }
+    }
+
+    private void validateUploadValues(Table table, Map<String, Object> values, Principal principal)
+            throws NotAllowedException, StorageNotFoundException, StorageUnavailableException {
+        final var blobTypes = EnumSet.of(ColumnType.BLOB, ColumnType.TINYBLOB,
+                ColumnType.MEDIUMBLOB, ColumnType.LONGBLOB);
+        for (var column : table.getColumns()) {
+            final Object value = values.get(column.getInternalName());
+            if (value != null && blobTypes.contains(column.getColumnType())) {
+                storageService.requireUploadOwner(String.valueOf(value), UploadMetadata.ownerId(principal));
+            }
+        }
+    }
+
+    private Table currentTable(Database database, UUID databaseId, UUID tableId) throws TableNotFoundException {
+        if (!databaseId.equals(database.getId()) || database.getTables() == null) {
+            throw new TableNotFoundException("Failed to find table in database");
+        }
+        return database.getTables().stream()
+                .filter(table -> tableId.equals(table.getId()) && databaseId.equals(table.getDatabaseId()))
+                .findFirst()
+                .orElseThrow(() -> new TableNotFoundException("Failed to find table in database"));
     }
 
 }

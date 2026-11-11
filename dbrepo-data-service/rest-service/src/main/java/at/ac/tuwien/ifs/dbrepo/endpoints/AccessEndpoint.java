@@ -7,6 +7,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.service.AccessService;
 import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
+import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -32,11 +33,13 @@ public class AccessEndpoint {
 
     private final AccessService accessService;
     private final MetadataService metadataService;
+    private final MetadataServiceGateway metadataServiceGateway;
 
     @Autowired
-    public AccessEndpoint(AccessService accessService, MetadataService metadataService) {
+    public AccessEndpoint(AccessService accessService, MetadataService metadataService, MetadataServiceGateway metadataServiceGateway) {
         this.accessService = accessService;
         this.metadataService = metadataService;
+        this.metadataServiceGateway = metadataServiceGateway;
     }
 
     @PostMapping("/{username}")
@@ -70,7 +73,7 @@ public class AccessEndpoint {
             RemoteUnavailableException, UserNotFoundException, DatabaseMalformedException, MetadataServiceException,
             AccessNotFoundException {
         log.debug("endpoint give access to database, databaseId={}, username={}", databaseId, username);
-        final Database database = metadataService.getDatabase(databaseId);
+        final Database database = metadataServiceGateway.getDatabaseById(databaseId);
         final User user = metadataService.getUser(username);
         if (database.getAccesses().stream().anyMatch(a -> a.getUsername().equals(username))) {
             log.error("Failed to create access to user {}: already has access", username);
@@ -83,6 +86,40 @@ public class AccessEndpoint {
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database", e);
+        }
+    }
+
+    @PutMapping("/{username}/synchronize")
+    @PreAuthorize("hasAuthority('system')")
+    @Operation(summary = "Apply the committed metadata grant", hidden = true,
+            security = {@SecurityRequirement(name = "basicAuth")})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202", description = "Current grant applied or membership revoked"),
+            @ApiResponse(responseCode = "401", description = "Internal service identity required", content = {@Content}),
+            @ApiResponse(responseCode = "404", description = "Database or user not found", content = {@Content}),
+            @ApiResponse(responseCode = "417", description = "Failed to apply SQL privileges", content = {@Content}),
+            @ApiResponse(responseCode = "503", description = "Database or metadata service unavailable", content = {@Content})
+    })
+    public ResponseEntity<Void> synchronize(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                            @PathVariable("username") String username)
+            throws DatabaseNotFoundException, RemoteUnavailableException, MetadataServiceException,
+            UserNotFoundException, DatabaseMalformedException, DatabaseUnavailableException {
+        final Database database = metadataServiceGateway.getDatabaseById(databaseId);
+        final var access = database.getAccesses().stream()
+                .filter(member -> username.equals(member.getUsername())).findFirst();
+        // A revoked membership cancels a pending grant. No request payload can override it.
+        if (access.isEmpty()) {
+            return ResponseEntity.accepted().build();
+        }
+        final User user = metadataService.getUser(username);
+        final AccessTypeDto type = AccessTypeDto.valueOf(access.get().getType().name());
+        try {
+            // CREATE USER IF NOT EXISTS also handles a target with no previous SQL account.
+            accessService.create(database, user, type);
+            accessService.update(database, user, type);
+            return ResponseEntity.accepted().build();
+        } catch (SQLException e) {
+            throw new DatabaseUnavailableException("Failed to synchronize SQL access", e);
         }
     }
 
@@ -117,7 +154,7 @@ public class AccessEndpoint {
             MetadataServiceException, AccessNotFoundException {
         log.debug("endpoint modify access to database, databaseId={}, username={}, access.type={}", databaseId, username,
                 access.getType());
-        final Database database = metadataService.getDatabase(databaseId);
+        final Database database = metadataServiceGateway.getDatabaseById(databaseId);
         final User user = existingUser(username, access.getType() == AccessTypeDto.READ);
         if (database.getAccesses().stream().noneMatch(a -> a.getUsername().equals(username))) {
             log.error("Failed to update access to user {}: no access", username);
@@ -162,7 +199,7 @@ public class AccessEndpoint {
             DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException, DatabaseMalformedException,
             MetadataServiceException, AccessNotFoundException {
         log.debug("endpoint revoke access to database, databaseId={}, username={}", databaseId, username);
-        final Database database = metadataService.getDatabase(databaseId);
+        final Database database = metadataServiceGateway.getDatabaseById(databaseId);
         final User user = existingUser(username, true);
         if (database.getAccesses().stream().noneMatch(a -> a.getUsername().equals(username))) {
             log.error("Failed to delete access to user {}: no access", username);

@@ -10,14 +10,17 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.DashboardServiceException;
 public interface DashboardService {
 
     /**
-     * Updates the panels in the dashboard in the dashboard service for a given database. Only updates the dashboard if
-     * (and only if) the {@link Database#isDashboardEnabled} is set to true.
+     * Synchronizes dashboard permissions. Regenerates panels only when dashboard management is enabled.
      *
      * @param database The database.
      * @throws DashboardServiceException            The dashboard service responded with an unexpected error code.
      * @throws DashboardServiceConnectionException  The connection to the dashboard service could not be established.
      */
     void update(Database database) throws DashboardServiceException, DashboardServiceConnectionException;
+
+    void updateContent(Database database) throws DashboardServiceException, DashboardServiceConnectionException;
+
+    void requireUser(String username) throws DashboardServiceException, DashboardServiceConnectionException;
 
     /**
      * Creates the dashboard in the dashboard service for a given database. Does not create panels.

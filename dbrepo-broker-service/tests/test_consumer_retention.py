@@ -43,7 +43,7 @@ class ConsumerRetentionTest(unittest.TestCase):
             "dead-letter-routing-key": binding["routing_key"],
             "dead-letter-strategy": "at-least-once",
             "overflow": "reject-publish",
-            "delivery-limit": 5,
+            "delivery-limit": 10,
         }, policy["definition"])
 
     def test_source_queue_stays_quorum_and_feature_flag_is_enabled(self):

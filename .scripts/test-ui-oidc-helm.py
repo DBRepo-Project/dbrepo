@@ -12,7 +12,10 @@ PREFIX = "NUXT_OIDC_PROVIDERS_KEYCLOAK_"
 
 def environment(*overrides):
     command = ["helm", "template", "login-check", str(ROOT / "helm/dbrepo"),
-               "--show-only", "templates/ui-secret.yaml", "--set", "hostname=login.example.test"]
+               "--show-only", "templates/ui-secret.yaml", "--set", "hostname=login.example.test",
+               "--set-string", "ui.oidc.tokenKey=fixture-token-key",
+               "--set-string", "ui.oidc.sessionSecret=fixture-session-secret",
+               "--set-string", "ui.oidc.authSessionSecret=fixture-auth-secret"]
     for value in overrides:
         command.extend(["--set-string", value])
     return yaml.safe_load(subprocess.check_output(command, text=True))["stringData"]

@@ -67,12 +67,13 @@ class SubsetReplicationIntegrationTest {
 
     @BeforeEach
     void schema() throws Exception {
-        try (Connection connection = DriverManager.getConnection(url, "root", password);
+        try (Connection connection = DriverManager.getConnection(url + "?sslMode=disable", "root", password);
              Statement statement = connection.createStatement()) {
             statement.execute("DROP DATABASE IF EXISTS subset_replication_test");
             statement.execute("CREATE DATABASE subset_replication_test");
             connection.setCatalog("subset_replication_test");
             statement.execute(mapper.queryStoreCreateTableRawQuery());
+            statement.execute(mapper.queryStoreCreateMetadataLockRawQuery());
         }
         replication = replication(A);
         service = service(replication);
@@ -254,7 +255,7 @@ class SubsetReplicationIntegrationTest {
         database.setIsPublic(true);
         when(metadata.getDatabase(A_ID)).thenReturn(database);
         final var endpoint = new SubsetEndpoint(data, mapper, service, null, metadata,
-                mock(EndpointValidator.class), null);
+                mock(EndpointValidator.class), freshMetadata(), mock(at.ac.tuwien.ifs.dbrepo.validation.SubsetAccessValidator.class), org.jooq.impl.DSL.using(org.jooq.SQLDialect.MARIADB));
         when(request.getMethod()).thenReturn("GET");
         final var paginated = endpoint.getData(A_ID, id, null, "application/json", request, null, 1L, 1L);
         final var output = new java.io.ByteArrayOutputStream();
@@ -308,7 +309,7 @@ class SubsetReplicationIntegrationTest {
         database.setIsPublic(true);
         when(metadata.getDatabase(A_ID)).thenReturn(database);
         final var endpoint = new SubsetEndpoint(new DataServiceSparkImpl(null, null), mapper, service, null,
-                metadata, mock(EndpointValidator.class), null);
+                metadata, mock(EndpointValidator.class), freshMetadata(), mock(at.ac.tuwien.ifs.dbrepo.validation.SubsetAccessValidator.class), org.jooq.impl.DSL.using(org.jooq.SQLDialect.MARIADB));
         final var request = mock(HttpServletRequest.class);
         when(request.getMethod()).thenReturn("GET");
         final var output = new java.io.ByteArrayOutputStream();
@@ -483,7 +484,7 @@ class SubsetReplicationIntegrationTest {
             return new QueryResultStream(connection, connection.createStatement().executeQuery(call.getArgument(1)));
         });
         final var endpoint = new SubsetEndpoint(data, mapper, service, metadataMapper, metadata,
-                mock(EndpointValidator.class), gateway);
+                mock(EndpointValidator.class), freshMetadata(), mock(at.ac.tuwien.ifs.dbrepo.validation.SubsetAccessValidator.class), org.jooq.impl.DSL.using(org.jooq.SQLDialect.MARIADB));
         for (String format : List.of("application/json", "text/csv")) {
             final var response = endpoint.getData(A_ID, id, null, format, request, null, null, null);
             assertEquals(200, response.getStatusCode().value());
@@ -517,7 +518,7 @@ class SubsetReplicationIntegrationTest {
         database.setIsPublic(true);
         when(metadata.getDatabase(B_ID)).thenReturn(database);
         final var endpoint = new SubsetEndpoint(data, mapper, reader, null, metadata,
-                mock(EndpointValidator.class), null);
+                mock(EndpointValidator.class), freshMetadata(), mock(at.ac.tuwien.ifs.dbrepo.validation.SubsetAccessValidator.class), org.jooq.impl.DSL.using(org.jooq.SQLDialect.MARIADB));
         for (String method : List.of("GET", "HEAD")) {
             when(request.getMethod()).thenReturn(method);
             assertThrows(at.ac.tuwien.ifs.dbrepo.core.exception.SubsetHistoryIncompleteException.class, () -> endpoint.getData(B_ID, id, null, "application/json",
@@ -590,7 +591,7 @@ class SubsetReplicationIntegrationTest {
         final UUID id = create();
         final var before = read(id);
         final long history = count("qs_queries FOR SYSTEM_TIME ALL");
-        try (Connection c = DriverManager.getConnection(url + "/subset_replication_test", "root", password);
+        try (Connection c = DriverManager.getConnection(url + "/subset_replication_test" + "?sslMode=disable", "root", password);
              Statement s = c.createStatement()) {
             s.execute("SET SESSION system_versioning_alter_history=KEEP");
             s.execute("ALTER TABLE qs_queries ADD snapshot_hash CHAR(64)");
@@ -748,7 +749,7 @@ class SubsetReplicationIntegrationTest {
     }
 
     private Connection connect() throws SQLException {
-        return DriverManager.getConnection(url + "/subset_replication_test", "root", password);
+        return DriverManager.getConnection(url + "/subset_replication_test" + "?sslMode=disable", "root", password);
     }
 
     private void sql(String sql) throws Exception {
@@ -772,4 +773,10 @@ class SubsetReplicationIntegrationTest {
             return rows.getString(1);
         }
     }
+    private at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway freshMetadata() throws Exception {
+        final var gateway = mock(at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway.class);
+        when(gateway.getDatabaseById(any())).thenReturn(database);
+        return gateway;
+    }
+
 }

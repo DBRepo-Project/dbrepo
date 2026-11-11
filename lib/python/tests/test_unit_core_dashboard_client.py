@@ -21,7 +21,8 @@ class DashboardClientTest(unittest.TestCase):
         self.client.find = Mock(return_value={'dashboard': {
             'title': 'replica_internal Overview', 'panels': [custom], 'tags': ['managed']}})
         self.client.client.dashboard.update_dashboard = Mock(return_value={'uid': 'dash-1'})
-        self.client.update(self.database)
+        self.client.generic_get = Mock(return_value=Mock(json=lambda: []))
+        self.client.update_content(self.database)
         dashboard = self.client.client.dashboard.update_dashboard.call_args.args[0]['dashboard']
         self.assertEqual('replica_internal Overview', dashboard['title'])
         self.assertEqual(custom, dashboard['panels'][0])

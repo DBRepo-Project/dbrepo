@@ -3,9 +3,13 @@ package at.ac.tuwien.ifs.dbrepo.mvc;
 import at.ac.tuwien.ifs.dbrepo.config.MetadataConfig;
 import at.ac.tuwien.ifs.dbrepo.metadata.IdentifierRepository;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
+import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.Identifier;
+import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.IdentifierStatusType;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,6 +32,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @SpringBootTest
 public class MetadataEndpointMvcTest extends BaseTest {
+
+    private final Identifier publishedIdentifier = IDENTIFIER_1.toBuilder()
+            .status(IdentifierStatusType.PUBLISHED)
+            .build();
 
     @MockitoBean
     private IdentifierRepository identifierRepository;
@@ -83,7 +91,7 @@ public class MetadataEndpointMvcTest extends BaseTest {
 
         /* mock */
         when(identifierRepository.findAll())
-                .thenReturn(List.of(IDENTIFIER_1, IDENTIFIER_2, IDENTIFIER_3, IDENTIFIER_4, IDENTIFIER_5));
+                .thenReturn(List.of(publishedIdentifier, IDENTIFIER_2, IDENTIFIER_3, IDENTIFIER_4, IDENTIFIER_5));
 
         /* test */
         this.mockMvc.perform(get("/api/v1/oai?verb=ListIdentifiers"))
@@ -91,11 +99,40 @@ public class MetadataEndpointMvcTest extends BaseTest {
                 .andExpect(content().contentType("text/xml;charset=UTF-8"))
                 .andExpect(xpath("//request[@verb='ListIdentifiers']").exists())
                 .andExpect(xpath("//header[1]/identifier").string("doi:" + IDENTIFIER_1_DOI))
-                .andExpect(xpath("//header[2]/identifier").string("oai:" + IDENTIFIER_2_ID))
-                .andExpect(xpath("//header[3]/identifier").string("oai:" + IDENTIFIER_3_ID))
-                .andExpect(xpath("//header[4]/identifier").string("oai:" + IDENTIFIER_4_ID))
-                .andExpect(xpath("//header[5]/identifier").string("doi:" + IDENTIFIER_5_DOI))
+                .andExpect(xpath("//header[2]/identifier").string("oai:" + IDENTIFIER_4_ID))
+                .andExpect(xpath("//header").nodeCount(2))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    public void listRecords_excludesDrafts() throws Exception {
+        when(identifierRepository.findAll())
+                .thenReturn(List.of(publishedIdentifier, IDENTIFIER_2, IDENTIFIER_3, IDENTIFIER_4, IDENTIFIER_5));
+
+        this.mockMvc.perform(get("/api/v1/oai")
+                        .param("verb", "ListRecords")
+                        .param("metadataPrefix", "oai_dc"))
+                .andExpect(status().isOk())
+                .andExpect(xpath("//record").nodeCount(2))
+                .andExpect(xpath("//record[1]/header/identifier").string("doi:" + IDENTIFIER_1_DOI))
+                .andExpect(xpath("//record[2]/header/identifier").string("oai:" + IDENTIFIER_4_ID));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"oai", "doi"})
+    public void getRecord_draft_notFound(String prefix) throws Exception {
+        when(identifierRepository.findById(IDENTIFIER_5_ID)).thenReturn(Optional.of(IDENTIFIER_5));
+        when(identifierRepository.findByDoi(IDENTIFIER_5_DOI)).thenReturn(Optional.of(IDENTIFIER_5));
+        final String identifier = prefix + ":" + (prefix.equals("oai") ? IDENTIFIER_5_ID : IDENTIFIER_5_DOI);
+
+        this.mockMvc.perform(get("/api/v1/oai")
+                        .param("verb", "GetRecord")
+                        .param("identifier", identifier)
+                        .param("metadataPrefix", "oai_dc"))
+                .andExpect(status().isNotFound())
+                .andExpect(xpath("//error[@code='idDoesNotExist']").exists())
+                .andExpect(xpath("//record").doesNotExist())
+                .andExpect(xpath("//metadata").doesNotExist());
     }
 
     @Test
@@ -113,7 +150,7 @@ public class MetadataEndpointMvcTest extends BaseTest {
 
         /* mock */
         when(identifierRepository.findById(IDENTIFIER_1_ID))
-                .thenReturn(Optional.of(IDENTIFIER_1));
+                .thenReturn(Optional.of(publishedIdentifier));
 
         /* test */
         this.mockMvc.perform(get("/api/v1/oai?verb=GetRecord&identifier=oai:" + IDENTIFIER_1_ID))
@@ -129,16 +166,16 @@ public class MetadataEndpointMvcTest extends BaseTest {
     public void getRecord_doi_succeeds() throws Exception {
 
         /* mock */
-        when(identifierRepository.findByDoi(IDENTIFIER_5_DOI))
-                .thenReturn(Optional.of(IDENTIFIER_5));
+        when(identifierRepository.findByDoi(IDENTIFIER_1_DOI))
+                .thenReturn(Optional.of(publishedIdentifier));
 
         /* test */
-        this.mockMvc.perform(get("/api/v1/oai?verb=GetRecord&identifier=doi:" + IDENTIFIER_5_DOI))
+        this.mockMvc.perform(get("/api/v1/oai?verb=GetRecord&identifier=doi:" + IDENTIFIER_1_DOI))
                 .andDo(print())
                 .andExpect(content().contentType("text/xml;charset=UTF-8"))
                 .andExpect(xpath("//request[@verb='GetRecord']").exists())
-                .andExpect(xpath("//request[@identifier='doi:" + IDENTIFIER_5_DOI + "']").exists())
-                .andExpect(xpath("//header/identifier").string("doi:" + IDENTIFIER_5_DOI))
+                .andExpect(xpath("//request[@identifier='doi:" + IDENTIFIER_1_DOI + "']").exists())
+                .andExpect(xpath("//header/identifier").string("doi:" + IDENTIFIER_1_DOI))
                 .andExpect(status().isOk());
     }
 

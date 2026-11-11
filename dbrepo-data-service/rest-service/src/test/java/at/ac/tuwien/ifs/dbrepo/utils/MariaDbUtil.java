@@ -74,7 +74,7 @@ public class MariaDbUtil {
     }
 
     public static void createDatabase(Container container, String database) throws SQLException {
-        final String jdbc = "jdbc:mariadb://" + container.getHost() + ":" + container.getPort();
+        final String jdbc = "jdbc:mariadb://" + container.getHost() + ":" + container.getPort() + "?sslMode=disable";
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, container.getUsername(), container.getPassword())) {
             final String sql = "CREATE DATABASE `" + database + "`;";
@@ -87,7 +87,7 @@ public class MariaDbUtil {
     }
 
     public static void revokeAccess(Database database, String username) throws SQLException {
-        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
+        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName() + "?sslMode=disable";
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
             connection.prepareStatement("REVOKE ALL PRIVILEGES, GRANT OPTION FROM `" + username + "`@`%`;")
@@ -102,18 +102,27 @@ public class MariaDbUtil {
     }
 
     public static void createInitDatabase(Database database) throws SQLException {
-        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort();
+        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "?sslMode=disable";
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
-            ResourceDatabasePopulator populator = new ResourceDatabasePopulator(new ClassPathResource("init/" + database.getInternalName() + ".sql"), new ClassPathResource("init/users.sql"), new ClassPathResource("init/querystore.sql"));
+            ResourceDatabasePopulator populator = new ResourceDatabasePopulator(new ClassPathResource("init/" + database.getInternalName() + ".sql"), new ClassPathResource("init/users.sql"), new ClassPathResource("init/querystore.sql"), new ClassPathResource("query-store/create_metadata_lock.sql"));
             populator.setSeparator(";\n");
             populator.populate(connection);
+            for (String routine : new String[]{"store_query", "_store_query", "hash_query"}) {
+                ResourceDatabasePopulator procedure = new ResourceDatabasePopulator(
+                        new ClassPathResource("query-store/" + routine + ".sql"));
+                procedure.setSeparator(org.springframework.jdbc.datasource.init.ScriptUtils.EOF_STATEMENT_SEPARATOR);
+                procedure.populate(connection);
+            }
         }
+        new at.ac.tuwien.ifs.dbrepo.service.impl.SubsetServiceMariaDbImpl(null, null,
+                org.mapstruct.factory.Mappers.getMapper(at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper.class),
+                null, null, null, org.mockito.Mockito.mock(at.ac.tuwien.ifs.dbrepo.service.SubsetReplicationService.class)).upgradeQueryStore(database);
         log.debug("created init database {}", database.getInternalName());
     }
 
     public static void grantAccess(Database database, String grants, String username) {
-        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
+        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName() + "?sslMode=disable";
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
             connection.prepareStatement("GRANT " + grants + " ON `" + database.getInternalName() + "`.* TO `" + username + "`@`%`;")
@@ -128,7 +137,7 @@ public class MariaDbUtil {
 
     public static void dropDatabase(Container container, String database)
             throws SQLException {
-        final String jdbc = "jdbc:mariadb://" + container.getHost() + ":" + container.getPort();
+        final String jdbc = "jdbc:mariadb://" + container.getHost() + ":" + container.getPort() + "?sslMode=disable";
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, container.getUsername(), container.getPassword())) {
             final String sql = "DROP DATABASE IF EXISTS `" + database + "`;";
@@ -141,7 +150,7 @@ public class MariaDbUtil {
     }
 
     public static Set<String> getPrivileges(Database database, String username) throws SQLException {
-        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
+        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName() + "?sslMode=disable";
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
             final String query = "SHOW GRANTS FOR ?@`%`;";
@@ -164,7 +173,7 @@ public class MariaDbUtil {
     }
 
     public static void dropTable(Database database, String table) throws SQLException {
-        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
+        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName() + "?sslMode=disable";
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
             final String query = "DROP TABLE `" + table + "`;";
@@ -177,7 +186,7 @@ public class MariaDbUtil {
     }
 
     public static boolean tableExists(Database database, String table) throws SQLException {
-        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
+        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName() + "?sslMode=disable";
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
             final String query = "SELECT 1 FROM information_schema.TABLES t WHERE t.TABLE_SCHEMA = '" + database.getInternalName() + "' AND t.TABLE_NAME = '" + table + "';";
@@ -194,7 +203,7 @@ public class MariaDbUtil {
     }
 
     public static String tableDescription(Database database, String table) throws SQLException {
-        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
+        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName() + "?sslMode=disable";
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
             final String query = "SELECT t.TABLE_COMMENT FROM information_schema.TABLES t WHERE t.TABLE_SCHEMA = '" + database.getInternalName() + "' AND t.TABLE_NAME = '" + table + "';";
@@ -213,7 +222,7 @@ public class MariaDbUtil {
 
     public static void mockQuery(String hostname, Integer port, String database, String query, String username, String password)
             throws SQLException {
-        final String jdbc = "jdbc:mariadb://" + hostname + ":" + port + "/" + database;
+        final String jdbc = "jdbc:mariadb://" + hostname + ":" + port + "/" + database + "?sslMode=disable";
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, username, password)) {
             final PreparedStatement statement = connection.prepareStatement(query);
@@ -223,7 +232,7 @@ public class MariaDbUtil {
     }
 
     public static UUID insertQueryStore(Database database, QueryDto query, String username) throws SQLException {
-        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
+        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName() + "?sslMode=disable";
         log.trace("connect to database: {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
             PreparedStatement prepareStatement = connection.prepareStatement(
@@ -250,7 +259,7 @@ public class MariaDbUtil {
     }
 
     public static List<Map<String, Object>> listQueryStore(Database database) throws SQLException {
-        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
+        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName() + "?sslMode=disable";
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
             final Statement statement = connection.createStatement();
@@ -276,7 +285,7 @@ public class MariaDbUtil {
 
     public static List<Map<String, String>> selectQuery(Database database, String query, Set<String> columns)
             throws SQLException {
-        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
+        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName() + "?sslMode=disable";
         log.trace("connect to database {}", jdbc);
         final List<Map<String, String>> rows = new LinkedList<>();
         try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
@@ -297,7 +306,7 @@ public class MariaDbUtil {
 
     public static List<Map<String, byte[]>> selectQueryByteArr(Database database, String query, Set<String> columns)
             throws SQLException {
-        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
+        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName() + "?sslMode=disable";
         log.trace("connect to database {}", jdbc);
         final List<Map<String, byte[]>> rows = new LinkedList<>();
         try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
@@ -318,7 +327,7 @@ public class MariaDbUtil {
 
     public static void execute(Database database, String query)
             throws SQLException {
-        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
+        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName() + "?sslMode=disable";
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
             final Statement statement = connection.createStatement();
@@ -328,12 +337,13 @@ public class MariaDbUtil {
 
     public static void dropQueryStore(Database database)
             throws SQLException {
-        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
+        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName() + "?sslMode=disable";
         log.trace("connect to database: {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
             final Statement statement = connection.createStatement();
             statement.executeUpdate("DROP SEQUENCE IF EXISTS `qs_queries_seq`;");
             statement.executeUpdate("DROP TABLE IF EXISTS `qs_queries`;");
+            statement.executeUpdate("DROP TABLE IF EXISTS `qs_metadata_lock`;");
             statement.executeUpdate("DROP PROCEDURE IF EXISTS `hash_table`;");
             statement.executeUpdate("DROP PROCEDURE IF EXISTS `store_query`;");
             statement.executeUpdate("DROP PROCEDURE IF EXISTS `_store_query`;");

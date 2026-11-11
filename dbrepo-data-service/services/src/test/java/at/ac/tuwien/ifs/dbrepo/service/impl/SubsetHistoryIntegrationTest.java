@@ -23,7 +23,7 @@ class SubsetHistoryIntegrationTest {
     private final Table cTable=Table.builder().id(UUID.randomUUID()).internalName("measurements").creationLocation(A).build();
 
     private Connection connection(String schema) throws SQLException {
-        return DriverManager.getConnection("jdbc:mariadb://127.0.0.1:"+System.getenv("TUPLE_VERSION_SQL_PORT")+"/"+schema,
+        return DriverManager.getConnection("jdbc:mariadb://127.0.0.1:"+System.getenv("TUPLE_VERSION_SQL_PORT")+"/"+schema + "?sslMode=disable",
                 "root", System.getenv("TUPLE_VERSION_SQL_PASSWORD"));
     }
 

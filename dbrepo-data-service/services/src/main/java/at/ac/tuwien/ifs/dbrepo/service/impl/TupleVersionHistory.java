@@ -266,7 +266,8 @@ public final class TupleVersionHistory {
                 .filter(column -> column.getValue().startsWith("float") || column.getValue().startsWith("double"))
                 .map(Map.Entry::getKey).toList();
         floating.forEach(compared::remove);
-        final String selected = floating.isEmpty() ? "1" : String.join(",", floating.stream().map(TupleVersionHistory::quote).toList());
+        // Compare MariaDB's decimal rendering identically for text and prepared-statement results.
+        final String selected = floating.isEmpty() ? "1" : String.join(",", floating.stream().map(column -> "CAST(" + quote(column) + " AS CHAR) AS " + quote(column)).toList());
         final String predicates = String.join(" AND ", compared.entrySet().stream().map(x -> {
             final boolean text = x.getValue().contains("char") || x.getValue().contains("text")
                     || x.getValue().startsWith("enum") || x.getValue().startsWith("set");

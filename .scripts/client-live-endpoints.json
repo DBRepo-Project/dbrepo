@@ -1,0 +1,1216 @@
+{
+  "endpoints": [
+    {
+      "operation": "DELETE /api/v1/container/{id}",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/ContainerEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "DELETE /api/v1/database/{id}/access/{id}",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/AccessEndpoint.java",
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/AccessEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "DELETE /api/v1/database/{id}/table/{id}",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java",
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "DELETE /api/v1/database/{id}/table/{id}/data",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "DELETE /api/v1/database/{id}/table/{id}/data/replicate",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "DELETE /api/v1/database/{id}/table/{id}/replicate",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "DELETE /api/v1/database/{id}/view/{id}",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/ViewEndpoint.java",
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/ViewEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "DELETE /api/v1/identifier/{id}",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/IdentifierEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "DELETE /api/v1/image/{id}",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/ImageEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "DELETE /api/v1/message/{id}",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/MessageEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "DELETE /api/v1/search/database/{id}",
+      "sources": [
+        "dbrepo-search-service/app.py"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/metadata/replication/outbox",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/ReplicationOutboxEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/container",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/ContainerEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/container/{id}",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/ContainerEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/database",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/DatabaseEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/database/batch",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/DatabaseEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/database/replica/{id}/local-id",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/DatabaseEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/database/replication-access",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/DatabaseEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/database/replication-access/pending",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/DatabaseEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/database/{id}",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/DatabaseEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/database/{id}/access",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/AccessEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/database/{id}/access/{id}",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/AccessEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/database/{id}/analyse/schema/{id}",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/DatabaseEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/database/{id}/grant/{id}",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/GrantEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/database/{id}/image",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/DatabaseEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/database/{id}/replication/journal",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/ReplicationJournalEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/database/{id}/replication/outbox",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/ReplicationOutboxEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/database/{id}/replication/snapshots/table/{id}/checkpoint",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/HistorySnapshotEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/database/{id}/replication/snapshots/{id}",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/HistorySnapshotEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/database/{id}/replication/snapshots/{id}/chunks/{id}",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/HistorySnapshotEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/database/{id}/replication/snapshots/{id}/status",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/HistorySnapshotEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/database/{id}/subset",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/SubsetEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/database/{id}/subset/{id}",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/SubsetEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/database/{id}/subset/{id}/data",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/SubsetEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/database/{id}/table",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java",
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/database/{id}/table/replica/{id}/local-id",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/database/{id}/table/{id}",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/database/{id}/table/{id}/data",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/database/{id}/table/{id}/data/replicate",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/database/{id}/table/{id}/history",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/database/{id}/table/{id}/statistic",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/database/{id}/view",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/ViewEndpoint.java",
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/ViewEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/database/{id}/view/{id}",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/ViewEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/database/{id}/view/{id}/data",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/ViewEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/database/{id}/view/{id}/statistic",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/ViewEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/identifier",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/IdentifierEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/identifier/retrieve",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/IdentifierEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/identifier/{id}",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/IdentifierEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/image",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/ImageEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/image/{id}",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/ImageEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/image/{id}/analyse/schema/{id}",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/AnalyseEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/license",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/LicenseEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/message",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/MessageEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/message/message/{id}",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/MessageEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/oai",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/MetadataEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/oai?verb=GetRecord",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/MetadataEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/oai?verb=Identify",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/MetadataEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/oai?verb=ListIdentifiers",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/MetadataEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/oai?verb=ListMetadataFormats",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/MetadataEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/oai?verb=ListRecords",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/MetadataEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/oai?verb=ListSets",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/MetadataEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/search",
+      "sources": [
+        "dbrepo-search-service/app.py"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/search/{id}",
+      "sources": [
+        "dbrepo-search-service/app.py"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/search/{id}/fields",
+      "sources": [
+        "dbrepo-search-service/app.py"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/user",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/UserEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/user/{id}",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/UserEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /health",
+      "sources": [
+        "dbrepo-gateway-service/dbrepo.conf"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /pid/{id}",
+      "sources": [
+        "dbrepo-gateway-service/dbrepo.conf"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "HEAD /api/v1/dashboard/user/{id}",
+      "sources": [
+        "dbrepo-dashboard-service/app.py"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "HEAD /api/v1/database",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/DatabaseEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "HEAD /api/v1/database/{id}/access/{id}",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/AccessEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "HEAD /api/v1/database/{id}/grant/{id}",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/GrantEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "HEAD /api/v1/database/{id}/subset/{id}/data",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/SubsetEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "HEAD /api/v1/database/{id}/table/{id}/data",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "HEAD /api/v1/database/{id}/view/{id}/data",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/ViewEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "HEAD /api/v1/user/{id}",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/UserEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "PATCH /api/v1/database/{id}/table/{id}/timestamps",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/metadata/replication/outbox/retry",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/ReplicationOutboxEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/metadata/replication/outbox/{id}/retry",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/ReplicationOutboxEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/v1/container",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/ContainerEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/v1/dashboard",
+      "sources": [
+        "dbrepo-dashboard-service/app.py"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/v1/database",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/DatabaseEndpoint.java",
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/DatabaseEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/v1/database/replicate",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/DatabaseEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/v1/database/{id}/access/{id}",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/AccessEndpoint.java",
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/AccessEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/v1/database/{id}/replicas",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/DatabaseReplicaEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/v1/database/{id}/replicas/register",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/DatabaseReplicaEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/v1/database/{id}/replication-access/reconcile",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/DatabaseEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/v1/database/{id}/replication/activate",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/ReplicationActivationEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/v1/database/{id}/replication/outbox/retry",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/ReplicationOutboxEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/v1/database/{id}/replication/outbox/{id}/retry",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/ReplicationOutboxEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/v1/database/{id}/replication/snapshots",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/HistorySnapshotEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/v1/database/{id}/replication/snapshots/imports",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/HistorySnapshotEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/v1/database/{id}/replication/snapshots/{id}/verify",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/HistorySnapshotEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/v1/database/{id}/subset",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/SubsetEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/v1/database/{id}/subset/maintenance/upgrade",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/SubsetEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/v1/database/{id}/subset/replication-backfill",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/SubsetReplicationBackfillEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/v1/database/{id}/table",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java",
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/v1/database/{id}/table/replicate",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/v1/database/{id}/table/{id}/data",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/v1/database/{id}/table/{id}/data/import",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/v1/database/{id}/table/{id}/data/ingest",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
+      ],
+      "excluded": "Internal Consumer write; requires the system identity and a broker-validated publisher."
+    },
+    {
+      "operation": "POST /api/v1/database/{id}/table/{id}/data/replicate",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/v1/database/{id}/table/{id}/timestamps",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/v1/database/{id}/view",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/ViewEndpoint.java",
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/ViewEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/v1/database/{id}/view/replicate",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/ViewEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/v1/database/{id}/view/replicated",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/ViewEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/v1/identifier",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/IdentifierEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/v1/image",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/ImageEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/v1/message",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/MessageEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/v1/search/{id}",
+      "sources": [
+        "dbrepo-search-service/app.py"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/v1/upload",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/UploadEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "PUT /api/v1/dashboard/{id}",
+      "sources": [
+        "dbrepo-dashboard-service/app.py"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "PUT /api/v1/dashboard/{id}/access/{id}",
+      "sources": [
+        "dbrepo-dashboard-service/app.py"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "PUT /api/v1/dashboard/{id}/content",
+      "sources": [
+        "dbrepo-dashboard-service/app.py"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "PUT /api/v1/database/{id}",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/DatabaseEndpoint.java"
+      ],
+      "excluded": "Internal Data Service operation; gateway routes database metadata to Metadata."
+    },
+    {
+      "operation": "PUT /api/v1/database/{id}/access/{id}",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/AccessEndpoint.java",
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/AccessEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "PUT /api/v1/database/{id}/access/{id}/synchronize",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/AccessEndpoint.java"
+      ],
+      "excluded": "Internal grant synchronization; requires the system identity and committed metadata."
+    },
+    {
+      "operation": "PUT /api/v1/database/{id}/image",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/DatabaseEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "PUT /api/v1/database/{id}/metadata/table",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/DatabaseEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "PUT /api/v1/database/{id}/metadata/view",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/DatabaseEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "PUT /api/v1/database/{id}/owner",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/DatabaseEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "PUT /api/v1/database/{id}/replication-access",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/DatabaseEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "PUT /api/v1/database/{id}/replication-url",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/DatabaseEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "PUT /api/v1/database/{id}/replication/snapshots/{id}/chunks/{id}",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/HistorySnapshotEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "PUT /api/v1/database/{id}/subset/replicate",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/SubsetEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "PUT /api/v1/database/{id}/subset/{id}",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/SubsetEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "PUT /api/v1/database/{id}/table/{id}",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java",
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "PUT /api/v1/database/{id}/table/{id}/column/{id}",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "PUT /api/v1/database/{id}/table/{id}/data",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "PUT /api/v1/database/{id}/table/{id}/data/replicate",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "PUT /api/v1/database/{id}/table/{id}/replication-url",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "PUT /api/v1/database/{id}/table/{id}/statistic",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "PUT /api/v1/database/{id}/table/{id}/timestamps",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "PUT /api/v1/database/{id}/view/{id}",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/ViewEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "PUT /api/v1/database/{id}/visibility",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/DatabaseEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "PUT /api/v1/identifier/{id}",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/IdentifierEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "PUT /api/v1/identifier/{id}/publish",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/IdentifierEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "PUT /api/v1/image/{id}",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/ImageEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "PUT /api/v1/message/{id}",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/MessageEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "PUT /api/v1/search/database/{id}",
+      "sources": [
+        "dbrepo-search-service/app.py"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "PUT /api/v1/user/{id}",
+      "sources": [
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/UserEndpoint.java"
+      ],
+      "excluded": null
+    }
+  ],
+  "client_methods": {
+    "whoami": [],
+    "get_users": [
+      "/api/v1/user"
+    ],
+    "get_units": [],
+    "get_user": [
+      "/api/v1/user/{id}"
+    ],
+    "update_user": [
+      "/api/v1/user/{id}"
+    ],
+    "get_containers": [
+      "/api/v1/container"
+    ],
+    "get_container": [
+      "/api/v1/container/{id}"
+    ],
+    "get_databases": [
+      "/api/v1/database"
+    ],
+    "get_databases_count": [
+      "/api/v1/database"
+    ],
+    "get_database": [
+      "/api/v1/database/{id}"
+    ],
+    "create_database": [
+      "/api/v1/database"
+    ],
+    "update_database_replication_url": [
+      "/api/v1/database/{id}/replication-url"
+    ],
+    "find_local_database_id_by_replica_database_id": [
+      "/api/v1/database/replica/{id}/local-id"
+    ],
+    "create_container": [
+      "/api/v1/container"
+    ],
+    "update_database_visibility": [
+      "/api/v1/database/{id}/visibility"
+    ],
+    "update_database_owner": [
+      "/api/v1/database/{id}/owner"
+    ],
+    "update_database_schema": [
+      "/api/v1/database/{id}/metadata/table",
+      "/api/v1/database/{id}/metadata/view"
+    ],
+    "get_replication_status": [
+      "/api/replication/status"
+    ],
+    "synchronise_database_replication": [
+      "/api/replication/data/synchronise/database/{id}"
+    ],
+    "synchronise_table_replication": [
+      "/api/replication/data/synchronise/database/{id}/table/{id}"
+    ],
+    "update_table_replication_url": [
+      "/api/v1/database/{id}/table/{id}/replication-url"
+    ],
+    "find_local_table_id_by_replica_table_id": [
+      "/api/v1/database/{id}/table/replica/{id}/local-id"
+    ],
+    "get_metadata_replication_outbox": [
+      "/api/metadata/replication/outbox"
+    ],
+    "retry_metadata_replication_outbox": [
+      "/api/metadata/replication/outbox/retry"
+    ],
+    "retry_metadata_replication_outbox_entry": [
+      "/api/metadata/replication/outbox/{id}/retry"
+    ],
+    "get_data_replication_outbox": [
+      "/api/v1/database/{id}/replication/outbox"
+    ],
+    "retry_data_replication_outbox": [
+      "/api/v1/database/{id}/replication/outbox/retry"
+    ],
+    "retry_data_replication_outbox_entry": [
+      "/api/v1/database/{id}/replication/outbox/{id}/retry"
+    ],
+    "create_table": [
+      "/api/v1/database/{id}/table"
+    ],
+    "get_tables": [
+      "/api/v1/database/{id}/table"
+    ],
+    "get_table": [
+      "/api/v1/database/{id}/table/{id}"
+    ],
+    "delete_table": [
+      "/api/v1/database/{id}/table/{id}"
+    ],
+    "delete_container": [
+      "/api/v1/container/{id}"
+    ],
+    "get_table_history": [
+      "/api/v1/database/{id}/table/{id}/history"
+    ],
+    "get_views": [
+      "/api/v1/database/{id}/view"
+    ],
+    "get_view": [
+      "/api/v1/database/{id}/view/{id}"
+    ],
+    "update_view": [
+      "/api/v1/database/{id}/view/{id}"
+    ],
+    "create_view": [
+      "/api/v1/database/{id}/view"
+    ],
+    "delete_view": [
+      "/api/v1/database/{id}/view/{id}"
+    ],
+    "get_view_data": [
+      "/api/v1/database/{id}/view/{id}/data"
+    ],
+    "get_table_data": [
+      "/api/v1/database/{id}/table/{id}/data"
+    ],
+    "create_table_data": [
+      "/api/v1/database/{id}/table/{id}/data"
+    ],
+    "import_table_data": [
+      "/api/v1/database/{id}/table/{id}/data/import"
+    ],
+    "analyse_schema": [],
+    "analyse_datatypes": [],
+    "analyse_keys": [],
+    "analyse_table_statistics": [
+      "/api/v1/database/{id}/table/{id}/statistic"
+    ],
+    "update_table_statistics": [
+      "/api/v1/database/{id}/table/{id}/statistic"
+    ],
+    "update_table_data": [
+      "/api/v1/database/{id}/table/{id}/data"
+    ],
+    "delete_table_data": [
+      "/api/v1/database/{id}/table/{id}/data"
+    ],
+    "get_table_data_count": [
+      "/api/v1/database/{id}/table/{id}/data"
+    ],
+    "get_view_data_count": [
+      "/api/v1/database/{id}/view/{id}/data"
+    ],
+    "get_database_access": [
+      "/api/v1/database/{id}/access"
+    ],
+    "create_database_access": [
+      "/api/v1/database/{id}/access/{id}"
+    ],
+    "update_database_access": [
+      "/api/v1/database/{id}/access/{id}"
+    ],
+    "delete_database_access": [
+      "/api/v1/database/{id}/access/{id}"
+    ],
+    "create_subset": [
+      "/api/v1/database/{id}/subset"
+    ],
+    "get_subset_data": [
+      "/api/v1/database/{id}/subset/{id}/data"
+    ],
+    "get_subset_data_count": [
+      "/api/v1/database/{id}/subset/{id}/data"
+    ],
+    "get_subset": [
+      "/api/v1/database/{id}/subset/{id}"
+    ],
+    "get_queries": [
+      "/api/v1/database/{id}/subset"
+    ],
+    "update_subset": [
+      "/api/v1/database/{id}/subset/{id}"
+    ],
+    "create_identifier": [
+      "/api/v1/identifier"
+    ],
+    "update_identifier": [
+      "/api/v1/identifier/{id}"
+    ],
+    "publish_identifier": [
+      "/api/v1/identifier/{id}/publish"
+    ],
+    "get_licenses": [
+      "/api/v1/license"
+    ],
+    "get_ontologies": [],
+    "get_concepts": [],
+    "get_identifiers": [
+      "/api/v1/identifier"
+    ],
+    "get_identifier": [
+      "/api/v1/identifier/{id}"
+    ],
+    "get_identifier_data": [
+      "/api/v1/identifier/{id}"
+    ],
+    "get_image": [
+      "/api/v1/image/{id}"
+    ],
+    "get_images": [
+      "/api/v1/image"
+    ],
+    "get_messages": [
+      "/api/v1/message"
+    ],
+    "update_table_column": [
+      "/api/v1/database/{id}/table/{id}/column/{id}"
+    ]
+  }
+}

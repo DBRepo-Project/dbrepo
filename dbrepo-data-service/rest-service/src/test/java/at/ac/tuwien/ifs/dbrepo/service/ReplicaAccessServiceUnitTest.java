@@ -23,7 +23,7 @@ import static org.mockito.Mockito.*;
 class ReplicaAccessServiceUnitTest {
 
     private final AccessServiceMariaDbImpl service = spy(new AccessServiceMariaDbImpl(Mappers.getMapper(MariaDbMapper.class)));
-    private final Database database = Database.builder().internalName("replica").creationLocation("https://origin.example").build();
+    private final Database database = Database.builder().internalName("replica").container(at.ac.tuwien.ifs.dbrepo.core.entity.cache.Container.builder().username("root").build()).creationLocation("https://origin.example").build();
     private final User user = User.builder().username("alice").password("test").build();
     private final ComboPooledDataSource source = mock(ComboPooledDataSource.class);
     private final Connection connection = mock(Connection.class);
@@ -34,7 +34,7 @@ class ReplicaAccessServiceUnitTest {
     void setup() throws Exception {
         ReflectionTestUtils.setField(service, "baseUrl", "https://local.example");
         ReflectionTestUtils.setField(service, "replicationUsername", "replication");
-        ReflectionTestUtils.setField(service, "grantDefaultRead", "SELECT, EXECUTE");
+        ReflectionTestUtils.setField(service, "grantDefaultRead", "SELECT");
         ReflectionTestUtils.setField(service, "grantDefaultWrite", "SELECT, INSERT, UPDATE, DELETE");
         doReturn(source).when(service).getDataSource(database);
         when(source.getConnection()).thenReturn(connection);
@@ -63,7 +63,7 @@ class ReplicaAccessServiceUnitTest {
 
         final var order = inOrder(connection);
         order.verify(connection).prepareStatement("REVOKE ALL PRIVILEGES ON `replica`.* FROM `alice`@`%`;");
-        order.verify(connection).prepareStatement("REVOKE EXECUTE ON PROCEDURE `replica`.`store_query` FROM `alice`@`%`;");
+        order.verify(connection).prepareStatement("REVOKE EXECUTE ON PROCEDURE `replica`.`store_query` FROM `alice`@`%`");
         order.verify(connection).prepareStatement("GRANT SELECT ON `replica`.* TO `alice`@`%`;");
     }
 
@@ -75,11 +75,11 @@ class ReplicaAccessServiceUnitTest {
     }
 
     @Test
-    void legacyDatabaseRetainsExistingReadPrivileges() throws Exception {
+    void legacyDatabaseReaderCannotExecuteInternalRoutines() throws Exception {
         database.setCreationLocation(null);
         service.create(database, user, AccessTypeDto.READ);
-        verify(connection).prepareStatement("GRANT SELECT, EXECUTE ON `replica`.* TO `alice`@`%`;");
-        verify(connection).prepareStatement("GRANT EXECUTE ON PROCEDURE `store_query` TO `alice`@`%`;");
+        verify(connection).prepareStatement("GRANT SELECT ON `replica`.* TO `alice`@`%`;");
+        verify(connection, never()).prepareStatement(startsWith("GRANT EXECUTE"));
     }
 
     @Test

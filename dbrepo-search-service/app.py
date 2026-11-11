@@ -2,8 +2,9 @@ import logging
 import math
 import os
 from dbrepo.api.dto import Database, ApiError
+from dbrepo.api.exceptions import ServiceConnectionError
 from dbrepo.core.client.auth import User, AuthServiceClient
-from dbrepo.core.client.search import SearchServiceClient, flatten
+from dbrepo.core.client.search import SearchServiceClient, semantic_value
 from flasgger import LazyJSONEncoder, Swagger, swag_from
 from flask import Flask, request, Response
 from flask_cors import CORS
@@ -61,7 +62,8 @@ dictConfig({
 # create app object
 app = Flask(__name__)
 
-cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+cors = CORS(app, resources={r"/api/*": {"origins": "*"}},
+            expose_headers=['X-Count', 'X-Total-Pages', 'X-Page', 'X-Page-Size'])
 
 metrics = PrometheusMetrics(app)
 metrics.info("app_info", "Application info", version="0.0.1")
@@ -212,9 +214,6 @@ template = {
 
 swagger = Swagger(app, config=swagger_config, template=template)
 app.config["METADATA_SERVICE_ENDPOINT"] = os.getenv("METADATA_SERVICE_ENDPOINT", "http://metadata-service:8080")
-app.config["JWT_ALGORITHM"] = "HS256"
-app.config["JWT_PUBKEY"] = '-----BEGIN PUBLIC KEY-----\n' + os.getenv("JWT_PUBKEY",
-                                                                      "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB") + '\n-----END PUBLIC KEY-----'
 app.config["AUTH_SERVICE_ENDPOINT"] = os.getenv("AUTH_SERVICE_ENDPOINT", "http://localhost:8080")
 app.config["AUTH_SERVICE_CLIENT"] = os.getenv("AUTH_SERVICE_CLIENT", "dbrepo-client")
 app.config["AUTH_SERVICE_CLIENT_SECRET"] = os.getenv("AUTH_SERVICE_CLIENT_SECRET", "MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG")
@@ -228,7 +227,7 @@ app.config["SYSTEM_PASSWORD"] = os.getenv('SYSTEM_PASSWORD', 'admin')
 app.json_encoder = LazyJSONEncoder
 
 auth_client = AuthServiceClient(app.config["AUTH_SERVICE_ENDPOINT"], app.config["AUTH_SERVICE_CLIENT"],
-                                app.config["AUTH_SERVICE_CLIENT_SECRET"], app.config["JWT_PUBKEY"])
+                                app.config["AUTH_SERVICE_CLIENT_SECRET"])
 
 
 @token_auth.verify_token
@@ -256,36 +255,72 @@ def get_user_roles(user: User) -> List[str]:
 headers = {'Content-Type': 'application/json'}
 
 
-def general_filter(index, results):
-    """
-    Applies filtering to the result of opensearch queries.
+@app.errorhandler(ServiceConnectionError)
+def metadata_unavailable(error):
+    logging.warning("Current search metadata is unavailable")
+    return ApiError(status='SERVICE_UNAVAILABLE', message='Current search metadata is unavailable',
+                    code='search.metadata.unavailable').model_dump(), 503, headers
 
-    we only want to return specific entries of the result dict to the user, depending on the queried index.
-    the keys for the entries per index that shouldn't be deleted are specified in the important_keys dict.
 
-    :param index: the search index the query results are about
-    :param results: the raw response of the query_index_by_term_opensearch function.
-    :return:
-    """
-    important_keys = {
-        "column": ["id", "name", "column_type"],
-        "table": ["id", "name", "description"],
-        "identifier": ["id", "type", "creator"],
-        "user": ["id", "username"],
-        "database": ["id", "name", "is_public", "is_schema_public", "details"],
-        "concept": ["uri", "name"],
-        "unit": [],
-        "view": ["id", "name", "creator"],
-    }
-    if index not in important_keys.keys():
-        raise KeyError(f"Failed to find index {index} in: {important_keys.keys()}")
-    for result in results:
-        result_keys_copy = tuple(result.keys())
-        for key in result_keys_copy:
-            if key not in important_keys[index]:
-                del result[key]
-    logging.debug('general filter results: %s', results)
-    return results
+def general_filter(index: str, results: list[Database]):
+    """Project already authorized databases into the requested result type."""
+    if index == 'database':
+        return results
+    if index == 'user':
+        return [database.owner for database in results]
+    tables = [table for database in results for table in database.tables or []]
+    views = [view for database in results for view in database.views or []]
+    if index == 'table':
+        return tables
+    if index == 'view':
+        return views
+    if index == 'identifier':
+        return ([identifier for database in results
+                 for identifier in (database.identifiers or []) + (database.subsets or [])]
+                + [identifier for source in tables + views for identifier in source.identifiers or []])
+    columns = [column for table in tables for column in table.columns]
+    if index == 'column':
+        return columns
+    if index in ('concept', 'unit'):
+        return [value for column in columns if (value := semantic_value(column, index)) is not None]
+    raise KeyError(index)
+
+
+def search_pagination(default_size=None):
+    if default_size is None and 'page' not in request.args and 'results_per_page' not in request.args:
+        return None
+    page = int(request.args.get('page', '1'))
+    size = int(request.args.get('results_per_page', str(default_size or 50)))
+    if page < 1 or not 1 <= size <= 500:
+        raise ValueError('Invalid search pagination')
+    return page, size
+
+
+def search_response(results, field_type, pagination):
+    def sort_key(item):
+        data = item.model_dump(mode='json') if hasattr(item, 'model_dump') else item
+        if field_type in ('concept', 'unit'):
+            identity = data.get('uri') or ''
+        elif field_type == 'user':
+            identity = data.get('id') or data.get('username') or ''
+        else:
+            identity = data.get('id') or ''
+        return identity, dumps(data, sort_keys=True)
+
+    results = sorted(results, key=sort_key)
+    response_headers = dict(headers, **{'X-Count': str(len(results)),
+        'Access-Control-Expose-Headers': 'X-Count, X-Total-Pages, X-Page, X-Page-Size'})
+    if pagination is not None:
+        page, size = pagination
+        response_headers.update({'X-Total-Pages': str(math.ceil(len(results) / size)),
+                                 'X-Page': str(page), 'X-Page-Size': str(size)})
+        results = results[(page - 1) * size:page * size]
+    return Response(dumps(results, default=pydantic_encoder)), 200, response_headers
+
+
+def invalid_search_pagination():
+    return ApiError(status='BAD_REQUEST', message='Page must be positive and results_per_page must be between 1 and 500',
+                    code='search.pagination.invalid').model_dump(), 400, headers
 
 
 def search_client():
@@ -308,15 +343,18 @@ def get_index(index: str):
     :return: list of the results
     """
     logging.debug(f'endpoint get search type: {index}')
-    results = search_client().general_search()
+    try:
+        pagination = search_pagination(default_size=50)
+    except ValueError:
+        return invalid_search_pagination()
+    username, error, status = auth_client.get_username(request.headers.get('Authorization'))
+    if error is not None and status is not None:
+        return error, status, headers
+    results = search_client().general_search(username=username, user_token=request.headers.get('Authorization'))
     try:
         results = general_filter(index, results)
 
-        results_per_page = min(request.args.get("results_per_page", 50, type=int), 500)
-        max_pages = math.ceil(len(results) / results_per_page)
-        page = min(request.args.get("page", 1, type=int), max_pages)
-        results = results[(results_per_page * (page - 1)): (results_per_page * page)]
-        return Response(dumps(results, default=pydantic_encoder)), 200, headers
+        return search_response(results, index, pagination)
     except KeyError:
         return ApiError(status='NOT_FOUND', message=f'Failed to find get index: {index}',
                         code='search.index.missing').model_dump(), 404, headers
@@ -355,13 +393,17 @@ def get_fuzzy_search():
         return ApiError(status='BAD_REQUEST', message='Provide a search term with ?q=term',
                         code='search.fuzzy.invalid').model_dump(), 400
     logging.debug(f"search request query: {search_term}")
+    try:
+        pagination = search_pagination()
+    except ValueError:
+        return invalid_search_pagination()
     username, error, status = auth_client.get_username(request.headers.get('Authorization'))
     if error is not None and status is not None:
         return error, status, headers
     results = search_client().fuzzy_search(search_term=search_term,
                                            username=username,
                                            user_token=request.headers.get('Authorization'))
-    return Response(dumps(results, default=pydantic_encoder)), 200, headers
+    return search_response(results, 'database', pagination)
 
 
 @app.route("/api/v1/search/<string:field_type>", methods=["POST"], endpoint="search_post_general_search")
@@ -375,68 +417,47 @@ def post_general_search(field_type):
     if request.content_type != "application/json":
         return ApiError(status='UNSUPPORTED_MEDIA_TYPE', message='Content type needs to be application/json',
                         code='search.general.media').model_dump(), 415
+    try:
+        pagination = search_pagination()
+    except ValueError:
+        return invalid_search_pagination()
     value_pairs = request.json
     logging.debug(f'endpoint get general search, field_type={field_type}, value_pairs={value_pairs}')
-    t1 = request.args.get("t1")
-    if not str(t1).isdigit():
-        t1 = None
-    t2 = request.args.get("t2")
-    if not str(t2).isdigit():
-        t2 = None
+    if not isinstance(value_pairs, dict):
+        return ApiError(status='BAD_REQUEST', message='Search fields must be an object',
+                        code='search.general.invalid').model_dump(), 400, headers
+    value_pairs = value_pairs.copy()
+    t1 = request.args.get('t1', value_pairs.pop('t1', None))
+    t2 = request.args.get('t2', value_pairs.pop('t2', None))
+    for field in ('concept', 'unit'):
+        for alias in (f'{field}.uri', f'tables.columns.{field}_uri'):
+            if alias in value_pairs:
+                value_pairs[f'tables.columns.{field}.uri'] = value_pairs.pop(alias)
     username, error, status = auth_client.get_username(request.headers.get('Authorization'))
     if error is not None and status is not None:
         return error, status
-    if t1 is not None and t2 is not None and "unit.uri" in value_pairs and "concept.uri" in value_pairs:
-        response = search_client().unit_independent_search(t1, t2, value_pairs, username)
+    if t1 is not None or t2 is not None:
+        try:
+            t1, t2 = float(t1), float(t2)
+            if not math.isfinite(t1) or not math.isfinite(t2) or t1 > t2:
+                raise ValueError('Invalid range')
+            if not value_pairs.get('tables.columns.unit.uri') or not value_pairs.get('tables.columns.concept.uri'):
+                raise ValueError('A range requires a concept and unit')
+        except (TypeError, ValueError):
+            return ApiError(status='BAD_REQUEST', message='Provide a finite ordered range, concept and unit',
+                            code='search.general.range').model_dump(), 400, headers
+        response = search_client().unit_independent_search(t1, t2, value_pairs, username,
+                                                           request.headers.get('Authorization'))
     else:
         response = search_client().general_search(field_value_pairs=value_pairs,
-                                                  username=username,
-                                                  user_token=request.headers.get('Authorization'))
-    # filter by type
-    tables = [table for table in flatten([database.tables for database in response]) if
-              table.is_public or table.is_schema_public or (username is not None and table.owner.username == username)]
-    views = [view for view in flatten([database.views for database in response]) if
-             view.is_public or view.is_schema_public or (username is not None and view.owner.username == username)]
-    if field_type == 'table':
-        logging.debug(f'filtered to {len(tables)} tables')
-        response = tables
-    if field_type == 'identifier':
-        tmp = []
-        for database in response:
-            if database["identifiers"] is not None:
-                for identifier in database['identifiers']:
-                    tmp.append(identifier)
-            if database["subsets"] is not None:
-                for identifier in database['subsets']:
-                    tmp.append(identifier)
-            if database["tables"] is not None:
-                for table in database['tables']:
-                    if database["identifiers"] is not None:
-                        for identifier in table['identifiers']:
-                            tmp.append(identifier)
-        for view in [x for xs in response for x in xs["views"]]:
-            if 'identifier' in view:
-                tmp.append(view['identifier'])
-        response = tmp
-    elif field_type == 'column':
-        response = flatten([table.columns for table in tables])
-    elif field_type == 'concept':
-        tmp = []
-        tables = [x for xs in response for x in xs["tables"]]
-        for column in [x for xs in tables for x in xs["columns"]]:
-            if 'concept' in column and column["concept"] is not None:
-                tmp.append(column["concept"])
-        response = tmp
-    elif field_type == 'unit':
-        tmp = []
-        tables = [x for xs in response for x in xs["tables"]]
-        for column in [x for xs in tables for x in xs["columns"]]:
-            if 'unit' in column and column["unit"] is not None:
-                tmp.append(column["unit"])
-        response = tmp
-    elif field_type == 'view':
-        response = views
-    return Response(dumps(response, default=pydantic_encoder)), 200, headers
+                                                 username=username,
+                                                 user_token=request.headers.get('Authorization'))
+    try:
+        response = general_filter(field_type, response)
+    except KeyError:
+        return ApiError(status='NOT_FOUND', message=f'Failed to find search type: {field_type}',
+                        code='search.type.missing').model_dump(), 404, headers
+    return search_response(response, field_type, pagination)
 
 
 @app.route("/api/v1/search/database/<string:database_id>", methods=["PUT"], endpoint="search_save_database")

@@ -621,22 +621,9 @@ A user wants to create a subset and export it as csv file.
 
 === "JDBC"
 
-    A subset can be created by passing a SQL query to a database where you have at least `read` access (this is the case
-    for e.g. self-created databases). Connect to the database via JDBC, you can obtain the connection string in the UI
-    under the database info (c.f. Figure 20).
-
-    <figure markdown>
-    ![JDBC connection information](/infrastructures/dbrepo/1.13/images/screenshots/database-jdbc.png){ .img-border }
-    </figure>
-
-    ```sql
-    CALL store_query('SELECT `id`,`datetime`,`level` FROM `danube_water_levels`',
-        NOW(), @subsetId)
-    ```
-
-    Afterwards, you can see the subset in the UI with subset id `@subsetId` and persist it there. Only the administrator
-    can persist the subset in the [Data Database](/infrastructures/dbrepo/1.13/system-databases-data) through JDBC by setting the `persisted`
-    column to `true` in the `qs_queries` table.
+    JDBC connections support direct SQL queries according to the user's database permissions.
+    Create subsets through the REST API, UI or Python client. Query-store procedures are internal
+    service operations and cannot be called by ordinary SQL users.
 
 === "Python"
 

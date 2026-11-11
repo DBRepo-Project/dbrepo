@@ -201,6 +201,7 @@ public interface MetadataMapper {
 
     TableBriefDto tableDtoToTableBriefDto(TableDto data);
 
+    @Mapping(target = "ownedBy", source = "owner.username")
     IdentifierBriefDto identifierDtoToIdentifierBriefDto(IdentifierDto data);
 
     default String metricToUri(String baseUrl, UUID databaseId, UUID tableId, UUID subsetId, UUID viewId) {
@@ -242,6 +243,10 @@ public interface MetadataMapper {
                 .username(data.getUsername())
                 .firstname(data.getFirstName())
                 .lastname(data.getLastName())
+                .name(String.format("%s %s", data.getFirstName(), data.getLastName()))
+                .qualifiedName(data.getFirstName() != null && data.getLastName() != null ?
+                                String.format("%s %s — @%s", data.getFirstName(), data.getLastName(), data.getUsername()) :
+                                String.format("@%s", data.getUsername()))
                 .attributes(UserAttributesDto.builder()
                         .theme(attributeToValue("theme", data.getAttributes()))
                         .affiliation(attributeToValue("affiliation", data.getAttributes()))
@@ -322,6 +327,7 @@ public interface MetadataMapper {
         return attr;
     }
 
+    @Mapping(target = "count", expression = "java(data.getDatabases().size())")
     ContainerDto containerToContainerDto(Container data);
 
     @Mappings({
@@ -916,7 +922,7 @@ public interface MetadataMapper {
                 .primaryKey(data.getPrimaryKey()
                         .stream()
                         .map(this::primaryKeyToPrimaryKeyDto)
-                        .collect(Collectors.toSet()))
+                        .toList())
                 .build();
     }
 
@@ -1092,9 +1098,10 @@ public interface MetadataMapper {
                 .foreignKeys(data.getForeignKeys()
                         .stream()
                         .map(fk -> {
-                            final Optional<Table> optional = database.getTables()
+                            final Optional<Table> optional = table.getInternalName().equals(nameToInternalName(fk.getReferencedTable())) ? Optional.of(table) : database.getTables()
                                     .stream()
-                                    .filter(t -> t.getInternalName().equals(fk.getReferencedTable()))
+                                    .filter(t -> t.getInternalName().equals(
+                                            nameToInternalName(fk.getReferencedTable())))
                                     .findFirst();
                             if (optional.isEmpty()) {
                                 log.error("Failed to find foreign key referenced table {} in tables: {}", fk.getReferencedTable(), database.getTables().stream().map(Table::getInternalName).toList());
@@ -1105,7 +1112,7 @@ public interface MetadataMapper {
                                 final int k = i;
                                 final Optional<TableColumn> column = table.getColumns()
                                         .stream()
-                                        .filter(cc -> cc.getInternalName().equals(fk.getColumns().get(k)))
+                                        .filter(cc -> cc.getInternalName().equals(nameToInternalName(fk.getColumns().get(k))))
                                         .findFirst();
                                 if (column.isEmpty()) {
                                     log.error("Failed to find foreign key column {}.{} in columns: {}", table.getInternalName(), fk.getColumns().get(k), optional.get().getColumns().stream().map(TableColumn::getInternalName).toList());
@@ -1114,7 +1121,7 @@ public interface MetadataMapper {
                                 final Optional<TableColumn> referencedColumn = optional.get()
                                         .getColumns()
                                         .stream()
-                                        .filter(cc -> cc.getInternalName().equals(fk.getReferencedColumns().get(k)))
+                                        .filter(cc -> cc.getInternalName().equals(nameToInternalName(fk.getReferencedColumns().get(k))))
                                         .findFirst();
                                 if (referencedColumn.isEmpty()) {
                                     log.error("Failed to find foreign key referenced column {} in referenced columns: {}", fk.getReferencedColumns().get(k), database.getTables().stream().filter(t -> t.getInternalName().equals(fk.getReferencedTable())).map(Table::getColumns).flatMap(List::stream).map(TableColumn::getInternalName).toList());

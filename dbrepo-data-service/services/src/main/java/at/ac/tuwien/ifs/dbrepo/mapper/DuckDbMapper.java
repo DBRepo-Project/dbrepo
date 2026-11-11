@@ -22,7 +22,7 @@ public interface DuckDbMapper {
                 .append(" database=")
                 .append(data.getInternalName())
                 .append("' AS mysqldb (TYPE mysql);");
-        log.debug("mapped attach mysql statement: {}", statement);
+        log.debug("mapped database attachment for database {}", data.getId());
         return statement.toString();
     }
 
@@ -34,24 +34,12 @@ public interface DuckDbMapper {
         return statement.toString();
     }
 
-    default String queryToRawDescribeCsvQuery(String bucket, String key) {
-        final StringBuilder statement = new StringBuilder("FROM sniff_csv('s3://")
-                .append(bucket)
-                .append("/")
-                .append(key)
-                .append("', sample_size=20480);");
-        log.debug("mapped describe csv statement: {}", statement);
-        return statement.toString();
+    default String queryToRawDescribeCsvQuery() {
+        return "FROM sniff_csv(?, sample_size=20480);";
     }
 
-    default String queryToRawDescribeS3TableQuery(String bucket, String key) {
-        final StringBuilder statement = new StringBuilder("DESCRIBE TABLE 's3://")
-                .append(bucket)
-                .append("/")
-                .append(key)
-                .append("';");
-        log.debug("mapped describe csv statement: {}", statement);
-        return statement.toString();
+    default String queryToRawDescribeS3TableQuery() {
+        return "DESCRIBE SELECT * FROM read_csv_auto(?);";
     }
 
     default String queryToRawLoadExtensionQuery(String data) {
@@ -68,7 +56,7 @@ public interface DuckDbMapper {
                 .append(" = '")
                 .append(value)
                 .append("';");
-        log.debug("mapped set variable statement: {}", statement);
+        log.debug("mapped setting for variable {}", key);
         return statement.toString();
     }
 
@@ -78,7 +66,7 @@ public interface DuckDbMapper {
                 .append("', SECRET '")
                 .append(secretKey)
                 .append("');");
-        log.debug("mapped set s3 secret statement: {}", statement.toString().replace(accessKey, stars).replace(secretKey, stars));
+        log.debug("mapped S3 credential setup");
         return statement.toString();
     }
 

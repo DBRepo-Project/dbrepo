@@ -51,7 +51,7 @@
         <super-csv.version>2.4.0</super-csv.version>
         <springdoc-openapi.version>2.3.0</springdoc-openapi.version>
         <hsqldb.version>2.7.2</hsqldb.version>
-        <testcontainers.version>1.19.1</testcontainers.version>
+        <testcontainers.version>1.21.4</testcontainers.version>
         <jackson.version>2.15.2</jackson.version>
         <c3p0.version>0.10.2</c3p0.version>
         <c3p0-hibernate.version>6.2.2.Final</c3p0-hibernate.version>

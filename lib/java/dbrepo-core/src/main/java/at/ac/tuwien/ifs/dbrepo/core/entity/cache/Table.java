@@ -25,6 +25,9 @@ public class Table {
     private UUID id;
 
     @jakarta.persistence.Column(nullable = false)
+    private UUID databaseId;
+
+    @jakarta.persistence.Column(nullable = false)
     private String internalName;
 
     @jakarta.persistence.Column(nullable = false)

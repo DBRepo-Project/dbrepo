@@ -176,7 +176,7 @@ export default defineNuxtConfig({
   },
 
   modules: [
-    ['@artmizu/nuxt-prometheus', {verbose: false}],
+    ['@artmizu/nuxt-prometheus', {verbose: false, healthCheck: false}],
     '@nuxtjs/i18n',
     '@pinia/nuxt',
     '@pinia-plugin-persistedstate/nuxt',

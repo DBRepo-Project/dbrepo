@@ -71,6 +71,29 @@ final class ReplicaDdl {
         }
     }
 
+    static void initializeMetadataLock(Connection connection, String sql, boolean resumable) throws SQLException {
+        initialize(connection, sql, resumable);
+        try (var statement = connection.prepareStatement("""
+                SELECT COUNT(*) FROM information_schema.TABLES t
+                JOIN information_schema.COLUMNS c ON c.TABLE_SCHEMA=t.TABLE_SCHEMA AND c.TABLE_NAME=t.TABLE_NAME
+                WHERE t.TABLE_SCHEMA=DATABASE() AND t.TABLE_NAME='qs_metadata_lock'
+                  AND t.ENGINE='InnoDB' AND t.TABLE_COMMENT='dbrepo:qs-metadata-lock:v1'
+                  AND c.COLUMN_NAME='id' AND c.DATA_TYPE='tinyint' AND c.COLUMN_KEY='PRI' AND c.IS_NULLABLE='NO'
+                  AND (SELECT COUNT(*) FROM information_schema.COLUMNS
+                       WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='qs_metadata_lock')=1
+                """); var rows = statement.executeQuery()) {
+            if (!rows.next() || rows.getInt(1) != 1) {
+                throw new SQLException("Existing qs_metadata_lock conflicts with the Query Store guard");
+            }
+        }
+        try (var statement = connection.prepareStatement("SELECT id FROM qs_metadata_lock");
+             var rows = statement.executeQuery()) {
+            if (!rows.next() || rows.getInt(1) != 1 || rows.next()) {
+                throw new SQLException("Query Store metadata lock row is missing or invalid");
+            }
+        }
+    }
+
     private static void prepare(Connection connection, String schema) throws SQLException {
         execute(connection, "CREATE TABLE IF NOT EXISTS " + quote(schema) + "." + RECEIPTS
                 + " (object_name VARCHAR(64) COLLATE utf8mb4_bin PRIMARY KEY, payload_hash CHAR(64) NOT NULL)"

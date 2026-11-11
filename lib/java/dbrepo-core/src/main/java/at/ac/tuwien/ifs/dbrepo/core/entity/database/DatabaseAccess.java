@@ -45,4 +45,7 @@ public class DatabaseAccess {
     @Column(nullable = false, name = "access_type", columnDefinition = "enum('READ', 'WRITE_OWN', 'WRITE_ALL')")
     private AccessType type;
 
+    @Column(name = "sql_grant_pending", nullable = false)
+    private boolean sqlGrantPending;
+
 }

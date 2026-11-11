@@ -61,7 +61,7 @@ class AtomicTupleOutboxIntegrationTest {
         ReflectionTestUtils.setField(replication, "baseUrl", "https://origin.example");
         service = new TableServiceMariaDbImpl(mock(DataMapper.class), Mappers.getMapper(MariaDbMapper.class),
                 mock(SubsetService.class), mock(StorageService.class), mock(DataService.class), replication);
-        try (Connection root = DriverManager.getConnection(url, "root", password)) {
+        try (Connection root = DriverManager.getConnection(url + "?sslMode=disable", "root", password)) {
             root.createStatement().execute("DROP DATABASE IF EXISTS atomic_tuple_test");
             root.createStatement().execute("CREATE DATABASE atomic_tuple_test");
             root.createStatement().execute("CREATE TABLE atomic_tuple_test.samples "
@@ -198,7 +198,7 @@ class AtomicTupleOutboxIntegrationTest {
     }
 
     private Connection connection() throws Exception {
-        return DriverManager.getConnection(url + "/atomic_tuple_test", "root", password);
+        return DriverManager.getConnection(url + "/atomic_tuple_test" + "?sslMode=disable", "root", password);
     }
 
     private long count(String relation) throws Exception {

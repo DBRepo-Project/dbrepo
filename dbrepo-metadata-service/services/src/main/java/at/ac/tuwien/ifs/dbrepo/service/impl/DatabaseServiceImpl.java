@@ -3,6 +3,7 @@ package at.ac.tuwien.ifs.dbrepo.service.impl;
 import at.ac.tuwien.ifs.dbrepo.cache.DatabaseCacheRepository;
 import at.ac.tuwien.ifs.dbrepo.config.RabbitConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateDatabaseDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseModifyVisibilityDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseUpdateReplicationUrlDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.LocalDatabaseIdDto;
@@ -65,6 +66,9 @@ public class DatabaseServiceImpl implements DatabaseService {
     @Autowired
     private ReplicationService replicationService;
 
+    @Autowired
+    private at.ac.tuwien.ifs.dbrepo.service.SqlAccessSyncService sqlAccessSyncService;
+
     @Value("${dbrepo.baseUrl:http://localhost}")
     private String baseUrl;
 
@@ -122,6 +126,13 @@ public class DatabaseServiceImpl implements DatabaseService {
             throw new DatabaseNotFoundException("Failed to find database in metadata database");
         }
         return database.get();
+    }
+
+    @Override
+    @Transactional
+    public Database findForUpdateById(UUID id) throws DatabaseNotFoundException {
+        return databaseRepository.findForUpdateById(id)
+                .orElseThrow(() -> new DatabaseNotFoundException("Database not found"));
     }
 
     @Override
@@ -252,9 +263,18 @@ public class DatabaseServiceImpl implements DatabaseService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public Database modifyOwner(Database database, String username) throws DatabaseNotFoundException, SearchServiceException,
-            SearchServiceConnectionException {
+            SearchServiceConnectionException, DataServiceException, DataServiceConnectionException, AccessNotFoundException {
+        final Optional<DatabaseAccess> existing = database.getAccesses().stream()
+                .filter(access -> username.equals(access.getUsername())).findFirst();
+        if (existing.isEmpty()) {
+            database.getAccesses().add(DatabaseAccess.builder().database(database).hdbid(database.getId())
+                    .username(username).type(AccessType.WRITE_ALL).sqlGrantPending(true).build());
+        } else if (existing.get().getType() != AccessType.WRITE_ALL) {
+            existing.get().setType(AccessType.WRITE_ALL);
+            existing.get().setSqlGrantPending(true);
+        }
         /* update in metadata database */
         database.setOwnedBy(username);
         database.setContactPerson(username);
@@ -263,7 +283,8 @@ public class DatabaseServiceImpl implements DatabaseService {
         databaseCacheRepository.deleteById(database.getId());
         /* save in search service */
         searchServiceGateway.update(database);
-        log.info("Updated database owner of database with id {}", database);
+        sqlAccessSyncService.afterCommit(database.getId());
+        log.info("Updated database owner of database with id {}", database.getId());
         return database;
     }
 

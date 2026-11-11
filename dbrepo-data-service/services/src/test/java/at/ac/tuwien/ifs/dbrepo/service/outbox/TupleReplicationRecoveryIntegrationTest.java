@@ -44,7 +44,7 @@ class TupleReplicationRecoveryIntegrationTest {
 
     @BeforeEach
     void prepare() throws Exception {
-        try (var connection = DriverManager.getConnection(URL, "root", password());
+        try (var connection = DriverManager.getConnection(URL + "?sslMode=disable", "root", password());
              var statement = connection.createStatement()) {
             statement.executeUpdate("CREATE DATABASE IF NOT EXISTS " + SCHEMA);
         }
@@ -288,7 +288,7 @@ class TupleReplicationRecoveryIntegrationTest {
     }
 
     private Connection connection() throws Exception {
-        return DriverManager.getConnection(URL + SCHEMA, "root", password());
+        return DriverManager.getConnection(URL + SCHEMA + "?sslMode=disable", "root", password());
     }
 
     private String password() {

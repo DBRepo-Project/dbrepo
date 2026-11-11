@@ -27,6 +27,9 @@ public class View {
     private Instant archivedAt;
 
     @Column(nullable = false)
+    private UUID databaseId;
+
+    @Column(nullable = false)
     private String internalName;
 
     @jakarta.persistence.Column(nullable = false)

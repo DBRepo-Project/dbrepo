@@ -164,11 +164,20 @@ public class IdentifierServiceImpl implements IdentifierService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public Identifier save(Database database, String ownedBy, IdentifierSaveDto data) throws SearchServiceException,
             DataServiceException, QueryNotFoundException, DataServiceConnectionException, DatabaseNotFoundException,
-            SearchServiceConnectionException, IdentifierNotFoundException, ViewNotFoundException {
+            SearchServiceConnectionException, IdentifierNotFoundException, ViewNotFoundException, MalformedException {
+        final IdentifierRepository.Identity existing = identifierRepository.findIdentityById(data.getId())
+                .orElseThrow(() -> new IdentifierNotFoundException("Identifier does not exist: " + data.getId()));
+        if (!existing.getDatabaseId().equals(database.getId())) {
+            throw new MalformedException("Identifier database cannot be changed");
+        }
+        if (data.getDoi() != null && !data.getDoi().equals(existing.getDoi())) {
+            throw new MalformedException("Identifier DOI cannot be changed through a metadata update");
+        }
         final Identifier identifier = metadataMapper.identifierSaveDtoToIdentifier(data);
+        identifier.setDoi(existing.getDoi());
         setAdditionalMetadata(database, identifier, ownedBy);
         /* save identifier in metadata database */
         final Identifier entity = identifierRepository.save(identifier);

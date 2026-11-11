@@ -22,6 +22,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClientException;
 
 @Slf4j
 @Service
@@ -38,19 +39,43 @@ public class DashboardServiceGatewayImpl implements DashboardServiceGateway {
     }
 
     @Override
+    public void requireUser(String username) throws DashboardServiceConnectionException, DashboardServiceException {
+        try {
+            final ResponseEntity<Void> response = restTemplate.exchange("/api/v1/dashboard/user/{username}",
+                    HttpMethod.HEAD, HttpEntity.EMPTY, Void.class, username);
+            if (!response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
+                throw new DashboardServiceException("Grafana account could not be verified");
+            }
+        } catch (HttpClientErrorException e) {
+            throw new DashboardServiceException("An existing Grafana account with the same login is required", e);
+        } catch (RestClientException e) {
+            throw new DashboardServiceConnectionException("Dashboard backend request failed", e);
+        }
+    }
+
+    @Override
     public void update(DatabaseDto database) throws DashboardServiceConnectionException, DashboardServiceException {
+        update(database, "/api/v1/dashboard/" + database.getDashboardUid());
+    }
+
+    @Override
+    public void updateContent(DatabaseDto database) throws DashboardServiceConnectionException, DashboardServiceException {
+        update(database, "/api/v1/dashboard/" + database.getDashboardUid() + "/content");
+    }
+
+    private void update(DatabaseDto database, String path) throws DashboardServiceConnectionException, DashboardServiceException {
         final ResponseEntity<Void> response;
-        final String path = "/api/v1/dashboard/" + database.getDashboardUid();
         log.trace("update dashboard at endpoint {} with path {}", gatewayConfig.getDashboardEndpoint(), path);
         try {
             response = restTemplate.exchange(path, HttpMethod.PUT, new HttpEntity<>(database), Void.class);
-        } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable |
-                 HttpServerErrorException.InternalServerError e) {
+        } catch (ResourceAccessException | HttpServerErrorException e) {
             log.error("Failed to update dashboard: {}", e.getMessage());
             throw new DashboardServiceConnectionException("Failed to update dashboard: " + e.getMessage(), e);
-        } catch (HttpClientErrorException.Unauthorized e) {
+        } catch (HttpClientErrorException e) {
             log.error("Failed to update dashboard: unauthorized: {}", e.getMessage());
             throw new DashboardServiceException("Failed to update dashboard: unauthorized: " + e.getMessage(), e);
+        } catch (RestClientException e) {
+            throw new DashboardServiceConnectionException("Dashboard backend request failed", e);
         }
         if (!response.getStatusCode().equals(HttpStatus.ACCEPTED)) {
             log.error("Failed to update dashboard: response code is not 202");
@@ -67,16 +92,14 @@ public class DashboardServiceGatewayImpl implements DashboardServiceGateway {
         log.trace("create dashboard at endpoint {} with path {}", gatewayConfig.getDashboardEndpoint(), path);
         try {
             response = restTemplate.exchange(path, HttpMethod.POST, new HttpEntity<>(data), CreateDashboardResponseDto.class);
-        } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable |
-                 HttpServerErrorException.InternalServerError e) {
+        } catch (ResourceAccessException | HttpServerErrorException e) {
             log.error("Failed to create dashboard: {}", e.getMessage());
             throw new DashboardServiceConnectionException("Failed to create dashboard: " + e.getMessage(), e);
-        } catch (HttpClientErrorException.BadRequest | HttpClientErrorException.Unauthorized e) {
+        } catch (HttpClientErrorException e) {
             log.error("Failed to create dashboard: malformed payload: {}", e.getMessage());
             throw new DashboardServiceException("Failed to create dashboard: malformed payload: " + e.getMessage(), e);
-        } catch (HttpClientErrorException.Conflict e) {
-            log.error("Failed to create dashboard: exists: {}", e.getMessage());
-            throw new DashboardServiceException("Failed to create dashboard: exists: " + e.getMessage(), e);
+        } catch (RestClientException e) {
+            throw new DashboardServiceConnectionException("Dashboard backend request failed", e);
         }
         if (!response.getStatusCode().equals(HttpStatus.CREATED)) {
             log.error("Failed to create dashboard: response code is not 201");
@@ -101,13 +124,14 @@ public class DashboardServiceGatewayImpl implements DashboardServiceGateway {
             response = restTemplate.exchange(path, HttpMethod.PUT, new HttpEntity<>(UpdateDashboardAccessDto.builder()
                     .permission(permission)
                     .build()), Void.class);
-        } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable |
-                 HttpServerErrorException.InternalServerError e) {
+        } catch (ResourceAccessException | HttpServerErrorException e) {
             log.error("Failed to update dashboard access: {}", e.getMessage());
             throw new DashboardServiceConnectionException("Failed to update dashboard access: " + e.getMessage(), e);
-        } catch (HttpClientErrorException.BadRequest | HttpClientErrorException.Unauthorized e) {
+        } catch (HttpClientErrorException e) {
             log.error("Failed to update dashboard access: malformed payload: {}", e.getMessage());
             throw new DashboardServiceException("Failed to update dashboard access: malformed payload: " + e.getMessage(), e);
+        } catch (RestClientException e) {
+            throw new DashboardServiceConnectionException("Dashboard backend request failed", e);
         }
         if (!response.getStatusCode().equals(HttpStatus.ACCEPTED)) {
             log.error("Failed to update dashboard access: response code is not 202");
@@ -125,13 +149,14 @@ public class DashboardServiceGatewayImpl implements DashboardServiceGateway {
                 path);
         try {
             response = restTemplate.exchange(path, HttpMethod.PUT, new HttpEntity<>(database), Void.class);
-        } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable |
-                 HttpServerErrorException.InternalServerError e) {
+        } catch (ResourceAccessException | HttpServerErrorException e) {
             log.error("Failed to update dashboard anonymous access: {}", e.getMessage());
             throw new DashboardServiceConnectionException("Failed to update dashboard anonymous access: " + e.getMessage(), e);
-        } catch (HttpClientErrorException.BadRequest | HttpClientErrorException.Unauthorized e) {
+        } catch (HttpClientErrorException e) {
             log.error("Failed to update dashboard anonymous access: malformed payload: {}", e.getMessage());
             throw new DashboardServiceException("Failed to update dashboard anonymous access: malformed payload: " + e.getMessage(), e);
+        } catch (RestClientException e) {
+            throw new DashboardServiceConnectionException("Dashboard backend request failed", e);
         }
         if (!response.getStatusCode().equals(HttpStatus.ACCEPTED)) {
             log.error("Failed to update dashboard access: response code is not 202");

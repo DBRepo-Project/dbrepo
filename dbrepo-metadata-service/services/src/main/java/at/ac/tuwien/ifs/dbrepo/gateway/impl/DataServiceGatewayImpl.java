@@ -40,6 +40,16 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     }
 
     @Override
+    public void synchronizeAccess(UUID databaseId, String username) {
+        final ResponseEntity<Void> response = restTemplate.exchange(
+                "/api/v1/database/{databaseId}/access/{username}/synchronize", HttpMethod.PUT,
+                HttpEntity.EMPTY, Void.class, databaseId, username);
+        if (response.getStatusCode() != HttpStatus.ACCEPTED) {
+            throw new IllegalStateException("Failed to synchronize SQL access: " + response.getStatusCode());
+        }
+    }
+
+    @Override
     public void createAccess(UUID databaseId, String username, AccessTypeDto access)
             throws DataServiceConnectionException, DataServiceException, DatabaseNotFoundException {
         final ResponseEntity<Void> response;

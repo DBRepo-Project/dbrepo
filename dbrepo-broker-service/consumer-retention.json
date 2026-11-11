@@ -1,7 +1,7 @@
 {
   "exchanges": [
     {
-      "name": "dbrepo.dead-letter",
+      "name": "dbrepo.consumer.errors",
       "vhost": "dbrepo",
       "type": "direct",
       "durable": true,
@@ -11,11 +11,11 @@
   ],
   "queues": [
     {
-      "name": "dbrepo.dead-letter",
+      "name": "dbrepo.consumer.errors",
       "vhost": "dbrepo",
-      "type": "quorum",
       "durable": true,
       "auto_delete": false,
+      "type": "quorum",
       "arguments": {
         "x-queue-type": "quorum"
       }
@@ -23,27 +23,27 @@
   ],
   "bindings": [
     {
-      "source": "dbrepo.dead-letter",
+      "source": "dbrepo.consumer.errors",
       "vhost": "dbrepo",
-      "destination": "dbrepo.dead-letter",
+      "destination": "dbrepo.consumer.errors",
       "destination_type": "queue",
-      "routing_key": "rejected",
+      "routing_key": "failed",
       "arguments": {}
     }
   ],
   "policies": [
     {
-      "name": "dbrepo-consumer-retention",
       "vhost": "dbrepo",
+      "name": "dbrepo-consumer-errors",
       "pattern": "^dbrepo$",
       "apply-to": "queues",
-      "priority": 50,
+      "priority": 100,
       "definition": {
-        "dead-letter-exchange": "dbrepo.dead-letter",
-        "dead-letter-routing-key": "rejected",
+        "dead-letter-exchange": "dbrepo.consumer.errors",
+        "dead-letter-routing-key": "failed",
         "dead-letter-strategy": "at-least-once",
         "overflow": "reject-publish",
-        "delivery-limit": 5
+        "delivery-limit": 10
       }
     }
   ]

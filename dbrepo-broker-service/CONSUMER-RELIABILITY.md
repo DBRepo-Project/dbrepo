@@ -30,9 +30,9 @@ the retry/read-timeout budget. Tune HTTP timeouts to actual insert latency to av
 ## Broker Topology
 
 - Existing source: durable quorum queue `dbrepo` in vhost `dbrepo`; no queue recreation or argument change.
-- Policy `dbrepo-consumer-retention`, exact pattern `^dbrepo$`, priority 50: DLX `dbrepo.dead-letter`, routing key
-  `rejected`, `dead-letter-strategy=at-least-once`, `overflow=reject-publish`, `delivery-limit=5`.
-- New durable direct exchange and durable quorum queue, both named `dbrepo.dead-letter`, with binding `rejected`.
+- Policy `dbrepo-consumer-errors`, exact pattern `^dbrepo$`, priority 100: DLX `dbrepo.consumer.errors`, routing key
+  `rejected`, `dead-letter-strategy=at-least-once`, `overflow=reject-publish`, `delivery-limit=10`.
+- New durable direct exchange and durable quorum queue, both named `dbrepo.consumer.errors`, with binding `rejected`.
 - Parking queue has no TTL, expiry, max length, dead-letter route or application consumer. Leave its delivery limit
   unset: this is unlimited on the shipped RabbitMQ 3.13.7. Do not set `x-delivery-limit=-1` on this version: it can
   discard a message on the first requeue, including a management-API inspection. Revalidate delivery-limit semantics
@@ -68,7 +68,7 @@ Changing startup definitions alone is not sufficient evidence that an existing b
    replicas only after the retention gate passes. Install the updated broker configuration/Helm template too so later
    restarts use the same definitions; no global installer modification is required.
 
-If an earlier rollout created `dbrepo.dead-letter` with `x-delivery-limit=-1`, importing the corrected file does not
+If an earlier rollout created `dbrepo.consumer.errors` with `x-delivery-limit=-1`, importing the corrected file does not
 remove that immutable queue argument. Pause consumers and all other writers to the parking queue/exchange; inspect queue
 metadata, not messages. RabbitMQ 3.13 quorum queues do not support `if-empty` or `if-unused` delete guards. For a known
 empty, unused parking queue, remove its DLX binding to prevent new transfers, recheck both ready/unacknowledged counts
@@ -116,7 +116,7 @@ Do not rely on a Secret update alone to reimport definitions into an already-run
 ### Verification Gate
 
 Verify the policy is selected for `dbrepo`, all five policy settings are effective, both queues are durable quorum,
-`stream_queue` is enabled, and the `rejected` binding reaches only the parking queue. Inspect queue details in the
+`stream_queue` is enabled, and the `failed` binding reaches only the parking queue. Inspect queue details in the
 management API as needed (`effective_policy_definition` and queue arguments). Verify no operator policy overrides
 retention and that the parking queue has zero consumers and no TTL/length/drop policy.
 
@@ -129,7 +129,7 @@ routing. Record original source/DLQ counts, routing keys, message IDs and test p
    and verify both the original bodies and `x-death.reason=rejected` are still present. This catches broker-version
    delivery-limit behavior that static definitions and an initial arrival check cannot establish.
 3. Return a permanent HTTP 4xx from a test data endpoint; verify one attempt and retention, not an ACK or hot loop.
-4. Return HTTP 503 continuously; verify exactly three attempts separated by 1s/2s, then retention. Restore the endpoint
+4. Return HTTP 503 continuously; verify exactly three attempts separated by 0.5s/1s, then retention. Restore the endpoint
    before the third attempt in a separate test and verify eventual successful ACK instead.
 5. In staging only, temporarily remove the parking binding, then reject a test message. Verify the broker retains the
    source dead letter; restore the binding by reimporting the partial file and verify eventual DLQ arrival. Test a
@@ -150,7 +150,7 @@ Do not attach an automatic shovel/consumer to the parking queue. Inspect with no
 export payload, properties and `x-death` history before recovery. Repair the cause, then check whether each tuple
 already committed. For deliberate replay, publish the original raw map to exchange `dbrepo` with the original
 `dbrepo.<database UUID>.<table UUID>` key from the source `x-death.routing-keys` entry (repair malformed keys explicitly),
-not the parking key `rejected`. Preserve the message ID and history for audit. Use persistent publishing, confirms
+not the parking key `failed`. Preserve the message ID and history for audit. Use persistent publishing, confirms
 and mandatory routing. Remove/ACK the parked copy only after confirmed, routed handoff, with a recorded replay outcome.
 A replay that fails is parked again, including when it carries `x-death` headers. Never bulk purge to clear an alert.
 
@@ -177,3 +177,5 @@ installed core artifact. With JDK 21, run `mvn -f /path/to/reactor.xml -Djacoco.
 -Dtest=DataServiceGatewayUnitTest,RabbitListenerUnitTest -Dsurefire.failIfNoSpecifiedTests=false`.
 These tests require no Docker. The existing Spring-context tests, including `CredentialServiceUnitTest` and
 `PrometheusEndpointMvcTest`, import the Redis test-container configuration and need a separate Docker-enabled run.
+
+Existing deployments may still have a `dbrepo.dead-letter` queue. Leave it in place until every retained message has been reviewed and recovered. Importing the new resources does not move or delete its messages. The priority-100 policy directs new failures to `dbrepo.consumer.errors`. Replay through an authenticated publisher with its matching AMQP `user_id`; the consumer rejects messages without a broker-validated identity.

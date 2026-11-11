@@ -186,7 +186,7 @@ public class DatabaseReplicaService {
                         .uniques(constraints.getUniques().stream().map(u -> u.getColumns().stream()
                                 .map(TableColumn::getInternalName).toList()).toList())
                         .primaryKey(constraints.getPrimaryKey().stream().map(p -> p.getColumn().getInternalName())
-                                .collect(Collectors.toSet()))
+                                .toList())
                         .foreignKeys(dto.getConstraints().getForeignKeys().stream().map(fk -> CreateForeignKeyDto.builder()
                                 .referencedTable(fk.getReferencedTable().getInternalName())
                                 .columns(fk.getReferences().stream().map(r -> r.getColumn().getInternalName()).toList())

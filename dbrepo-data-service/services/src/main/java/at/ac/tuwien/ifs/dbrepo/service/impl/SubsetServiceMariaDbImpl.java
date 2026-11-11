@@ -90,6 +90,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
                     + "ADD COLUMN IF NOT EXISTS replication_revision BIGINT NOT NULL DEFAULT 0, "
                     + "ADD COLUMN IF NOT EXISTS execution_context LONGTEXT, "
                     + "ADD INDEX IF NOT EXISTS query_fixity (query_hash, result_hash)");
+            ReplicaDdl.initializeMetadataLock(connection, mariaDbMapper.queryStoreCreateMetadataLockRawQuery(), true);
             statement.execute(mariaDbMapper.queryStoreCreateSubsetOutboxRawQuery());
             statement.execute("DROP TABLE IF EXISTS qs_subset_result_rows,qs_subset_results");
             statement.execute("DROP PROCEDURE IF EXISTS _capture_subset_result");

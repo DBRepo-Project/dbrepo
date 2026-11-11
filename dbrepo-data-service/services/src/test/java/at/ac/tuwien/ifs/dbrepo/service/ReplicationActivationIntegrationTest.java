@@ -50,7 +50,7 @@ class ReplicationActivationIntegrationTest {
 
     @BeforeEach
     void setup() throws Exception {
-        try (Connection connection = DriverManager.getConnection(url, "root", password); Statement sql = connection.createStatement()) {
+        try (Connection connection = DriverManager.getConnection(url + "?sslMode=disable", "root", password); Statement sql = connection.createStatement()) {
             sql.execute("DROP DATABASE IF EXISTS " + SCHEMA);
             sql.execute("DROP DATABASE IF EXISTS " + SCHEMA + "_target");
             sql.execute("CREATE DATABASE " + SCHEMA);
@@ -88,7 +88,7 @@ class ReplicationActivationIntegrationTest {
 
     @AfterEach
     void cleanup() throws Exception {
-        try (Connection connection = DriverManager.getConnection(url, "root", password); Statement sql = connection.createStatement()) {
+        try (Connection connection = DriverManager.getConnection(url + "?sslMode=disable", "root", password); Statement sql = connection.createStatement()) {
             sql.execute("DROP DATABASE IF EXISTS " + SCHEMA);
             sql.execute("DROP DATABASE IF EXISTS " + SCHEMA + "_target");
         }
@@ -308,7 +308,7 @@ class ReplicationActivationIntegrationTest {
         return Column.builder().internalName(name).columnType(type).build();
     }
 
-    private Connection connection() throws SQLException { return DriverManager.getConnection(url + SCHEMA, "root", password); }
+    private Connection connection() throws SQLException { return DriverManager.getConnection(url + SCHEMA + "?sslMode=disable", "root", password); }
 
     private List<String> history(boolean keys) throws SQLException {
         final List<String> values = new ArrayList<>();

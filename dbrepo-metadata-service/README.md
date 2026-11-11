@@ -75,3 +75,7 @@ uses the metadata service directly and populates `health.broker` in
 `GET /api/replication/status`: `DOWN` or `UNAVAILABLE` makes overall health
 `DOWN`; `UNKNOWN` makes it at least `DEGRADED`. An older metadata deployment
 returning 404 therefore cannot silently report healthy replication.
+
+### Database ownership transfer
+
+A transfer validates the target account and gives the new owner WRITE_ALL in Metadata and the Data-Service before changing ownership. A previously revoked user receives a new grant; an existing restricted grant is upgraded. An existing WRITE_ALL grant is retained. Existing grants for other users, including the previous owner, remain explicit memberships until separately revoked. A failed grant operation does not update ownership.

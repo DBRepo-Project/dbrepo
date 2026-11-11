@@ -2,16 +2,29 @@ package at.ac.tuwien.ifs.dbrepo.metadata;
 
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.QueryHints;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.QueryHint;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.Optional;
 
 @Repository
 public interface DatabaseRepository extends JpaRepository<Database, UUID> {
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @QueryHints(@QueryHint(name = "jakarta.persistence.lock.timeout", value = "10000"))
+    @Query("select d from Database d where d.id = :id")
+    Optional<Database> findForUpdateById(UUID id);
+
+    @Query("select distinct a.hdbid from DatabaseAccess a where a.sqlGrantPending = true order by a.hdbid")
+    List<UUID> findPendingGrantDatabases();
 
     List<Database> findAllDesc();
 

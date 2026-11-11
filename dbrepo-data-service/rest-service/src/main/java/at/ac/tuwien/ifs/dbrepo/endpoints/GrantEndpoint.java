@@ -7,6 +7,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.cache.User;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.service.GrantService;
 import at.ac.tuwien.ifs.dbrepo.service.MetadataService;
+import at.ac.tuwien.ifs.dbrepo.gateway.MetadataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -35,11 +36,13 @@ public class GrantEndpoint {
 
     private final GrantService grantService;
     private final MetadataService metadataService;
+    private final MetadataServiceGateway metadataServiceGateway;
 
     @Autowired
-    public GrantEndpoint(GrantService grantService, MetadataService metadataService) {
+    public GrantEndpoint(GrantService grantService, MetadataService metadataService, MetadataServiceGateway metadataServiceGateway) {
         this.grantService = grantService;
         this.metadataService = metadataService;
+        this.metadataServiceGateway = metadataServiceGateway;
     }
 
     @RequestMapping(path = "/{username}", method = {RequestMethod.GET, RequestMethod.HEAD})
@@ -73,7 +76,7 @@ public class GrantEndpoint {
             RemoteUnavailableException, MetadataServiceException, DatabaseMalformedException,
             DatabaseUnavailableException, UserNotFoundException, NotAllowedException, AccessNotFoundException {
         log.debug("endpoint check access to database, databaseId={}", databaseId);
-        final Database database = metadataService.getDatabase(databaseId);
+        final Database database = metadataServiceGateway.getDatabaseById(databaseId);
         final User user = metadataService.getUser(username);
         if (!database.getOwnedBy().equals(AuthUtil.getUsername(principal)) && !user.getUsername().equals(AuthUtil.getUsername(principal))) {
             log.error("Failed to find access: not owner or foreign user");

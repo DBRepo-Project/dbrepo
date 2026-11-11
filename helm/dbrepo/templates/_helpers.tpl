@@ -122,3 +122,16 @@ Broker connections
 {{- end }}
 {{- printf "%s" $connections }}
 {{- end }}
+{{/*
+Token issuer, must match the "iss" claim of the tokens (the public Keycloak URL)
+*/}}
+{{- define "dbrepo.auth.issuerUri" -}}
+{{- .Values.authservice.issuerUri | default (printf "https://%s/realms/dbrepo" .Values.hostname) }}
+{{- end }}
+
+{{/*
+Token signing keys, fetched from the in-cluster Keycloak so the pods do not need to reach the public hostname
+*/}}
+{{- define "dbrepo.auth.jwkUri" -}}
+{{- .Values.authservice.jwkUri | default (printf "%s/realms/dbrepo/protocol/openid-connect/certs" (.Values.authservice.endpoint | trimSuffix "/")) }}
+{{- end }}
