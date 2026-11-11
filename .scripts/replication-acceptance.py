@@ -82,6 +82,7 @@ class Site:
         self.username = os.environ[config["user_env"]]
         self.http = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
         self.db = None
+        self.operations = {}
 
     def request(self, path, method="GET", body=None, role="user", expected=(200,), parse_json=True):
         if not path.startswith("/api/") or path.startswith("//"):
@@ -96,11 +97,17 @@ class Site:
             response = error
         except (OSError, urllib.error.URLError):
             raise Blocked("HTTP transport unavailable at " + self.config["name"]) from None
+        # The retained outbox has no paginated API and includes earlier runs.
+        limit = (32 if path == '/api/replication/outbox' else 4) * 1024 * 1024
         with response:
-            raw = response.read(4 * 1024 * 1024 + 1)
+            raw = response.read(limit + 1)
             status, headers = response.status, dict((k.lower(), v) for k, v in response.headers.items())
+        operation = method + ' ' + re.sub(r'[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}',
+                                         '{id}', path.split('?')[0])
+        counts = self.operations.setdefault(operation, {})
+        counts[str(status)] = counts.get(str(status), 0) + 1
         require(status in expected, "%s %s returned HTTP %d" % (self.config["name"], method, status))
-        require(len(raw) <= 4 * 1024 * 1024, "Response exceeded bounded fixture size")
+        require(len(raw) <= limit, "Response exceeded bounded fixture size")
         if not parse_json:
             return None, headers
         try:
@@ -142,10 +149,14 @@ class Acceptance:
         self.primary = self.sites[0]
         self.name = "replication_acceptance_" + uuid.uuid4().hex[:16]
         self.report = {"run": self.name, "status": "RUNNING", "resources": [], "checks": [],
-                       "sites": {site.config["name"]: site.url for site in self.sites}}
+                       "sites": {site.config["name"]: site.url for site in self.sites},
+                       "runner_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+                       "protocol": "master-timestamp-history-v3"}
         self.subsets = []
 
     def save(self):
+        self.report['http_operations'] = {site.config['name']: getattr(site, 'operations', {})
+                                          for site in self.sites}
         self.args.report.write_text(json.dumps(self.report, indent=2) + "\n")
 
     def check(self, name, action):
@@ -178,8 +189,8 @@ class Acceptance:
             time.sleep(min(self.args.poll, max(0, deadline - time.monotonic())))
 
     def setup(self):
-        if self.config.get("strict_snapshot_activation") is not True or self.config.get("parent_coordinated") is not True:
-            raise Blocked("Parent coordination and strict_snapshot_activation=true are required before fixture writes")
+        if self.config.get("strict_history_activation") is not True or self.config.get("parent_coordinated") is not True:
+            raise Blocked("Parent coordination and strict_history_activation=true are required before fixture writes")
         required_roles = {"create-table", "insert-table-data", "delete-table-data", "persist-query"}
         for site in self.sites:
             if not required_roles.issubset(site.config.get("attested_user_roles", [])):
@@ -278,9 +289,12 @@ class Acceptance:
                 "Subset fixity is not verified v2")
         require(rows(data) == [{"id": 1, "value": "original"}], "Initial subset rows differ")
         meta = site.get(site.dbpath() + "/subset/" + subset)
-        if not re.fullmatch(r"[a-f0-9]{64}", meta.get("snapshot_hash") or ""):
-            raise Blocked("Immutable subset artifacts are not active; coordinate strict snapshot activation")
-        return {"id": subset, "hash": headers["x-result-hash"], "snapshot_hash": meta["snapshot_hash"], "rows": rows(data)}
+        require(meta.get('result_number') == len(data) and meta.get('query_hash'),
+                'Subset selection metadata is missing')
+        selection = {key: meta[key] for key in ('query', 'query_normalized', 'query_hash',
+                                               'execution', 'creation_location', 'result_number')}
+        site.request(site.dbpath() + '/subset/' + subset + '/result', expected=(401, 403), parse_json=False)
+        return {"id": subset, "hash": headers["x-result-hash"], "selection": selection, "rows": rows(data)}
 
     def replay(self, index, subset):
         site = self.sites[index]
@@ -289,11 +303,12 @@ class Acceptance:
         require(rows(data) == subset["rows"], "Historical subset rows changed")
         require(headers.get("x-integrity") == "verified" and headers.get("x-result-hash") == subset["hash"],
                 "Historical subset fixity changed or is unverified")
-        require(headers.get("x-result-mode") == "immutable-snapshot", "Citation was not served from an immutable artifact")
+        require(headers.get("x-result-mode") == "historical-re-execution", "Citation did not re-execute historical data")
         meta = site.get(path)
         require(meta["id"] == subset["id"] and meta["result_hash"] == subset["hash"]
-                and meta["is_persisted"] is True and meta.get("snapshot_hash") == subset["snapshot_hash"],
-                "Stored selection metadata or immutable artifact identity changed")
+                and meta["is_persisted"] is True
+                and {key: meta.get(key) for key in subset['selection']} == subset['selection'],
+                "Stored historical selection metadata changed")
 
     def crud(self):
         self.core = self.table("roundtrip")
@@ -541,9 +556,15 @@ class Acceptance:
     def outage_history(self):
         if not hasattr(self, "outage_tables"):
             raise Blocked("Outage/retry did not complete")
-        evidence = []
+        def converged_evidence():
+            observations = [self.observe(i, self.outage_tables, self.outage_key) for i in range(3)]
+            if observations[0]["timestamps"] == observations[1]["timestamps"] == observations[2]["timestamps"]:
+                return observations
+            return None
+        # Tuple delivery can finish before the separate timestamp-sync jobs.
+        evidence = self.wait(converged_evidence, "three-site timestamp evidence convergence")
         for i, site in enumerate(self.sites):
-            observed = self.observe(i, self.outage_tables, self.outage_key)
+            observed = evidence[i]
             if i == 0:
                 require(rows(observed["history"]) == rows([{"id": 1, "value": "original"}, {"id": 1, "value": "changed"}]),
                         "Source history lost a committed version")
@@ -568,9 +589,6 @@ class Acceptance:
                      and t["database"] == site.db["id"] and t["table"] == self.outage_tables[i]["id"]]
             require(sorted((t["start"], t["end"]) for t in local) ==
                     sorted((h["start"], h["end"]) for h in observed["history"]), "Local timestamp evidence differs from actual visibility")
-            evidence.append(observed)
-        require(evidence[0]["timestamps"] == evidence[1]["timestamps"] == evidence[2]["timestamps"],
-                "Three-site timestamp evidence has not converged")
         self.report["outage_evidence_sha256"] = fingerprint(evidence)
 
     def archive(self):
@@ -601,7 +619,7 @@ class Acceptance:
         if not self.args.allow_faults or not hook or self.config.get("scoped_faults_coordinated") is not True:
             raise Blocked("Origin-offline citation requires a parent-coordinated, fixture-scoped offline_hook")
         if len(self.subsets) != 3:
-            raise Blocked("Immutable origin artifact was not created")
+            raise Blocked("Historical origin selection was not created")
         scope = {"run": self.name, "database_id": uid(self.primary.db["id"]), "subset_id": self.subsets[0]["id"],
                  "origin_url": self.primary.url, "target_urls": [s.url for s in self.sites[1:]],
                  "ttl_seconds": self.args.deadline + 60}
@@ -629,7 +647,7 @@ class Acceptance:
         suffix = "/replication/snapshots/" + snapshot
         envelope = self.primary.get(self.primary.dbpath() + suffix, role="system")
         manifest = envelope["manifest"]
-        require(manifest.get("format") == 1 and manifest.get("snapshotId") == snapshot
+        require(manifest.get("format") == 3 and manifest.get("snapshotId") == snapshot
                 and manifest.get("origin") == self.primary.url
                 and manifest.get("sourceDatabaseId") == self.primary.db["id"]
                 and manifest.get("sourceTableId") == entry["localTableId"]
@@ -714,7 +732,7 @@ class Acceptance:
             self.check("database_history_sync_jobs_complete", lambda: self.history_sync(database=True))
             self.check("archive_preserves_local_subset_fixity", self.archive)
             self.check("canonical_origin_subset_replays_on_peers_after_archive", self.canonical_subset)
-            self.check("offline_canonical_immutable_artifact", self.offline_canonical_subset)
+            self.check("offline_canonical_historical_reexecution", self.offline_canonical_subset)
         else:
             self.report["checks"].append({"name": "remaining_scenarios", "status": "BLOCKED", "reason": "Fixture setup failed"})
         statuses = {c["status"] for c in self.report["checks"]}

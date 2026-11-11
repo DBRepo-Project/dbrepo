@@ -597,6 +597,36 @@ c.publish_dataframe(v['key'],pd.DataFrame([{'id':5,'value':50,'label':'amqp-fram
         step('message.delete.own',lambda:self.http('DELETE','/api/v1/message/'+mid,role='admin',expected=(202,)),need=('message',),reason=reason)
 
 
+def run_replication(config, report, allow_faults=False):
+    """Reuse the three-site acceptance harness and keep incomplete checks visible."""
+    command = [sys.executable, str(HERE / 'replication-acceptance.py'), '--config', str(config),
+               '--report', str(report), '--allow-writes', '--http-timeout', '60', '--wait', '300',
+               '--sync-wait', '900', '--deadline', '3600']
+    if allow_faults:
+        command.append('--allow-faults')
+    if report.exists() or report.resolve() == config.resolve():
+        raise ValueError('Replication report must be a new file, separate from configuration')
+    try:
+        process = subprocess.run(command, timeout=3660)
+        result = json.loads(report.read_text())
+        if (not isinstance(result, dict) or not isinstance(result.get('checks'), list)
+                or not all(isinstance(check, dict) for check in result['checks'])):
+            raise ValueError('Invalid replication report')
+    except (OSError, ValueError, subprocess.TimeoutExpired):
+        return 2, {'status': 'BLOCKED', 'reason': 'Replication run did not produce a complete report',
+                   'report': str(report.resolve())}
+    status = result.get('status')
+    checks = result.get('checks', [])
+    if status == 'FAIL' or process.returncode == 1 or any(c.get('status') == 'FAIL' for c in checks):
+        code = 1
+    elif status == 'PASS' and process.returncode == 0 and checks and all(c.get('status') == 'PASS' for c in checks):
+        code = 0
+    else:
+        code = 2
+    return code, {'status': {0: 'PASS', 1: 'FAIL', 2: 'BLOCKED'}[code],
+                  'report': str(report.resolve()), 'checks': checks}
+
+
 def main(argv=None):
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--config',type=Path,help='JSON file: endpoint, owner, optional peer/admin/system/oidc/test_container')
@@ -618,7 +648,19 @@ def main(argv=None):
     parser.add_argument('--publish',action='store_true',help='Publish a synthetic immutable local identifier; record remains')
     parser.add_argument('--external-doi',help='Exercise external metadata retrieval for this DOI')
     parser.add_argument('--check-source',type=Path,help='Compare the endpoint catalogue to this repository checkout, without network calls')
+    parser.add_argument('--replication-config',type=Path,help='Private three-site acceptance configuration; credentials come from named environment variables')
+    parser.add_argument('--replication-only',action='store_true',help='Run only the three-site acceptance checks')
+    parser.add_argument('--replication-allow-faults',action='store_true',help='Enable configured faults scoped to newly created acceptance fixtures')
     args=parser.parse_args(argv)
+    if (args.replication_only or args.replication_allow_faults) and not args.replication_config:
+        parser.error('--replication-config is required for replication options')
+    if args.replication_only:
+        report = args.output or Path('replication-live-report-' + datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ') + '.json')
+        if report.exists() or report.resolve() == args.replication_config.resolve():
+            parser.error('--output must be a new file separate from --replication-config')
+        code, result = run_replication(args.replication_config, report, args.replication_allow_faults)
+        print(json.dumps(result))
+        return code
     if args.check_source:
         expected=json.loads((HERE/'client-live-endpoints.json').read_text())
         actual=source_inventory(args.check_source)
@@ -647,6 +689,11 @@ def main(argv=None):
     if args.output is None:
         host=re.sub(r'[^a-zA-Z0-9.-]','_',urlsplit(config['endpoint']).netloc)
         args.output=Path('client-live-report-'+host+'-'+config['profile']+'-'+datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')+'.json')
+    if args.replication_config:
+        replication_report = args.output.with_name(args.output.stem + '-replication.json')
+        if (replication_report.exists() or args.output.resolve() == args.replication_config.resolve()
+                or replication_report.resolve() == args.replication_config.resolve()):
+            parser.error('Replication reports must be new files separate from configuration')
     logging.getLogger().setLevel(logging.WARNING)
     runner=Runner(config,args.output)
     try:
@@ -661,7 +708,14 @@ def main(argv=None):
     report=json.loads(args.output.read_text())
     uncovered=[r for r in report['endpoint_coverage'] if r['state']=='uncovered']
     print(f"Report: {args.output.resolve()} | {dict(summary)} | {len(uncovered)} uncovered operations")
-    return 1 if summary['failed'] else 2 if summary['skipped'] or uncovered else 0
+    code = 1 if summary['failed'] else 2 if summary['skipped'] or uncovered else 0
+    if args.replication_config:
+        replication_code, result = run_replication(args.replication_config, replication_report, args.replication_allow_faults)
+        report['replication'] = result
+        args.output.write_text(json.dumps(report, indent=2) + '\n')
+        code = 1 if 1 in (code, replication_code) else max(code, replication_code)
+        print('Replication: ' + result['status'] + ' | ' + result['report'])
+    return code
 
 
 if __name__=='__main__':

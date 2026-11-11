@@ -66,7 +66,33 @@ python .scripts/client-live-test.py --config /private/path/customer.json \
 
 `--publish` creates a separate synthetic database identifier, temporarily makes only the synthetic test database public, publishes the local identifier and checks OAI GetRecord. The identifier is immutable and remains after the run. The editable subset draft receives its own deletion test. On a DOI-enabled server, earlier draft creation can already contact DataCite. Use a provider stub or an approved sandbox; `--publish` is not a switch that disables every external write.
 
-`--external-doi` calls the application's external metadata retrieval endpoint. It can contact the external providers configured by that application. Both flags are inactive by default. The user profile excludes these publication/provider cases.
+`--external-doi` calls the application's external metadata retrieval endpoint. Its DOI handler supports Crossref funder identifiers, such as `10.13039/501100000780`; a journal article DOI is not a valid success fixture for that handler. It can contact the external providers configured by that application. Both flags are inactive by default. The user profile excludes these publication/provider cases.
+
+## Three-site replication checks
+
+The same runner can invoke `replication-acceptance.py` with a private three-site
+configuration. See [replication acceptance](../dbrepo-replication-service/ACCEPTANCE.md)
+for account roles, SQL observers and scoped fault hooks. Credentials are read from
+the environment variables named in that configuration.
+
+```sh
+python .scripts/client-live-test.py \
+  --replication-only --replication-config /private/path/three-sites.json \
+  --replication-allow-faults --output replication-report.json
+```
+
+This creates synthetic databases and checks replica activation, tuple changes,
+read-only enforcement, historical subsets, duplicate and reordered delivery,
+archive behavior and recovery. Fault hooks must affect only the new fixtures and
+have a bounded expiry. Missing required hooks or incomplete observations produce
+`BLOCKED`, never `PASS`. Reports must use a new path and retain fixture IDs for
+inspection; immutable historical records remain after the run.
+
+To run both suites, add `--replication-config` to a normal `user` or `full` run.
+Use `--table-deletion archive` against the replication branch. The client report
+links to a separate `-replication.json` report. Exit code 1 means at least one
+failure; 2 means incomplete coverage or a blocked check; 0 requires both suites
+to pass. Run again with each site selected as primary to cover all directions.
 
 ## Compare instances
 

@@ -25,6 +25,50 @@ class LiveRunnerTest(unittest.TestCase):
         self.runner = live.Runner({'endpoint':'https://example.invalid','owner':{'username':'owner','password':'owner-secret'},
                                    'peer':{'username':'peer','password':'peer-secret'}},Path(self.directory.name)/'report.json')
 
+    def test_replication_requires_complete_success_and_keeps_blockers(self):
+        from types import SimpleNamespace
+        config = Path(self.directory.name) / 'sites.json'
+        config.write_text('{}')
+        report = config.with_name('replication.json')
+        for status, exit_code, checks, expected in [
+            ('PASS', 0, [{'status': 'PASS'}], 0),
+            ('PASS', 0, [], 2),
+            ('PASS', 0, None, 2),
+            ('PASS', 0, ['invalid'], 2),
+            ('PASS', 0, [{'status': 'BLOCKED'}], 2),
+            ('RUNNING', 0, [{'status': 'PASS'}], 2),
+            ('BLOCKED', 2, [{'status': 'BLOCKED'}], 2),
+            ('FAIL', 1, [{'status': 'FAIL'}], 1),
+            ('PASS', 1, [{'status': 'PASS'}], 1),
+        ]:
+            report.unlink(missing_ok=True)
+            def execute(command, **kwargs):
+                self.assertIn('--allow-writes', command)
+                self.assertNotIn('--allow-faults', command)
+                report.write_text(json.dumps({'status': status, 'checks': checks}))
+                return SimpleNamespace(returncode=exit_code)
+            with self.subTest(status=status, checks=checks), patch.object(live.subprocess, 'run', side_effect=execute):
+                code, result = live.run_replication(config, report)
+                self.assertEqual(expected, code)
+                self.assertEqual({0: 'PASS', 1: 'FAIL', 2: 'BLOCKED'}[expected], result['status'])
+
+    def test_replication_never_overwrites_existing_evidence_or_configuration(self):
+        config = Path(self.directory.name) / 'sites.json'
+        config.write_text('private configuration')
+        with patch.object(live.subprocess, 'run') as execute:
+            with self.assertRaises(ValueError): live.run_replication(config, config)
+            execute.assert_not_called()
+        self.assertEqual('private configuration', config.read_text())
+
+    def test_replication_faults_are_explicit_and_missing_results_stay_blocked(self):
+        from types import SimpleNamespace
+        config = Path(self.directory.name) / 'sites.json'
+        report = config.with_name('replication.json')
+        with patch.object(live.subprocess, 'run', return_value=SimpleNamespace(returncode=0)) as execute:
+            code, _ = live.run_replication(config, report, allow_faults=True)
+            self.assertEqual(2, code)
+            self.assertIn('--allow-faults', execute.call_args.args[0])
+
     def response(self, status=200, body=None):
         response = requests.Response()
         response.status_code = status
