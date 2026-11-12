@@ -645,6 +645,10 @@ export default {
     },
     constraintFailed ({code, message}) {
       const toast = useToastInstance()
+      if (typeof message === 'string' && message.length > 0) {
+        toast.error(message)
+        return
+      }
       if (typeof code !== 'string') {
         toast.error(message)
         return

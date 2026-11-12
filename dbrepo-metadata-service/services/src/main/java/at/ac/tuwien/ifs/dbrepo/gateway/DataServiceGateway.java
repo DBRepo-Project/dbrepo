@@ -105,7 +105,7 @@ public interface DataServiceGateway {
      * @return The inspected table schema after the change.
      */
     TableDto addTableConstraint(UUID databaseId, UUID tableId, ConstraintAddDto data)
-            throws DataServiceConnectionException, DataServiceException, TableNotFoundException;
+            throws DataServiceConnectionException, DataServiceException, TableNotFoundException, MalformedException;
 
     /**
      * Deletes a constraint from a table in a given database.
@@ -116,7 +116,7 @@ public interface DataServiceGateway {
      * @return The inspected table schema after the change.
      */
     TableDto deleteTableConstraint(UUID databaseId, UUID tableId, ConstraintDeleteDto data)
-            throws DataServiceConnectionException, DataServiceException, TableNotFoundException;
+            throws DataServiceConnectionException, DataServiceException, TableNotFoundException, MalformedException;
 
     /**
      * Deletes a given table in a given database.
