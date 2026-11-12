@@ -242,19 +242,14 @@
               :variant="inputVariant"
               :rules="[v => !!(v && v.trim()) || $t('validation.required')]"
               :label="$t('pages.table.subpages.schema.constraints.check_expression.label')" />
-          </v-col>
-          <v-col
-            v-if="canEditChecks"
-            cols="auto"
-            class="mt-3">
             <v-btn
+              v-if="canEditChecks"
+              class="mt-2"
               size="small"
               :color="disabled ? '' : 'error'"
-              variant="text"
-              icon="mdi-delete"
+              variant="flat"
               :disabled="disabled"
-              :aria-label="$t('pages.table.subpages.schema.constraints.delete.text')"
-              :title="$t('pages.table.subpages.schema.constraints.delete.text')"
+              :text="$t('pages.table.subpages.schema.foreign_keys.remove.text')"
               @click="removeCheck(index)" />
           </v-col>
         </v-row>
