@@ -108,6 +108,7 @@
         </v-chip>
       </v-col>
       <v-col
+        v-if="showListControls"
         cols="auto"
         class="mt-3">
         <v-btn
@@ -119,7 +120,9 @@
           @click="removeForeignKey(index)" />
       </v-col>
     </v-row>
-    <v-row dense>
+    <v-row
+      v-if="showListControls"
+      dense>
       <v-col>
         <v-btn
           size="small"
@@ -195,6 +198,12 @@ export default {
       type: Number,
       default () {
         return null
+      }
+    },
+    showListControls: {
+      type: Boolean,
+      default () {
+        return true
       }
     }
   },
