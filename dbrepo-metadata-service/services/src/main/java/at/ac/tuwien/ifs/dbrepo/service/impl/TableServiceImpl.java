@@ -111,7 +111,12 @@ public class TableServiceImpl implements TableService {
     public Table syncTableSchema(Database database, Table table) throws DataServiceException,
             DataServiceConnectionException, SearchServiceConnectionException, SearchServiceException,
             DatabaseNotFoundException, TableNotFoundException, MalformedException {
-        return syncConstraintMetadata(table, dataServiceGateway.getTableSchema(database.getId(), table.getId()));
+        final TableDto inspected = dataServiceGateway.getTableSchema(database.getId(), table.getId());
+        if (inspected == null) {
+            log.warn("Table schema inspection returned no result for table with id {}, skip schema sync.", table.getId());
+            return table;
+        }
+        return syncConstraintMetadata(table, inspected);
     }
 
     @Override
@@ -168,7 +173,6 @@ public class TableServiceImpl implements TableService {
             }
             /* set constraints */
             table.setConstraints(metadataMapper.constraintsCreateDtoToConstraints(data.getConstraints(), database, table));
-            table.getConstraints().setForeignKeys(new LinkedList<>());
         } catch (IllegalArgumentException e) {
             throw new MalformedException(e);
         }
