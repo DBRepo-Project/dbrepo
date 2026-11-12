@@ -283,7 +283,8 @@
             :disabled="loadingConstraint"
             :input-variant="inputVariant"
             :button-variant="buttonVariant"
-            :max="1" />
+            :max="1"
+            :show-list-controls="false" />
         </v-card-text>
         <v-card-actions>
           <v-spacer />
