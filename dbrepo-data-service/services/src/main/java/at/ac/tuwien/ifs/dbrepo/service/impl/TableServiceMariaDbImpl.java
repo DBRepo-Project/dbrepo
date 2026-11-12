@@ -2,8 +2,12 @@ package at.ac.tuwien.ifs.dbrepo.service.impl;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnStatisticDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnTypeDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.CreateTableColumnDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintAddDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintDeleteDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.unique.UniqueDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.ColumnType;
@@ -32,6 +36,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.Instant;
 import java.util.*;
 
@@ -173,6 +178,181 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             dataSource.close();
         }
         log.info("Updated table with name {}.{}", database.getInternalName(), table.getInternalName());
+    }
+
+    @Override
+    public TableDto addConstraint(Database database, Table table, ConstraintAddDto data) throws SQLException,
+            TableMalformedException, TableNotFoundException {
+        final String type = normalizeConstraintType(data.getType());
+        validateAddConstraint(type, data);
+        if ("not_null".equals(type)) {
+            return modifyNullConstraint(database, table, data.getColumn(), false);
+        }
+        executeAlterConstraint(database, table, mariaDbMapper.tableConstraintAddToAlterTableRawQuery(
+                database.getInternalName(), table.getInternalName(), data), "add_table_constraint");
+        return inspect(database, table.getInternalName());
+    }
+
+    @Override
+    public TableDto deleteConstraint(Database database, Table table, ConstraintDeleteDto data) throws SQLException,
+            TableMalformedException, TableNotFoundException {
+        final String type = normalizeConstraintType(data.getType());
+        validateDeleteConstraint(type, data);
+        if ("not_null".equals(type)) {
+            return modifyNullConstraint(database, table, data.getColumn(), true);
+        }
+        final String name = "check".equals(type) && (data.getName() == null || data.getName().isBlank()) ?
+                resolveCheckConstraintName(database, table, data.getCheck()) : data.getName();
+        executeAlterConstraint(database, table, mariaDbMapper.tableConstraintDropToAlterTableRawQuery(
+                database.getInternalName(), table.getInternalName(), type, name), "delete_table_constraint");
+        return inspect(database, table.getInternalName());
+    }
+
+    private void executeAlterConstraint(Database database, Table table, String query, String action)
+            throws SQLException, TableMalformedException {
+        final ComboPooledDataSource dataSource = getDataSource(database);
+        final Connection connection = dataSource.getConnection();
+        try {
+            final long start = System.currentTimeMillis();
+            executeWithSystemVersioningAlterHistory(connection, query);
+            log.atDebug()
+                    .setMessage(action + ": " + table.getInternalName() + "." + database.getInternalName())
+                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                    .addKeyValue(Constants.ACTION, action)
+                    .log();
+            connection.commit();
+        } catch (SQLException e) {
+            connection.rollback();
+            log.error("Failed to alter table constraint: {}", e.getMessage());
+            throw new TableMalformedException("Failed to alter table constraint: " + e.getMessage(), e);
+        } finally {
+            dataSource.close();
+        }
+    }
+
+    private void executeWithSystemVersioningAlterHistory(Connection connection, String query) throws SQLException {
+        String previous = null;
+        try (Statement statement = connection.createStatement()) {
+            final ResultSet resultSet = statement.executeQuery("SELECT @@SESSION.system_versioning_alter_history");
+            if (resultSet.next()) {
+                previous = resultSet.getString(1);
+            }
+            statement.execute("SET SESSION system_versioning_alter_history = KEEP");
+            statement.execute(query);
+        } finally {
+            if (previous != null) {
+                try (Statement statement = connection.createStatement()) {
+                    statement.execute("SET SESSION system_versioning_alter_history = " +
+                            systemVersioningAlterHistoryValue(previous));
+                }
+            }
+        }
+    }
+
+    private String systemVersioningAlterHistoryValue(String value) throws SQLException {
+        final String normalized = value.toUpperCase(Locale.ENGLISH);
+        if (!List.of("ERROR", "KEEP", "DELETE").contains(normalized)) {
+            throw new SQLException("Unexpected system_versioning_alter_history value: " + value);
+        }
+        return normalized;
+    }
+
+    private TableDto modifyNullConstraint(Database database, Table table, String columnName, boolean nullAllowed)
+            throws SQLException, TableMalformedException, TableNotFoundException {
+        final TableDto inspected = inspect(database, table.getInternalName());
+        final ColumnDto column = inspected.getColumns()
+                .stream()
+                .filter(c -> c.getInternalName().equals(mariaDbMapper.nameToInternalName(columnName)))
+                .findFirst()
+                .orElseThrow(() -> new TableMalformedException("Failed to find column: " + columnName));
+        final CreateTableColumnDto data = columnToCreateTableColumnDto(column);
+        data.setNullAllowed(nullAllowed);
+        executeAlterConstraint(database, table, mariaDbMapper.tableColumnToModifyNullRawQuery(
+                database.getInternalName(), table.getInternalName(), data), nullAllowed ? "delete_not_null_constraint" : "add_not_null_constraint");
+        return inspect(database, table.getInternalName());
+    }
+
+    private String resolveCheckConstraintName(Database database, Table table, String check)
+            throws SQLException, TableMalformedException {
+        final ComboPooledDataSource dataSource = getDataSource(database);
+        final Connection connection = dataSource.getConnection();
+        try {
+            final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.checkConstraintNameSelectRawQuery());
+            statement.setString(1, database.getInternalName());
+            statement.setString(2, table.getInternalName());
+            statement.setString(3, check);
+            final ResultSet resultSet = statement.executeQuery();
+            if (!resultSet.next()) {
+                throw new TableMalformedException("Failed to find check constraint");
+            }
+            return resultSet.getString(1);
+        } finally {
+            dataSource.close();
+        }
+    }
+
+    private CreateTableColumnDto columnToCreateTableColumnDto(ColumnDto column) {
+        return CreateTableColumnDto.builder()
+                .name(column.getInternalName())
+                .indexLength(column.getIndexLength())
+                .type(column.getColumnType())
+                .size(column.getSize())
+                .d(column.getD())
+                .nullAllowed(column.getIsNullAllowed())
+                .description(column.getDescription())
+                .enums(column.getEnums() == null ? List.of() : column.getEnums().stream().map(e -> e.getValue()).toList())
+                .sets(column.getSets() == null ? List.of() : column.getSets().stream().map(s -> s.getValue()).toList())
+                .build();
+    }
+
+    private String normalizeConstraintType(String type) throws TableMalformedException {
+        if (type == null) {
+            throw new TableMalformedException("Constraint type is required");
+        }
+        final String normalized = type.toLowerCase(Locale.ENGLISH).replace("-", "_").replace(" ", "_");
+        if ("primary_key".equals(normalized)) {
+            throw new TableMalformedException("Primary key constraints cannot be changed");
+        }
+        return normalized;
+    }
+
+    private void validateAddConstraint(String type, ConstraintAddDto data) throws TableMalformedException {
+        switch (type) {
+            case "unique" -> requireColumns(data.getColumns(), "Unique constraint columns are required");
+            case "foreign_key" -> {
+                requireColumns(data.getColumns(), "Foreign key columns are required");
+                requireColumns(data.getReferencedColumns(), "Foreign key referenced columns are required");
+                requireString(data.getReferencedTable(), "Foreign key referenced table is required");
+            }
+            case "check" -> requireString(data.getCheck(), "Check constraint expression is required");
+            case "not_null" -> requireString(data.getColumn(), "Column is required");
+            default -> throw new TableMalformedException("Unsupported constraint type: " + data.getType());
+        }
+    }
+
+    private void validateDeleteConstraint(String type, ConstraintDeleteDto data) throws TableMalformedException {
+        switch (type) {
+            case "unique", "foreign_key" -> requireString(data.getName(), "Constraint name is required");
+            case "check" -> {
+                if ((data.getName() == null || data.getName().isBlank()) && (data.getCheck() == null || data.getCheck().isBlank())) {
+                    throw new TableMalformedException("Check constraint name or expression is required");
+                }
+            }
+            case "not_null" -> requireString(data.getColumn(), "Column is required");
+            default -> throw new TableMalformedException("Unsupported constraint type: " + data.getType());
+        }
+    }
+
+    private void requireColumns(List<String> columns, String message) throws TableMalformedException {
+        if (columns == null || columns.isEmpty()) {
+            throw new TableMalformedException(message);
+        }
+    }
+
+    private void requireString(String value, String message) throws TableMalformedException {
+        if (value == null || value.isBlank()) {
+            throw new TableMalformedException(message);
+        }
     }
 
     @Override

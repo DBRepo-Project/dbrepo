@@ -125,7 +125,7 @@
           size="small"
           :color="disabled ? '' : 'tertiary'"
           :variant="buttonVariant"
-          :disabled="disabled || localColumnOptions.length === 0"
+          :disabled="disabled || localColumnOptions.length === 0 || (max !== null && localForeignKeys.length >= max)"
           :loading="loading"
           :text="$t('pages.table.subpages.schema.foreign_keys.add.text')"
           @click="addForeignKey" />
@@ -189,6 +189,12 @@ export default {
       type: String,
       default () {
         return 'flat'
+      }
+    },
+    max: {
+      type: Number,
+      default () {
+        return null
       }
     }
   },

@@ -8,6 +8,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleUpdateDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.CreateTableColumnDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintAddDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.*;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Operator;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
@@ -260,6 +261,12 @@ public interface MariaDbMapper {
         return statement;
     }
 
+    default String checkConstraintNameSelectRawQuery() {
+        final String statement = "SELECT cc.`CONSTRAINT_NAME` FROM information_schema.CHECK_CONSTRAINTS cc JOIN information_schema.TABLE_CONSTRAINTS tc ON cc.`CONSTRAINT_SCHEMA` = tc.`CONSTRAINT_SCHEMA` AND cc.`CONSTRAINT_NAME` = tc.`CONSTRAINT_NAME` WHERE cc.`CONSTRAINT_SCHEMA` = ? AND tc.`TABLE_NAME` = ? AND cc.`CHECK_CLAUSE` = ? LIMIT 1;";
+        log.trace("mapped select check constraint name statement: {}", statement);
+        return statement;
+    }
+
     default String databaseTableColumnsSelectRawQuery() {
         final String statement = "SELECT `ORDINAL_POSITION`, `COLUMN_DEFAULT`, `IS_NULLABLE`, `DATA_TYPE`, `CHARACTER_MAXIMUM_LENGTH`, `NUMERIC_PRECISION`, `NUMERIC_SCALE`, `COLUMN_TYPE`, `COLUMN_KEY`, `COLUMN_NAME`, IF(`COLUMN_COMMENT`='',NULL,`COLUMN_COMMENT`) AS `COLUMN_COMMENT` FROM `information_schema`.`COLUMNS` WHERE `TABLE_SCHEMA` = ? AND `TABLE_NAME` = ? ORDER BY `ORDINAL_POSITION` ASC;";
         log.trace("mapped select columns statement: {}", statement);
@@ -405,6 +412,76 @@ public interface MariaDbMapper {
         return stringBuilder.toString();
     }
 
+    default String tableConstraintAddToAlterTableRawQuery(String databaseName, String tableName,
+                                                          ConstraintAddDto data) {
+        final String type = data.getType().toLowerCase(Locale.ENGLISH);
+        final StringBuilder statement = new StringBuilder("ALTER TABLE ")
+                .append(quoteQualifiedIdentifier(databaseName, tableName))
+                .append(" ADD ");
+        switch (type) {
+            case "unique" -> statement.append("UNIQUE KEY (")
+                    .append(columnList(data.getColumns()))
+                    .append(")");
+            case "foreign_key", "foreign-key", "foreign key" -> {
+                statement.append("FOREIGN KEY (")
+                        .append(columnList(data.getColumns()))
+                        .append(") REFERENCES ")
+                        .append(quoteIdentifier(nameToInternalName(data.getReferencedTable())))
+                        .append(" (")
+                        .append(columnList(data.getReferencedColumns()))
+                        .append(")");
+                if (data.getOnDelete() != null) {
+                    statement.append(" ON DELETE ").append(data.getOnDelete());
+                }
+                if (data.getOnUpdate() != null) {
+                    statement.append(" ON UPDATE ").append(data.getOnUpdate());
+                }
+            }
+            case "check" -> statement.append("CHECK (")
+                    .append(data.getCheck())
+                    .append(")");
+            default -> throw new IllegalArgumentException("Unsupported constraint type: " + data.getType());
+        }
+        statement.append(";");
+        log.trace("mapped add constraint statement: {}", statement);
+        return statement.toString();
+    }
+
+    default String tableConstraintDropToAlterTableRawQuery(String databaseName, String tableName, String type,
+                                                           String name) {
+        final StringBuilder statement = new StringBuilder("ALTER TABLE ")
+                .append(quoteQualifiedIdentifier(databaseName, tableName))
+                .append(" ");
+        switch (type.toLowerCase(Locale.ENGLISH)) {
+            case "unique" -> statement.append("DROP INDEX ");
+            case "foreign_key", "foreign-key", "foreign key" -> statement.append("DROP FOREIGN KEY ");
+            case "check" -> statement.append("DROP CONSTRAINT ");
+            default -> throw new IllegalArgumentException("Unsupported constraint type: " + type);
+        }
+        statement.append(quoteIdentifier(name))
+                .append(";");
+        log.trace("mapped drop constraint statement: {}", statement);
+        return statement.toString();
+    }
+
+    default String tableColumnToModifyNullRawQuery(String databaseName, String tableName, CreateTableColumnDto column) {
+        final StringBuilder statement = new StringBuilder("ALTER TABLE ")
+                .append(quoteQualifiedIdentifier(databaseName, tableName))
+                .append(" MODIFY COLUMN ")
+                .append(quoteIdentifier(nameToInternalName(column.getName())))
+                .append(" ")
+                .append(columnTypeDtoToDataType(column))
+                .append(Boolean.TRUE.equals(column.getNullAllowed()) ? " NULL" : " NOT NULL");
+        if (column.getDescription() != null && !column.getDescription().isEmpty()) {
+            statement.append(" COMMENT \"")
+                    .append(column.getDescription().replace("\"", "\\\""))
+                    .append("\"");
+        }
+        statement.append(";");
+        log.trace("mapped modify column null statement: {}", statement);
+        return statement.toString();
+    }
+
     default String tableCreateDtoToCreateTableRawQuery(String databaseName, CreateTableDto data) {
         final StringBuilder stringBuilder = new StringBuilder("CREATE TABLE `")
                 .append(databaseName)
@@ -496,6 +573,21 @@ public interface MariaDbMapper {
         stringBuilder.append(";");
         log.trace("mapped create table statement: {}", stringBuilder);
         return stringBuilder.toString();
+    }
+
+    default String quoteQualifiedIdentifier(String databaseName, String tableName) {
+        return quoteIdentifier(databaseName) + "." + quoteIdentifier(tableName);
+    }
+
+    default String quoteIdentifier(String identifier) {
+        return "`" + identifier.replace("`", "``") + "`";
+    }
+
+    default String columnList(List<String> columns) {
+        return columns.stream()
+                .map(this::nameToInternalName)
+                .map(this::quoteIdentifier)
+                .collect(Collectors.joining(","));
     }
 
     /**

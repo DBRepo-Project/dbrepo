@@ -6,6 +6,8 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableUpdateDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintAddDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintDeleteDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.DatabaseAccess;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
@@ -206,6 +208,96 @@ public class TableEndpoint extends RestEndpoint {
         tableService.update(tableService.findColumnById(table, columnId), updateDto);
         return ResponseEntity.accepted()
                 .build();
+    }
+
+    @PostMapping("/{tableId}/constraint")
+    @Transactional(rollbackFor = {Exception.class})
+    @PreAuthorize("hasAuthority('update-table')")
+    @Observed(name = "dbrepo_table_constraint_add")
+    @Operation(summary = "Add table constraint",
+            description = "Adds a unique, foreign key, check, or not-null constraint to a table.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Added the table constraint",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = TableDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Add table constraint payload is malformed",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "403",
+                    description = "Add table constraint not permitted",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "404",
+                    description = "Table or database could not be found",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "502",
+                    description = "Connection to search service failed",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to save in search service",
+                    content = {@Content}),
+    })
+    public ResponseEntity<TableDto> addConstraint(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                                  @NotNull @PathVariable("tableId") UUID tableId,
+                                                  @NotNull @Valid @RequestBody ConstraintAddDto data,
+                                                  Principal principal) throws NotAllowedException,
+            DataServiceException, DataServiceConnectionException, TableNotFoundException, DatabaseNotFoundException,
+            AccessNotFoundException, SearchServiceException, SearchServiceConnectionException, MalformedException {
+        log.debug("endpoint add table constraint, databaseId={}, tableId={}, type={}", databaseId, tableId,
+                data.getType());
+        final Database database = databaseService.findForUpdateById(databaseId);
+        final Table table = tableService.findById(database, tableId);
+        endpointValidator.validateOnlyAccess(database, principal, true);
+        endpointValidator.validateOnlyOwnerOrWriteAll(table, AuthUtil.getUsername(principal));
+        return ResponseEntity.accepted()
+                .body(metadataMapper.tableToTableDto(tableService.addConstraint(table, data)));
+    }
+
+    @DeleteMapping("/{tableId}/constraint")
+    @Transactional(rollbackFor = {Exception.class})
+    @PreAuthorize("hasAuthority('update-table')")
+    @Observed(name = "dbrepo_table_constraint_delete")
+    @Operation(summary = "Delete table constraint",
+            description = "Deletes a unique, foreign key, check, or not-null constraint from a table.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Deleted the table constraint",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = TableDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Delete table constraint payload is malformed",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "403",
+                    description = "Delete table constraint not permitted",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "404",
+                    description = "Table or database could not be found",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "502",
+                    description = "Connection to search service failed",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to save in search service",
+                    content = {@Content}),
+    })
+    public ResponseEntity<TableDto> deleteConstraint(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                                     @NotNull @PathVariable("tableId") UUID tableId,
+                                                     @NotNull @Valid @RequestBody ConstraintDeleteDto data,
+                                                     Principal principal) throws NotAllowedException,
+            DataServiceException, DataServiceConnectionException, TableNotFoundException, DatabaseNotFoundException,
+            AccessNotFoundException, SearchServiceException, SearchServiceConnectionException, MalformedException {
+        log.debug("endpoint delete table constraint, databaseId={}, tableId={}, type={}", databaseId, tableId,
+                data.getType());
+        final Database database = databaseService.findForUpdateById(databaseId);
+        final Table table = tableService.findById(database, tableId);
+        endpointValidator.validateOnlyAccess(database, principal, true);
+        endpointValidator.validateOnlyOwnerOrWriteAll(table, AuthUtil.getUsername(principal));
+        return ResponseEntity.accepted()
+                .body(metadataMapper.tableToTableDto(tableService.deleteConstraint(table, data)));
     }
 
     @PostMapping
