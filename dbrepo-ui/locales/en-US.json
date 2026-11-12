@@ -585,6 +585,26 @@
           "check": {
             "label": "Check"
           },
+          "constraints": {
+            "add_unique": {
+              "text": "Add Unique"
+            },
+            "add_foreign_key": {
+              "text": "Add Foreign Key"
+            },
+            "add_check": {
+              "text": "Add Check"
+            },
+            "check_expression": {
+              "label": "Check Expression"
+            },
+            "delete": {
+              "text": "Delete constraint"
+            },
+            "save": {
+              "text": "Save"
+            }
+          },
           "fsp": {
             "label": "fsp"
           },
@@ -1459,6 +1479,7 @@
     },
     "table": {
       "created": "Created table {table} successfully",
+      "constraints": "Updated table constraints successfully",
       "semantics": "Successfully assigned semantic instance",
       "updated": "Updated table {table} successfully"
     },

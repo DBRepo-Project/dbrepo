@@ -20,11 +20,19 @@
         :headers="headers"
         :items="table.columns">
         <template v-slot:item.is_null_allowed="{ item }">
+          <v-switch
+            v-if="canModifyConstraints"
+            color="secondary"
+            density="compact"
+            hide-details
+            :model-value="item.is_null_allowed"
+            :disabled="loadingConstraint || isPrimaryKeyColumn(item)"
+            @update:modelValue="toggleNull(item, $event)" />
           <span
-            v-if="item.is_null_allowed">
+            v-else-if="item.is_null_allowed">
             {{ $t('pages.table.subpages.schema.bullet') }}
           </span>
-          {{ item.is_null_allowed }}
+          <span v-else>{{ item.is_null_allowed }}</span>
         </template>
         <template v-slot:item.extra="{ item }">
           <pre>{{ extra(item) }}</pre>
@@ -129,6 +137,38 @@
       :title="$t('pages.table.subpages.schema.subtitle')">
       <v-card-text>
         <v-container>
+          <v-row
+            v-if="canModifyConstraints"
+            class="mb-2"
+            dense>
+            <v-col cols="auto">
+              <v-btn
+                size="small"
+                color="tertiary"
+                :variant="buttonVariant"
+                :loading="loadingConstraint"
+                :text="$t('pages.table.subpages.schema.constraints.add_unique.text')"
+                @click="openUniqueDialog" />
+            </v-col>
+            <v-col cols="auto">
+              <v-btn
+                size="small"
+                color="tertiary"
+                :variant="buttonVariant"
+                :loading="loadingConstraint"
+                :text="$t('pages.table.subpages.schema.constraints.add_foreign_key.text')"
+                @click="openForeignKeyDialog" />
+            </v-col>
+            <v-col cols="auto">
+              <v-btn
+                size="small"
+                color="tertiary"
+                :variant="buttonVariant"
+                :loading="loadingConstraint"
+                :text="$t('pages.table.subpages.schema.constraints.add_check.text')"
+                @click="openCheckDialog" />
+            </v-col>
+          </v-row>
           <ul>
             <li v-if="table.constraints.primary_key.length > 0">
               <strong
@@ -144,23 +184,151 @@
               <strong>REFERENCES</strong> <a :href="`/database/${database.id}/table/${foreignKey.referenced_table.id}/schema`">{{ foreignKeyReferencedTable(foreignKey) }}</a> (<i>{{ foreignKeyReferencedColumns(foreignKey) }}</i>) 
               <strong>ON DELETE</strong> <span v-if="!!foreignKey.on_delete">{{ foreignKey.on_delete.replaceAll("_"," ").toUpperCase() }}</span> <span v-else>NO ACTION</span> 
               <strong class="ml-1">ON UPDATE</strong> <span v-if="!!foreignKey.on_update">{{ foreignKey.on_update.replaceAll("_"," ").toUpperCase() }}</span> <span v-else>NO ACTION</span> 
+              <v-btn
+                v-if="canModifyConstraints"
+                class="ml-1"
+                density="compact"
+                size="x-small"
+                variant="text"
+                color="error"
+                icon="mdi-delete"
+                :loading="loadingConstraint"
+                :aria-label="$t('pages.table.subpages.schema.constraints.delete.text')"
+                :title="$t('pages.table.subpages.schema.constraints.delete.text')"
+                @click="deleteConstraint({ type: 'foreign_key', name: foreignKey.name })" />
             </li>
             <li v-for="(uniqueConstraint, i) in table.constraints.uniques" :key="`uk-${i}`">
               <strong
                 class="text-uppercase"
                 v-text="$t('pages.table.subpages.schema.unique.label')" />
               (<i>{{ uniqueColumns(uniqueConstraint) }}</i>)
+              <v-btn
+                v-if="canModifyConstraints"
+                class="ml-1"
+                density="compact"
+                size="x-small"
+                variant="text"
+                color="error"
+                icon="mdi-delete"
+                :loading="loadingConstraint"
+                :aria-label="$t('pages.table.subpages.schema.constraints.delete.text')"
+                :title="$t('pages.table.subpages.schema.constraints.delete.text')"
+                @click="deleteConstraint({ type: 'unique', name: uniqueConstraint.name })" />
             </li>
             <li v-for="(checkConstraint, i) in table.constraints.checks" :key="`uk-${i}`">
               <strong
                 class="text-uppercase"
                 v-text="$t('pages.table.subpages.schema.check.label')" />
               (<i>{{ checkConstraint }}</i>)
+              <v-btn
+                v-if="canModifyConstraints"
+                class="ml-1"
+                density="compact"
+                size="x-small"
+                variant="text"
+                color="error"
+                icon="mdi-delete"
+                :loading="loadingConstraint"
+                :aria-label="$t('pages.table.subpages.schema.constraints.delete.text')"
+                :title="$t('pages.table.subpages.schema.constraints.delete.text')"
+                @click="deleteConstraint({ type: 'check', check: checkConstraint })" />
             </li>
           </ul>
         </v-container>
       </v-card-text>
     </v-card>
+    <v-dialog
+      v-model="dialogUnique"
+      max-width="520">
+      <v-card
+        :title="$t('pages.table.subpages.schema.constraints.add_unique.text')">
+        <v-card-text>
+          <v-combobox
+            v-model="uniqueColumnsDraft"
+            multiple
+            chips
+            closable-chips
+            :items="columnOptions"
+            :variant="inputVariant"
+            :label="$t('pages.table.subpages.schema.foreign_keys.columns.label')"
+            :rules="[v => v.length > 0 || $t('validation.required')]" />
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            variant="text"
+            :text="$t('navigation.cancel')"
+            @click="dialogUnique = false" />
+          <v-btn
+            color="secondary"
+            variant="flat"
+            :loading="loadingConstraint"
+            :disabled="uniqueColumnsDraft.length === 0"
+            :text="$t('pages.table.subpages.schema.constraints.save.text')"
+            @click="addUniqueConstraint" />
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <v-dialog
+      v-model="dialogForeignKey"
+      max-width="1200">
+      <v-card
+        :title="$t('pages.table.subpages.schema.constraints.add_foreign_key.text')">
+        <v-card-text>
+          <TableForeignKeys
+            v-model="foreignKeyDraft"
+            :columns="table ? table.columns : []"
+            :tables="database && database.tables ? database.tables : []"
+            :current-table-name="table ? table.internal_name : null"
+            :disabled="loadingConstraint"
+            :input-variant="inputVariant"
+            :button-variant="buttonVariant"
+            :max="1" />
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            variant="text"
+            :text="$t('navigation.cancel')"
+            @click="dialogForeignKey = false" />
+          <v-btn
+            color="secondary"
+            variant="flat"
+            :loading="loadingConstraint"
+            :disabled="!foreignKeyReady"
+            :text="$t('pages.table.subpages.schema.constraints.save.text')"
+            @click="addForeignKeyConstraint" />
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <v-dialog
+      v-model="dialogCheck"
+      max-width="640">
+      <v-card
+        :title="$t('pages.table.subpages.schema.constraints.add_check.text')">
+        <v-card-text>
+          <v-text-field
+            v-model="checkDraft"
+            :variant="inputVariant"
+            :label="$t('pages.table.subpages.schema.constraints.check_expression.label')"
+            :rules="[v => !!v || $t('validation.required')]" />
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            variant="text"
+            :text="$t('navigation.cancel')"
+            @click="dialogCheck = false" />
+          <v-btn
+            color="secondary"
+            variant="flat"
+            :loading="loadingConstraint"
+            :disabled="!checkDraft"
+            :text="$t('pages.table.subpages.schema.constraints.save.text')"
+            @click="addCheckConstraint" />
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-dialog
       v-if="table && database"
       v-model="dialogSemantic"
@@ -181,11 +349,13 @@
 const { loggedIn } = useOidcAuth()
 </script>
 <script>
+import TableForeignKeys from '@/components/table/TableForeignKeys.vue'
 import TableToolbar from '@/components/table/TableToolbar.vue'
 import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   components: {
+    TableForeignKeys,
     TableToolbar
   },
   data () {
@@ -193,6 +363,13 @@ export default {
       selection: [],
       column: null,
       dialogSemantic: false,
+      dialogUnique: false,
+      dialogForeignKey: false,
+      dialogCheck: false,
+      uniqueColumnsDraft: [],
+      foreignKeyDraft: [],
+      checkDraft: '',
+      loadingConstraint: false,
       items: [
         {
           title: this.$t('navigation.databases'),
@@ -290,6 +467,37 @@ export default {
     hasStructure () {
       const constraints = this.table.constraints
       return constraints.primary_key.length > 0 || constraints.foreign_keys.length > 0 || constraints.checks.length > 0 || constraints.uniques.length > 0
+    },
+    canModifyConstraints () {
+      if (!this.table || !this.cacheUser || !this.roles || !this.roles.includes('update-table')) {
+        return false
+      }
+      if (!this.access) {
+        return false
+      }
+      if (this.access.type === 'write_all') {
+        return true
+      }
+      return this.access.type === 'write_own' && this.table.owner.username === this.cacheUser.preferred_username
+    },
+    columnOptions () {
+      if (!this.table || !this.table.columns) {
+        return []
+      }
+      return this.table.columns.map(column => column.internal_name)
+    },
+    primaryKeyColumnNames () {
+      if (!this.table || !this.table.constraints || !this.table.constraints.primary_key) {
+        return []
+      }
+      return this.table.constraints.primary_key.map(pk => pk.column.internal_name)
+    },
+    foreignKeyReady () {
+      if (this.foreignKeyDraft.length !== 1) {
+        return false
+      }
+      const foreignKey = this.foreignKeyDraft[0]
+      return foreignKey.columns.length > 0 && !!foreignKey.referenced_table && foreignKey.referenced_columns.length > 0
     }
   },
   methods: {
@@ -342,6 +550,108 @@ export default {
         this.cacheStore.reloadTable()
       }
       this.dialogSemantic = false
+    },
+    openUniqueDialog () {
+      this.uniqueColumnsDraft = []
+      this.dialogUnique = true
+    },
+    openForeignKeyDialog () {
+      this.foreignKeyDraft = [{
+        columns: [],
+        referenced_table: null,
+        referenced_columns: [],
+        on_update: 'no_action',
+        on_delete: 'no_action'
+      }]
+      this.dialogForeignKey = true
+    },
+    openCheckDialog () {
+      this.checkDraft = ''
+      this.dialogCheck = true
+    },
+    addUniqueConstraint () {
+      this.addConstraint({
+        type: 'unique',
+        columns: this.uniqueColumnsDraft
+      }, () => {
+        this.dialogUnique = false
+      })
+    },
+    addForeignKeyConstraint () {
+      const foreignKey = this.foreignKeyDraft[0]
+      this.addConstraint({
+        type: 'foreign_key',
+        columns: foreignKey.columns,
+        referenced_table: foreignKey.referenced_table,
+        referenced_columns: foreignKey.referenced_columns,
+        on_update: foreignKey.on_update || 'no_action',
+        on_delete: foreignKey.on_delete || 'no_action'
+      }, () => {
+        this.dialogForeignKey = false
+      })
+    },
+    addCheckConstraint () {
+      this.addConstraint({
+        type: 'check',
+        check: this.checkDraft
+      }, () => {
+        this.dialogCheck = false
+      })
+    },
+    toggleNull (column, nullAllowed) {
+      const type = 'not_null'
+      const tableService = useTableService()
+      const action = nullAllowed ? tableService.removeConstraint : tableService.addConstraint
+      this.loadingConstraint = true
+      action(this.$route.params.database_id, this.$route.params.table_id, {
+        type,
+        column: column.internal_name
+      })
+        .then(this.constraintChanged)
+        .catch(this.constraintFailed)
+        .finally(() => {
+          this.loadingConstraint = false
+        })
+    },
+    addConstraint (data, success) {
+      const tableService = useTableService()
+      this.loadingConstraint = true
+      tableService.addConstraint(this.$route.params.database_id, this.$route.params.table_id, data)
+        .then(table => {
+          this.constraintChanged(table)
+          success()
+        })
+        .catch(this.constraintFailed)
+        .finally(() => {
+          this.loadingConstraint = false
+        })
+    },
+    deleteConstraint (data) {
+      const tableService = useTableService()
+      this.loadingConstraint = true
+      tableService.removeConstraint(this.$route.params.database_id, this.$route.params.table_id, data)
+        .then(this.constraintChanged)
+        .catch(this.constraintFailed)
+        .finally(() => {
+          this.loadingConstraint = false
+        })
+    },
+    constraintChanged (table) {
+      const toast = useToastInstance()
+      toast.success(this.$t('success.table.constraints'))
+      this.cacheStore.setTable(table)
+      this.cacheStore.reloadDatabase()
+    },
+    constraintFailed ({code, message}) {
+      const toast = useToastInstance()
+      if (typeof code !== 'string') {
+        toast.error(message)
+        return
+      }
+      toast.error(this.$t(code))
+    },
+    isPrimaryKeyColumn (column) {
+      return this.primaryKeyColumnNames.includes(column.internal_name)
     },
     foreignKeyColumns (foreignKey) {
       if (!foreignKey) {

@@ -9,6 +9,8 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableStatisticDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableUpdateDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintAddDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintDeleteDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 
@@ -93,6 +95,28 @@ public interface DataServiceGateway {
      */
     void createTable(UUID databaseId, CreateTableDto data) throws DataServiceConnectionException, DataServiceException,
             DatabaseNotFoundException, TableExistsException;
+
+    /**
+     * Adds a constraint to a table in a given database.
+     *
+     * @param databaseId The database id.
+     * @param tableId    The table id.
+     * @param data       The constraint data.
+     * @return The inspected table schema after the change.
+     */
+    TableDto addTableConstraint(UUID databaseId, UUID tableId, ConstraintAddDto data)
+            throws DataServiceConnectionException, DataServiceException, TableNotFoundException;
+
+    /**
+     * Deletes a constraint from a table in a given database.
+     *
+     * @param databaseId The database id.
+     * @param tableId    The table id.
+     * @param data       The constraint data.
+     * @return The inspected table schema after the change.
+     */
+    TableDto deleteTableConstraint(UUID databaseId, UUID tableId, ConstraintDeleteDto data)
+            throws DataServiceConnectionException, DataServiceException, TableNotFoundException;
 
     /**
      * Deletes a given table in a given database.

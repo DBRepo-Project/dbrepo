@@ -3,6 +3,8 @@ package at.ac.tuwien.ifs.dbrepo.service;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableUpdateDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintAddDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintDeleteDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumn;
@@ -60,6 +62,14 @@ public interface TableService {
             DataServiceException, DataServiceConnectionException, UserNotFoundException, DatabaseNotFoundException,
             TableExistsException, SearchServiceException, SearchServiceConnectionException, MalformedException,
             OntologyNotFoundException, SemanticEntityNotFoundException;
+
+    Table addConstraint(Table table, ConstraintAddDto data) throws DataServiceException,
+            DataServiceConnectionException, DatabaseNotFoundException, TableNotFoundException, SearchServiceException,
+            SearchServiceConnectionException, MalformedException;
+
+    Table deleteConstraint(Table table, ConstraintDeleteDto data) throws DataServiceException,
+            DataServiceConnectionException, DatabaseNotFoundException, TableNotFoundException, SearchServiceException,
+            SearchServiceConnectionException, MalformedException;
 
     /**
      * Deletes a given table from the database in the metadata database and data database.

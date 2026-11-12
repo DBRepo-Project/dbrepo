@@ -67,6 +67,38 @@ export const useTableService = (): any => {
     })
   }
 
+  async function addConstraint(databaseId: string, tableId: string, data: ConstraintAddDto): Promise<TableDto> {
+    const axios = useAxiosInstance()
+    console.debug('add constraint to table with id', tableId, 'in database with id', databaseId)
+    return new Promise<TableDto>((resolve, reject) => {
+      axios.post<TableDto>(`/api/v1/database/${databaseId}/table/${tableId}/constraint`, data)
+        .then((response) => {
+          console.info('Added table constraint')
+          resolve(response.data)
+        })
+        .catch((error) => {
+          console.error('Failed to add table constraint', error)
+          reject(axiosErrorToApiError(error))
+        })
+    })
+  }
+
+  async function removeConstraint(databaseId: string, tableId: string, data: ConstraintDeleteDto): Promise<TableDto> {
+    const axios = useAxiosInstance()
+    console.debug('delete constraint from table with id', tableId, 'in database with id', databaseId)
+    return new Promise<TableDto>((resolve, reject) => {
+      axios.delete<TableDto>(`/api/v1/database/${databaseId}/table/${tableId}/constraint`, { data })
+        .then((response) => {
+          console.info('Deleted table constraint')
+          resolve(response.data)
+        })
+        .catch((error) => {
+          console.error('Failed to delete table constraint', error)
+          reject(axiosErrorToApiError(error))
+        })
+    })
+  }
+
   async function importCsv(databaseId: string, tableId: string, data: ImportCsv): Promise<ImportDto> {
     const axios = useAxiosInstance()
     console.debug('import csv to table with id', tableId, 'in database with id', databaseId);
@@ -321,6 +353,8 @@ export const useTableService = (): any => {
     findAll,
     findOne,
     update,
+    addConstraint,
+    removeConstraint,
     importCsv,
     getData,
     getCount,

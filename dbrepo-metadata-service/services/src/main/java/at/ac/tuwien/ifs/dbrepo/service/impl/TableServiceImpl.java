@@ -3,17 +3,28 @@ package at.ac.tuwien.ifs.dbrepo.service.impl;
 import at.ac.tuwien.ifs.dbrepo.cache.DatabaseCacheRepository;
 import at.ac.tuwien.ifs.dbrepo.config.RabbitConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableStatisticDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableUpdateDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnStatisticDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.CreateTableColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintAddDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintDeleteDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintsDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.ForeignKeyDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.ForeignKeyReferenceDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.unique.UniqueDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.ColumnEnum;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.ColumnSet;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumn;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.Constraints;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.foreignKey.ForeignKey;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.foreignKey.ForeignKeyReference;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.unique.Unique;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
@@ -21,6 +32,7 @@ import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.metadata.ColumnDependencyRepository;
 import at.ac.tuwien.ifs.dbrepo.metadata.DatabaseRepository;
 import at.ac.tuwien.ifs.dbrepo.metadata.ForeignKeyRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.UniqueRepository;
 import at.ac.tuwien.ifs.dbrepo.service.TableService;
 import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -29,10 +41,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -44,6 +55,7 @@ public class TableServiceImpl implements TableService {
     private final DatabaseRepository databaseRepository;
     private final ColumnDependencyRepository columnDependencyRepository;
     private final ForeignKeyRepository foreignKeyRepository;
+    private final UniqueRepository uniqueRepository;
     private final SearchServiceGateway searchServiceGateway;
     private final DatabaseCacheRepository databaseCacheRepository;
 
@@ -52,6 +64,7 @@ public class TableServiceImpl implements TableService {
                             DataServiceGateway dataServiceGateway, DatabaseRepository databaseRepository,
                             ColumnDependencyRepository columnDependencyRepository,
                             ForeignKeyRepository foreignKeyRepository,
+                            UniqueRepository uniqueRepository,
                             SearchServiceGateway searchServiceGateway,
                             DatabaseCacheRepository databaseCacheRepository) {
         this.rabbitConfig = rabbitConfig;
@@ -60,6 +73,7 @@ public class TableServiceImpl implements TableService {
         this.databaseRepository = databaseRepository;
         this.columnDependencyRepository = columnDependencyRepository;
         this.foreignKeyRepository = foreignKeyRepository;
+        this.uniqueRepository = uniqueRepository;
         this.searchServiceGateway = searchServiceGateway;
         this.databaseCacheRepository = databaseCacheRepository;
     }
@@ -178,6 +192,24 @@ public class TableServiceImpl implements TableService {
         searchServiceGateway.update(entity);
         log.info("Created table with id {}", optional.get().getId());
         return optional.get();
+    }
+
+    @Override
+    @Transactional
+    public Table addConstraint(Table table, ConstraintAddDto data) throws DataServiceException,
+            DataServiceConnectionException, DatabaseNotFoundException, TableNotFoundException, SearchServiceException,
+            SearchServiceConnectionException, MalformedException {
+        final TableDto inspected = dataServiceGateway.addTableConstraint(table.getDatabase().getId(), table.getId(), data);
+        return syncConstraintMetadata(table, inspected);
+    }
+
+    @Override
+    @Transactional
+    public Table deleteConstraint(Table table, ConstraintDeleteDto data) throws DataServiceException,
+            DataServiceConnectionException, DatabaseNotFoundException, TableNotFoundException, SearchServiceException,
+            SearchServiceConnectionException, MalformedException {
+        final TableDto inspected = dataServiceGateway.deleteTableConstraint(table.getDatabase().getId(), table.getId(), data);
+        return syncConstraintMetadata(table, inspected);
     }
 
     @Override
@@ -332,6 +364,165 @@ public class TableServiceImpl implements TableService {
         /* update in open search service */
         searchServiceGateway.update(database);
         log.info("Updated statistics for the table and {} column(s)", table.getColumns().size());
+    }
+
+    private Table syncConstraintMetadata(Table table, TableDto inspected) throws SearchServiceConnectionException,
+            SearchServiceException, DatabaseNotFoundException, TableNotFoundException, MalformedException {
+        updateNullableFlags(table, inspected);
+        if (table.getConstraints() == null) {
+            table.setConstraints(Constraints.builder()
+                    .primaryKey(new LinkedList<>())
+                    .foreignKeys(new LinkedList<>())
+                    .uniques(new LinkedList<>())
+                    .checks(new LinkedHashSet<>())
+                    .build());
+        }
+        final ConstraintsDto inspectedConstraints = inspected.getConstraints();
+        if (inspectedConstraints == null) {
+            table.getConstraints().setChecks(new LinkedHashSet<>());
+            table.getConstraints().setUniques(new LinkedList<>());
+            table.getConstraints().setForeignKeys(new LinkedList<>());
+        } else {
+            try {
+                table.getConstraints().setChecks(inspectedConstraints.getChecks() == null ?
+                        new LinkedHashSet<>() : new LinkedHashSet<>(inspectedConstraints.getChecks()));
+                syncUniques(table, inspectedConstraints.getUniques());
+                syncForeignKeys(table, inspectedConstraints.getForeignKeys());
+            } catch (IllegalArgumentException e) {
+                throw new MalformedException(e);
+            }
+        }
+        final Database database = databaseRepository.save(table.getDatabase());
+        databaseCacheRepository.deleteById(database.getId());
+        searchServiceGateway.update(database);
+        return findById(database, table.getId());
+    }
+
+    private void updateNullableFlags(Table table, TableDto inspected) {
+        if (inspected.getColumns() == null) {
+            return;
+        }
+        final Map<String, ColumnDto> columns = inspected.getColumns()
+                .stream()
+                .collect(Collectors.toMap(ColumnDto::getInternalName, Function.identity(), (a, b) -> a));
+        table.getColumns()
+                .forEach(column -> {
+                    final ColumnDto inspectedColumn = columns.get(column.getInternalName());
+                    if (inspectedColumn != null) {
+                        column.setIsNullAllowed(inspectedColumn.getIsNullAllowed());
+                    }
+                });
+    }
+
+    private void syncUniques(Table table, List<UniqueDto> inspectedUniques) throws MalformedException {
+        final List<UniqueDto> uniqueDtos = inspectedUniques == null ? List.of() : inspectedUniques;
+        final List<Unique> existingUniques = table.getConstraints().getUniques() == null ?
+                List.of() : table.getConstraints().getUniques();
+        final Map<String, Unique> existing = existingUniques
+                .stream()
+                .collect(Collectors.toMap(Unique::getName, Function.identity(), (a, b) -> a));
+        final Set<String> incomingNames = uniqueDtos.stream()
+                .map(UniqueDto::getName)
+                .collect(Collectors.toSet());
+        final List<UUID> removed = existingUniques
+                .stream()
+                .filter(unique -> !incomingNames.contains(unique.getName()))
+                .map(Unique::getId)
+                .filter(Objects::nonNull)
+                .toList();
+        final List<Unique> uniques = uniqueDtos.stream()
+                .map(uniqueDto -> syncUnique(table, existing.get(uniqueDto.getName()), uniqueDto))
+                .toList();
+        table.getConstraints().setUniques(new LinkedList<>(uniques));
+        removed.forEach(uniqueRepository::deleteById);
+    }
+
+    private Unique syncUnique(Table table, Unique unique, UniqueDto data) {
+        final Unique entity = unique == null ? Unique.builder()
+                .name(data.getName())
+                .table(table)
+                .build() : unique;
+        entity.setTable(table);
+        entity.setColumns(data.getColumns()
+                .stream()
+                .map(column -> findColumn(table, column.getInternalName()))
+                .collect(Collectors.toCollection(LinkedList::new)));
+        return entity;
+    }
+
+    private void syncForeignKeys(Table table, List<ForeignKeyDto> inspectedForeignKeys) throws MalformedException {
+        final List<ForeignKeyDto> foreignKeyDtos = inspectedForeignKeys == null ? List.of() : inspectedForeignKeys;
+        final List<ForeignKey> existingForeignKeys = table.getConstraints().getForeignKeys() == null ?
+                List.of() : table.getConstraints().getForeignKeys();
+        final Map<String, ForeignKey> existing = existingForeignKeys
+                .stream()
+                .collect(Collectors.toMap(ForeignKey::getName, Function.identity(), (a, b) -> a));
+        final Set<String> incomingNames = foreignKeyDtos.stream()
+                .map(ForeignKeyDto::getName)
+                .collect(Collectors.toSet());
+        final List<UUID> removed = existingForeignKeys
+                .stream()
+                .filter(foreignKey -> !incomingNames.contains(foreignKey.getName()))
+                .map(ForeignKey::getId)
+                .filter(Objects::nonNull)
+                .toList();
+        final List<ForeignKey> foreignKeys = foreignKeyDtos.stream()
+                .map(foreignKeyDto -> syncForeignKey(table, existing.get(foreignKeyDto.getName()), foreignKeyDto))
+                .toList();
+        table.getConstraints().setForeignKeys(new LinkedList<>(foreignKeys));
+        removed.forEach(id -> {
+            foreignKeyRepository.deleteReferencesByForeignKeyId(id);
+            foreignKeyRepository.deleteById(id);
+        });
+    }
+
+    private ForeignKey syncForeignKey(Table table, ForeignKey foreignKey, ForeignKeyDto data) {
+        final Table referencedTable = findReferencedTable(table.getDatabase(), data);
+        final ForeignKey entity = foreignKey == null ? ForeignKey.builder()
+                .name(data.getName())
+                .table(table)
+                .build() : foreignKey;
+        entity.setTable(table);
+        entity.setReferencedTable(referencedTable);
+        entity.setOnUpdate(metadataMapper.referenceTypeDtoToReferenceType(data.getOnUpdate()));
+        entity.setOnDelete(metadataMapper.referenceTypeDtoToReferenceType(data.getOnDelete()));
+        if (entity.getId() != null) {
+            foreignKeyRepository.deleteReferencesByForeignKeyId(entity.getId());
+        }
+        final List<ForeignKeyReference> references = data.getReferences()
+                .stream()
+                .map(reference -> syncForeignKeyReference(entity, table, referencedTable, reference))
+                .collect(Collectors.toCollection(LinkedList::new));
+        entity.setReferences(references);
+        entity.getReferences().forEach(reference -> reference.setForeignKey(entity));
+        return entity;
+    }
+
+    private ForeignKeyReference syncForeignKeyReference(ForeignKey foreignKey, Table table, Table referencedTable,
+                                                       ForeignKeyReferenceDto data) {
+        return ForeignKeyReference.builder()
+                .foreignKey(foreignKey)
+                .column(findColumn(table, data.getColumn().getInternalName()))
+                .referencedColumn(findColumn(referencedTable, data.getReferencedColumn().getInternalName()))
+                .build();
+    }
+
+    private Table findReferencedTable(Database database, ForeignKeyDto data) {
+        return database.getTables()
+                .stream()
+                .filter(table -> (data.getReferencedTable().getId() != null &&
+                        table.getId().equals(data.getReferencedTable().getId())) ||
+                        table.getInternalName().equals(data.getReferencedTable().getInternalName()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Failed to find foreign key referenced table"));
+    }
+
+    private TableColumn findColumn(Table table, String internalName) {
+        return table.getColumns()
+                .stream()
+                .filter(column -> column.getInternalName().equals(internalName))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Failed to find constraint column"));
     }
 
 }
