@@ -285,7 +285,7 @@ export const useTableService = (): any => {
     })
   }
 
-  function prepareConstraints(columns: InternalColumnDto[], foreignKeys: ForeignKeyCreateDto[] = []): ConstraintsCreateDto {
+  function prepareConstraints(columns: InternalColumnDto[], foreignKeys: ForeignKeyCreateDto[] = [], checks: string[] = []): ConstraintsCreateDto {
     const primaryKeyColumns = columns.filter(column => column.primary_key)
     const uniqueColumns = columns.filter(column => column.unique).filter(column => !column.primary_key)
     return {
@@ -300,7 +300,7 @@ export const useTableService = (): any => {
           on_delete: foreignKey.on_delete || 'no_action'
         }
       }),
-      checks: []
+      checks: checks.map(check => check.trim()).filter(check => check.length > 0)
     }
   }
 
