@@ -223,14 +223,11 @@
               <v-btn
                 v-if="canModifyConstraints"
                 class="ml-1"
-                density="compact"
-                size="x-small"
-                variant="text"
+                size="small"
+                variant="flat"
                 color="error"
-                icon="mdi-delete"
                 :loading="loadingConstraint"
-                :aria-label="$t('pages.table.subpages.schema.constraints.delete.text')"
-                :title="$t('pages.table.subpages.schema.constraints.delete.text')"
+                :text="$t('pages.table.subpages.schema.foreign_keys.remove.text')"
                 @click="deleteConstraint({ type: 'check', check: checkConstraint })" />
             </li>
           </ul>
