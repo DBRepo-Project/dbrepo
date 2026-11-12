@@ -235,7 +235,7 @@ export default {
         .map(column => {
           return {
             name: column.name,
-            internal_name: column.name,
+            internal_name: this.toInternalName(column.name),
             type: column.type,
             column_type: column.type,
             size: column.size,
@@ -430,7 +430,13 @@ export default {
       return Number(value)
     },
     columnInternalName (column) {
-      return column.internal_name || column.name
+      return column.internal_name || this.toInternalName(column.name)
+    },
+    toInternalName (name) {
+      if (!name) {
+        return name
+      }
+      return useTableService().tableNameToInternalName(name)
     },
     sameReference (option, foreignKey) {
       return option.referenced_table === foreignKey.referenced_table &&

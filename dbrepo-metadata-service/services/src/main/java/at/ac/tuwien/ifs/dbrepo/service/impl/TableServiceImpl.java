@@ -160,6 +160,7 @@ public class TableServiceImpl implements TableService {
             }
             /* set constraints */
             table.setConstraints(metadataMapper.constraintsCreateDtoToConstraints(data.getConstraints(), database, table));
+            table.getConstraints().setForeignKeys(new LinkedList<>());
         } catch (IllegalArgumentException e) {
             throw new MalformedException(e);
         }
@@ -191,7 +192,15 @@ public class TableServiceImpl implements TableService {
         /* update in search service */
         searchServiceGateway.update(entity);
         log.info("Created table with id {}", optional.get().getId());
-        return optional.get();
+        final Optional<TableDto> inspected = dataServiceGateway.getTableSchemas(database.getId())
+                .stream()
+                .filter(t -> t.getInternalName().equals(table.getInternalName()))
+                .findFirst();
+        if (inspected.isEmpty()) {
+            log.error("Failed to inspect created table {}", table.getInternalName());
+            throw new TableNotFoundException("Failed to inspect created table " + table.getInternalName());
+        }
+        return syncConstraintMetadata(optional.get(), inspected.get());
     }
 
     @Override
@@ -489,13 +498,14 @@ public class TableServiceImpl implements TableService {
         if (entity.getId() != null) {
             foreignKeyRepository.deleteReferencesByForeignKeyId(entity.getId());
         }
+        final ForeignKey managed = entity.getId() == null ? foreignKeyRepository.save(entity) : entity;
         final List<ForeignKeyReference> references = data.getReferences()
                 .stream()
-                .map(reference -> syncForeignKeyReference(entity, table, referencedTable, reference))
+                .map(reference -> syncForeignKeyReference(managed, table, referencedTable, reference))
                 .collect(Collectors.toCollection(LinkedList::new));
-        entity.setReferences(references);
-        entity.getReferences().forEach(reference -> reference.setForeignKey(entity));
-        return entity;
+        managed.setReferences(references);
+        managed.getReferences().forEach(reference -> reference.setForeignKey(managed));
+        return managed;
     }
 
     private ForeignKeyReference syncForeignKeyReference(ForeignKey foreignKey, Table table, Table referencedTable,
