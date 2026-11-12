@@ -4,6 +4,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.query.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.CreateTableColumnDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintAddDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.CreateTableConstraintsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.CreateForeignKeyDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.ReferenceTypeDto;
@@ -93,6 +94,38 @@ public class MariaDbMapperUnitTest extends BaseTest {
         /* test */
         assertEquals("CREATE TABLE `weather`.`weather_measurement` (`measurement_id` BIGINT(255) NOT NULL, `station_id` BIGINT(255) NOT NULL, PRIMARY KEY (`measurement_id`), FOREIGN KEY (`station_id`) REFERENCES `station` (`station_id`) ON DELETE CASCADE ON UPDATE CASCADE) WITH SYSTEM VERSIONING COMMENT \"Measurements with station reference\";",
                 mariaDbMapper.tableCreateDtoToCreateTableRawQuery("weather", request));
+    }
+
+    @Test
+    public void tableConstraintAddToAlterTableRawQuery_unique_succeeds() {
+        final ConstraintAddDto request = ConstraintAddDto.builder()
+                .type("unique")
+                .columns(List.of("station_id", "measurement_id"))
+                .build();
+
+        /* test */
+        assertEquals("ALTER TABLE `weather`.`weather_measurement` ADD UNIQUE KEY (`station_id`,`measurement_id`);",
+                mariaDbMapper.tableConstraintAddToAlterTableRawQuery("weather", "weather_measurement", request));
+    }
+
+    @Test
+    public void tableConstraintAddToAlterTableRawQuery_check_succeeds() {
+        final ConstraintAddDto request = ConstraintAddDto.builder()
+                .type("check")
+                .check("`temperature` > -273")
+                .build();
+
+        /* test */
+        assertEquals("ALTER TABLE `weather`.`weather_measurement` ADD CHECK (`temperature` > -273);",
+                mariaDbMapper.tableConstraintAddToAlterTableRawQuery("weather", "weather_measurement", request));
+    }
+
+    @Test
+    public void tableConstraintDropToAlterTableRawQuery_foreignKey_succeeds() {
+
+        /* test */
+        assertEquals("ALTER TABLE `weather`.`weather_measurement` DROP FOREIGN KEY `weather_measurement_ibfk_1`;",
+                mariaDbMapper.tableConstraintDropToAlterTableRawQuery("weather", "weather_measurement", "foreign_key", "weather_measurement_ibfk_1"));
     }
 
     @Test

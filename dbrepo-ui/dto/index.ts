@@ -111,6 +111,24 @@ interface TableUpdateDto {
   is_schema_public: boolean;
 }
 
+interface ConstraintAddDto {
+  type: string;
+  columns?: string[];
+  referenced_table?: string | null;
+  referenced_columns?: string[];
+  on_update?: string | null;
+  on_delete?: string | null;
+  check?: string | null;
+  column?: string | null;
+}
+
+interface ConstraintDeleteDto {
+  type: string;
+  name?: string | null;
+  column?: string | null;
+  check?: string | null;
+}
+
 interface ColumnBriefDto {
   id: string;
   name: string;

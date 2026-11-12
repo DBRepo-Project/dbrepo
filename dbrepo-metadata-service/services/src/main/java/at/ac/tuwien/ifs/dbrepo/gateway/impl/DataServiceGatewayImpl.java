@@ -2,15 +2,20 @@ package at.ac.tuwien.ifs.dbrepo.gateway.impl;
 
 import at.ac.tuwien.ifs.dbrepo.config.GatewayConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableStatisticDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableUpdateDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintAddDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintDeleteDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
@@ -32,11 +37,14 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
 
     private final RestTemplate restTemplate;
     private final GatewayConfig gatewayConfig;
+    private final ObjectMapper objectMapper;
 
     public DataServiceGatewayImpl(@Qualifier("dataServiceRestTemplate") RestTemplate restTemplate,
-                                  GatewayConfig gatewayConfig) {
+                                  GatewayConfig gatewayConfig,
+                                  ObjectMapper objectMapper) {
         this.restTemplate = restTemplate;
         this.gatewayConfig = gatewayConfig;
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -210,6 +218,91 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
             log.error("Failed to create table: wrong http code: {}", response.getStatusCode());
             throw new DataServiceException("Failed to create table: wrong http code: " + response.getStatusCode());
         }
+    }
+
+    @Override
+    public TableDto getTableSchema(UUID databaseId, UUID tableId) throws DataServiceConnectionException,
+            DataServiceException, TableNotFoundException {
+        final ResponseEntity<TableDto> response;
+        final String path = "/api/v1/database/" + databaseId + "/table/" + tableId + "/schema";
+        log.trace("get table schema at endpoint {} with path {}", gatewayConfig.getDataEndpoint(), path);
+        try {
+            response = restTemplate.exchange(path, HttpMethod.GET, HttpEntity.EMPTY, TableDto.class);
+        } catch (HttpServerErrorException e) {
+            log.error("Failed to get table schema: {}", e.getMessage());
+            throw new DataServiceConnectionException("Failed to get table schema: " + e.getMessage(), e);
+        } catch (HttpClientErrorException.NotFound e) {
+            log.error("Failed to get table schema: not found: {}", e.getMessage());
+            throw new TableNotFoundException("Failed to get table schema: not found: " + e.getMessage(), e);
+        } catch (HttpClientErrorException.Unauthorized e) {
+            log.error("Failed to get table schema: {}", e.getMessage());
+            throw new DataServiceException("Failed to get table schema: " + e.getMessage(), e);
+        }
+        if (!response.getStatusCode().equals(HttpStatus.OK)) {
+            log.error("Failed to get table schema: wrong http code: {}", response.getStatusCode());
+            throw new DataServiceException("Failed to get table schema: wrong http code: " + response.getStatusCode());
+        }
+        if (response.getBody() == null) {
+            log.error("Failed to get table schema: empty body: {}", response.getStatusCode());
+            throw new DataServiceException("Failed to get table schema: empty body: " + response.getStatusCode());
+        }
+        return response.getBody();
+    }
+
+    @Override
+    public TableDto addTableConstraint(UUID databaseId, UUID tableId, ConstraintAddDto data)
+            throws DataServiceConnectionException, DataServiceException, TableNotFoundException, MalformedException {
+        return alterTableConstraint(databaseId, tableId, HttpMethod.POST, data, "add table constraint");
+    }
+
+    @Override
+    public TableDto deleteTableConstraint(UUID databaseId, UUID tableId, ConstraintDeleteDto data)
+            throws DataServiceConnectionException, DataServiceException, TableNotFoundException, MalformedException {
+        return alterTableConstraint(databaseId, tableId, HttpMethod.DELETE, data, "delete table constraint");
+    }
+
+    private TableDto alterTableConstraint(UUID databaseId, UUID tableId, HttpMethod method, Object data,
+                                          String action)
+            throws DataServiceConnectionException, DataServiceException, TableNotFoundException, MalformedException {
+        final ResponseEntity<TableDto> response;
+        final String path = "/api/v1/database/" + databaseId + "/table/" + tableId + "/constraint";
+        log.trace("{} at endpoint {} with path {}", action, gatewayConfig.getDataEndpoint(), path);
+        try {
+            response = restTemplate.exchange(path, method, new HttpEntity<>(data), TableDto.class);
+        } catch (HttpServerErrorException e) {
+            log.error("Failed to {}: {}", action, e.getMessage());
+            throw new DataServiceConnectionException("Failed to " + action + ": " + e.getMessage(), e);
+        } catch (HttpClientErrorException.NotFound e) {
+            log.error("Failed to {}: not found: {}", action, e.getMessage());
+            throw new TableNotFoundException("Failed to " + action + ": not found: " + e.getMessage(), e);
+        } catch (HttpClientErrorException.BadRequest e) {
+            log.error("Failed to {}: {}", action, e.getMessage());
+            throw new MalformedException(dataServiceErrorMessage(e, "Failed to " + action));
+        } catch (HttpClientErrorException.Unauthorized e) {
+            log.error("Failed to {}: unauthorized: {}", action, e.getMessage());
+            throw new DataServiceException("Failed to " + action + ": " + e.getMessage(), e);
+        }
+        if (!response.getStatusCode().equals(HttpStatus.ACCEPTED)) {
+            log.error("Failed to {}: wrong http code: {}", action, response.getStatusCode());
+            throw new DataServiceException("Failed to " + action + ": wrong http code: " + response.getStatusCode());
+        }
+        if (response.getBody() == null) {
+            log.error("Failed to {}: empty body: {}", action, response.getStatusCode());
+            throw new DataServiceException("Failed to " + action + ": empty body: " + response.getStatusCode());
+        }
+        return response.getBody();
+    }
+
+    private String dataServiceErrorMessage(HttpClientErrorException e, String fallback) {
+        try {
+            final ApiErrorDto error = objectMapper.readValue(e.getResponseBodyAsString(), ApiErrorDto.class);
+            if (error.getMessage() != null && !error.getMessage().isBlank()) {
+                return error.getMessage();
+            }
+        } catch (JsonProcessingException ignored) {
+            log.debug("Failed to parse data service error response: {}", e.getResponseBodyAsString());
+        }
+        return fallback + ": " + e.getStatusCode();
     }
 
     @Override

@@ -3,6 +3,8 @@ package at.ac.tuwien.ifs.dbrepo.endpoints;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintAddDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintDeleteDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
@@ -163,6 +165,88 @@ public class TableEndpoint {
             tableService.update(database, table, data);
             return ResponseEntity.status(HttpStatus.ACCEPTED)
                     .build();
+        } catch (SQLException e) {
+            log.error("Failed to establish connection to database: {}", e.getMessage());
+            throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
+        }
+    }
+
+    @PostMapping("/{tableId}/constraint")
+    @PreAuthorize("hasAuthority('system')")
+    @Operation(summary = "Add table constraint",
+            security = {@SecurityRequirement(name = "basicAuth")},
+            hidden = true)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Added table constraint",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = TableDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Constraint schema or query is malformed",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "403",
+                    description = "Add table constraint not allowed",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find database or table in metadata database",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to establish connection with the metadata service",
+                    content = {@Content}),
+    })
+    public ResponseEntity<TableDto> addConstraint(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                                  @NotNull @PathVariable("tableId") UUID tableId,
+                                                  @Valid @RequestBody ConstraintAddDto data)
+            throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
+            TableMalformedException, MetadataServiceException, DatabaseNotFoundException {
+        log.debug("endpoint add table constraint, databaseId={}, tableId={}, type={}", databaseId, tableId, data.getType());
+        final Table table = metadataService.getTable(databaseId, tableId);
+        final Database database = metadataService.getDatabase(databaseId);
+        try {
+            return ResponseEntity.status(HttpStatus.ACCEPTED)
+                    .body(tableService.addConstraint(database, table, data));
+        } catch (SQLException e) {
+            log.error("Failed to establish connection to database: {}", e.getMessage());
+            throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
+        }
+    }
+
+    @DeleteMapping("/{tableId}/constraint")
+    @PreAuthorize("hasAuthority('system')")
+    @Operation(summary = "Delete table constraint",
+            security = {@SecurityRequirement(name = "basicAuth")},
+            hidden = true)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Deleted table constraint",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = TableDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Constraint schema or query is malformed",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "403",
+                    description = "Delete table constraint not allowed",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find database or table in metadata database",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to establish connection with the metadata service",
+                    content = {@Content}),
+    })
+    public ResponseEntity<TableDto> deleteConstraint(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                                     @NotNull @PathVariable("tableId") UUID tableId,
+                                                     @Valid @RequestBody ConstraintDeleteDto data)
+            throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
+            TableMalformedException, MetadataServiceException, DatabaseNotFoundException {
+        log.debug("endpoint delete table constraint, databaseId={}, tableId={}, type={}", databaseId, tableId, data.getType());
+        final Table table = metadataService.getTable(databaseId, tableId);
+        final Database database = metadataService.getDatabase(databaseId);
+        try {
+            return ResponseEntity.status(HttpStatus.ACCEPTED)
+                    .body(tableService.deleteConstraint(database, table, data));
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
@@ -608,6 +692,45 @@ public class TableEndpoint {
         final Database database = metadataService.getDatabase(databaseId);
         try {
             return ResponseEntity.ok(tableService.explore(database));
+        } catch (SQLException e) {
+            log.error("Failed to establish connection to database: {}", e.getMessage());
+            throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
+        }
+    }
+
+    @GetMapping("/{tableId}/schema")
+    @PreAuthorize("hasAuthority('system')")
+    @Observed(name = "dbrepo_table_schema_find")
+    @Operation(summary = "Find table schema",
+            hidden = true)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Got table schema",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = TableDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Find table schema not allowed",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find database or table in metadata database",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "417",
+                    description = "Failed to parse table schema",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to establish connection with the metadata service",
+                    content = {@Content}),
+    })
+    public ResponseEntity<TableDto> find(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                         @NotNull @PathVariable("tableId") UUID tableId)
+            throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
+            TableNotFoundException, MetadataServiceException {
+        log.debug("endpoint inspect table schema, databaseId={}, tableId={}", databaseId, tableId);
+        final Database database = metadataService.getDatabase(databaseId);
+        final Table table = currentTable(database, databaseId, tableId);
+        try {
+            return ResponseEntity.ok(tableService.inspect(database, table.getInternalName()));
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
