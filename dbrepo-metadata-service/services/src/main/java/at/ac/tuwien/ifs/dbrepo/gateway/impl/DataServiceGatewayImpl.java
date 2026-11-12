@@ -2,6 +2,7 @@ package at.ac.tuwien.ifs.dbrepo.gateway.impl;
 
 import at.ac.tuwien.ifs.dbrepo.config.GatewayConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.internal.CreateDatabaseDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
@@ -13,6 +14,8 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintDel
 import at.ac.tuwien.ifs.dbrepo.core.api.user.internal.UpdateUserPasswordDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
@@ -34,11 +37,14 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
 
     private final RestTemplate restTemplate;
     private final GatewayConfig gatewayConfig;
+    private final ObjectMapper objectMapper;
 
     public DataServiceGatewayImpl(@Qualifier("dataServiceRestTemplate") RestTemplate restTemplate,
-                                  GatewayConfig gatewayConfig) {
+                                  GatewayConfig gatewayConfig,
+                                  ObjectMapper objectMapper) {
         this.restTemplate = restTemplate;
         this.gatewayConfig = gatewayConfig;
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -216,19 +222,19 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
 
     @Override
     public TableDto addTableConstraint(UUID databaseId, UUID tableId, ConstraintAddDto data)
-            throws DataServiceConnectionException, DataServiceException, TableNotFoundException {
+            throws DataServiceConnectionException, DataServiceException, TableNotFoundException, MalformedException {
         return alterTableConstraint(databaseId, tableId, HttpMethod.POST, data, "add table constraint");
     }
 
     @Override
     public TableDto deleteTableConstraint(UUID databaseId, UUID tableId, ConstraintDeleteDto data)
-            throws DataServiceConnectionException, DataServiceException, TableNotFoundException {
+            throws DataServiceConnectionException, DataServiceException, TableNotFoundException, MalformedException {
         return alterTableConstraint(databaseId, tableId, HttpMethod.DELETE, data, "delete table constraint");
     }
 
     private TableDto alterTableConstraint(UUID databaseId, UUID tableId, HttpMethod method, Object data,
                                           String action)
-            throws DataServiceConnectionException, DataServiceException, TableNotFoundException {
+            throws DataServiceConnectionException, DataServiceException, TableNotFoundException, MalformedException {
         final ResponseEntity<TableDto> response;
         final String path = "/api/v1/database/" + databaseId + "/table/" + tableId + "/constraint";
         log.trace("{} at endpoint {} with path {}", action, gatewayConfig.getDataEndpoint(), path);
@@ -240,8 +246,11 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
         } catch (HttpClientErrorException.NotFound e) {
             log.error("Failed to {}: not found: {}", action, e.getMessage());
             throw new TableNotFoundException("Failed to " + action + ": not found: " + e.getMessage(), e);
-        } catch (HttpClientErrorException.BadRequest | HttpClientErrorException.Unauthorized e) {
+        } catch (HttpClientErrorException.BadRequest e) {
             log.error("Failed to {}: {}", action, e.getMessage());
+            throw new MalformedException(dataServiceErrorMessage(e, "Failed to " + action));
+        } catch (HttpClientErrorException.Unauthorized e) {
+            log.error("Failed to {}: unauthorized: {}", action, e.getMessage());
             throw new DataServiceException("Failed to " + action + ": " + e.getMessage(), e);
         }
         if (!response.getStatusCode().equals(HttpStatus.ACCEPTED)) {
@@ -253,6 +262,18 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
             throw new DataServiceException("Failed to " + action + ": empty body: " + response.getStatusCode());
         }
         return response.getBody();
+    }
+
+    private String dataServiceErrorMessage(HttpClientErrorException e, String fallback) {
+        try {
+            final ApiErrorDto error = objectMapper.readValue(e.getResponseBodyAsString(), ApiErrorDto.class);
+            if (error.getMessage() != null && !error.getMessage().isBlank()) {
+                return error.getMessage();
+            }
+        } catch (JsonProcessingException ignored) {
+            log.debug("Failed to parse data service error response: {}", e.getResponseBodyAsString());
+        }
+        return fallback + ": " + e.getStatusCode();
     }
 
     @Override

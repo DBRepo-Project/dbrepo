@@ -1093,7 +1093,7 @@ export function isActiveMessage(message: any) {
 }
 
 export function axiosErrorToApiError(error: AxiosError) {
-  if (!error || !('response' in error) || !('data' in error.response)) {
+  if (!error || !error.response || !('data' in error.response)) {
     return {
       status: 'NOT_SET',
       code: 'error.axios.connection',
@@ -1108,10 +1108,22 @@ export function axiosErrorToApiError(error: AxiosError) {
       message: error.message
     }
   }
+  const data = apiErrorData(error.response.data)
   return {
-    status: error.response.data.status,
-    code: error.response.data.code,
-    message: error.response.data.message,
+    status: data.status || error.response.status,
+    code: data.code,
+    message: data.message || data.statusMessage || error.message,
+  }
+}
+
+function apiErrorData(data: unknown): any {
+  if (typeof data !== 'string') {
+    return data || {}
+  }
+  try {
+    return JSON.parse(data)
+  } catch {
+    return { message: data }
   }
 }
 
