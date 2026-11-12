@@ -33,6 +33,12 @@
             :variant="inputVariant"
             :label="$t('pages.table.subpages.schema.name.label')"
             :hint="$t('pages.table.subpages.schema.name.hint')" />
+          <div
+            v-if="columnInternalName(c)"
+            class="text-caption text-medium-emphasis mt-1">
+            {{ $t('pages.table.subpages.schema.internal-name.title') }}:
+            <code>{{ columnInternalName(c) }}</code>
+          </div>
         </v-col>
         <v-col
           cols="1">
@@ -211,6 +217,51 @@
         :loading="loadForeignKey"
         :input-variant="inputVariant"
         :button-variant="buttonVariant" />
+      <div class="mt-4">
+        <v-row
+          v-for="(check, index) in checks"
+          :key="`check-${index}`"
+          class="check-constraint pa-2 ml-1 mr-1 mb-2"
+          dense>
+          <v-col>
+            <v-text-field
+              v-model="checks[index]"
+              required
+              persistent-hint
+              :disabled="disabled"
+              :variant="inputVariant"
+              :rules="[v => !!(v && v.trim()) || $t('validation.required')]"
+              :label="$t('pages.table.subpages.schema.constraints.check_expression.label')" />
+          </v-col>
+          <v-col
+            v-if="canEditChecks"
+            cols="auto"
+            class="mt-3">
+            <v-btn
+              size="small"
+              :color="disabled ? '' : 'error'"
+              variant="text"
+              icon="mdi-delete"
+              :disabled="disabled"
+              :aria-label="$t('pages.table.subpages.schema.constraints.delete.text')"
+              :title="$t('pages.table.subpages.schema.constraints.delete.text')"
+              @click="removeCheck(index)" />
+          </v-col>
+        </v-row>
+        <v-row
+          v-if="canEditChecks"
+          dense>
+          <v-col>
+            <v-btn
+              size="small"
+              :color="disabled ? '' : 'tertiary'"
+              :variant="buttonVariant"
+              :disabled="disabled"
+              :text="$t('pages.table.subpages.schema.constraints.add_check.text')"
+              @click="addCheck" />
+          </v-col>
+        </v-row>
+      </div>
       <v-row>
         <v-col>
           <v-btn
@@ -272,6 +323,12 @@ export default {
       default () {
         return null
       }
+    },
+    allowChecksWhenFrozen: {
+      type: Boolean,
+      default () {
+        return false
+      }
     }
   },
   data () {
@@ -281,6 +338,7 @@ export default {
       loadColumn: false,
       loadForeignKey: false,
       foreignKeys: [],
+      checks: [],
       loadingColumnTypes: false,
       tableColumns: [],
       cacheStore: useCacheStore()
@@ -303,6 +361,9 @@ export default {
         return false
       }
       return this.columns.filter(c => c.primary_key).length === 0
+    },
+    canEditChecks () {
+      return !this.frozen || this.allowChecksWhenFrozen
     }
   },
   watch: {
@@ -316,6 +377,12 @@ export default {
       }
     },
     foreignKeys: {
+      deep: true,
+      handler () {
+        this.$refs.form.validate()
+      }
+    },
+    checks: {
       deep: true,
       handler () {
         this.$refs.form.validate()
@@ -358,7 +425,7 @@ export default {
     async submit () {
       if (!(await this.$refs.form.validate()).valid) return
       const tableService = useTableService()
-      this.$emit('close', { success: true, columns: tableService.prepareColumns(this.columns), constraints: tableService.prepareConstraints(this.columns, this.foreignKeys) })
+      this.$emit('close', { success: true, columns: tableService.prepareColumns(this.columns), constraints: tableService.prepareConstraints(this.columns, this.foreignKeys, this.checks) })
     },
     setOthers (column) {
       column.null_allowed = false
@@ -375,6 +442,21 @@ export default {
     },
     removeColumn (idx) {
       this.columns.splice(idx, 1)
+    },
+    addCheck () {
+      this.checks.push('')
+      this.$refs.form.validate()
+    },
+    removeCheck (index) {
+      this.checks.splice(index, 1)
+      this.$refs.form.validate()
+    },
+    columnInternalName (column) {
+      if (!column.name) {
+        return ''
+      }
+      const tableService = useTableService()
+      return tableService.tableNameToInternalName(column.name)
     },
     addColumn (name = '', type = null, null_allowed = true, primary_key = false, unique = false) {
       this.loadColumn = true
@@ -469,3 +551,9 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.check-constraint {
+  border: 1px solid rgb(var(--v-theme-surface-variant));
+}
+</style>

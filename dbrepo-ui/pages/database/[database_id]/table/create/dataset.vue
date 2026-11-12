@@ -159,6 +159,7 @@
                 <TableSchema
                   ref="schema"
                   :frozen="true"
+                  :allow-checks-when-frozen="true"
                   :disabled="step !== 3"
                   :loading="loading"
                   :submit-text="$t('navigation.continue')"
