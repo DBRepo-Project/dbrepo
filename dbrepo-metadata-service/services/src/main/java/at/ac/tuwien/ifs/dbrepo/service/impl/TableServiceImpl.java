@@ -111,7 +111,7 @@ public class TableServiceImpl implements TableService {
     public Table syncTableSchema(Database database, Table table) throws DataServiceException,
             DataServiceConnectionException, SearchServiceConnectionException, SearchServiceException,
             DatabaseNotFoundException, TableNotFoundException, MalformedException {
-        final TableDto inspected = dataServiceGateway.getTableSchema(database.getId(), table.getId());
+        final TableDto inspected = inspectTableSchema(database, table);
         if (inspected == null) {
             log.warn("Table schema inspection returned no result for table with id {}, skip schema sync.", table.getId());
             return table;
@@ -409,6 +409,21 @@ public class TableServiceImpl implements TableService {
         databaseCacheRepository.deleteById(database.getId());
         searchServiceGateway.update(database);
         return findById(database, table.getId());
+    }
+
+    private TableDto inspectTableSchema(Database database, Table table) throws DataServiceException,
+            DataServiceConnectionException, TableNotFoundException {
+        try {
+            return dataServiceGateway.getTableSchema(database.getId(), table.getId());
+        } catch (TableNotFoundException e) {
+            log.debug("Failed to inspect table schema by id {}, retry by internal name {}", table.getId(),
+                    table.getInternalName());
+            return dataServiceGateway.getTableSchemas(database.getId())
+                    .stream()
+                    .filter(inspected -> table.getInternalName().equals(inspected.getInternalName()))
+                    .findFirst()
+                    .orElseThrow(() -> e);
+        }
     }
 
     private void updateNullableFlags(Table table, TableDto inspected) {
