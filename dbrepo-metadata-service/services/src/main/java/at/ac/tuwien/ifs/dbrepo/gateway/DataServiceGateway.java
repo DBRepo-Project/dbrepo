@@ -97,6 +97,16 @@ public interface DataServiceGateway {
             DatabaseNotFoundException, TableExistsException;
 
     /**
+     * Inspects a known table in a given database.
+     *
+     * @param databaseId The database id.
+     * @param tableId    The table id.
+     * @return The inspected table schema.
+     */
+    TableDto getTableSchema(UUID databaseId, UUID tableId) throws DataServiceConnectionException,
+            DataServiceException, TableNotFoundException;
+
+    /**
      * Adds a constraint to a table in a given database.
      *
      * @param databaseId The database id.

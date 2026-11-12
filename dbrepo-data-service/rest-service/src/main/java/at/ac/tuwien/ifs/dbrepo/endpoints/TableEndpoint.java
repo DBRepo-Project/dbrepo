@@ -698,6 +698,45 @@ public class TableEndpoint {
         }
     }
 
+    @GetMapping("/{tableId}/schema")
+    @PreAuthorize("hasAuthority('system')")
+    @Observed(name = "dbrepo_table_schema_find")
+    @Operation(summary = "Find table schema",
+            hidden = true)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Got table schema",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = TableDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Find table schema not allowed",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find database or table in metadata database",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "417",
+                    description = "Failed to parse table schema",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to establish connection with the metadata service",
+                    content = {@Content}),
+    })
+    public ResponseEntity<TableDto> find(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                         @NotNull @PathVariable("tableId") UUID tableId)
+            throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
+            TableNotFoundException, MetadataServiceException {
+        log.debug("endpoint inspect table schema, databaseId={}, tableId={}", databaseId, tableId);
+        final Database database = metadataService.getDatabase(databaseId);
+        final Table table = currentTable(database, databaseId, tableId);
+        try {
+            return ResponseEntity.ok(tableService.inspect(database, table.getInternalName()));
+        } catch (SQLException e) {
+            log.error("Failed to establish connection to database: {}", e.getMessage());
+            throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
+        }
+    }
+
     @PostMapping("/{tableId}/data/import")
     @Observed(name = "dbrepo_table_data_import")
     @PreAuthorize("hasAuthority('insert-table-data')")

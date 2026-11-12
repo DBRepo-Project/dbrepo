@@ -108,6 +108,14 @@ public class TableServiceImpl implements TableService {
 
     @Override
     @Transactional
+    public Table syncTableSchema(Database database, Table table) throws DataServiceException,
+            DataServiceConnectionException, SearchServiceConnectionException, SearchServiceException,
+            DatabaseNotFoundException, TableNotFoundException, MalformedException {
+        return syncConstraintMetadata(table, dataServiceGateway.getTableSchema(database.getId(), table.getId()));
+    }
+
+    @Override
+    @Transactional
     public Table createTable(Database database, CreateTableDto data, Principal principal) throws DataServiceException,
             DataServiceConnectionException, TableNotFoundException, DatabaseNotFoundException,
             TableExistsException, SearchServiceException, SearchServiceConnectionException, MalformedException {
@@ -192,15 +200,7 @@ public class TableServiceImpl implements TableService {
         /* update in search service */
         searchServiceGateway.update(entity);
         log.info("Created table with id {}", optional.get().getId());
-        final Optional<TableDto> inspected = dataServiceGateway.getTableSchemas(database.getId())
-                .stream()
-                .filter(t -> t.getInternalName().equals(table.getInternalName()))
-                .findFirst();
-        if (inspected.isEmpty()) {
-            log.error("Failed to inspect created table {}", table.getInternalName());
-            throw new TableNotFoundException("Failed to inspect created table " + table.getInternalName());
-        }
-        return syncConstraintMetadata(optional.get(), inspected.get());
+        return syncTableSchema(database, optional.get());
     }
 
     @Override

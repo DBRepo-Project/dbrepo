@@ -520,8 +520,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
     @Test
     @WithAnonymousUser
-    public void findById_publicDataPublicSchemaAnonymous_succeeds() throws UserNotFoundException,
-            TableNotFoundException, NotAllowedException, DatabaseNotFoundException, AccessNotFoundException {
+    public void findById_publicDataPublicSchemaAnonymous_succeeds() throws Exception {
 
         /* test */
         generic_findById(DATABASE_4_ID, DATABASE_4, TABLE_9_ID, TABLE_9, null, null, null);
@@ -549,8 +548,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = "find-table")
-    public void findById_publicHasRole_succeeds() throws UserNotFoundException,
-            TableNotFoundException, NotAllowedException, DatabaseNotFoundException, AccessNotFoundException {
+    public void findById_publicHasRole_succeeds() throws Exception {
 
         /* test */
         final ResponseEntity<TableDto> response = generic_findById(DATABASE_3_ID, DATABASE_3, TABLE_8_ID, TABLE_8, USER_1_PRINCIPAL, USER_1_DTO, DATABASE_1.getAccesses().get(0));
@@ -561,8 +559,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
     @Test
     @WithMockUser(username = USER_4_USERNAME)
-    public void findById_publicNoRole_succeeds() throws UserNotFoundException,
-            TableNotFoundException, NotAllowedException, DatabaseNotFoundException, AccessNotFoundException {
+    public void findById_publicNoRole_succeeds() throws Exception {
 
         /* test */
         generic_findById(DATABASE_3_ID, DATABASE_3, TABLE_8_ID, TABLE_8, USER_1_PRINCIPAL, USER_1_DTO, null);
@@ -847,8 +844,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
     @Test
     @WithAnonymousUser
-    public void findById_privateDatabasePrivateDataPublicSchemaAnonymous_fails() throws UserNotFoundException,
-            TableNotFoundException, NotAllowedException, DatabaseNotFoundException, AccessNotFoundException {
+    public void findById_privateDatabasePrivateDataPublicSchemaAnonymous_fails() throws Exception {
 
         /* test */
         generic_findById(DATABASE_1_ID, DATABASE_1, TABLE_2_ID, TABLE_2, null, null, null);
@@ -856,8 +852,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
     @Test
     @WithMockUser(username = USER_4_USERNAME)
-    public void findById_publicSchemaNotOwnerNoAccess_succeeds() throws UserNotFoundException,
-            TableNotFoundException, NotAllowedException, DatabaseNotFoundException, AccessNotFoundException {
+    public void findById_publicSchemaNotOwnerNoAccess_succeeds() throws Exception {
 
         /* test */
         final ResponseEntity<TableDto> response = generic_findById(DATABASE_1_ID, DATABASE_1, TABLE_2_ID, TABLE_2, USER_4_PRINCIPAL, USER_4_DTO, null);
@@ -888,8 +883,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = "find-table")
-    public void findById_privateHasRole_succeeds() throws UserNotFoundException,
-            TableNotFoundException, NotAllowedException, DatabaseNotFoundException, AccessNotFoundException {
+    public void findById_privateHasRole_succeeds() throws Exception {
         /* test */
         final ResponseEntity<TableDto> response = generic_findById(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1,
                 USER_1_PRINCIPAL, USER_1_DTO, DATABASE_1.getAccesses().get(0));
@@ -1084,8 +1078,7 @@ public class TableEndpointUnitTest extends BaseTest {
 
     protected ResponseEntity<TableDto> generic_findById(UUID databaseId, Database database, UUID tableId,
                                                         Table table, Principal principal, UserDto user,
-                                                        DatabaseAccess access) throws TableNotFoundException,
-            DatabaseNotFoundException, AccessNotFoundException, UserNotFoundException, NotAllowedException {
+                                                        DatabaseAccess access) throws Exception {
 
         /* mock */
         if (database != null) {
@@ -1098,6 +1091,8 @@ public class TableEndpointUnitTest extends BaseTest {
         }
         if (table != null) {
             when(tableService.findById(any(Database.class), eq(tableId)))
+                    .thenReturn(table);
+            when(tableService.syncTableSchema(any(Database.class), eq(table)))
                     .thenReturn(table);
         } else {
             doThrow(TableNotFoundException.class)
