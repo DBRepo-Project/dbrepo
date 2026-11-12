@@ -37,6 +37,24 @@ public interface TableService {
      */
     Table findByName(Database database, String internalName) throws TableNotFoundException, DatabaseNotFoundException;
 
+    /**
+     * Synchronizes the metadata representation of table constraints with the data service schema.
+     *
+     * @param database The database.
+     * @param table    The table.
+     * @return The synchronized table.
+     * @throws TableNotFoundException           The table was not found in the data service or metadata service.
+     * @throws DataServiceException             The data service responded with unexpected behavior.
+     * @throws DataServiceConnectionException   The connection with the data service could not be established.
+     * @throws DatabaseNotFoundException        The database was not found in the metadata service.
+     * @throws SearchServiceException           The search service responded with an unexpected error code.
+     * @throws SearchServiceConnectionException The connection with the search service could not be established.
+     * @throws MalformedException               The table schema is malformed.
+     */
+    Table syncTableSchema(Database database, Table table) throws TableNotFoundException, DataServiceException,
+            DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
+            SearchServiceConnectionException, MalformedException;
+
 
     /**
      *

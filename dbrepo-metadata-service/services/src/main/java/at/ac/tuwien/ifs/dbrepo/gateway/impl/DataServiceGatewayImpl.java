@@ -221,6 +221,35 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     }
 
     @Override
+    public TableDto getTableSchema(UUID databaseId, UUID tableId) throws DataServiceConnectionException,
+            DataServiceException, TableNotFoundException {
+        final ResponseEntity<TableDto> response;
+        final String path = "/api/v1/database/" + databaseId + "/table/" + tableId + "/schema";
+        log.trace("get table schema at endpoint {} with path {}", gatewayConfig.getDataEndpoint(), path);
+        try {
+            response = restTemplate.exchange(path, HttpMethod.GET, HttpEntity.EMPTY, TableDto.class);
+        } catch (HttpServerErrorException e) {
+            log.error("Failed to get table schema: {}", e.getMessage());
+            throw new DataServiceConnectionException("Failed to get table schema: " + e.getMessage(), e);
+        } catch (HttpClientErrorException.NotFound e) {
+            log.error("Failed to get table schema: not found: {}", e.getMessage());
+            throw new TableNotFoundException("Failed to get table schema: not found: " + e.getMessage(), e);
+        } catch (HttpClientErrorException.Unauthorized e) {
+            log.error("Failed to get table schema: {}", e.getMessage());
+            throw new DataServiceException("Failed to get table schema: " + e.getMessage(), e);
+        }
+        if (!response.getStatusCode().equals(HttpStatus.OK)) {
+            log.error("Failed to get table schema: wrong http code: {}", response.getStatusCode());
+            throw new DataServiceException("Failed to get table schema: wrong http code: " + response.getStatusCode());
+        }
+        if (response.getBody() == null) {
+            log.error("Failed to get table schema: empty body: {}", response.getStatusCode());
+            throw new DataServiceException("Failed to get table schema: empty body: " + response.getStatusCode());
+        }
+        return response.getBody();
+    }
+
+    @Override
     public TableDto addTableConstraint(UUID databaseId, UUID tableId, ConstraintAddDto data)
             throws DataServiceConnectionException, DataServiceException, TableNotFoundException, MalformedException {
         return alterTableConstraint(databaseId, tableId, HttpMethod.POST, data, "add table constraint");
