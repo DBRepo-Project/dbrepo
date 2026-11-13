@@ -281,7 +281,7 @@
       <v-dialog
         v-model="editAccessDialog"
         max-width="640">
-        <EditAccess :user-id="username" :access-type="accessType" @close-dialog="closeDialog" />
+        <EditAccess :username="username" :access-type="accessType" @close-dialog="closeDialog" />
       </v-dialog>
     </v-window>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
@@ -432,7 +432,7 @@ export default {
       if (!this.roles) {
         return false
       }
-      return this.roles.includes('update-database-access')
+      return this.roles.includes('update-database-access') || this.roles.includes('delete-database-access')
     },
     canCreateAccess () {
       if (!this.roles) {

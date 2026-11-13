@@ -48,6 +48,7 @@
   "devDependencies": {
     "@nuxtjs/i18n": "^8.1.1",
     "@pinia-plugin-persistedstate/nuxt": "^1.2.0",
+    "@playwright/test": "1.56.1",
     "@types/qs": "^6.9.12",
     "sass": "^1.71.0",
     "vite-plugin-vuetify": "^2.0.4"

@@ -4,10 +4,11 @@
       ref="form"
       v-model="valid"
       autocomplete="off"
-      @submit.prevent="submit">
+      @submit.prevent="updateAccess">
       <v-card
         :title="$t('pages.database.subpages.access.title')">
         <v-card-text>
+          <p v-if="isModification">{{ username }}</p>
           <v-row>
             <v-col>
               <v-autocomplete
@@ -52,12 +53,12 @@
           <v-btn
             id="database"
             variant="flat"
-            :disabled="!valid || loading || accessType === modify.type"
+            :disabled="!valid || loading || !canSubmit"
             :color="buttonColor"
             type="submit"
             :text="$t('navigation.modify')"
             :loading="loading"
-            @click="updateAccess" />
+            />
         </v-card-actions>
       </v-card>
     </v-form>
@@ -107,17 +108,20 @@ export default {
       return this.cacheStore.getDatabase
     },
     accessTypes () {
-      if (!this.isModification) {
-        /* give access cannot revoke access */
-        return this.types.filter(t => t.value !== 'revoke')
-      }
-      return this.types
+      const roles = this.cacheStore.getRoles || []
+      return this.types.filter(t => t.value === 'revoke'
+        ? this.isModification && roles.includes('delete-database-access')
+        : roles.includes(this.isModification ? 'update-database-access' : 'create-database-access'))
+    },
+    canSubmit () {
+      return this.localUsername && this.modify.type !== this.accessType &&
+        this.accessTypes.some(t => t.value === this.modify.type)
     },
     eligibleUsers () {
       return this.users.filter(u => !this.database.accesses.map(a => a.user.username).includes(u.username))
     },
     buttonColor () {
-      if (!this.valid || this.loading || this.accessType === this.modify.type) {
+      if (!this.valid || this.loading || !this.canSubmit) {
         return null
       }
       if (this.modify.type && this.modify.type === 'revoke') {
@@ -149,13 +153,11 @@ export default {
     this.init()
   },
   methods: {
-    submit () {
-      this.$refs.form.validate()
-    },
     cancel () {
       this.$emit('close-dialog', { success: false })
     },
     async updateAccess () {
+      if (this.loading || !this.canSubmit || !(await this.$refs.form.validate()).valid) return
       this.loading = true
       if (this.isModification) {
         if (this.modify.type === 'revoke') {
@@ -169,7 +171,7 @@ export default {
     },
     revokeAccess () {
       const accessService = useAccessService()
-      accessService.remove(this.$route.params.database_id, this.localUsername)
+      return accessService.remove(this.$route.params.database_id, this.localUsername)
         .then(() => {
           const toast = useToastInstance()
           toast.success(this.$t('success.access.revoked', { access: this.modify.type }))
@@ -189,7 +191,7 @@ export default {
     },
     modifyAccess () {
       const accessService = useAccessService()
-      accessService.update(this.$route.params.database_id, this.localUsername, this.modify)
+      return accessService.update(this.$route.params.database_id, this.localUsername, this.modify)
         .then(() => {
           const toast = useToastInstance()
           toast.success(this.$t('success.access.modified', { access: this.modify.type }))
@@ -209,7 +211,7 @@ export default {
     },
     giveAccess () {
       const accessService = useAccessService()
-      accessService.create(this.$route.params.database_id, this.localUsername, this.modify)
+      return accessService.create(this.$route.params.database_id, this.localUsername, this.modify)
         .then(() => {
           const toast = useToastInstance()
           toast.success(this.$t('success.access.created', { access: this.modify.type }))
@@ -247,6 +249,7 @@ export default {
         })
     },
     init () {
+      this.localUsername = this.username
       if (!this.username) {
         this.loadUsers()
       } else {
