@@ -252,7 +252,7 @@
                           clearable
                           persistent-hint
                           :label="$t('pages.subset.subpages.create.join.value.label')"
-                          :items="join?.datasource?.columns" />
+                          :items="selectableColumns(join?.datasource)" />
                       </v-col>
                       <v-col
                         lg="1">
@@ -693,7 +693,7 @@ export default {
       }
       const columns = []
       this.datasources.forEach(datasource => {
-        datasource.columns.forEach(column => {
+        this.selectableColumns(datasource).forEach(column => {
           column.qualified_name = datasource.internal_name + '.' + column.internal_name
           columns.push(column)
         })
@@ -703,7 +703,7 @@ export default {
           if (join.datasource?.id !== datasource.id) {
             return
           }
-          datasource.columns.forEach(column => {
+          this.selectableColumns(datasource).forEach(column => {
             column.qualified_name = datasource.internal_name + '.' + column.internal_name
             columns.push(column)
           })
@@ -792,6 +792,13 @@ export default {
     }
   },
   methods: {
+    selectableColumns (datasource) {
+      const isView = this.database?.views?.some(view => view.id === datasource?.id)
+      const managed = !isView && [this.database?.replica_urls, datasource?.replica_urls]
+        .some(urls => urls && Object.keys(urls).length > 0)
+      return (datasource?.columns || []).filter(column =>
+        !managed || column.internal_name.toLowerCase() !== 'replication_key')
+    },
     initViewVisibility () {
       if (!this.database) {
         return
