@@ -40,13 +40,14 @@ test('upload success is not reported as import success when a required CSV value
     const req = route.request()
     if (req.url().endsWith('/upload')) return route.fulfill({json: {key: 'uploaded.csv'}})
     if (req.url().endsWith('/data/import')) return route.fulfill({status: 400,
-      json: {code: 'error.import.required', message: 'notiz', status: 'BAD_REQUEST'}})
+      json: {code: 'error.import.required', message: '<b>notiz</b>', status: 'BAD_REQUEST'}})
     return route.fulfill({json: {id: 'db', tables: [], container: {image: {id: 'image'}}}})
   })
   await page.goto('/?mode=import')
   await page.locator('input[type=file]').setInputFiles({name: 'messwerte.csv', mimeType: 'text/csv',
     buffer: Buffer.from('id,ort,wert,notiz\n1,Wien,12.5,"Grüße, Wien"\n2,Graz,0,\n')})
   await page.getByRole('button', {name: 'Upload & Import', exact: true}).click()
-  await expect(page.locator('[data-toast=error]')).toContainText('Column notiz contains an empty value')
-  await expect(page.locator('[data-toast=success]')).toHaveCount(0)
+  await expect(page.locator('.v-toast__item--error')).toContainText('Column <b>notiz</b> contains an empty value')
+  await expect(page.locator('.v-toast__item--success')).toHaveCount(0)
+  await expect(page.locator('.v-toast__item--error b')).toHaveCount(0)
 })

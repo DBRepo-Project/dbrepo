@@ -8,6 +8,8 @@ import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 import 'vuetify/styles'
 import axios from 'axios'
+import {useToastInstance} from '../../composables/toast-instance'
+import 'vue-toast-notification/dist/theme-default.css'
 import EditTuple from '../../components/dialogs/EditTuple.vue'
 import {useTupleService} from '../../composables/tuple-service'
 import {useTupleDraft} from '../../composables/tuple-draft'
@@ -23,17 +25,13 @@ import messages from '../../locales/en-US.json'
 const http = axios.create()
 const config = {public: {variant: {input: {normal: 'underlined'}, button: {normal: 'flat'}},
   dashboard: {url: '/dashboard'}, database: {image: {width: 200, height: 200}}}}
-const toast = Object.fromEntries(['success', 'error', 'warning', 'info'].map(type => [type, text => {
-  const item = document.createElement('p'); item.dataset.toast = type; item.textContent = text
-  document.body.append(item)
-}]))
 Object.assign(globalThis, {
   useCacheStore, useAccessService, useTupleService, useTupleDraft, useTableService, notFile,
   useImageService: () => ({findById: () => http.get('/api/v1/image/image').then(r => r.data)}),
   useUploadService: () => ({create: file => http.post('/api/v1/upload', file).then(r => r.data.key)}),
   useOidcAuth: () => ({user: {value: {provider: 'test', userInfo: {sub: 'owner'}}}}),
   useContainerService: () => ({findOne: () => Promise.resolve({image: {data_types: []}})}), useAxiosInstance: () => http, useRuntimeConfig: () => config,
-  useToastInstance: () => toast,
+  useToastInstance,
   useUserService: () => ({findAll: () => http.get('/api/v1/user').then(r => r.data)}),
   useDatabaseService: () => ({findOne: () => http.get('/api/v1/database/db').then(r => r.data)}),
   useGrantService: () => ({findOne: () => Promise.resolve({type: 'read', grants: ['SELECT']})})
