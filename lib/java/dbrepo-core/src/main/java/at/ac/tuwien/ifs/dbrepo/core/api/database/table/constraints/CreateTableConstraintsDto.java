@@ -23,7 +23,7 @@ public class CreateTableConstraintsDto {
 
     @NotNull
     @Schema(description = "The list of unique column(s)", example = "[]")
-    private List<List<String>> uniques;
+    private List<@NotNull List<@NotNull String>> uniques;
 
     @NotNull
     @JsonProperty("foreign_keys")
@@ -32,11 +32,11 @@ public class CreateTableConstraintsDto {
 
     @NotNull
     @Schema(description = "The list of unique column(s)", example = "[]")
-    private Set<String> checks;
+    private Set<@NotNull String> checks;
 
     @NotNull
     @JsonProperty("primary_key")
     @Schema(description = "The list of primary key column(s)", example = "[\"id\"]")
-    private List<String> primaryKey;
+    private List<@NotNull String> primaryKey;
 
 }

@@ -50,6 +50,15 @@ class TableRequestValidationTest {
         verifyNoInteractions(endpoint);
     }
 
+    @ParameterizedTest
+    @CsvSource({"uniques,[null]", "uniques,[[null]]", "checks,[null]", "primary_key,[null]", "foreign_keys,[null]"})
+    void rejectsNullConstraintEntries(String field, String entries) throws Exception {
+        mvc.perform(post(PATH).contentType("application/json").content(body("[" + COLUMN + "]",
+                        CONSTRAINTS.replace("\"" + field + "\":[]", "\"" + field + "\":" + entries))))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("message", containsString("constraints.")));
+        verifyNoInteractions(endpoint);
+    }
+
     @Test
     void acceptsCompleteConstraintsWithEmptyLists() throws Exception {
         mvc.perform(post(PATH).contentType("application/json").content(body("[" + COLUMN + "]", CONSTRAINTS)))
