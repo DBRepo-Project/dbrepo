@@ -173,7 +173,7 @@ jobs:
       - name: Build UI
         run: |
           bun install --cwd ./dbrepo-ui
-          node --test ./dbrepo-ui/tests/search-results.test.mjs
+          node --test ./dbrepo-ui/tests/search-results.test.mjs ./dbrepo-ui/tests/numeric-value.test.mjs
           cd dbrepo-ui
           bunx playwright install --with-deps chromium
           bunx playwright test

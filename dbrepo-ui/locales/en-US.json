@@ -1649,8 +1649,9 @@
     "min": "Value too small",
     "max": "Value too big",
     "matching": "Not matching!",
-    "size": "At most {size} digits before the comma .",
-    "d": "At most {size} digits after the comma .",
+    "number": "Enter a valid number.",
+    "size": "At most {size} digits before the decimal point.",
+    "d": "At most {size} digits after the decimal point.",
     "doi": {
       "invalid": "Invalid DOI. Must start with 10.xyz"
     },
