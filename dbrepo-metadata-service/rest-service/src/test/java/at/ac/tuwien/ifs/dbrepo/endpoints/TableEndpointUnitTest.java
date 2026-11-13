@@ -504,7 +504,7 @@ public class TableEndpointUnitTest extends BaseTest {
                 .columns(List.of(CreateTableColumnDto.builder()
                         .name("ID")
                         .type(columnType)
-                        .size(0L) // <<<
+                        .size(10L) // <<<
                         .d(0L) // <<<
                         .build()))
                 .constraints(null)
@@ -516,6 +516,25 @@ public class TableEndpointUnitTest extends BaseTest {
 
         /* test */
         generic_create(DATABASE_3_ID, DATABASE_3, request, USER_1_PRINCIPAL, USER_1_USERNAME, USER_1_DTO, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
+    }
+
+    @ParameterizedTest
+    @MethodSource("canHaveSizeAndD_parameters")
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
+    public void create_publicZeroPrecision_fails(ColumnTypeDto columnType) {
+        final CreateTableDto request = CreateTableDto.builder()
+                .name("Some Table")
+                .columns(List.of(CreateTableColumnDto.builder()
+                        .name("ID")
+                        .type(columnType)
+                        .size(0L)
+                        .d(0L)
+                        .build()))
+                .build();
+
+        assertThrows(MalformedException.class, () -> generic_create(DATABASE_3_ID, DATABASE_3, request,
+                USER_1_PRINCIPAL, USER_1_USERNAME, USER_1_DTO, DATABASE_3_USER_1_WRITE_OWN_ACCESS));
+        verifyNoInteractions(tableService);
     }
 
     @Test

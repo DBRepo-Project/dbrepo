@@ -3,7 +3,7 @@
     <v-form
       ref="form"
       v-model="valid"
-      @submit.prevent="validate">
+      @submit.prevent="edit ? updateTuple() : addTuple()">
       <v-card
         :title="title"
         :subtitle="this.$t('toolbars.table.data.subtitle')"
@@ -78,15 +78,15 @@
               <v-text-field
                 v-if="isFloatingPoint(column)"
                 v-model="tuple[column.internal_name]"
-                step=".1"
+                inputmode="decimal"
                 :clearable="!required(column)"
                 :required="required(column)"
                 persistent-hint
                 :variant="inputVariant"
                 :label="column.internal_name"
-                :error-messages="floatingPointErrors(column, tuple[column.internal_name])"
+                :rules="[v => floatingPointErrors(column, v) || true]"
                 :hint="hint(column)"
-                type="number">
+                type="text">
                 <template
                   v-slot:append>
                   {{ column.type.toUpperCase() }}
@@ -248,7 +248,7 @@
             color="primary"
             type="submit"
             :text="$t('pages.database.subpages.tuple.create.text')"
-            @click="addTuple" />
+            />
           <v-btn
             v-if="edit"
             id="updateTuple"
@@ -258,7 +258,7 @@
             color="primary"
             type="submit"
             :text="$t('pages.database.subpages.tuple.update.text')"
-            @click="updateTuple" />
+            />
         </v-card-actions>
       </v-card>
     </v-form>
@@ -266,6 +266,7 @@
 </template>
 
 <script>
+import { numericValueError } from '@/utils/numeric-value.mjs'
 import BlobUpload from '@/components/table/BlobUpload.vue'
 
 export default {
@@ -328,9 +329,6 @@ export default {
     database () {
       return this.cacheStore.getDatabase
     },
-    table () {
-      return this.cacheStore.getTable
-    },
     columnTypes () {
       if (!this.container) {
         return []
@@ -366,8 +364,15 @@ export default {
   },
   methods: {
     validate () {
-      console.debug('validate form')
-      this.$refs.form.validate()
+      return this.$refs.form.validate()
+    },
+    normalizedTuple () {
+      const data = {...this.tuple}
+      this.table.columns.filter(c => this.isFloatingPoint(c)).forEach(c => {
+        const value = data[c.internal_name]
+        if (value == null || String(value).trim() === '') data[c.internal_name] = null
+      })
+      return data
     },
     cancel () {
       this.menu = false
@@ -442,7 +447,8 @@ export default {
     required (column) {
       return column.is_null_allowed === false
     },
-    updateTuple () {
+    async updateTuple () {
+      if (this.loading || !(await this.validate()).valid) return
       const constraints = {}
       this.primaryKeyColumns
         .forEach((pk) => {
@@ -451,7 +457,7 @@ export default {
       console.debug('table has primary key: set update tuple constraints', constraints)
       const tupleService = useTupleService()
       this.loading = true
-      tupleService.update(this.$route.params.database_id, this.$route.params.table_id, { data: this.tuple, keys: constraints })
+      tupleService.update(this.$route.params.database_id, this.$route.params.table_id, { data: this.normalizedTuple(), keys: constraints })
         .then(() => {
           const toast = useToastInstance()
           toast.success(this.$t('success.data.update'))
@@ -471,7 +477,8 @@ export default {
           this.loading = false
         })
     },
-    addTuple () {
+    async addTuple () {
+      if (this.loading || !(await this.validate()).valid) return
       const constraints = {}
       this.table.columns
         .filter(c => c.is_primary_key)
@@ -485,7 +492,7 @@ export default {
       })
       const tupleService = useTupleService()
       this.loading = true
-      tupleService.create(this.$route.params.database_id, this.$route.params.table_id, { data: this.tuple })
+      tupleService.create(this.$route.params.database_id, this.$route.params.table_id, { data: this.normalizedTuple() })
         .then(() => {
           const toast = useToastInstance()
           toast.success(this.$t('success.data.add'))
@@ -536,20 +543,8 @@ export default {
         })
     },
     floatingPointErrors (column, value) {
-      if (!value && column.null_allowed) {
-        return null
-      } else if (!value && !column.null_allowed) {
-        return this.$t('validation.required')
-      }
-      const beforeComma = value.substring(0, value.indexOf('.') - 1)
-      const afterComma = value.substring(value.indexOf('.') + 1, value.length)
-      if (beforeComma.length > column.size) {
-        return this.$t('validation.size', {'size': column.size})
-      }
-      if (afterComma.length > column.d) {
-        return this.$t('validation.d', {'size': column.d})
-      }
-      return null
+      const error = numericValueError(column, value)
+      return error ? this.$t(...error) : null
     }
   }
 }

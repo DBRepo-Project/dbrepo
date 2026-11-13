@@ -437,7 +437,7 @@ export default {
     importCsv() {
       this.loadingImport = true
       const tableService = useTableService()
-      tableService.importCsv(this.$route.params.database_id, this.tableId, this.tableImport)
+      return tableService.importCsv(this.$route.params.database_id, this.tableId, this.tableImport)
         .then(() => {
           const toast = useToastInstance()
           toast.success(this.$t('success.import.dataset'))
@@ -453,7 +453,7 @@ export default {
             toast.error(message)
             return
           }
-          toast.error(this.$t(code))
+          toast.error(code === 'error.import.required' ? this.$t(code, {column: message}) : this.$t(code))
         })
         .finally(() => {
           this.loadingImport = false
@@ -462,15 +462,17 @@ export default {
     uploadAndAnalyse() {
       this.upload()
         .then((s3key) => {
-          this.analyse(s3key)
+          return this.analyse(s3key)
         })
+        .catch(() => {}) // upload() already reports failures
     },
     uploadAndImport() {
       this.upload()
         .then((s3key) => {
           this.tableImport.location = s3key
-          this.importCsv()
+          return this.importCsv()
         })
+        .catch(() => {}) // upload() already reports failures
     },
     upload() {
       this.loading = true
@@ -479,8 +481,6 @@ export default {
       return new Promise((resolve, reject) => {
         return uploadService.create(this.file)
           .then((s3_key) => {
-            const toast = useToastInstance()
-            toast.success(this.$t('success.upload.dataset'))
             this.loading = false
             resolve(s3_key)
           })

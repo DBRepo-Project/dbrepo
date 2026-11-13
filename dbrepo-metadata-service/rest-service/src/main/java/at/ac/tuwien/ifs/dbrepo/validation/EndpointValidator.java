@@ -75,7 +75,7 @@ public class EndpointValidator extends RestEndpoint {
 
     public void validateColumnCreateConstraints(CreateTableDto data) throws MalformedException {
         if (data == null) {
-            throw new MalformedException("Validation failed: table data is null");
+            throw new ColumnValidationException("Validation failed: table data is null");
         }
         /* check size */
         final Optional<CreateTableColumnDto> optional0 = data.getColumns()
@@ -85,7 +85,7 @@ public class EndpointValidator extends RestEndpoint {
                 .findFirst();
         if (optional0.isPresent()) {
             log.error("Validation failed: column {} need size parameter", optional0.get().getName());
-            throw new MalformedException("Validation failed: column " + optional0.get().getName() + " need size parameter");
+            throw new ColumnValidationException("Validation failed: column " + optional0.get().getName() + " need size parameter");
         }
         final Optional<CreateTableColumnDto> optional0a = data.getColumns()
                 .stream()
@@ -95,7 +95,7 @@ public class EndpointValidator extends RestEndpoint {
                 .findFirst();
         if (optional0a.isPresent()) {
             log.error("Validation failed: column {} needs positive size parameter", optional0a.get().getName());
-            throw new MalformedException("Validation failed: column " + optional0a.get().getName() + " needs positive size parameter");
+            throw new ColumnValidationException("Validation failed: column " + optional0a.get().getName() + " needs positive size parameter");
         }
         final Optional<CreateTableColumnDto> optional0b = data.getColumns()
                 .stream()
@@ -105,7 +105,7 @@ public class EndpointValidator extends RestEndpoint {
                 .findFirst();
         if (optional0b.isPresent()) {
             log.error("Validation failed: column {} needs positive d parameter", optional0b.get().getName());
-            throw new MalformedException("Validation failed: column " + optional0b.get().getName() + " needs positive d parameter");
+            throw new ColumnValidationException("Validation failed: column " + optional0b.get().getName() + " needs positive d parameter");
         }
         /* check size and d */
         final Optional<CreateTableColumnDto> optional1 = data.getColumns()
@@ -115,7 +115,17 @@ public class EndpointValidator extends RestEndpoint {
                 .findFirst();
         if (optional1.isPresent()) {
             log.error("Validation failed: column {} either needs both size and d parameter or none (use default)", optional1.get().getName());
-            throw new MalformedException("Validation failed: column " + optional1.get().getName() + " either needs both size and d parameter or none (use default)");
+            throw new ColumnValidationException("Validation failed: column " + optional1.get().getName() + " either needs both size and d parameter or none (use default)");
+        }
+        for (CreateTableColumnDto column : data.getColumns()) {
+            if (!CAN_HAVE_SIZE_AND_D.contains(column.getType()) || column.getSize() == null) continue;
+            final long maxSize = column.getType() == ColumnTypeDto.DECIMAL ? 65 : 255;
+            final long maxD = column.getType() == ColumnTypeDto.DECIMAL ? 38 : 30;
+            if (column.getSize() < 1 || column.getSize() > maxSize || column.getD() > maxD
+                    || column.getD() > column.getSize()) {
+                throw new ColumnValidationException("Column " + column.getName() + ": size must be between 1 and "
+                        + maxSize + ", and d between 0 and " + maxD + " without exceeding size.");
+            }
         }
         /* check enum */
         final Optional<CreateTableColumnDto> optional2 = data.getColumns()
@@ -125,7 +135,7 @@ public class EndpointValidator extends RestEndpoint {
                 .findFirst();
         if (optional2.isPresent()) {
             log.error("Validation failed: column {} needs at least 1 allowed enum value", optional2.get().getName());
-            throw new MalformedException("Validation failed: column " + optional2.get().getName() + " needs at least 1 allowed enum value");
+            throw new ColumnValidationException("Validation failed: column " + optional2.get().getName() + " needs at least 1 allowed enum value");
         }
         /* check set */
         final Optional<CreateTableColumnDto> optional3 = data.getColumns()
@@ -135,7 +145,7 @@ public class EndpointValidator extends RestEndpoint {
                 .findFirst();
         if (optional3.isPresent()) {
             log.error("Validation failed: column {} needs at least 1 allowed set value", optional3.get().getName());
-            throw new MalformedException("Validation failed: column " + optional3.get().getName() + " needs at least 1 allowed set value");
+            throw new ColumnValidationException("Validation failed: column " + optional3.get().getName() + " needs at least 1 allowed set value");
         }
         /* check serial */
         final List<CreateTableColumnDto> list4a = data.getColumns()
@@ -144,7 +154,7 @@ public class EndpointValidator extends RestEndpoint {
                 .toList();
         if (list4a.size() > 1) {
             log.error("Validation failed: only one column of type serial allowed");
-            throw new MalformedException("Validation failed: only one column of type serial allowed");
+            throw new ColumnValidationException("Validation failed: only one column of type serial allowed");
         }
         final Optional<CreateTableColumnDto> optional4a = data.getColumns()
                 .stream()
@@ -153,7 +163,7 @@ public class EndpointValidator extends RestEndpoint {
                 .findFirst();
         if (optional4a.isPresent()) {
             log.error("Validation failed: column {} type serial demands non-null", optional4a.get().getName());
-            throw new MalformedException("Validation failed: column " + optional4a.get().getName() + " type serial demands non-null");
+            throw new ColumnValidationException("Validation failed: column " + optional4a.get().getName() + " type serial demands non-null");
         }
     }
 

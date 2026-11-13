@@ -36,6 +36,23 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class EndpointValidatorUnitTest extends BaseTest {
+    @org.junit.jupiter.api.Test
+    void decimalZeroScaleAndDefaultsAreValidButInvalidPrecisionIsRejected() throws Exception {
+        for (Long[] pair : new Long[][]{{10L, 0L}, {null, null}, {65L, 38L}, {4L, 4L}}) {
+            final CreateTableDto request = CreateTableDto.builder().columns(java.util.List.of(
+                    CreateTableColumnDto.builder().name("wert").type(ColumnTypeDto.DECIMAL)
+                            .size(pair[0]).d(pair[1]).build())).build();
+            endpointValidator.validateColumnCreateConstraints(request);
+        }
+        for (Long[] pair : new Long[][]{{0L, 0L}, {66L, 2L}, {10L, 11L}, {40L, 39L}, {10L, -1L}, {10L, null}}) {
+            final CreateTableDto request = CreateTableDto.builder().columns(java.util.List.of(
+                    CreateTableColumnDto.builder().name("wert").type(ColumnTypeDto.DECIMAL)
+                            .size(pair[0]).d(pair[1]).build())).build();
+            org.junit.jupiter.api.Assertions.assertThrows(MalformedException.class,
+                    () -> endpointValidator.validateColumnCreateConstraints(request));
+        }
+    }
+
 
     @MockitoBean
     private DatabaseService databaseService;

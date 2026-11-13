@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.params.provider.MethodSource;
+import at.ac.tuwien.ifs.dbrepo.exception.DashboardAccessSyncException;
 import java.util.stream.Stream;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +51,7 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 @WithMockUser(username = BaseTest.USER_1_USERNAME, authorities = {
-        "create-database-access", "delete-database-access", "modify-database-visibility", "modify-database-owner", "modify-database-image", "modify-view-visibility"})
+        "create-database-access", "delete-database-access", "update-database-access", "modify-database-visibility", "modify-database-owner", "modify-database-image", "modify-view-visibility"})
 class DashboardAccessPersistenceTest extends BaseTest {
 
     @Autowired private AccessEndpoint accessEndpoint;
@@ -99,7 +100,7 @@ class DashboardAccessPersistenceTest extends BaseTest {
                 .thenReturn(ResponseEntity.accepted().build());
         final CreateAccessDto request = CreateAccessDto.builder().type(AccessTypeDto.READ).build();
 
-        assertThrows(DashboardServiceException.class, () -> accessEndpoint.create(DATABASE_1_ID, USER_2_USERNAME,
+        assertThrows(DashboardAccessSyncException.class, () -> accessEndpoint.create(DATABASE_1_ID, USER_2_USERNAME,
                 request, USER_1_PRINCIPAL));
         assertEquals(1, memberGrants()); // Separate transaction observes the committed first request.
 
@@ -140,7 +141,7 @@ class DashboardAccessPersistenceTest extends BaseTest {
         }
         final CreateAccessDto request = CreateAccessDto.builder().type(type).build();
         if (failFirst) {
-            assertThrows(DashboardServiceConnectionException.class, () ->
+            assertThrows(DashboardAccessSyncException.class, () ->
                     accessEndpoint.create(DATABASE_1_ID, USER_2_USERNAME, request, USER_2_PRINCIPAL));
             assertEquals(1, memberGrants());
         }
@@ -164,7 +165,7 @@ class DashboardAccessPersistenceTest extends BaseTest {
                         HttpHeaders.EMPTY, new byte[0], StandardCharsets.UTF_8))
                 .thenReturn(ResponseEntity.accepted().build());
 
-        assertThrows(DashboardServiceConnectionException.class, () ->
+        assertThrows(DashboardAccessSyncException.class, () ->
                 accessEndpoint.revoke(DATABASE_1_ID, USER_2_USERNAME, USER_1_PRINCIPAL));
         assertEquals(0, memberGrants());
         assertEquals(HttpStatus.ACCEPTED,
@@ -172,6 +173,27 @@ class DashboardAccessPersistenceTest extends BaseTest {
         assertEquals(0, memberGrants());
         verify(dataGateway, times(1)).deleteAccess(DATABASE_1_ID, USER_2_USERNAME);
         verify(dashboardHttp, times(2)).exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class));
+    }
+
+    @Test
+    void failedDashboardDowngradeKeepsReadOnlyGrantAndRetryPreservesIt() throws Exception {
+        seedAccess(USER_2_USERNAME, AccessType.WRITE_ALL);
+        when(dashboardHttp.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
+                .thenThrow(HttpServerErrorException.create(HttpStatus.SERVICE_UNAVAILABLE, "Synthetic outage",
+                        HttpHeaders.EMPTY, new byte[0], StandardCharsets.UTF_8))
+                .thenReturn(ResponseEntity.accepted().build());
+        final CreateAccessDto request = CreateAccessDto.builder().type(AccessTypeDto.READ).build();
+        final DashboardAccessSyncException error = assertThrows(DashboardAccessSyncException.class, () ->
+                accessEndpoint.update(DATABASE_1_ID, USER_2_USERNAME, request, USER_1_PRINCIPAL));
+        final var response = new at.ac.tuwien.ifs.dbrepo.handlers.ApiExceptionHandler().handle(error);
+        assertEquals("error.access.dashboard_sync", response.getBody().getCode());
+        assertFalse(response.getBody().getMessage().contains("Synthetic outage"));
+        assertEquals(AccessType.READ, new TransactionTemplate(transactions).execute(status -> databases
+                .findById(DATABASE_1_ID).orElseThrow().getAccesses().stream()
+                .filter(a -> USER_2_USERNAME.equals(a.getUsername())).findFirst().orElseThrow().getType()));
+        accessEndpoint.update(DATABASE_1_ID, USER_2_USERNAME, request, USER_1_PRINCIPAL);
+        assertEquals(1, memberGrants());
+        verify(dataGateway, times(2)).updateAccess(DATABASE_1_ID, USER_2_USERNAME, AccessTypeDto.READ);
     }
 
     @Test

@@ -90,6 +90,20 @@
           </v-card-text>
         </v-card>
         <v-divider />
+        <v-alert
+          v-for="pending in pendingDashboardSyncs"
+          :key="pending.username"
+          type="warning"
+          variant="tonal"
+          class="ma-4">
+          {{ $t('error.access.dashboard_sync_user', {username: pending.username}) }}
+          <v-btn
+            class="ml-3"
+            :loading="syncingDashboard === pending.username"
+            :disabled="syncingDashboard !== null || !canRetryDashboardSync(pending)"
+            :text="$t('navigation.retry')"
+            @click="retryDashboardSync(pending)" />
+        </v-alert>
         <v-card
           variant="flat"
           rounded="0"
@@ -281,7 +295,7 @@
       <v-dialog
         v-model="editAccessDialog"
         max-width="640">
-        <EditAccess :user-id="username" :access-type="accessType" @close-dialog="closeDialog" />
+        <EditAccess :username="username" :access-type="accessType" @close-dialog="closeDialog" />
       </v-dialog>
     </v-window>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
@@ -300,6 +314,7 @@ export default {
   },
   data () {
     return {
+      syncingDashboard: null,
       dialogDelete: false,
       confirm: null,
       username: null,
@@ -380,6 +395,12 @@ export default {
     }
   },
   computed: {
+    dashboardSyncKey () {
+      return JSON.stringify([this.cacheUser?.preferred_username, this.$route.params.database_id])
+    },
+    pendingDashboardSyncs () {
+      return this.cacheStore.dashboardSyncFailures[this.dashboardSyncKey] || []
+    },
     tab () {
       return 0
     },
@@ -432,7 +453,7 @@ export default {
       if (!this.roles) {
         return false
       }
-      return this.roles.includes('update-database-access')
+      return this.roles.includes('update-database-access') || this.roles.includes('delete-database-access')
     },
     canCreateAccess () {
       if (!this.roles) {
@@ -518,9 +539,48 @@ export default {
       this.accesses = this.database.accesses
       this.accesses.forEach(a => this.findGrant(a.user.username))
     },
-    closeDialog () {
+    closeDialog (result = {}) {
+      if (result.success && result.username) this.clearDashboardSync(result.username)
+      if (result.dashboardSync) {
+        const pending = result.dashboardSync
+        this.cacheStore.dashboardSyncFailures[this.dashboardSyncKey] = [
+          ...this.pendingDashboardSyncs.filter(p => p.username !== pending.username), pending
+        ]
+      }
       this.editAccessDialog = false
       this.cacheStore.reloadDatabase()
+    },
+    canRetryDashboardSync (pending) {
+      const role = {create: 'create-database-access', update: 'update-database-access', remove: 'delete-database-access'}[pending.operation]
+      return this.roles?.includes(role)
+    },
+    async retryDashboardSync (pending) {
+      this.syncingDashboard = pending.username
+      const toast = useToastInstance()
+      try {
+        const database = await useDatabaseService().findOne(this.$route.params.database_id)
+        const grant = database.accesses.find(a => a.user.username === pending.username)
+        // Do not reapply an obsolete grant if another request has changed it in the meantime.
+        if ((pending.operation === 'remove' && grant) ||
+            (pending.operation !== 'remove' && grant?.type !== pending.type)) {
+          toast.warning(this.$t('error.access.changed'))
+          this.cacheStore.dashboardSyncFailures[this.dashboardSyncKey] = this.pendingDashboardSyncs.map(p =>
+            p.username === pending.username ? {...p, operation: grant ? 'update' : 'remove', type: grant?.type || 'revoke'} : p)
+          this.cacheStore.setDatabase(database)
+          return
+        }
+        await useAccessService()[pending.operation](this.$route.params.database_id, pending.username, {type: pending.type})
+        this.clearDashboardSync(pending.username)
+        toast.success(this.$t('success.access.synchronized'))
+      } catch ({code, message}) {
+        toast.error(typeof code === 'string' ? this.$t(code) : message)
+      } finally {
+        this.syncingDashboard = null
+        this.cacheStore.reloadDatabase()
+      }
+    },
+    clearDashboardSync (username) {
+      this.cacheStore.dashboardSyncFailures[this.dashboardSyncKey] = this.pendingDashboardSyncs.filter(p => p.username !== username)
     },
     updateDatabaseVisibility () {
       this.loading = true
