@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import {numericValueError} from '../utils/numeric-value.mjs'
 import { readFileSync } from 'node:fs'
 import test from 'node:test'
 import vm from 'node:vm'
@@ -15,6 +16,7 @@ const storage = new Map()
 const failures = []
 const sandbox = {
   BlobUpload: {},
+  numericValueError,
   console,
   sessionStorage: {
     getItem: key => storage.get(key) ?? null,
@@ -32,7 +34,7 @@ const draftSource = readFileSync(new URL('../composables/tuple-draft.ts', import
   .replace('export const useTupleDraft =', 'globalThis.useTupleDraft =')
 vm.runInNewContext(transformSync(draftSource, { loader: 'ts' }).code, sandbox)
 const script = descriptor.script.content
-  .replace(/^import BlobUpload.*\n/m, '')
+  .replace(/^import .*\n/gm, '')
   .replace('export default {', 'globalThis.component = {')
 vm.runInNewContext(script, sandbox)
 const component = sandbox.component
@@ -48,7 +50,9 @@ function context (replicaUrls) {
     oldTuple: { id: 1 },
     primaryKeyColumns: [columns[0]],
     fetchContainer () {},
-    validate () {},
+    validate: async () => ({valid: true}),
+    normalizedTuple: component.methods.normalizedTuple,
+    isFloatingPoint: component.methods.isFloatingPoint,
     $route: { params: { database_id: 'database', table_id: 'table' } },
     $t: key => key,
     $emit () {}
@@ -62,10 +66,10 @@ function context (replicaUrls) {
 test('replicated tables hide and omit the managed key', async () => {
   const state = context(['https://peer.example'])
   assert.deepEqual(Array.from(state.editableColumns, column => column.internal_name), ['id', 'value'])
-  component.methods.addTuple.call(state)
+  await component.methods.addTuple.call(state)
   assert.deepEqual(Object.keys(payload.data).sort(), ['id', 'value'])
   await new Promise(setImmediate)
-  component.methods.updateTuple.call(state)
+  await component.methods.updateTuple.call(state)
   assert.deepEqual(Object.keys(payload.data).sort(), ['id', 'value'])
   await new Promise(setImmediate)
   assert.equal(state.tuple.replication_key, 'existing')
@@ -75,10 +79,10 @@ test('replicated tables hide and omit the managed key', async () => {
 test('ordinary columns named replication_key remain editable', async () => {
   const state = context([])
   assert.deepEqual(Array.from(state.editableColumns, column => column.internal_name), ['id', 'replication_key', 'value'])
-  component.methods.addTuple.call(state)
+  await component.methods.addTuple.call(state)
   assert.equal(payload.data.replication_key, 'existing')
   await new Promise(setImmediate)
-  component.methods.updateTuple.call(state)
+  await component.methods.updateTuple.call(state)
   assert.equal(payload.data.replication_key, 'existing')
   await new Promise(setImmediate)
   assert.deepEqual(failures, [])
@@ -91,7 +95,7 @@ test('restored drafts keep the original update key and omit managed replication 
   state.draft.save({ id: 2, replication_key: 'stale-draft-key', value: 'restored' })
   component.mounted.call(state)
   assert.equal(state.tuple.value, 'restored')
-  component.methods.updateTuple.call(state)
+  await component.methods.updateTuple.call(state)
   assert.equal(payload.keys.id, 1)
   assert.equal(payload.data.id, 2)
   assert.equal(payload.data.replication_key, undefined)

@@ -24,3 +24,7 @@ logs
 # Local env files
 .env
 .env.*
+
+# Browser regression artifacts
+test-results/
+playwright-report/
