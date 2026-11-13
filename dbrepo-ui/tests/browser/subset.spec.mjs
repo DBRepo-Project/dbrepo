@@ -29,3 +29,19 @@ test('Select All submits a replicated table without its managed key', async ({pa
   expect(errors).toEqual([])
 })
 
+for (const origin of ['https://origin.example', null, 'javascript:alert(1)']) {
+  test(`subset info renders safe provenance: ${origin}`, async ({page}) => {
+    const errors = []; page.on('pageerror', e => errors.push(e.message))
+    await page.route('**/api/v1/**', route => route.fulfill({json: route.request().url().endsWith('/subset/subset')
+      ? {id: 'subset', owner: {username: 'owner'}, query: 'SELECT id FROM measurements', creation_location: origin, identifiers: []} : database}))
+    await page.goto('/?mode=origin')
+    await expect(page.getByText('Originally created on', {exact: true})).toBeVisible()
+    if (origin?.startsWith('https:')) {
+      await expect(page.getByRole('link', {name: 'https://origin.example/'})).toHaveAttribute('href', 'https://origin.example/')
+    } else {
+      await expect(page.getByText('Not available', {exact: true})).toBeVisible()
+      await expect(page.locator('a[href^="javascript:"]')).toHaveCount(0)
+    }
+    expect(errors).toEqual([])
+  })
+}
