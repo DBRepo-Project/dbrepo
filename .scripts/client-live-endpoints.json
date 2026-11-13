@@ -24,6 +24,14 @@
       "excluded": null
     },
     {
+      "operation": "DELETE /api/v1/database/{id}/table/{id}/constraint",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java",
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
       "operation": "DELETE /api/v1/database/{id}/table/{id}/data",
       "sources": [
         "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
@@ -181,6 +189,13 @@
     },
     {
       "operation": "GET /api/v1/database/{id}/table/{id}/history",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/v1/database/{id}/table/{id}/schema",
       "sources": [
         "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
       ],
@@ -478,6 +493,14 @@
     },
     {
       "operation": "POST /api/v1/database/{id}/table",
+      "sources": [
+        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java",
+        "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/v1/database/{id}/table/{id}/constraint",
       "sources": [
         "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java",
         "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
