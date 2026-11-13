@@ -30,6 +30,10 @@ from dbrepo.RestClient import RestClient
 from dbrepo.api import dto
 
 HERE = Path(__file__).resolve().parent
+_auth_spec = importlib.util.spec_from_file_location('client_live_auth', HERE / 'client_live_auth.py')
+_auth_module = importlib.util.module_from_spec(_auth_spec)
+_auth_spec.loader.exec_module(_auth_module)
+BearerSession = _auth_module.BearerSession
 
 
 def canonical(method, url, params=None):
@@ -139,6 +143,14 @@ class Runner:
         if ca is not True and (not isinstance(ca,str) or not ca.strip()): raise ValueError('TLS verification cannot be disabled')
         self.clients = {role: make_client(self.endpoint, config.get(role)) for role in ('owner', 'peer', 'admin', 'system')}
         self.clients['anonymous'] = make_client(self.endpoint, {})
+        self.bearer_sessions = {}
+        if config.get('oidc'):
+            for role in ('owner', 'peer', 'admin'):
+                client = self.clients[role]
+                if client.username and client.password:
+                    self.bearer_sessions[(client.username, client.password)] = BearerSession(
+                        self.endpoint, client.username, client.password, config['oidc'], ca)
+
         for client in self.clients.values(): client.secure = config.get('ca_bundle', True)
         if not self.clients['owner'].password: raise ValueError('owner credentials are required')
         self.run_id = 'client-live-' + datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S') + '-' + uuid4().hex[:8]
@@ -154,6 +166,11 @@ class Runner:
     def transport(self, **kwargs):
         if not kwargs['url'].startswith(self.endpoint + '/'):
             raise ValueError('Request escaped the configured endpoint')
+        credentials = kwargs.get('auth')
+        session = self.bearer_sessions.get(credentials) if isinstance(credentials, tuple) else None
+        if session:
+            kwargs['auth'] = None
+            kwargs['headers'] = {**(kwargs.get('headers') or {}), 'Authorization': 'Bearer ' + session.token()}
         kwargs.setdefault('timeout', (5, self.config.get('read_timeout', 30)))
         kwargs.setdefault('allow_redirects', False)
         started = time.monotonic()
@@ -285,6 +302,11 @@ class Runner:
             self.instance={'frontend_http_status':response.status_code,
                 'advertised_commits':re.findall(r'/(?:commit|-/commit)/([a-f0-9]{7,40})',response.text),
                 'advertised_versions':re.findall(r'https://www\.ifs\.tuwien\.ac\.at/infrastructures/dbrepo/([^/\"<> ]+)',response.text)}
+        for role in ('owner', 'peer', 'admin'):
+            client = self.clients[role]
+            session = self.bearer_sessions.get((client.username, client.password))
+            if session:
+                step('auth.' + role + '.bearer', lambda session=session: bool(session.token()))
         step('instance.version',instance_version)
         step('gateway.health',lambda:self.http('GET','/health',role='anonymous'),check=lambda r:r.json().get('status')=='UP')
         step('client.whoami', lambda: call('whoami'))
@@ -533,16 +555,11 @@ c.publish_dataframe(v['key'],pd.DataFrame([{'id':5,'value':50,'label':'amqp-fram
         bearer=self.clients['owner']
         if credentials:
             def token():
-                owner=self.clients['owner']; response=requests.request(method='post',url=self.endpoint+'/realms/dbrepo/protocol/openid-connect/token',
-                     data={'grant_type':'password','client_id':credentials.get('client_id','dbrepo-client'),'client_secret':credentials['client_secret'],
-                           'username':owner.username,'password':owner.password})
-                assert response.status_code==200,'Could not obtain an owner token'
-                secret=response.json()['access_token']
-                self.clients['search']=make_client(self.endpoint,{'token':secret})
-                return True
-            step('search.owner.token',token)
-            bearer=self.clients.get('search')
-        public_search=not (bearer and bearer.username is None)
+                owner = self.clients['owner']
+                session = self.bearer_sessions.get((owner.username, owner.password))
+                return bool(session.token()) if session else bool(owner.password)
+            step('search.owner.token', token)
+        public_search = not (bearer and (bearer.username is None or credentials))
         if self.config.get('search'):
             bearer=make_client(self.endpoint,self.config['search'])
             bearer.secure=self.config.get('ca_bundle',True)
