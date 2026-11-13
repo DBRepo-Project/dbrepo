@@ -251,6 +251,17 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     @ResponseStatus(code = HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MalformedException.class)
     public ResponseEntity<ApiErrorDto> handle(MalformedException e) {
+        for (Throwable cause = e; cause != null; cause = cause.getCause()) {
+            if (cause instanceof java.sql.SQLException sql && sql.getErrorCode() == 1048) {
+                final java.util.regex.Matcher column = java.util.regex.Pattern
+                        .compile("Column '([^'\\r\\n]{1,64})' cannot be null").matcher(sql.getMessage());
+                if (column.find()) {
+                    return ResponseEntity.badRequest().contentType(org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON)
+                            .body(ApiErrorDto.builder().status(HttpStatus.BAD_REQUEST)
+                                    .code("error.import.required").message(column.group(1)).build());
+                }
+            }
+        }
         return generic_handle(e.getClass(), e.getLocalizedMessage());
     }
 

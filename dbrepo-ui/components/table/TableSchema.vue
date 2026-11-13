@@ -96,12 +96,7 @@
             :clearable="!columnType(c).size_required"
             persistent-hint
             :variant="inputVariant"
-            :rules="[
-              v => !(columnType(c).size_required && (v === null || v === '')) || $t('validation.required'),
-              v => !(columnType(c).size_min ? Number(v) < columnType(c).size_min : false) || $t('validation.min'),
-              v => !(columnType(c).size_max ? Number(v) > columnType(c).size_max : false) || $t('validation.max')
-            ]"
-            :error-messages="sizeErrorMessages(c)"
+            :rules="[() => numberError(c, 'size') || true]"
             :label="$t('pages.table.subpages.schema.size.label')" />
         </v-col>
         <v-col
@@ -117,12 +112,7 @@
             :clearable="!columnType(c).d_required"
             persistent-hint
             :variant="inputVariant"
-            :rules="[
-              v => !(columnType(c).d_required && (v === null || v === '')) || $t('validation.required'),
-              v => !(columnType(c).d_min ? Number(v) < columnType(c).d_min : false) || $t('validation.min'),
-              v => !(columnType(c).d_max ? Number(v) > columnType(c).d_max : false) || $t('validation.max')
-            ]"
-            :error-messages="dErrorMessages(c)"
+            :rules="[() => numberError(c, 'd') || true]"
             :label="$t('pages.table.subpages.schema.d.label')" />
         </v-col>
         <v-col
@@ -238,6 +228,7 @@
 </template>
 
 <script>
+import { schemaNumberError } from '@/utils/schema-numbers.mjs'
 import TableForeignKeys from '@/components/table/TableForeignKeys.vue'
 import { useCacheStore } from '@/stores/cache.js'
 
@@ -318,8 +309,11 @@ export default {
     valid () {
       this.$emit('schema-valid', { valid: this.valid })
     },
-    columns () {
-      this.$refs.form.validate()
+    columns: {
+      deep: true,
+      handler () {
+        this.$nextTick(() => this.$refs.form.validate())
+      }
     },
     foreignKeys: {
       deep: true,
@@ -361,7 +355,8 @@ export default {
           this.loadingColumnTypes = false
         })
     },
-    submit () {
+    async submit () {
+      if (!(await this.$refs.form.validate()).valid) return
       const tableService = useTableService()
       this.$emit('close', { success: true, columns: tableService.prepareColumns(this.columns), constraints: tableService.prepareConstraints(this.columns, this.foreignKeys) })
     },
@@ -392,7 +387,7 @@ export default {
         sets_values: null,
         enums: [],
         enums_values: null,
-        d: 0
+        d: null
       }
       column.size = this.columnType(column).size_required === true ? this.columnType(column).size_default : null
       this.columns.push(column)
@@ -467,23 +462,9 @@ export default {
         this.setOthers(column)
       }
     },
-    sizeErrorMessages (column) {
-      if (column.size < column.d) {
-        return ['Size needs to be bigger or equal to d']
-      }
-      if (column.size < 0) {
-        return ['Size must be positive']
-      }
-      return []
-    },
-    dErrorMessages (column) {
-      if (column.size < column.d) {
-        return ['D needs to be smaller or equal to size']
-      }
-      if (column.d < 0) {
-        return ['D must be positive']
-      }
-      return []
+    numberError (column, field) {
+      const error = schemaNumberError(column, this.columnType(column), field)
+      return error ? this.$t(error) : null
     }
   }
 }

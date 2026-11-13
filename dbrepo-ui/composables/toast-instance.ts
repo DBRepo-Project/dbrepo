@@ -7,31 +7,38 @@ const props: ToastProps = {
 }
 
 export const useToastInstance = () => {
+  // The toast library accepts HTML; API messages and interpolated names are plain text.
+  function plainText(message: string): string {
+    const text = document.createElement('span')
+    text.textContent = message
+    return text.innerHTML
+  }
+
   function error(message: string): void {
     const toast: ToastPluginApi = useToast(props);
-    if (document) {
-      toast.error(message)
+    if (typeof document !== 'undefined') {
+      toast.error(plainText(message))
     }
   }
 
   function success(message: string): void {
     const toast: ToastPluginApi = useToast(props);
-    if (document) {
-      toast.success(message)
+    if (typeof document !== 'undefined') {
+      toast.success(plainText(message))
     }
   }
 
   function info(message: string): void {
     const toast: ToastPluginApi = useToast(props);
-    if (document) {
-      toast.info(message)
+    if (typeof document !== 'undefined') {
+      toast.info(plainText(message))
     }
   }
 
   function warning(message: string): void {
     const toast: ToastPluginApi = useToast(props);
-    if (document) {
-      toast.warning(message)
+    if (typeof document !== 'undefined') {
+      toast.warning(plainText(message))
     }
   }
 

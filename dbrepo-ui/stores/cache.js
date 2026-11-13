@@ -15,6 +15,7 @@ export const useCacheStore = defineStore('cache', {
       messages: [],
       user: null,
       roles: [],
+      dashboardSyncFailures: {},
       uploadProgress: null
     }
   },

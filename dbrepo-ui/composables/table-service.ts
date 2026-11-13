@@ -1,4 +1,5 @@
 import type {AxiosError, AxiosRequestConfig, AxiosResponse} from 'axios'
+import {optionalNumber} from '@/utils/schema-numbers.mjs'
 import {axiosErrorToApiError} from '@/utils'
 
 export const useTableService = (): any => {
@@ -239,9 +240,9 @@ export const useTableService = (): any => {
       const column: ColumnCreateDto = {
         name: c.name,
         type: c.type,
-        size: c.size ? c.size : null,
+        size: optionalNumber(c.size),
         description: c.comment ? c.comment : null,
-        d: c.d ? c.d : null,
+        d: optionalNumber(c.d),
         enums: c.enums_values ? c.enums_values.split(',') : [],
         sets: c.sets_values ? c.sets_values.split(',') : [],
         index_length: c.index_length,

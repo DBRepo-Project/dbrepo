@@ -201,7 +201,7 @@ jobs:
         run: python .scripts/test-auth-headers.py
 
   ui:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
       - uses: oven-sh/setup-bun@v2
@@ -210,7 +210,11 @@ jobs:
       - name: Build UI
         run: |
           bun install --cwd ./dbrepo-ui --frozen-lockfile
-          node --test ./dbrepo-ui/tests/search-results.test.mjs
+          node --test ./dbrepo-ui/tests/search-results.test.mjs ./dbrepo-ui/tests/numeric-value.test.mjs ./dbrepo-ui/tests/schema-numbers.test.mjs
+          cd dbrepo-ui
+          bunx playwright install --with-deps chromium
+          bunx playwright test
+          cd ..
           bun run --cwd ./dbrepo-ui build
       - name: Run UI regression tests
         run: node --test ./dbrepo-ui/test/*.test.mjs
