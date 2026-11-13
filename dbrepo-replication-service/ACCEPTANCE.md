@@ -4,7 +4,7 @@ These opt-in tools exercise deployed APIs; they do not deploy, fix configuration
 delete research data, purge outboxes, or certify production readiness. They use
 Python 3's standard library, SSH, and MariaDB clients. Run from the repository root.
 
-The journal/inbox, immutable subset artifacts, and asynchronous `HISTORY_SYNC`
+The journal/inbox, historical subset re-execution, and asynchronous `HISTORY_SYNC`
 contracts below must all be activated by the parent before a live run. A
 consumer-only rollout or mixed old/new services is not sufficient. Preparation
 and offline tests do not authorize a deployment or live fault.
@@ -15,7 +15,7 @@ and offline tests do not authorize a deployment or live fault.
   `replication_acceptance_<random>` database on the first site and lets DBRepo
   replicate it to the other two. It never accepts an existing database/table ID
   as a test target. A new database is used for every run.
-- `parent_coordinated=true` and `strict_snapshot_activation=true` are explicit
+- `parent_coordinated=true` and `strict_history_activation=true` are explicit
   operator attestations required before any fixture write. They are not proof
   of deployment parity; retain the parent's revision/image/migration inventory.
 - Only use dedicated acceptance users. Mapping a replica user also writes an
@@ -52,7 +52,7 @@ without these grants would only demonstrate a missing role.
   "primary_container_id": "11111111-1111-4111-8111-111111111111",
   "dedicated_test_users": true,
   "parent_coordinated": false,
-  "strict_snapshot_activation": false,
+  "strict_history_activation": false,
   "sites": [
     {
       "name": "primary",
@@ -118,8 +118,8 @@ the acceptance runner does not infer deployment parity from container health.
 | Outage evidence | Every source event remains in each receiver inbox. Actual local versions match applied receipts and local timestamp mappings; superseded unseen events are not claimed as locally visible. The final head and current rows reflect the delete. Requires scoped SQL observers. |
 | Async history sync | Database and table POSTs return HTTP 202 with durable job UUIDs covering every fixture table/peer pair. Every returned `HISTORY_SYNC` job must reach `SUCCEEDED` and expose a matching `RECONCILED` target snapshot receipt; `FAILED`, `CANCELLED`, missing/unscoped jobs, or bounded timeout fail. Page/tuple counts never imply completion. |
 | Archive preservation | DELETE archives the table on all sites, removes it from active listings, and leaves each local subset reproducible with its original hash. |
-| Canonical subset | The primary's original subset UUID, persistence, rows, result hash and snapshot hash replay on peers after archive, with `X-Result-Mode: immutable-snapshot`. Local equivalent queries and timestamp re-execution do not satisfy this gate. |
-| Offline citation | A parent-provided scoped hook makes the origin's fixture citation return 503 while peers still serve its identical immutable artifact. Without the hook this is BLOCKED, not an offline success. |
+| Canonical subset | The primary's original subset UUID, persistence, rows, result hash and stored selection metadata replay on peers after archive, with `X-Result-Mode: historical-re-execution`. A separately created equivalent query does not satisfy this gate. |
+| Offline citation | A parent-provided scoped hook makes the origin's fixture citation return 503 while peers still reproduce its historical result with the same verified hash. Without the hook this is BLOCKED, not an offline success. |
 
 Journal reads use `/api/v1/database/{id}/replication/journal?after=0&limit=100`.
 The first `through` boundary is pinned on all subsequent pages. The runner checks
@@ -236,7 +236,7 @@ contract. SQL errors and incomplete/oversized observations never become passes.
 Equal current rows or empty outboxes alone do not prove history completeness.
 After reordered catch-up C may have fewer native historical versions than A/B;
 the inbox retains the missing source events without asserting past local visibility.
-Source canonical citations are instead reproduced from immutable result artifacts.
+Source canonical citations re-execute the stored query at its original selection time using the retained history and master-timestamp evidence. History synchronization requires manifest format 3; older formats do not satisfy this check.
 
 ## Parent-Coordinated Run
 
@@ -276,7 +276,7 @@ and the parent's verified SSH destination (including user where needed):
 Use `SITE=primary`, `peer_b`, `peer_c` respectively. Set top-level `fault_hook` to
 the **peer_c** argv plus `"--allow-scoped-faults"`. Container names and SSH host
 keys must be verified from parent inventory first. No remote script upload is
-needed. Leave `parent_coordinated`, `strict_snapshot_activation`, and
+needed. Leave `parent_coordinated`, `strict_history_activation`, and
 `scoped_faults_coordinated` false until the coordinated rollout-ready signal.
 Keep config/report private and outside Git. An `offline_hook` is additionally
 required for a complete offline-citation result, as specified below.
@@ -285,7 +285,7 @@ required for a complete offline-citation result, as specified below.
 
 1. Freeze and record the deployed revision/image/migration inventory for all three
    sites. Activate retained source journals, receiver inbox/head ordering, full
-   origin timestamp keys, immutable subset results, and durable async history-sync
+   master-timestamp evidence, historical subset re-execution, and durable async history-sync
    jobs. Do not run these gates against the mixed consumer-only rollout.
 2. Confirm trusted peers, dedicated users and required roles. Supply HTTP secrets
    through the named environment variables from an in-memory parent process.
@@ -317,8 +317,8 @@ echo the exact scope after activation/cleanup and enforce TTL expiry. Block read
 only for that new origin database/subset API subtree, including result paths,
 returning HTTP 503; do not stop a VPS, block shared peers, or alter artifact bytes.
 The harness first verifies the origin data URL really returns 503, then reads
-the original UUID on both peers and requires identical immutable-snapshot mode,
-rows, persistence, result hash, and snapshot hash. Unblocking always runs in
+the original UUID on both peers and requires historical-re-execution mode,
+identical rows, persistence, result hash, and unchanged selection metadata. Unblocking always runs in
 `finally`. This routing hook is deliberately parent/environment-owned; it is not
 implemented by the SQL write-fault controller. Without it the offline gate is
 explicitly BLOCKED. Ordinary archive/canonical replay is not reported as offline.
