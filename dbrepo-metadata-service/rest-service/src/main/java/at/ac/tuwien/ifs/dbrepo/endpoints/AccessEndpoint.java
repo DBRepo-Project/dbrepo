@@ -1,6 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.endpoints;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.CreateAccessDto;
+import at.ac.tuwien.ifs.dbrepo.exception.DashboardAccessSyncException;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.DatabaseAccessDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.AccessType;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
@@ -103,7 +104,7 @@ public class AccessEndpoint extends RestEndpoint {
                     description = "Database or user not found",
                     content = {@Content}),
             @ApiResponse(responseCode = "502",
-                    description = "Access could not be created due to connection error",
+                    description = "Data Service connection failed, or database access was saved but dashboard synchronization failed (error.access.dashboard_sync)",
                     content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Access could not be created in the data service",
@@ -135,7 +136,7 @@ public class AccessEndpoint extends RestEndpoint {
         } catch (AccessNotFoundException e) {
             accessService.create(database, username, data.getType());
         }
-        dashboardService.updateAccess(database, username, data.getType());
+        syncDashboardAccess(database, username, data.getType());
         return ResponseEntity.accepted()
                 .build();
     }
@@ -160,7 +161,7 @@ public class AccessEndpoint extends RestEndpoint {
                     description = "Database or user not found",
                     content = {@Content}),
             @ApiResponse(responseCode = "502",
-                    description = "Access could not be updated due to connection error in the data service",
+                    description = "Data Service connection failed, or database access was saved but dashboard synchronization failed (error.access.dashboard_sync)",
                     content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Access could not be updated in the data service",
@@ -186,7 +187,7 @@ public class AccessEndpoint extends RestEndpoint {
         }
         accessService.find(database, username);
         accessService.update(database, username, data.getType());
-        dashboardService.updateAccess(database, username, data.getType());
+        syncDashboardAccess(database, username, data.getType());
         return ResponseEntity.accepted()
                 .build();
     }
@@ -248,7 +249,7 @@ public class AccessEndpoint extends RestEndpoint {
                     description = "User, database with access was not found",
                     content = {@Content}),
             @ApiResponse(responseCode = "502",
-                    description = "Access could not be created due to connection error",
+                    description = "Data Service connection failed, or database access was saved but dashboard synchronization failed (error.access.dashboard_sync)",
                     content = {@Content}),
             @ApiResponse(responseCode = "503",
                     description = "Access could not be revoked in the data service",
@@ -281,9 +282,19 @@ public class AccessEndpoint extends RestEndpoint {
         } catch (AccessNotFoundException e) {
             // A previous request may have committed the deletion before Grafana failed.
         }
-        dashboardService.updateAccess(database, username, null);
+        syncDashboardAccess(database, username, null);
         return ResponseEntity.accepted()
                 .build();
+    }
+
+    private void syncDashboardAccess(Database database, String username,
+                                     at.ac.tuwien.ifs.dbrepo.core.api.database.AccessTypeDto access)
+            throws DashboardAccessSyncException {
+        try {
+            dashboardService.updateAccess(database, username, access);
+        } catch (DashboardServiceException | DashboardServiceConnectionException e) {
+            throw new DashboardAccessSyncException(e);
+        }
     }
 
 }

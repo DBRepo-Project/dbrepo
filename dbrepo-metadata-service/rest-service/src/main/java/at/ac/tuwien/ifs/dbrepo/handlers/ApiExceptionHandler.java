@@ -2,6 +2,7 @@ package at.ac.tuwien.ifs.dbrepo.handlers;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.error.ApiErrorDto;
 import at.ac.tuwien.ifs.dbrepo.validation.ColumnValidationException;
+import at.ac.tuwien.ifs.dbrepo.exception.DashboardAccessSyncException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import io.swagger.v3.oas.annotations.Hidden;
@@ -19,6 +20,11 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @Slf4j
 @ControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
+
+    @ExceptionHandler(DashboardAccessSyncException.class)
+    public ResponseEntity<ApiErrorDto> handle(DashboardAccessSyncException e) {
+        return generic_handle(e.getClass(), e.getMessage());
+    }
 
     @ExceptionHandler(ColumnValidationException.class)
     public ResponseEntity<ApiErrorDto> handle(ColumnValidationException e) {

@@ -1,5 +1,6 @@
 {
   "navigation": {
+    "retry": "Retry",
     "logo": "Logo",
     "policies": "Policies",
     "terms": "Terms of Use",
@@ -1268,6 +1269,9 @@
       "missing": "Failed to find dataset"
     },
     "access": {
+      "dashboard_sync": "Database access was saved, but dashboard synchronization failed. If the recipient has not used the dashboard, they must sign in there once. Then retry. Contact an administrator if the error persists.",
+      "dashboard_sync_user": "Database access for {username} was saved, but dashboard synchronization failed. Dashboard permissions may still be out of date. If this user has not used the dashboard, ask them to sign in there once, then retry here. Contact an administrator if the error persists.",
+      "changed": "Access has changed since this synchronization failed. Review the current permissions before making another change.",
       "missing": "Failed to find access in metadata database"
     },
     "axios": {
@@ -1449,6 +1453,7 @@
       "dataset": "Successfully analysed dataset"
     },
     "access": {
+      "synchronized": "Dashboard permissions synchronized.",
       "created": "Granted {access} access successfully",
       "modified": "Updated {access} access successfully",
       "revoked": "Revoked {access} access successfully"

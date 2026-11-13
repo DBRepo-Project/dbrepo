@@ -2,6 +2,7 @@
 // Only the service responses and the surrounding Nuxt shell are supplied by the tests.
 import {createApp, h, ref} from 'vue'
 import {createPinia} from 'pinia'
+import persistedState from 'pinia-plugin-persistedstate'
 import {createVuetify} from 'vuetify'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
@@ -47,7 +48,7 @@ const app = createApp({render: () => h(components.VApp, null, {default: () => mo
       onClose: payload => useTableService().create('db', {name: 'messwerte', ...payload})}) : null)
   : mode === 'import' ? h(components.VStepper, null, {default: () => h(TableImport, {tableId: 'table'})})
   : h(Settings)})})
-app.use(createPinia()).use(createVuetify({components, directives}))
+app.use(createPinia().use(persistedState)).use(createVuetify({components, directives}))
 app.config.globalProperties.notFile = notFile
 app.config.globalProperties.$route = {params: {database_id: 'db', table_id: 'table'}, path: '/database/db/settings', query: {}}
 app.config.globalProperties.$t = (key, args = {}) => {

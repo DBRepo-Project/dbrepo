@@ -175,16 +175,9 @@ export default {
         .then(() => {
           const toast = useToastInstance()
           toast.success(this.$t('success.access.revoked', { access: this.modify.type }))
-          this.$emit('close-dialog', { success: true })
+          this.$emit('close-dialog', { success: true, username: this.localUsername })
         })
-        .catch(({code, message}) => {
-          const toast = useToastInstance()
-          if (typeof code !== 'string') {
-            toast.error(message)
-            return
-          }
-          toast.error(this.$t(code))
-        })
+        .catch(error => this.accessFailed(error, 'remove'))
         .finally(() => {
           this.loading = false
         })
@@ -195,16 +188,9 @@ export default {
         .then(() => {
           const toast = useToastInstance()
           toast.success(this.$t('success.access.modified', { access: this.modify.type }))
-          this.$emit('close-dialog', { success: true })
+          this.$emit('close-dialog', { success: true, username: this.localUsername })
         })
-        .catch(({code, message}) => {
-          const toast = useToastInstance()
-          if (typeof code !== 'string') {
-            toast.error(message)
-            return
-          }
-          toast.error(this.$t(code))
-        })
+        .catch(error => this.accessFailed(error, 'update'))
         .finally(() => {
           this.loading = false
         })
@@ -215,19 +201,22 @@ export default {
         .then(() => {
           const toast = useToastInstance()
           toast.success(this.$t('success.access.created', { access: this.modify.type }))
-          this.$emit('close-dialog', { success: true })
+          this.$emit('close-dialog', { success: true, username: this.localUsername })
         })
-        .catch(({code, message}) => {
-          const toast = useToastInstance()
-          if (typeof code !== 'string') {
-            toast.error(message)
-            return
-          }
-          toast.error(this.$t(code))
-        })
+        .catch(error => this.accessFailed(error, 'create'))
         .finally(() => {
           this.loading = false
         })
+    },
+    accessFailed ({code, message}, operation) {
+      if (code === 'error.access.dashboard_sync') {
+        this.$emit('close-dialog', {success: true, dashboardSync: {
+          username: this.localUsername, operation, type: this.modify.type
+        }})
+        return
+      }
+      const toast = useToastInstance()
+      toast.error(typeof code === 'string' ? this.$t(code) : message)
     },
     loadUsers () {
       this.loadingUsers = true
