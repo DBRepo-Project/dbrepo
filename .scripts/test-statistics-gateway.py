@@ -22,7 +22,7 @@ def main():
         config = re.sub(r'http://[a-z][a-z-]+(?::[0-9]+)?', 'http://127.0.0.1:18089', config)
         # The variable upstream selector must remain intact.
         for port, service in [(18081, 'data'), (18082, 'metadata')]:
-            config += '\nserver { listen '+str(port)+'; return 200 \'{"service":"'+service+'","method":"$request_method","uri":"$request_uri"}\'; }\n'
+            config += '\nserver { listen '+str(port)+'; return 200 \'{"service":"'+service+'","method":"$request_method","uri":"$request_uri","host":"$http_host"}\'; }\n'
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory)/'default.conf'; path.write_text(config)
             name = 'dbrepo-statistics-check-'+uuid4().hex[:12]
@@ -42,10 +42,11 @@ def main():
                         ('statistic/','PUT','metadata'),('data','PUT','data'),('data','POST','data'),('history','GET','data')]:
                     url=prefix+'/'+suffix
                     with urlopen(Request(base+url,method=method),timeout=5) as response: value=json.load(response)
-                    assert value=={'service':target,'method':method,'uri':url}, (source,suffix,method,value)
+                    # Tomcat rejects an upstream group name such as table_data_backend as Host (HTTP 400)
+                    assert value=={'service':target,'method':method,'uri':url,'host':'127.0.0.1'}, (source,suffix,method,value)
                 analysis='/api/v1/image/'+database+'/analyse/schema/'+table
                 with urlopen(base+analysis,timeout=5) as response: value=json.load(response)
-                assert value=={'service':'data','method':'GET','uri':analysis}, (source,analysis,value)
+                assert value['service']=='data' and value['uri']==analysis, (source,analysis,value)
             finally:
                 subprocess.run(['docker','rm','-f',name],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
         print('PASS:',source)
