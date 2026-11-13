@@ -1118,7 +1118,7 @@ export function axiosErrorToApiError(error: AxiosError) {
   }
   return {
     status: error.response.data.status,
-    code: error.response.data.code === 'error.schema.invalid' ? null : error.response.data.code,
+    code: ['error.schema.invalid', 'error.form.malformed'].includes(error.response.data.code) ? null : error.response.data.code,
     message: error.response.data.message,
   }
 }

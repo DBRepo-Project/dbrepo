@@ -3,6 +3,7 @@ package at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.CreateForeignKeyDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
@@ -26,7 +27,8 @@ public class CreateTableConstraintsDto {
 
     @NotNull
     @JsonProperty("foreign_keys")
-    private List<CreateForeignKeyDto> foreignKeys;
+    @Valid
+    private List<@NotNull CreateForeignKeyDto> foreignKeys;
 
     @NotNull
     @Schema(description = "The list of unique column(s)", example = "[]")

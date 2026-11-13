@@ -11,6 +11,12 @@ import jakarta.ws.rs.NotAuthorizedException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.context.request.WebRequest;
+import java.util.stream.Collectors;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -20,6 +26,34 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @Slf4j
 @ControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
+
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException exception,
+            HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        // Report field paths, never submitted values (which can contain credentials).
+        final String message = exception.getBindingResult().getFieldErrors().stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .distinct().sorted().collect(Collectors.joining("; "));
+        final ApiErrorDto response = ApiErrorDto.builder().status(HttpStatus.BAD_REQUEST)
+                .code("error.form.malformed").message(message).build();
+        return new ResponseEntity<>(response, headers, HttpStatus.BAD_REQUEST);
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleHandlerMethodValidationException(HandlerMethodValidationException exception,
+            HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        if (exception.isForReturnValue()) {
+            return super.handleHandlerMethodValidationException(exception, headers, status, request);
+        }
+        final String message = exception.getAllValidationResults().stream()
+                .flatMap(result -> result.getResolvableErrors().stream().map(error ->
+                        (error instanceof FieldError field ? field.getField() : result.getMethodParameter().getParameterName())
+                                + ": " + error.getDefaultMessage()))
+                .distinct().sorted().collect(Collectors.joining("; "));
+        final ApiErrorDto response = ApiErrorDto.builder().status(HttpStatus.BAD_REQUEST)
+                .code("error.form.malformed").message(message).build();
+        return new ResponseEntity<>(response, headers, HttpStatus.BAD_REQUEST);
+    }
 
     @ExceptionHandler(DashboardAccessSyncException.class)
     public ResponseEntity<ApiErrorDto> handle(DashboardAccessSyncException e) {
