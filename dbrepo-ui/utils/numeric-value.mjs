@@ -5,13 +5,18 @@ export function numericValueError(column, value) {
   }
   const text = String(value).trim()
   const fixed = column.type === 'decimal' || (column.type === 'double' && column.size != null && column.d != null)
-  const pattern = fixed ? /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/ : /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i
+  const pattern = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i
   if (!pattern.test(text) || !Number.isFinite(Number(text))) return ['validation.number']
   if (!fixed) return null
-  const [integer, fraction = ''] = text.replace(/^[+-]/, '').split('.')
+  const [significand, exponent = '0'] = text.replace(/^[+-]/, '').toLowerCase().split('e')
+  const [integer, fraction = ''] = significand.split('.')
+  const digits = (integer + fraction).replace(/^0+/, '')
+  if (!digits) return null
+  const fractionalDigits = fraction.length - Number(exponent)
+  const trailingZeros = digits.match(/0+$/)?.[0].length ?? 0
   const scale = column.d ?? 0
   const integerDigits = (column.size ?? 10) - scale
-  if (integer.replace(/^0+/, '').length > integerDigits) return ['validation.size', {size: integerDigits}]
-  if (fraction.length > scale) return ['validation.d', {size: scale}]
+  if (Math.max(0, digits.length - fractionalDigits) > integerDigits) return ['validation.size', {size: integerDigits}]
+  if (Math.max(0, fractionalDigits - trailingZeros) > scale) return ['validation.d', {size: scale}]
   return null
 }
