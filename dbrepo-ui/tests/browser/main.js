@@ -10,6 +10,10 @@ import axios from 'axios'
 import EditTuple from '../../components/dialogs/EditTuple.vue'
 import {useTupleService} from '../../composables/tuple-service'
 import {useTupleDraft} from '../../composables/tuple-draft'
+import TableSchema from '../../components/table/TableSchema.vue'
+import TableImport from '../../components/table/TableImport.vue'
+import {useTableService} from '../../composables/table-service'
+import {notFile} from '../../utils'
 import Settings from '../../pages/database/[database_id]/settings.vue'
 import {useCacheStore} from '../../stores/cache.js'
 import {useAccessService} from '../../composables/access-service'
@@ -23,7 +27,9 @@ const toast = Object.fromEntries(['success', 'error', 'warning', 'info'].map(typ
   document.body.append(item)
 }]))
 Object.assign(globalThis, {
-  useCacheStore, useAccessService, useTupleService, useTupleDraft,
+  useCacheStore, useAccessService, useTupleService, useTupleDraft, useTableService, notFile,
+  useImageService: () => ({findById: () => http.get('/api/v1/image/image').then(r => r.data)}),
+  useUploadService: () => ({create: file => http.post('/api/v1/upload', file).then(r => r.data.key)}),
   useOidcAuth: () => ({user: {value: {provider: 'test', userInfo: {sub: 'owner'}}}}),
   useContainerService: () => ({findOne: () => Promise.resolve({image: {data_types: []}})}), useAxiosInstance: () => http, useRuntimeConfig: () => config,
   useToastInstance: () => toast,
@@ -33,12 +39,17 @@ Object.assign(globalThis, {
 })
 const mode = new URLSearchParams(location.search).get('mode')
 const row = ref(null), table = ref(null), closed = ref(false)
+const columns = ref([{name: 'wert', type: 'decimal', size: 10, d: 0, primary_key: true, null_allowed: false}])
 const app = createApp({render: () => h(components.VApp, null, {default: () => mode === 'tuple'
   ? (row.value && table.value && !closed.value ? h(EditTuple, {tuple: row.value, table: table.value,
       edit: !new URLSearchParams(location.search).has('add'), onClose: () => { closed.value = true }}) : null)
+  : mode === 'schema' ? (store.getDatabase ? h(TableSchema, {columns: columns.value, submitText: 'Create table',
+      onClose: payload => useTableService().create('db', {name: 'messwerte', ...payload})}) : null)
+  : mode === 'import' ? h(components.VStepper, null, {default: () => h(TableImport, {tableId: 'table'})})
   : h(Settings)})})
 app.use(createPinia()).use(createVuetify({components, directives}))
-app.config.globalProperties.$route = {params: {database_id: 'db', table_id: 'table'}, path: '/database/db/settings'}
+app.config.globalProperties.notFile = notFile
+app.config.globalProperties.$route = {params: {database_id: 'db', table_id: 'table'}, path: '/database/db/settings', query: {}}
 app.config.globalProperties.$t = (key, args = {}) => {
   let text = key.split('.').reduce((v, k) => v?.[k], messages) || key
   for (const [name, value] of Object.entries(args)) text = text.replaceAll(`{${name}}`, value)

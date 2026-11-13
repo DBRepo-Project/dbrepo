@@ -1330,7 +1330,7 @@
       "missing": "Failed to find license in metadata database"
     },
     "request": {
-      "invalid": "Request payload was rejected by the metadata service",
+      "invalid": "The request contains invalid input. Check the values and try again.",
       "forbidden": "Request is forbidden, roles or authentication missing",
       "pagination": "Request contains invalid pagination information",
       "sort": "Request contains invalid sort information"
@@ -1372,6 +1372,7 @@
       "missing": "Failed to find ROR in metadata provider"
     },
     "import": {
+      "required": "Column {column} contains an empty value but does not allow NULL. Fill in that value or use a nullable column.",
       "dataset": "Failed to import dataset"
     },
     "upload": {
@@ -1642,6 +1643,9 @@
     }
   },
   "validation": {
+    "numeric_pair": "Set both size and d, or leave both empty to use the defaults.",
+    "numeric_scale": "d must not exceed size.",
+    "integer": "Enter a whole number.",
     "required": "Required field",
     "integer": "Greater or equal to zero",
     "max-length": "Maximum length is: ",

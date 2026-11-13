@@ -31,6 +31,17 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class ApiExceptionHandlerTest extends BaseTest {
+    @org.junit.jupiter.api.Test
+    void requiredCsvFieldHasSafeColumnFeedback() {
+        final ApiExceptionHandler handler = new ApiExceptionHandler();
+        final var response = handler.handle(new at.ac.tuwien.ifs.dbrepo.core.exception.MalformedException(
+                "Failed to import dataset", new java.sql.SQLException(
+                "Column 'notiz' cannot be null; internal SQL and credentials must not be returned", "23000", 1048)));
+        org.junit.jupiter.api.Assertions.assertEquals(org.springframework.http.HttpStatus.BAD_REQUEST, response.getStatusCode());
+        org.junit.jupiter.api.Assertions.assertEquals("error.import.required", response.getBody().getCode());
+        org.junit.jupiter.api.Assertions.assertEquals("notiz", response.getBody().getMessage());
+    }
+
 
     @Autowired
     private ApiExceptionHandler apiExceptionHandler;
