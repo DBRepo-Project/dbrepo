@@ -149,3 +149,33 @@ does not enable publication. The comparison tool marks differing deletion contra
 explicitly instead of calling a contract difference a regression. Other cases remain
 comparable when the client and profile match. Batch lookup compatibility is described
 in [live-check contracts](../docs/developer-guide/live-check-contracts.md).
+
+## Authentication during parallel runs
+
+When `oidc` is configured, the runner signs in once per human account, reuses its
+Bearer token for REST calls, and refreshes it before expiry. The original username
+and password remain available for account and AMQP checks. System credentials stay
+on Basic authentication. The replication acceptance runner accepts the same `oidc`
+object in each site configuration.
+
+```json
+"oidc": {
+  "client_id": "dbrepo-client",
+  "client_secret_env": "DBREPO_TEST_CLIENT_SECRET"
+}
+```
+
+Use a client that permits the password grant, or supply an existing account token
+for the general runner. Keep client secrets in protected configuration or environment
+variables. Tokens and token responses are never included in reports. A failed login
+or refresh stops further authentication attempts for that session; API writes are
+never retried automatically.
+
+Prepare sessions sequentially before starting parallel requests with the same
+account. Separate processes should use separate test accounts or a pre-issued token.
+Without `oidc` or a supplied token, username/password configurations retain Basic
+authentication for compatibility and should run sequentially. Keycloak can reject
+concurrent password grants for one user even when the password is correct; see
+[keycloak/keycloak#33527](https://github.com/keycloak/keycloak/issues/33527).
+This change does not add parallel Basic-authentication support to the server or
+resolve its per-request session lifecycle issue (#134).

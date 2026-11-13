@@ -19,7 +19,7 @@ public class CreateForeignKeyDto {
 
     @NotNull
     @Schema(description = "The list of local columns that reference a foreign set of columns", example = "[\"id\"]")
-    private List<String> columns;
+    private List<@NotNull String> columns;
 
     @NotNull
     @Schema(description = "The name of the foreign table", example = "sensor")
@@ -29,7 +29,7 @@ public class CreateForeignKeyDto {
     @NotNull
     @Schema(description = "The list of foreign columns", example = "[\"other_id\"]")
     @JsonProperty("referenced_columns")
-    private List<String> referencedColumns;
+    private List<@NotNull String> referencedColumns;
 
     @JsonProperty("on_update")
     @Schema(description = "The integrity action when updating tuples", example = "cascade")

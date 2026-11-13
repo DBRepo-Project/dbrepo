@@ -5,6 +5,7 @@ import base64
 import copy
 import datetime
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -62,6 +63,11 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
         return None
 
 
+_auth_spec = importlib.util.spec_from_file_location('client_live_auth', Path(__file__).with_name('client_live_auth.py'))
+_auth_module = importlib.util.module_from_spec(_auth_spec)
+_auth_spec.loader.exec_module(_auth_module)
+
+
 class Site:
     def __init__(self, config, timeout):
         self.config, self.timeout = config, timeout
@@ -81,14 +87,17 @@ class Site:
             raise Blocked("User rejection checks require separate ordinary-user credentials")
         self.username = os.environ[config["user_env"]]
         self.http = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
+        self.bearer = _auth_module.BearerSession(self.url, self.username,
+            os.environ[config['user_password_env']], config['oidc'], timeout=timeout) if config.get('oidc') else None
         self.db = None
 
     def request(self, path, method="GET", body=None, role="user", expected=(200,), parse_json=True):
         if not path.startswith("/api/") or path.startswith("//"):
             raise Blocked("Refusing request outside API origin")
+        authorization = 'Bearer ' + self.bearer.token() if role == 'user' and self.bearer else self.auth[role]
         request = urllib.request.Request(self.url + path, method=method,
                   data=None if body is None else canonical(body).encode(),
-                  headers={"Authorization": self.auth[role], "Content-Type": "application/json",
+                  headers={"Authorization": authorization, "Content-Type": "application/json",
                            "Accept": "application/json"})
         try:
             response = self.http.open(request, timeout=self.timeout)

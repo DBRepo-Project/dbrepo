@@ -76,6 +76,9 @@ def main():
             helm_values = {"ui": {"oidc": dict(zip(("tokenKey", "authSessionSecret", "sessionSecret"), (values[k] for k in KEYS)))}}
             if index:
                 helm_values.update({"hostname": "review.example", "authservice": {"endpoint": "http://internal-keycloak:8080/"}})
+            helm_values.setdefault("authservice", {}).update({
+                "auth": {"adminUser": "installation-admin", "adminPassword": "installation-admin-fixture"},
+                "client": {"id": "installation-client", "secret": "installation-client-fixture"}})
             helm_file = work/"ui-values.yaml"
             helm_file.write_text(yaml.safe_dump(helm_values))
             args = ["helm", "template", "audit", str(ROOT/"helm/dbrepo"), "-f", str(helm_file)]
@@ -90,6 +93,14 @@ def main():
                 assert overridden.returncode == 0, "Helm OIDC override rendering failed"
                 check_helm_oidc(list(yaml.safe_load_all(overridden.stdout)),
                                 "https://login.example/custom-realm", "https://keys.example/jwks")
+            data = next(v["stringData"] for v in docs if v.get("kind") == "Secret" and v["metadata"]["name"] == "data-service-secret")
+            metadata = next(v["stringData"] for v in docs if v.get("kind") == "Secret" and v["metadata"]["name"] == "metadata-service-secret")
+            for key, value in {"AUTH_SERVICE_ADMIN": "installation-admin",
+                               "AUTH_SERVICE_ADMIN_PASSWORD": "installation-admin-fixture",
+                               "AUTH_SERVICE_CLIENT": "installation-client",
+                               "AUTH_SERVICE_CLIENT_SECRET": "installation-client-fixture",
+                               "AUTH_SERVICE_ENDPOINT": helm_values["authservice"].get("endpoint", "http://auth-service")}.items():
+                assert data[key] == metadata[key] == value, "Data Service must use installation-specific Keycloak settings"
             ui = next(v["stringData"] for v in docs if v.get("kind") == "Secret" and v["metadata"]["name"] == "ui-secret")
             assert [ui[k] for k in ("NUXT_OIDC_TOKEN_KEY", "NUXT_OIDC_AUTH_SESSION_SECRET", "NUXT_OIDC_SESSION_SECRET")] == [values[k] for k in KEYS]
             for missing in ("tokenKey", "authSessionSecret", "sessionSecret"):

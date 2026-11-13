@@ -701,5 +701,23 @@ class Checks(unittest.TestCase):
             r.verify(database, Path(self.tmp.name), {})
 
 
+class BearerTransportTest(unittest.TestCase):
+    def test_replication_keeps_system_credentials_separate_from_user_bearer(self):
+        config = {'name': 'primary', 'url': 'https://example.invalid', 'user_env': 'TEST_USER',
+            'user_password_env': 'TEST_PASSWORD', 'system_env': 'TEST_SYSTEM',
+            'system_password_env': 'TEST_SYSTEM_PASSWORD', 'oidc': {'client_id': 'test'}}
+        with patch.dict(os.environ, {'TEST_USER': 'reader', 'TEST_PASSWORD': 'password',
+                'TEST_SYSTEM': 'system', 'TEST_SYSTEM_PASSWORD': 'system-password'}):
+            site = a.Site(config, 10)
+        def response(*args, **kwargs):
+            result = io.BytesIO(b'{}'); result.status = 200; result.headers = {}
+            return result
+        with patch.object(site.bearer, 'token', return_value='access-token'), patch.object(site.http, 'open', side_effect=response) as request:
+            site.get('/api/v1/database')
+            self.assertEqual('Bearer access-token', request.call_args.args[0].get_header('Authorization'))
+            site.get('/api/v1/database', role='system')
+            self.assertEqual(site.auth['system'], request.call_args.args[0].get_header('Authorization'))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

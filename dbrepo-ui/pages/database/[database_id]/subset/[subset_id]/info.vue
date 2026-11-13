@@ -31,6 +31,12 @@
             {{ subset.id }}
           </v-list-item>
           <v-list-item
+            :title="$t('pages.subset.origin.title')"
+            density="compact">
+            <a v-if="originUrl" :href="originUrl" target="_blank" rel="noopener noreferrer">{{ originUrl }}</a>
+            <span v-else>{{ $t('pages.subset.origin.unavailable') }}</span>
+          </v-list-item>
+          <v-list-item
             v-if="database"
             :title="$t('pages.subset.visibility.title')"
             density="compact">
@@ -161,6 +167,14 @@ export default {
     }
   },
   computed: {
+    originUrl () {
+      try {
+        const url = new URL(this.subset?.creation_location)
+        return ['http:', 'https:'].includes(url.protocol) && !url.username && !url.password ? url.href : null
+      } catch {
+        return null
+      }
+    },
     pid () {
       return this.$route.query.pid
     },

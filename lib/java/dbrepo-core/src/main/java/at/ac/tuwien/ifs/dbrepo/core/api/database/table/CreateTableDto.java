@@ -4,6 +4,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.CreateTableColumn
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.CreateTableConstraintsDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -42,9 +43,11 @@ public class CreateTableDto {
     private Boolean isSchemaPublic;
 
     @NotNull
-    private List<CreateTableColumnDto> columns;
+    @Valid
+    private List<@NotNull CreateTableColumnDto> columns;
 
     @NotNull
+    @Valid
     private CreateTableConstraintsDto constraints;
 
     @JsonProperty("creation_location")

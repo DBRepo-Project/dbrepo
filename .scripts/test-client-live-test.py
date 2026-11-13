@@ -274,5 +274,52 @@ class LiveRunnerTest(unittest.TestCase):
         self.assertEqual(json.loads((live.HERE/'client-live-endpoints.json').read_text()),live.source_inventory(root))
 
 
+class BearerSessionTest(unittest.TestCase):
+    def setUp(self):
+        self.session = live.BearerSession('https://example.invalid', 'owner', 'password', {'client_id': 'test'})
+
+    def response(self, token='access', refresh='refresh'):
+        return io.BytesIO(json.dumps({'access_token': token, 'refresh_token': refresh, 'expires_in': 60}).encode())
+
+    def test_concurrent_requests_share_one_login_and_refresh_before_expiry(self):
+        from concurrent.futures import ThreadPoolExecutor
+        from urllib.parse import parse_qs
+        with patch.object(self.session.http, 'open', side_effect=lambda *a, **k: self.response()) as login:
+            with ThreadPoolExecutor(max_workers=4) as pool:
+                self.assertEqual(['access'] * 12, list(pool.map(lambda _: self.session.token(), range(12))))
+            self.assertEqual(1, login.call_count)
+            self.session.expires_at = 0
+            self.session.token()
+            self.assertEqual(2, login.call_count)
+            request = login.call_args.args[0]
+            body = parse_qs(request.data.decode())
+            self.assertEqual(['refresh_token'], body['grant_type'])
+            self.assertNotIn('password', body)
+            self.assertEqual('https://example.invalid/realms/dbrepo/protocol/openid-connect/token', request.full_url)
+
+    def test_failed_login_is_not_retried_or_exposed(self):
+        with patch.object(self.session.http, 'open', side_effect=OSError('secret-response')) as login:
+            for _ in range(2):
+                with self.assertRaisesRegex(RuntimeError, '^Bearer authentication failed') as error:
+                    self.session.token()
+                self.assertNotIn('secret-response', str(error.exception))
+            self.assertEqual(1, login.call_count)
+
+    def test_runner_uses_bearer_only_for_configured_human_accounts(self):
+        with tempfile.TemporaryDirectory() as directory:
+            runner = live.Runner({'endpoint': 'https://example.invalid', 'oidc': {'client_id': 'test'},
+                'owner': {'username': 'owner', 'password': 'password'},
+                'system': {'username': 'system', 'password': 'system-password'}}, Path(directory) / 'report.json')
+            session = runner.bearer_sessions[('owner', 'password')]
+            response = requests.Response(); response.status_code = 200
+            with patch.object(session, 'token', return_value='bearer-secret'), patch.object(runner, 'original_request', return_value=response) as request:
+                runner.transport(method='get', url=runner.endpoint + '/api/v1/database', auth=('owner', 'password'))
+                self.assertIsNone(request.call_args.kwargs['auth'])
+                self.assertEqual('Bearer bearer-secret', request.call_args.kwargs['headers']['Authorization'])
+                runner.transport(method='get', url=runner.endpoint + '/api/v1/database', auth=('system', 'system-password'))
+                self.assertEqual(('system', 'system-password'), request.call_args.kwargs['auth'])
+                self.assertNotIn('bearer-secret', json.dumps(runner.http_calls))
+
+
 if __name__=='__main__':
     unittest.main()
