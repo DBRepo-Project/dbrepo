@@ -1,12 +1,14 @@
 package at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.ReferenceTypeDto;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -16,10 +18,15 @@ import java.util.List;
 @AllArgsConstructor
 @Jacksonized
 @ToString
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ConstraintAddDto {
 
     @NotBlank
     private String type;
+
+    private UUID id;
+
+    private String name;
 
     private List<String> columns;
 
