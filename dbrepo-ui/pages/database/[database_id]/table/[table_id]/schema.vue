@@ -130,7 +130,7 @@
       </v-data-table>
     </v-card>
     <v-card
-      v-if="table && hasStructure"
+      v-if="showConstraintsCard"
       variant="flat"
       rounded="0"
       tile
@@ -169,6 +169,10 @@
                 @click="openCheckDialog" />
             </v-col>
           </v-row>
+          <p
+            v-if="!hasStructure"
+            class="text-medium-emphasis mb-0"
+            v-text="$t('pages.table.subpages.schema.constraints.empty.text')" />
           <ul>
             <li v-if="table.constraints.primary_key.length > 0">
               <strong
@@ -466,8 +470,14 @@ export default {
       return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.button.contrast : runtimeConfig.public.variant.button.normal
     },
     hasStructure () {
+      if (!this.table || !this.table.constraints) {
+        return false
+      }
       const constraints = this.table.constraints
       return constraints.primary_key.length > 0 || constraints.foreign_keys.length > 0 || constraints.checks.length > 0 || constraints.uniques.length > 0
+    },
+    showConstraintsCard () {
+      return !!this.table && (this.hasStructure || this.canModifyConstraints)
     },
     canModifyConstraints () {
       if (!this.table || !this.cacheUser || !this.roles || !this.roles.includes('update-table')) {

@@ -602,6 +602,9 @@
             "delete": {
               "text": "Delete constraint"
             },
+            "empty": {
+              "text": "No constraints defined"
+            },
             "save": {
               "text": "Save"
             }
