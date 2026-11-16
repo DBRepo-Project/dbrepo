@@ -5,7 +5,6 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnStatisticDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnTypeDto;
-import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.CreateTableColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintAddDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintDeleteDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.check.CheckDto;
@@ -272,11 +271,63 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                 .filter(c -> c.getInternalName().equals(mariaDbMapper.nameToInternalName(columnName)))
                 .findFirst()
                 .orElseThrow(() -> new TableMalformedException("Failed to find column: " + columnName));
-        final CreateTableColumnDto data = columnToCreateTableColumnDto(column);
-        data.setNullAllowed(nullAllowed);
-        executeAlterConstraint(database, table, mariaDbMapper.tableColumnToModifyNullRawQuery(
-                database.getInternalName(), table.getInternalName(), data), nullAllowed ? "delete_not_null_constraint" : "add_not_null_constraint");
+        executeAlterConstraint(database, table, tableColumnToModifyNullRawQuery(database, table,
+                column.getInternalName(), nullAllowed), nullAllowed ? "delete_not_null_constraint" : "add_not_null_constraint");
         return inspect(database, table.getInternalName());
+    }
+
+    private String tableColumnToModifyNullRawQuery(Database database, Table table, String columnName, boolean nullAllowed)
+            throws SQLException, TableMalformedException {
+        final ComboPooledDataSource dataSource = getDataSource(database);
+        final Connection connection = dataSource.getConnection();
+        try (Statement statement = connection.createStatement()) {
+            final ResultSet resultSet = statement.executeQuery("SHOW CREATE TABLE " +
+                    mariaDbMapper.quoteQualifiedIdentifier(database.getInternalName(), table.getInternalName()));
+            if (!resultSet.next()) {
+                throw new TableMalformedException("Failed to find table: " + table.getInternalName());
+            }
+            final String definition = columnDefinition(resultSet.getString(2), columnName);
+            final String query = "ALTER TABLE " +
+                    mariaDbMapper.quoteQualifiedIdentifier(database.getInternalName(), table.getInternalName()) +
+                    " MODIFY COLUMN " + withNullability(definition, nullAllowed) + ";";
+            log.trace("mapped modify column null statement: {}", query);
+            return query;
+        } finally {
+            dataSource.close();
+        }
+    }
+
+    private String columnDefinition(String createTableStatement, String columnName) throws TableMalformedException {
+        final String quotedColumn = mariaDbMapper.quoteIdentifier(columnName);
+        return Arrays.stream(createTableStatement.split("\\R"))
+                .map(String::trim)
+                .filter(line -> line.startsWith(quotedColumn + " "))
+                .map(line -> line.endsWith(",") ? line.substring(0, line.length() - 1) : line)
+                .findFirst()
+                .orElseThrow(() -> new TableMalformedException("Failed to find column: " + columnName));
+    }
+
+    private String withNullability(String definition, boolean nullAllowed) {
+        if (nullAllowed) {
+            return definition.replaceFirst("(?i)\\s+NOT NULL\\b", "");
+        }
+        String modified = definition.replaceFirst("(?i)\\s+DEFAULT NULL\\b", "");
+        if (modified.matches("(?i).*\\s+NOT NULL\\b.*")) {
+            return modified;
+        }
+        final int insertAt = nullabilityInsertPosition(modified);
+        return modified.substring(0, insertAt) + " NOT NULL" + modified.substring(insertAt);
+    }
+
+    private int nullabilityInsertPosition(String definition) {
+        final String normalized = definition.toUpperCase(Locale.ENGLISH);
+        return List.of(" DEFAULT ", " COMMENT ", " COLUMN_FORMAT ", " STORAGE ", " AUTO_INCREMENT", " INVISIBLE",
+                        " VISIBLE", " ON UPDATE ")
+                .stream()
+                .map(normalized::indexOf)
+                .filter(idx -> idx >= 0)
+                .min(Integer::compare)
+                .orElse(definition.length());
     }
 
     private String resolveCheckConstraintName(Database database, Table table, String check)
@@ -333,20 +384,6 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             }
         }
         return depth == 0;
-    }
-
-    private CreateTableColumnDto columnToCreateTableColumnDto(ColumnDto column) {
-        return CreateTableColumnDto.builder()
-                .name(column.getInternalName())
-                .indexLength(column.getIndexLength())
-                .type(column.getColumnType())
-                .size(column.getSize())
-                .d(column.getD())
-                .nullAllowed(column.getIsNullAllowed())
-                .description(column.getDescription())
-                .enums(column.getEnums() == null ? List.of() : column.getEnums().stream().map(e -> e.getValue()).toList())
-                .sets(column.getSets() == null ? List.of() : column.getSets().stream().map(s -> s.getValue()).toList())
-                .build();
     }
 
     private String normalizeConstraintType(String type) throws TableMalformedException {

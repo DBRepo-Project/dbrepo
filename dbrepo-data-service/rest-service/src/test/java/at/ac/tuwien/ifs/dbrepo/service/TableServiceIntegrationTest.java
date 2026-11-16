@@ -1107,6 +1107,38 @@ public class TableServiceIntegrationTest extends BaseTest {
     }
 
     @Test
+    public void addDeleteNotNullConstraint_preservesDefaultAndCollation_succeeds() throws SQLException,
+            TableMalformedException, TableNotFoundException {
+        final String tableName = "constraint_not_null_preserve_attrs";
+        MariaDbUtil.execute(DATABASE_1_CACHE, "CREATE TABLE `" + tableName + "` " +
+                "(`id` INT NOT NULL, `status` VARCHAR(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT 'new', " +
+                "PRIMARY KEY (`id`)) WITH SYSTEM VERSIONING;");
+        final Table table = Table.builder()
+                .databaseId(DATABASE_1_ID)
+                .internalName(tableName)
+                .isPublic(true)
+                .isSchemaPublic(true)
+                .columns(List.of())
+                .build();
+
+        TableDto response = tableService.addConstraint(DATABASE_1_CACHE, table, ConstraintAddDto.builder()
+                .type("not_null")
+                .column("status")
+                .build());
+        assertFalse(column(response, "status").getIsNullAllowed());
+        assertColumnKeepsDefaultAndCollation(tableName, true);
+        MariaDbUtil.execute(DATABASE_1_CACHE, "INSERT INTO `" + tableName + "` (`id`) VALUES (1);");
+
+        response = tableService.deleteConstraint(DATABASE_1_CACHE, table, ConstraintDeleteDto.builder()
+                .type("not_null")
+                .column("status")
+                .build());
+        assertTrue(column(response, "status").getIsNullAllowed());
+        assertColumnKeepsDefaultAndCollation(tableName, false);
+        MariaDbUtil.execute(DATABASE_1_CACHE, "INSERT INTO `" + tableName + "` (`id`) VALUES (2);");
+    }
+
+    @Test
     public void addConstraint_primaryKey_fails() throws SQLException, TableMalformedException,
             TableNotFoundException, TableExistsException {
         final Table table = createConstraintTestTable("constraint_primary_key_fail", Set.of(), List.of(), List.of());
@@ -1289,6 +1321,16 @@ public class TableServiceIntegrationTest extends BaseTest {
         return checks.stream()
                 .map(CheckDto::getCheck)
                 .collect(Collectors.toSet());
+    }
+
+    private void assertColumnKeepsDefaultAndCollation(String tableName, boolean notNull) throws SQLException {
+        final String statement = MariaDbUtil.selectQuery(DATABASE_1_CACHE, "SHOW CREATE TABLE `" + tableName + "`",
+                        Set.of("Create Table"))
+                .get(0)
+                .get("Create Table");
+        assertTrue(statement.contains("`status` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin"));
+        assertTrue(statement.contains("DEFAULT 'new'"));
+        assertEquals(notNull, statement.contains("`status` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL"));
     }
 
 }
