@@ -27,6 +27,9 @@ import at.ac.tuwien.ifs.dbrepo.utils.MariaDbUtil;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import io.micrometer.core.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
+import org.jooq.SQLDialect;
+import org.jooq.impl.DSL;
+import org.jooq.impl.ParserException;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SaveMode;
@@ -44,6 +47,8 @@ import java.util.*;
 @Slf4j
 @Service
 public class TableServiceMariaDbImpl extends DataConnector implements TableService {
+
+    private static final String CHECK_VALIDATION_TABLE = "__dbrepo_check_validation__";
 
     private final DataMapper dataMapper;
     private final MariaDbMapper mariaDbMapper;
@@ -114,6 +119,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
     public TableDto create(Database database, CreateTableDto data) throws SQLException,
             TableMalformedException, TableExistsException, TableNotFoundException {
         final String tableName = mariaDbMapper.nameToInternalName(data.getName());
+        validateCreateTableCheckConstraints(data);
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
@@ -365,6 +371,31 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             case "check" -> requireString(data.getCheck(), "Check constraint expression is required");
             case "not_null" -> requireString(data.getColumn(), "Column is required");
             default -> throw new TableMalformedException("Unsupported constraint type: " + data.getType());
+        }
+        if ("check".equals(type)) {
+            validateCheckConstraint(data.getCheck());
+        }
+    }
+
+    private void validateCreateTableCheckConstraints(CreateTableDto data) throws TableMalformedException {
+        if (data.getConstraints() == null || data.getConstraints().getChecks() == null) {
+            return;
+        }
+        for (String check : data.getConstraints().getChecks()) {
+            requireString(check, "Check constraint expression is required");
+            validateCheckConstraint(check);
+        }
+    }
+
+    private void validateCheckConstraint(String expression) throws TableMalformedException {
+        final String query = "CREATE TABLE " + CHECK_VALIDATION_TABLE + " (__dummy__ INT, CHECK (" + expression + "))";
+        try {
+            DSL.using(SQLDialect.MARIADB)
+                    .parser()
+                    .parseQuery(query);
+        } catch (ParserException e) {
+            log.warn("Invalid check constraint expression: {}", e.getMessage());
+            throw new TableMalformedException("Invalid check constraint expression", e);
         }
     }
 
