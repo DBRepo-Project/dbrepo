@@ -9,6 +9,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumn;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumnType;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.check.CheckConstraint;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.foreignKey.ForeignKey;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.primaryKey.PrimaryKey;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.unique.Unique;
@@ -139,7 +140,7 @@ public class TableServicePersistenceTest extends BaseTest {
         final List<PrimaryKey> primaryKeys = response.getConstraints().getPrimaryKey();
         assertEquals(request.getConstraints().getPrimaryKey().size(), primaryKeys.size());
         assertEquals(request.getConstraints().getPrimaryKey().toArray()[0], primaryKeys.get(0).getColumn().getInternalName());
-        final Set<String> checks = response.getConstraints().getChecks();
+        final Set<CheckConstraint> checks = response.getConstraints().getChecks();
         assertEquals(request.getConstraints().getChecks().size(), checks.size());
         final List<ForeignKey> foreignKeys = response.getConstraints().getForeignKeys();
         assertEquals(request.getConstraints().getForeignKeys().size(), foreignKeys.size());
