@@ -195,7 +195,7 @@
                 :loading="loadingConstraint"
                 :aria-label="$t('pages.table.subpages.schema.constraints.delete.text')"
                 :title="$t('pages.table.subpages.schema.constraints.delete.text')"
-                @click="deleteConstraint({ type: 'foreign_key', name: foreignKey.name })" />
+                @click="deleteConstraint({ type: 'foreign_key', id: foreignKey.id })" />
             </li>
             <li v-for="(uniqueConstraint, i) in table.constraints.uniques" :key="`uk-${i}`">
               <strong
@@ -213,13 +213,13 @@
                 :loading="loadingConstraint"
                 :aria-label="$t('pages.table.subpages.schema.constraints.delete.text')"
                 :title="$t('pages.table.subpages.schema.constraints.delete.text')"
-                @click="deleteConstraint({ type: 'unique', name: uniqueConstraint.name })" />
+                @click="deleteConstraint({ type: 'unique', id: uniqueConstraint.id })" />
             </li>
-            <li v-for="(checkConstraint, i) in table.constraints.checks" :key="`uk-${i}`">
+            <li v-for="(checkConstraint, i) in table.constraints.checks" :key="`check-${i}`">
               <strong
                 class="text-uppercase"
                 v-text="$t('pages.table.subpages.schema.check.label')" />
-              (<i>{{ checkConstraint }}</i>)
+              (<i>{{ checkConstraint.check }}</i>)
               <v-btn
                 v-if="canModifyConstraints"
                 class="ml-1"
@@ -231,7 +231,7 @@
                 :loading="loadingConstraint"
                 :aria-label="$t('pages.table.subpages.schema.constraints.delete.text')"
                 :title="$t('pages.table.subpages.schema.constraints.delete.text')"
-                @click="deleteConstraint({ type: 'check', check: checkConstraint })" />
+                @click="deleteConstraint({ type: 'check', id: checkConstraint.id })" />
             </li>
           </ul>
         </v-container>
@@ -606,7 +606,7 @@ export default {
       this.loadingConstraint = true
       action(this.$route.params.database_id, this.$route.params.table_id, {
         type,
-        column: column.internal_name
+        id: column.id
       })
         .then(this.constraintChanged)
         .catch(this.constraintFailed)
