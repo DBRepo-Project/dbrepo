@@ -868,6 +868,29 @@ public class TableServiceIntegrationTest extends BaseTest {
     }
 
     @Test
+    public void createTable_malformedCheckSql_fails() {
+        final CreateTableDto request = CreateTableDto.builder()
+                .name("malformed_check")
+                .columns(List.of(CreateTableColumnDto.builder()
+                        .name("score")
+                        .type(ColumnTypeDto.INT)
+                        .nullAllowed(true)
+                        .build()))
+                .constraints(CreateTableConstraintsDto.builder()
+                        .primaryKey(List.of())
+                        .checks(Set.of("`score` >= 0); DROP TABLE some_table; --"))
+                        .uniques(List.of())
+                        .foreignKeys(List.of())
+                        .build())
+                .build();
+
+        final TableMalformedException exception = assertThrows(TableMalformedException.class, () -> {
+            tableService.create(DATABASE_1_CACHE, request);
+        });
+        assertTrue(exception.getMessage().contains("Invalid check constraint expression"));
+    }
+
+    @Test
     public void createTable_compositePrimaryKey_fails() throws TableNotFoundException, TableMalformedException, SQLException,
             TableExistsException {
         final CreateTableDto request = CreateTableDto.builder()
@@ -1120,6 +1143,20 @@ public class TableServiceIntegrationTest extends BaseTest {
                         .type("check")
                         .check("`score` >= 0")
                         .build()));
+    }
+
+    @Test
+    public void addConstraint_malformedCheckSql_fails() throws SQLException, TableMalformedException,
+            TableNotFoundException, TableExistsException {
+        final Table table = createConstraintTestTable("constraint_malformed_check_fail", Set.of(), List.of(), List.of());
+
+        final TableMalformedException exception = assertThrows(TableMalformedException.class, () -> {
+            tableService.addConstraint(DATABASE_1_CACHE, table, ConstraintAddDto.builder()
+                    .type("check")
+                    .check("`score` >= 0); DROP TABLE some_table; --")
+                    .build());
+        });
+        assertTrue(exception.getMessage().contains("Invalid check constraint expression"));
     }
 
     @Test
