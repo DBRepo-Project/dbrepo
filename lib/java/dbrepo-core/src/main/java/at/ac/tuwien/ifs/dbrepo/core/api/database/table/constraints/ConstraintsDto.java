@@ -1,5 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints;
 
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.check.CheckDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.ForeignKeyDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.primary.PrimaryKeyDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.unique.UniqueDto;
@@ -26,7 +27,7 @@ public class ConstraintsDto {
     private List<ForeignKeyDto> foreignKeys;
 
     @Schema(description = "The list of check constraints", example = "[]")
-    private Set<String> checks;
+    private Set<CheckDto> checks;
 
     @JsonProperty("primary_key")
     private List<PrimaryKeyDto> primaryKey;

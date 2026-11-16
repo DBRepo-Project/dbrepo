@@ -16,6 +16,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.CreateTableColumnDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.check.CheckDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.CreateTableConstraintsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.ForeignKeyBriefDto;
@@ -61,6 +62,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.database.View;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.ViewColumn;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumn;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.check.CheckConstraint;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.Constraints;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.foreignKey.ForeignKey;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.foreignKey.ForeignKeyReference;
@@ -882,12 +884,17 @@ public interface MetadataMapper {
 
     ForeignKeyBriefDto foreignKeyDtoToForeignKeyBriefDto(ForeignKeyDto data);
 
+    CheckDto checkConstraintToCheckDto(CheckConstraint data);
+
     default ConstraintsDto constraintsToConstraintsDto(Constraints data) {
         if (data == null) {
             return null;
         }
         return ConstraintsDto.builder()
-                .checks(data.getChecks())
+                .checks(data.getChecks() == null ? new LinkedHashSet<>() : data.getChecks()
+                        .stream()
+                        .map(this::checkConstraintToCheckDto)
+                        .collect(Collectors.toCollection(LinkedHashSet::new)))
                 .uniques(data.getUniques()
                         .stream()
                         .map(this::uniqueToUniqueDto)
@@ -1027,7 +1034,13 @@ public interface MetadataMapper {
     default Constraints constraintsCreateDtoToConstraints(CreateTableConstraintsDto data, Database database, Table table) {
         final int[] idx = new int[]{0, 0};
         final Constraints constrains = Constraints.builder()
-                .checks(data.getChecks())
+                .checks(data.getChecks() == null ? new LinkedHashSet<>() : data.getChecks()
+                        .stream()
+                        .map(check -> CheckConstraint.builder()
+                                .table(table)
+                                .check(check)
+                                .build())
+                        .collect(Collectors.toCollection(LinkedHashSet::new)))
                 .uniques(data.getUniques()
                         .stream()
                         .map(uniqueList -> Unique.builder()
