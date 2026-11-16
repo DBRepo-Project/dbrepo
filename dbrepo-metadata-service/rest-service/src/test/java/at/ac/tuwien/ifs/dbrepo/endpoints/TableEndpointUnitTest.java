@@ -1111,8 +1111,6 @@ public class TableEndpointUnitTest extends BaseTest {
         if (table != null) {
             when(tableService.findById(any(Database.class), eq(tableId)))
                     .thenReturn(table);
-            when(tableService.syncTableSchema(any(Database.class), eq(table)))
-                    .thenReturn(table);
         } else {
             doThrow(TableNotFoundException.class)
                     .when(tableService)

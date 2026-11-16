@@ -418,9 +418,7 @@ public class TableEndpoint extends RestEndpoint {
     public ResponseEntity<TableDto> findById(@NotNull @PathVariable("databaseId") UUID databaseId,
                                              @NotNull @PathVariable("tableId") UUID tableId,
                                              Principal principal) throws TableNotFoundException,
-            DatabaseNotFoundException, UserNotFoundException, NotAllowedException, DataServiceException,
-            DataServiceConnectionException, SearchServiceException, SearchServiceConnectionException,
-            MalformedException {
+            DatabaseNotFoundException, UserNotFoundException, NotAllowedException {
         log.debug("endpoint find table, databaseId={}, tableId={}", databaseId, tableId);
         final Database database = databaseService.findById(databaseId);
         final Table table = tableService.findById(database, tableId);
@@ -433,18 +431,16 @@ public class TableEndpoint extends RestEndpoint {
                     .filter(a -> a.getUsername().equals(AuthUtil.getUsername(principal)))
                     .findFirst();
             if (table.getIsPublic() || table.getIsSchemaPublic() || optional.isPresent()) {
-                final Table synced = tableService.syncTableSchema(database, table);
-                return ResponseEntity.ok(filterTableMetadata(metadataMapper.tableToTableDto(synced),
-                        visibleColumns(filterTables(synced.getDatabase(), principal)), principal));
+                return ResponseEntity.ok(filterTableMetadata(metadataMapper.tableToTableDto(table),
+                        visibleColumns(filterTables(table.getDatabase(), principal)), principal));
             }
         }
         if (!table.getIsPublic() && !table.getIsSchemaPublic()) {
             log.error("Failed to find table: not public and no access found");
             throw new NotAllowedException("Failed to find table: not public and no access found");
         }
-        final Table synced = tableService.syncTableSchema(database, table);
-        return ResponseEntity.ok(filterTableMetadata(metadataMapper.tableToTableDto(synced),
-                visibleColumns(filterTables(synced.getDatabase(), principal)), principal));
+        return ResponseEntity.ok(filterTableMetadata(metadataMapper.tableToTableDto(table),
+                visibleColumns(filterTables(table.getDatabase(), principal)), principal));
     }
 
     @DeleteMapping("/{tableId}")
