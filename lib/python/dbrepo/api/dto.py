@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime
 from dataclasses import field
 from enum import Enum
-from typing import List, Optional, Annotated
+from typing import List, Optional, Annotated, Union
 
 from pydantic import BaseModel, PlainSerializer, model_validator, field_validator
 
@@ -1322,8 +1322,13 @@ class PrimaryKey(BaseModel):
     column: ColumnBrief
 
 
+class Check(BaseModel):
+    id: Optional[str] = None
+    check: str
+
+
 class Constraints(BaseModel):
     uniques: List[Unique]
     foreign_keys: List[ForeignKey]
-    checks: List[str]
+    checks: List[Union[str, Check]]
     primary_key: List[PrimaryKey]
