@@ -8,6 +8,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.CreateTableColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintAddDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintDeleteDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.check.CheckDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.unique.UniqueDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.ColumnType;
@@ -280,15 +281,52 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.checkConstraintNameSelectRawQuery());
             statement.setString(1, database.getInternalName());
             statement.setString(2, table.getInternalName());
-            statement.setString(3, check);
             final ResultSet resultSet = statement.executeQuery();
-            if (!resultSet.next()) {
-                throw new TableMalformedException("Failed to find check constraint");
+            final String expected = normalizeCheckExpression(check);
+            while (resultSet.next()) {
+                final String clause = resultSet.getString(2);
+                if (normalizeCheckExpression(clause).equals(expected)) {
+                    return resultSet.getString(1);
+                }
             }
-            return resultSet.getString(1);
+            throw new TableMalformedException("Failed to find check constraint");
         } finally {
             dataSource.close();
         }
+    }
+
+    private String normalizeCheckExpression(String check) {
+        if (check == null) {
+            return "";
+        }
+        String normalized = check
+                .replace("`", "")
+                .replace("\"", "")
+                .replaceAll("\\s+", "")
+                .toLowerCase(Locale.ENGLISH);
+        while (normalized.startsWith("(") && normalized.endsWith(")") && hasBalancedOuterParentheses(normalized)) {
+            normalized = normalized.substring(1, normalized.length() - 1);
+        }
+        return normalized;
+    }
+
+    private boolean hasBalancedOuterParentheses(String expression) {
+        int depth = 0;
+        for (int i = 0; i < expression.length(); i++) {
+            final char c = expression.charAt(i);
+            if (c == '(') {
+                depth++;
+            } else if (c == ')') {
+                depth--;
+                if (depth == 0 && i < expression.length() - 1) {
+                    return false;
+                }
+            }
+            if (depth < 0) {
+                return false;
+            }
+        }
+        return depth == 0;
     }
 
     private CreateTableColumnDto columnToCreateTableColumnDto(ColumnDto column) {
@@ -759,7 +797,9 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                 final String clause = resultSet3.getString(1);
                 table.getConstraints()
                         .getChecks()
-                        .add(clause);
+                        .add(CheckDto.builder()
+                                .check(clause)
+                                .build());
                 log.trace("found check clause: {}", clause);
             }
             /* obtain column constraints metadata */

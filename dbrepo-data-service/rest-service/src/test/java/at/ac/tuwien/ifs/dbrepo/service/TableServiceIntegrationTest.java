@@ -7,6 +7,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintAdd
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintDeleteDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.CreateTableConstraintsDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.check.CheckDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.CreateForeignKeyDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.ForeignKeyDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.ForeignKeyReferenceDto;
@@ -39,6 +40,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -437,7 +439,7 @@ public class TableServiceIntegrationTest extends BaseTest {
         assertNotNull(constraints);
         final List<PrimaryKeyDto> primaryKey = constraints.getPrimaryKey();
         assertEquals(1, primaryKey.size());
-        final Set<String> checks = constraints.getChecks();
+        final Set<String> checks = checkExpressions(constraints.getChecks());
         assertEquals(1, checks.size());
         assertEquals(Set.of("`age` > 0 and `age` < 120"), checks);
         final List<UniqueDto> uniques = constraints.getUniques();
@@ -536,7 +538,7 @@ public class TableServiceIntegrationTest extends BaseTest {
         assertNull(unique0.getColumns().get(0).getTableId());
         assertEquals("date", unique0.getColumns().get(0).getName());
         assertEquals("date", unique0.getColumns().get(0).getInternalName());
-        final List<String> checks = new LinkedList<>(constraints.getChecks());
+        final List<String> checks = new LinkedList<>(checkExpressions(constraints.getChecks()));
         assertEquals("`mintemp` > 0", checks.get(0));
         final List<ForeignKeyDto> foreignKeys = constraints.getForeignKeys();
         assertEquals(1, foreignKeys.size());
@@ -791,7 +793,7 @@ public class TableServiceIntegrationTest extends BaseTest {
         assertNotNull(constraints2);
         final List<PrimaryKeyDto> primaryKey2 = constraints2.getPrimaryKey();
         Assertions.assertEquals(1, primaryKey2.size());
-        final Set<String> checks2 = constraints2.getChecks();
+        final Set<String> checks2 = checkExpressions(constraints2.getChecks());
         Assertions.assertEquals(0, checks2.size());
         final List<UniqueDto> uniques2 = constraints2.getUniques();
         Assertions.assertEquals(0, uniques2.size());
@@ -814,7 +816,7 @@ public class TableServiceIntegrationTest extends BaseTest {
         assertNotNull(constraints3);
         final List<PrimaryKeyDto> primaryKey3 = constraints3.getPrimaryKey();
         Assertions.assertEquals(1, primaryKey3.size());
-        final Set<String> checks3 = constraints3.getChecks();
+        final Set<String> checks3 = checkExpressions(constraints3.getChecks());
         Assertions.assertEquals(1, checks3.size());
         Assertions.assertEquals(Set.of("`age` > 0 and `age` < 120"), checks3);
         final List<UniqueDto> uniques3 = constraints3.getUniques();
@@ -841,7 +843,7 @@ public class TableServiceIntegrationTest extends BaseTest {
         assertNotNull(constraints);
         final List<PrimaryKeyDto> primaryKey = constraints.getPrimaryKey();
         Assertions.assertEquals(1, primaryKey.size());
-        final Set<String> checks = constraints.getChecks();
+        final Set<String> checks = checkExpressions(constraints.getChecks());
         Assertions.assertEquals(0, checks.size());
     }
 
@@ -909,7 +911,7 @@ public class TableServiceIntegrationTest extends BaseTest {
         assertColumn(columns.get(2), null, null, DATABASE_1_ID, "lng", "lng", ColumnTypeDto.DECIMAL, 10L, 10L, false, null);
         final ConstraintsDto constraints = response.getConstraints();
         assertNotNull(constraints);
-        final Set<String> checks = constraints.getChecks();
+        final Set<String> checks = checkExpressions(constraints.getChecks());
         assertNotNull(checks);
         assertEquals(0, checks.size());
         final List<PrimaryKeyDto> primaryKeys = new LinkedList<>(constraints.getPrimaryKey());
@@ -1025,7 +1027,7 @@ public class TableServiceIntegrationTest extends BaseTest {
                 .type("check")
                 .check("`score` >= 0")
                 .build());
-        assertEquals(Set.of("`score` >= 0"), response.getConstraints().getChecks());
+        assertEquals(Set.of("`score` >= 0"), checkExpressions(response.getConstraints().getChecks()));
 
         response = tableService.deleteConstraint(DATABASE_1_CACHE, table, ConstraintDeleteDto.builder()
                 .type("check")
@@ -1039,7 +1041,7 @@ public class TableServiceIntegrationTest extends BaseTest {
             TableNotFoundException, TableExistsException {
         final Table table = createConstraintTestTable("constraint_check_create", Set.of("`score` >= 0"), List.of(), List.of());
         final TableDto inspected = tableService.inspect(DATABASE_1_CACHE, table.getInternalName());
-        assertEquals(Set.of("`score` >= 0"), inspected.getConstraints().getChecks());
+        assertEquals(Set.of("`score` >= 0"), checkExpressions(inspected.getConstraints().getChecks()));
 
         final TableDto response = tableService.deleteConstraint(DATABASE_1_CACHE, table, ConstraintDeleteDto.builder()
                 .type("check")
@@ -1244,6 +1246,12 @@ public class TableServiceIntegrationTest extends BaseTest {
                 .filter(column -> column.getInternalName().equals(internalName))
                 .findFirst()
                 .orElseThrow();
+    }
+
+    private Set<String> checkExpressions(Set<CheckDto> checks) {
+        return checks.stream()
+                .map(CheckDto::getCheck)
+                .collect(Collectors.toSet());
     }
 
 }

@@ -92,7 +92,7 @@ public class MariaDbMapperUnitTest extends BaseTest {
                 .build();
 
         /* test */
-        assertEquals("CREATE TABLE `weather`.`weather_measurement` (`measurement_id` BIGINT(255) NOT NULL, `station_id` BIGINT(255) NOT NULL, PRIMARY KEY (`measurement_id`), FOREIGN KEY (`station_id`) REFERENCES `station` (`station_id`) ON DELETE CASCADE ON UPDATE CASCADE) WITH SYSTEM VERSIONING COMMENT \"Measurements with station reference\";",
+        assertEquals("CREATE TABLE `weather`.`weather_measurement` (`measurement_id` BIGINT(255) NOT NULL, `station_id` BIGINT(255) NOT NULL, PRIMARY KEY (`measurement_id`), CONSTRAINT `fk_weather_measurement_0` FOREIGN KEY (`station_id`) REFERENCES `station` (`station_id`) ON DELETE CASCADE ON UPDATE CASCADE) WITH SYSTEM VERSIONING COMMENT \"Measurements with station reference\";",
                 mariaDbMapper.tableCreateDtoToCreateTableRawQuery("weather", request));
     }
 

@@ -262,7 +262,7 @@ public interface MariaDbMapper {
     }
 
     default String checkConstraintNameSelectRawQuery() {
-        final String statement = "SELECT cc.`CONSTRAINT_NAME` FROM information_schema.CHECK_CONSTRAINTS cc JOIN information_schema.TABLE_CONSTRAINTS tc ON cc.`CONSTRAINT_SCHEMA` = tc.`CONSTRAINT_SCHEMA` AND cc.`CONSTRAINT_NAME` = tc.`CONSTRAINT_NAME` WHERE cc.`CONSTRAINT_SCHEMA` = ? AND tc.`TABLE_NAME` = ? AND cc.`CHECK_CLAUSE` = ? LIMIT 1;";
+        final String statement = "SELECT cc.`CONSTRAINT_NAME`, cc.`CHECK_CLAUSE` FROM information_schema.CHECK_CONSTRAINTS cc JOIN information_schema.TABLE_CONSTRAINTS tc ON cc.`CONSTRAINT_SCHEMA` = tc.`CONSTRAINT_SCHEMA` AND cc.`CONSTRAINT_NAME` = tc.`CONSTRAINT_NAME` WHERE cc.`CONSTRAINT_SCHEMA` = ? AND tc.`TABLE_NAME` = ?;";
         log.trace("mapped select check constraint name statement: {}", statement);
         return statement;
     }
@@ -419,11 +419,13 @@ public interface MariaDbMapper {
                 .append(quoteQualifiedIdentifier(databaseName, tableName))
                 .append(" ADD ");
         switch (type) {
-            case "unique" -> statement.append("UNIQUE KEY (")
+            case "unique" -> statement.append(constraintName(data))
+                    .append("UNIQUE KEY (")
                     .append(columnList(data.getColumns()))
                     .append(")");
             case "foreign_key", "foreign-key", "foreign key" -> {
-                statement.append("FOREIGN KEY (")
+                statement.append(constraintName(data))
+                        .append("FOREIGN KEY (")
                         .append(columnList(data.getColumns()))
                         .append(") REFERENCES ")
                         .append(quoteIdentifier(nameToInternalName(data.getReferencedTable())))
@@ -445,6 +447,13 @@ public interface MariaDbMapper {
         statement.append(";");
         log.trace("mapped add constraint statement: {}", statement);
         return statement.toString();
+    }
+
+    private String constraintName(ConstraintAddDto data) {
+        if (data.getName() == null || data.getName().isBlank()) {
+            return "";
+        }
+        return "CONSTRAINT " + quoteIdentifier(data.getName()) + " ";
     }
 
     default String tableConstraintDropToAlterTableRawQuery(String databaseName, String tableName, String type,
@@ -529,17 +538,23 @@ public interface MariaDbMapper {
             }
             if (data.getConstraints().getUniques() != null) {
                 /* create unique indices */
+                final int[] uniqueIdx = {0};
                 data.getConstraints().getUniques()
-                        .forEach(u -> stringBuilder.append(", ")
+                        .forEach(u -> stringBuilder.append(", CONSTRAINT ")
+                                .append(quoteIdentifier("uk_" + nameToInternalName(data.getName()) + "_" + uniqueIdx[0]++))
+                                .append(" ")
                                 .append("UNIQUE KEY (`")
                                 .append(u.stream().map(this::nameToInternalName).collect(Collectors.joining("`,`")))
                                 .append("`)"));
             }
             if (data.getConstraints().getForeignKeys() != null) {
                 /* create foreign key indices */
+                final int[] foreignKeyIdx = {0};
                 data.getConstraints().getForeignKeys()
                         .forEach(fk -> {
-                            stringBuilder.append(", FOREIGN KEY (`")
+                            stringBuilder.append(", CONSTRAINT ")
+                                    .append(quoteIdentifier("fk_" + nameToInternalName(data.getName()) + "_" + foreignKeyIdx[0]++))
+                                    .append(" FOREIGN KEY (`")
                                     .append(fk.getColumns().stream().map(this::nameToInternalName).collect(Collectors.joining("`,`")))
                                     .append("`) REFERENCES `")
                                     .append(nameToInternalName(fk.getReferencedTable()))

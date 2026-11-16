@@ -14,6 +14,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.check.CheckDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.CreateTableConstraintsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.*;
@@ -57,6 +58,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumn;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumnType;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.Constraints;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.check.CheckConstraint;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.foreignKey.ForeignKey;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.foreignKey.ForeignKeyReference;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.foreignKey.ReferenceType;
@@ -1853,7 +1855,10 @@ public class BaseTest {
             .routingKey(TABLE_2_ROUTING_KEY)
             .columns(new LinkedList<>())
             .constraints(ConstraintsDto.builder()
-                    .checks(new LinkedHashSet<>(List.of("`mintemp` > 0")))
+                    .checks(new LinkedHashSet<>(List.of(CheckDto.builder()
+                            .id(UUID.fromString("85efe3c7-5661-4958-bffc-9aeb966d2279"))
+                            .check("`mintemp` > 0")
+                            .build())))
                     .foreignKeys(new LinkedList<>(List.of(ForeignKeyDto.builder()
                             .id(UUID.fromString("ca833111-1e9a-48a3-bb16-ad6f90196f96"))
                             .name("fk_location")
@@ -9216,7 +9221,11 @@ public class BaseTest {
             .build();
 
     public final Constraints TABLE_2_CONSTRAINTS = Constraints.builder()
-            .checks(new LinkedHashSet<>(List.of("`mintemp` > 0")))
+            .checks(new LinkedHashSet<>(List.of(CheckConstraint.builder()
+                    .id(UUID.fromString("85efe3c7-5661-4958-bffc-9aeb966d2279"))
+                    .table(TABLE_2)
+                    .check("`mintemp` > 0")
+                    .build())))
             .foreignKeys(new LinkedList<>(List.of(ForeignKey.builder()
                     .id(UUID.fromString("d79f0fb1-05d6-4f3e-a5e2-8559982b8516"))
                     .name("fk_location")
@@ -9245,7 +9254,10 @@ public class BaseTest {
             .build();
 
     public final ConstraintsDto TABLE_2_CONSTRAINTS_DTO = ConstraintsDto.builder()
-            .checks(new LinkedHashSet<>(List.of("`mintemp` > 0")))
+            .checks(new LinkedHashSet<>(List.of(CheckDto.builder()
+                    .id(UUID.fromString("85efe3c7-5661-4958-bffc-9aeb966d2279"))
+                    .check("`mintemp` > 0")
+                    .build())))
             .foreignKeys(new LinkedList<>(List.of(ForeignKeyDto.builder()
                     .id(UUID.fromString("d79f0fb1-05d6-4f3e-a5e2-8559982b8516"))
                     .name("fk_location")
