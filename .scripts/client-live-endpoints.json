@@ -195,13 +195,6 @@
       "excluded": null
     },
     {
-      "operation": "GET /api/v1/database/{id}/table/{id}/schema",
-      "sources": [
-        "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
-      ],
-      "excluded": null
-    },
-    {
       "operation": "GET /api/v1/database/{id}/table/{id}/statistic",
       "sources": [
         "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
