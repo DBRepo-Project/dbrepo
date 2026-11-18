@@ -660,6 +660,8 @@
       }
     },
     "database": {
+      "list-empty": "There are no databases visible to you.",
+      "list-error": "The database list could not be loaded.",
       "title": "Database",
       "image": {
         "title": "Preview Image",
@@ -1164,6 +1166,7 @@
       }
     },
     "search": {
+      "load-error": "The search failed. Please try again.",
       "types": {
         "database": "Database",
         "table": "Table",

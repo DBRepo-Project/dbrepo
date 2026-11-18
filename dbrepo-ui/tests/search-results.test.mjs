@@ -14,34 +14,67 @@ function options(path, globals = {}) {
   return runInNewContext(`(${script})`, {AdvancedSearch: {}, ...globals})
 }
 
-function page() {
-  const component = options('../pages/search.vue')
+function page(globals = {}) {
+  const component = options('../pages/search.vue', globals)
   const instance = component.data()
   for (const [name, method] of Object.entries(component.methods)) instance[name] = method.bind(instance)
   return instance
 }
 
 test('selected result type reaches the page with its result array', async () => {
-  const instance = page()
   const records = [{id: 'owner-id', username: 'owner'}]
-  const component = options('../components/search/AdvancedSearch.vue', {
+  const instance = page({
     useSearchService: () => ({general_search: async (type) => {
       assert.equal(type, 'user')
       return records
     }})
   })
+  const component = options('../components/search/AdvancedSearch.vue')
+  let pending
   const advanced = {searchType: 'user', advancedSearchData: {},
-    $emit: (event, results, type) => {
-      assert.equal(event, 'search-result')
-      instance.onSearchResult(results, type)
+    $emit: (event, type, filters) => {
+      assert.equal(event, 'search')
+      pending = instance.searchResults(type, filters)
     }}
   component.methods.advancedSearch.call(advanced)
   advanced.searchType = 'column'
-  await new Promise(resolve => setImmediate(resolve))
+  await pending
   assert.equal(instance.type, 'user')
   assert.equal(instance.results, records)
   assert.equal(instance.title(records[0]), 'owner')
   assert.equal(instance.tags(records[0]).length, 0)
+})
+
+test('a direct text search shows the latest term even if the earlier request finishes last', async () => {
+  let finishCoffee
+  const traffic = [{name: 'Traffic'}]
+  const instance = page({useSearchService: () => ({
+    fuzzy_search: term => term === 'coffee'
+      ? new Promise(resolve => { finishCoffee = resolve })
+      : Promise.resolve(traffic)
+  })})
+  instance.q = 'coffee'
+  const pending = instance.searchFromRoute()
+  instance.q = 'traffic'
+  await instance.searchFromRoute()
+  finishCoffee([{name: 'Coffee'}])
+  await pending
+  assert.equal(instance.results, traffic)
+  assert.equal(instance.loading, false)
+})
+
+test('a service error stays visible until the same search is retried successfully', async () => {
+  let attempts = 0
+  const instance = page({useSearchService: () => ({fuzzy_search: async () => {
+    if (++attempts === 1) throw new Error('Unavailable')
+    return []
+  }})})
+  instance.q = 'coffee_productivity_prediction'
+  await instance.searchFromRoute()
+  assert.equal(instance.failed, true)
+  await instance.searchFromRoute()
+  assert.equal(instance.failed, false)
+  assert.equal(instance.results.length, 0)
 })
 
 test('user metadata renders from UserBrief fields', () => {
