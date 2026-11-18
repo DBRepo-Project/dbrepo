@@ -1,4 +1,8 @@
 <template>
+  <v-alert v-if="!canViewTableData" :type="resourceError ? 'error' : 'info'" variant="tonal" role="status">
+    {{ $t(resourceError ? 'dataState.metadataFailed' : !table ? 'dataState.loading' : 'dataState.private') }}
+    <v-btn v-if="resourceError" variant="text" @click="retryMetadata">{{ $t('dataState.retry') }}</v-btn>
+  </v-alert>
   <div
     v-if="canViewTableData">
     <TableToolbar />
@@ -67,6 +71,7 @@
       <QueryResults
         id="query-results"
         ref="queryResults"
+        :key="resourceKey"
         class="mt-0 mb-0"
         type="table"
         :select="canSelectTuples"
@@ -187,11 +192,18 @@ export default {
     }
   },
   computed: {
+    resourceError () {
+      return this.cacheStore.resourceErrors.table
+    },
+    resourceKey () {
+      return this.canViewTableData ? `${this.$route.params.database_id}/${this.$route.params.table_id}` : null
+    },
     database () {
       return this.cacheStore.getDatabase
     },
     table () {
-      return this.cacheStore.getTable
+      const resource = this.cacheStore.getTable
+      return resource?.id === this.$route.params.table_id && resource.database_id === this.$route.params.database_id ? resource : null
     },
     roles () {
       return this.cacheStore.getRoles
@@ -275,14 +287,22 @@ export default {
     }
   },
   watch: {
+    resourceKey: {
+      immediate: true,
+      flush: 'post',
+      handler (key) {
+        if (key) this.$nextTick(() => { if (this.resourceKey === key) this.reload() })
+      }
+    },
+
     version () {
       this.reload()
     }
   },
-  mounted () {
-    this.reload()
-  },
   methods: {
+    retryMetadata () {
+      return this.cacheStore.setRouteTable(this.$route.params.database_id, this.$route.params.table_id)
+    },
     addTuple () {
       this.tuple = {}
       this.columns.forEach((c) => {
@@ -401,10 +421,8 @@ export default {
       this.pickVersionDialog = false
     },
     reload () {
+      if (!this.canViewTableData || !this.$refs.queryResults) return
       this.lastReload = new Date()
-      if (!this.canViewTableData) {
-        return
-      }
       this.$refs.queryResults.reExecute(this.$route.params.table_id, this.lastReload)
       this.$refs.queryResults.reExecuteCount(this.$route.params.table_id, this.lastReload)
     },

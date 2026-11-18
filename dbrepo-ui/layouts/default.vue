@@ -348,6 +348,8 @@ export default {
             this.cacheStore.setIdentifier(null)
           }
         }
+        this.databaseError = null
+        this.accessError = null
         /* load database and optional access */
         this.cacheStore.setRouteAccess(newObj.database_id, this.cacheUser?.preferred_username)
         this.cacheStore.setRouteDatabase(newObj.database_id)

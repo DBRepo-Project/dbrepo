@@ -4,6 +4,8 @@ export const useCacheStore = defineStore('cache', {
   persist: true,
   state: () => {
     return {
+      resourceErrors: {},
+      routeRequests: {},
       database: null,
       table: null,
       view: null,
@@ -34,16 +36,34 @@ export const useCacheStore = defineStore('cache', {
     getUploadProgress: (state) => state.uploadProgress,
   },
   actions: {
+    async loadRouteResource (kind, databaseId, resourceId, service) {
+      const request = (this.routeRequests[kind] || 0) + 1
+      this.routeRequests[kind] = request
+      this[kind] = null
+      this.resourceErrors[kind] = null
+      if (!databaseId || !resourceId) return
+      try {
+        const resource = await service.findOne(databaseId, resourceId)
+        if (this.routeRequests[kind] === request) this[kind] = resource
+      } catch (error) {
+        if (this.routeRequests[kind] === request) this.resourceErrors[kind] = error || true
+      }
+    },
     setDatabase(database) {
       this.database = database
     },
     setTable(table) {
+      this.routeRequests.table = (this.routeRequests.table || 0) + 1
+      this.resourceErrors.table = null
       this.table = table
     },
     setView(view) {
+      this.routeRequests.view = (this.routeRequests.view || 0) + 1
+      this.resourceErrors.view = null
       this.view = view
     },
     setAccess(access) {
+      this.routeRequests.access = (this.routeRequests.access || 0) + 1
       this.access = access
     },
     setSubset(subset) {
@@ -115,50 +135,37 @@ export const useCacheStore = defineStore('cache', {
           console.error('Failed to reload subset', error)
         })
     },
-    setRouteDatabase (databaseId) {
-      return new Promise((resolve, reject) => {
-        if (!databaseId) {
-          this.database = null
-          reject()
-        }
-        const databaseService = useDatabaseService()
-        databaseService.findOne(databaseId, true)
-          .then((database) => {
-            this.database = database
-            resolve(database)
-          })
-          .catch((error) => {
-            this.database = null
-            reject(error)
-          })
-      })
-    },
-    setRouteTable(databaseId, tableId) {
-      if (!databaseId || !tableId) {
-        this.table = null
-        return
+    async setRouteDatabase (databaseId) {
+      const request = (this.routeRequests.database || 0) + 1
+      this.routeRequests.database = request
+      this.database = null
+      if (!databaseId) return
+      try {
+        const database = await useDatabaseService().findOne(databaseId, true)
+        if (this.routeRequests.database === request) this.database = database
+        return database
+      } catch (error) {
+        if (this.routeRequests.database === request) throw error
       }
-      const tableService = useTableService()
-      tableService.findOne(databaseId, tableId)
-        .then(table => this.table = table)
     },
-    setRouteAccess(databaseId, username) {
-      if (!databaseId || !username) {
-        this.access = null
-        return
-      }
-      const accessService = useAccessService()
-      accessService.findOne(databaseId, username)
-        .then(access => this.access = access)
+    setRouteTable(databaseId, resourceId) {
+      return this.loadRouteResource('table', databaseId, resourceId, useTableService())
     },
-    setRouteView(databaseId, viewId) {
-      if (!databaseId || !viewId) {
-        this.view = null
-        return
+    async setRouteAccess(databaseId, username) {
+      const request = (this.routeRequests.access || 0) + 1
+      this.routeRequests.access = request
+      this.access = null
+      if (!databaseId || !username) return
+      try {
+        const access = await useAccessService().findOne(databaseId, username)
+        if (this.routeRequests.access === request) this.access = access
+      } catch {
+        // No access grant: public resources remain readable.
       }
-      const viewService = useViewService()
-      viewService.findOne(databaseId, viewId)
-        .then(view => this.view = view)
+    },
+
+    setRouteView(databaseId, resourceId) {
+      return this.loadRouteResource('view', databaseId, resourceId, useViewService())
     },
     setRouteSubset(databaseId, subsetId) {
       if (!databaseId || !subsetId) {
