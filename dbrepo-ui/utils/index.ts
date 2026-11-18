@@ -1101,25 +1101,17 @@ export function isActiveMessage(message: any) {
 }
 
 export function axiosErrorToApiError(error: AxiosError) {
-  if (!error || !('response' in error) || !('data' in error.response)) {
-    return {
-      status: 'NOT_SET',
-      code: 'error.axios.connection',
-      message: ''
-    }
+  if (error?.code === 'ECONNABORTED' || error?.code === 'ETIMEDOUT') {
+    return { status: error.code, code: 'error.axios.timeout', message: error.message }
   }
-  if (error.code === 'ECONNABORTED') {
-    /* timeout */
-    return {
-      status: error.code,
-      code: 'error.axios.timeout',
-      message: error.message
-    }
+  if (!error?.response) {
+    return { status: 'NOT_SET', code: 'error.axios.connection', message: '' }
   }
+  const data = error.response.data as Partial<ApiErrorDto> | null
   return {
-    status: error.response.data.status,
-    code: ['error.schema.invalid', 'error.form.malformed'].includes(error.response.data.code) ? null : error.response.data.code,
-    message: error.response.data.message,
+    status: data?.status ?? error.response.status,
+    code: data?.code === 'error.schema.invalid' || data?.code === 'error.form.malformed' ? null : data?.code,
+    message: data?.message ?? error.message,
   }
 }
 

@@ -1,10 +1,14 @@
 <template>
   <div>
+    <v-alert v-if="!database" type="info" variant="tonal">{{ $t('dataState.loading') }}</v-alert>
+    <v-alert v-else-if="!database.is_schema_public" type="info" variant="tonal">
+      {{ $t('dataState.hiddenSchema') }}
+    </v-alert>
     <v-card
-      v-if="!loading && views.length === 0"
+      v-if="database && views.length === 0"
       variant="flat"
       rounded="0"
-      :text="$t('pages.database.subpages.views.empty')" />
+      :text="$t('dataState.noViews')" />
     <div v-for="(view,i) in views" :key="i">
       <v-divider v-if="i !== 0" class="mx-4" />
       <v-list>
@@ -38,7 +42,8 @@ export default {
   },
   computed: {
     database () {
-      return this.cacheStore.getDatabase
+      const database = this.cacheStore.getDatabase
+      return database?.id === this.$route.params.database_id ? database : null
     },
     views () {
       if (!this.database) {

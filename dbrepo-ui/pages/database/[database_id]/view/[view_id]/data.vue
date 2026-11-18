@@ -1,4 +1,8 @@
 <template>
+  <v-alert v-if="!canReadData" :type="resourceError ? 'error' : 'info'" variant="tonal" role="status">
+    {{ $t(resourceError ? 'dataState.metadataFailed' : !view ? 'dataState.loading' : 'dataState.private') }}
+    <v-btn v-if="resourceError" variant="text" @click="retryMetadata">{{ $t('dataState.retry') }}</v-btn>
+  </v-alert>
   <div
     v-if="canReadData">
     <ViewToolbar
@@ -28,6 +32,7 @@
       <QueryResults
         id="query-results"
         ref="queryResults"
+        :key="resourceKey"
         type="view"
         class="mt-0 mb-0" />
     </v-card>
@@ -72,11 +77,18 @@ export default {
     }
   },
   computed: {
+    resourceError () {
+      return this.cacheStore.resourceErrors.view
+    },
+    resourceKey () {
+      return this.canReadData ? `${this.$route.params.database_id}/${this.$route.params.view_id}` : null
+    },
     database () {
       return this.cacheStore.getDatabase
     },
     view () {
-      return this.cacheStore.getView
+      const resource = this.cacheStore.getView
+      return resource?.id === this.$route.params.view_id && resource.database_id === this.$route.params.database_id ? resource : null
     },
     access () {
       return this.cacheStore.getAccess
@@ -98,14 +110,21 @@ export default {
       return userService.hasReadAccess(this.access)
     },
   },
-  mounted () {
-    if (!this.canReadData) {
-      return
-    }
-    this.reload()
+  watch: {
+    resourceKey: {
+      immediate: true,
+      flush: 'post',
+      handler (key) {
+        if (key) this.$nextTick(() => { if (this.resourceKey === key) this.reload() })
+      }
+    },
   },
   methods: {
+    retryMetadata () {
+      return this.cacheStore.setRouteView(this.$route.params.database_id, this.$route.params.view_id)
+    },
     reload () {
+      if (!this.canReadData || !this.$refs.queryResults) return
       this.$refs.queryResults.reExecute(this.$route.params.view_id)
       this.$refs.queryResults.reExecuteCount(this.$route.params.view_id)
     },

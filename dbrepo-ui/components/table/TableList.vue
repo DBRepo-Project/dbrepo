@@ -1,10 +1,14 @@
 <template>
   <div>
+    <v-alert v-if="!database" type="info" variant="tonal">{{ $t('dataState.loading') }}</v-alert>
+    <v-alert v-else-if="!database.is_schema_public" type="info" variant="tonal">
+      {{ $t('dataState.hiddenSchema') }}
+    </v-alert>
     <v-card
       variant="flat"
       rounded="0"
-      v-if="tables.length === 0"
-      :text="$t('pages.database.subpages.tables.empty')" />
+      v-if="database && tables.length === 0"
+      :text="$t('dataState.noTables')" />
     <v-card
       variant="flat"
       rounded="0"
@@ -68,7 +72,8 @@ export default {
   },
   computed: {
     database () {
-      return this.cacheStore.getDatabase
+      const database = this.cacheStore.getDatabase
+      return database?.id === this.$route.params.database_id ? database : null
     },
     access () {
       return this.cacheStore.getAccess

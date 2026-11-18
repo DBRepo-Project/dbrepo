@@ -7,14 +7,22 @@
       </v-toolbar-title>
     </v-toolbar>
     <v-card
+      v-if="!q"
       rounded="0"
       variant="flat">
       <AdvancedSearch
+        :key="$route.fullPath"
         ref="adv"
-        @search-result="onSearchResult" />
+        :loading="loading"
+        @clear="clearResults"
+        @search="searchResults" />
     </v-card>
+    <v-alert v-if="failed" type="error" variant="tonal" role="alert">
+      {{ $t('pages.search.load-error') }}
+      <v-btn variant="text" @click="searchFromRoute">{{ $t('navigation.retry') }}</v-btn>
+    </v-alert>
     <DatabaseList
-      v-if="isDatabaseSearch"
+      v-else-if="isDatabaseSearch"
       :loading="loading"
       :databases="results" />
     <div
@@ -75,17 +83,18 @@ export default {
     return {
       results: [],
       type: 'database',
-      loading: false
+      loading: true,
+      failed: false,
+      requestId: 0
     }
   },
   computed: {
     q () {
-      if (!this.$route.query || !this.$route.query.q) {
-        return null
-      }
-      return this.$route.query.q
+      const term = this.$route.query.q
+      return typeof term === 'string' ? term.trim() : ''
     },
     header () {
+      if (this.loading || this.failed) return this.$t('navigation.search')
       return `${this.results.length} ${this.results.length !== 1 ? this.$t('toolbars.search.results') : this.$t('toolbars.search.result')}`
     },
     isDatabaseSearch () {
@@ -93,47 +102,36 @@ export default {
     }
   },
   watch: {
-    $route: {
-      handler () {
-        this.fuzzySearch()
-      }
-    }
+    '$route.fullPath': 'searchFromRoute'
   },
   mounted () {
-    this.fuzzySearch()
-    this.$refs.adv.advancedSearch()
+    this.searchFromRoute()
   },
   methods: {
-    fuzzySearch () {
-      if (this.loading) {
-        return
-      }
-      const queryKeys = Object.keys(this.$route.query)
-      if (!queryKeys || queryKeys.length !== 1 || !queryKeys.includes('q')) {
-        return
-      }
-      if (!this.q) {
-        return
-      }
+    async searchFromRoute () {
+      if (this.q) return this.searchResults('database')
+      await this.$nextTick()
+      this.$refs.adv?.advancedSearch()
+    },
+    clearResults (type) {
+      this.requestId++
+      this.onSearchResult([], type)
+      this.loading = false
+      this.failed = false
+    },
+    async searchResults (type, filters) {
+      this.clearResults(type)
+      const request = this.requestId
       this.loading = true
-      const searchService = useSearchService()
-      searchService.fuzzy_search(this.q)
-        .then((results) => {
-          this.onSearchResult(results, 'database')
-          this.loading = false
-        })
-        .catch(({code, message}) => {
-          this.loading = false
-          const toast = useToastInstance()
-          if (typeof code !== 'string') {
-            toast.error(message)
-            return
-          }
-          toast.error(this.$t(code))
-        })
-        .finally(() => {
-          this.loading = false
-        })
+      try {
+        const searchService = useSearchService()
+        const results = this.q ? await searchService.fuzzy_search(this.q) : await searchService.general_search(type, filters)
+        if (request === this.requestId) this.onSearchResult(results, type)
+      } catch {
+        if (request === this.requestId) this.failed = true
+      } finally {
+        if (request === this.requestId) this.loading = false
+      }
     },
     isDatabase (item) {
       if (!item) {

@@ -70,15 +70,17 @@
         <div class="d-flex pa-2">
           <v-spacer />
           <v-btn
+            v-if="commit"
             variant="plain"
             :text="commit"
             size="x-small"
             prepend-icon="mdi-source-commit"
-            :href="`https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/commit/${commit}`" />
-          <v-btn
-            variant="plain"
+            :href="`https://github.com/DBRepo-Project/dbrepo/commit/${encodeURIComponent(commit)}`" />
+          <v-chip
+            v-if="version"
+            variant="text"
             prepend-icon="mdi-tag"
-            :href="`https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/${version}`"
+            :href="versionUrl"
             :text="version"
             size="x-small" />
         </div>
@@ -262,6 +264,11 @@ export default {
     version () {
       return this.$config.public.version
     },
+    versionUrl () {
+      if (!this.version || this.version === 'bun-dev') return undefined
+      const ref = /^\d+\.\d+\.\d+(?:$|[-+])/.test(this.version) ? `v${this.version}` : this.version
+      return `https://github.com/DBRepo-Project/dbrepo/tree/${ref.split('/').map(encodeURIComponent).join('/')}`
+    },
     title () {
       return this.$config.public.title
     },
@@ -349,6 +356,8 @@ export default {
             this.cacheStore.setIdentifier(null)
           }
         }
+        this.databaseError = null
+        this.accessError = null
         /* load database and optional access */
         this.cacheStore.setRouteAccess(newObj.database_id, this.cacheUser?.preferred_username)
         this.cacheStore.setRouteDatabase(newObj.database_id)
