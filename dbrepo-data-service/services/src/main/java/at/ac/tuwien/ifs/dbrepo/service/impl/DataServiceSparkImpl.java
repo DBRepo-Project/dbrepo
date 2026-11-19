@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.SQLSyntaxErrorException;
 import java.sql.Statement;
@@ -47,9 +46,7 @@ public class DataServiceSparkImpl extends DataConnector implements DataService {
         Connection connection = null;
         try {
             final long start = System.currentTimeMillis();
-            // Sequential BLOB reads need the protocol ceiling, rather than a heap-derived buffer limit.
-            connection = DriverManager.getConnection(getSparkJdbcUrl(database) + "&maxAllowedPacket=1073741824", database.getContainer().getUsername(),
-                    database.getContainer().getPassword());
+            connection = openQueryConnection(database);
             final Statement statement = connection.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
             /* Sequential access also streams individual BLOB columns in Connector/J 4. */
             statement.setFetchSize(FETCH_SIZE);

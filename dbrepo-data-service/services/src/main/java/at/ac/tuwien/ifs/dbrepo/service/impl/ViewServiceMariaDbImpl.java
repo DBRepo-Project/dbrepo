@@ -174,31 +174,24 @@ public class ViewServiceMariaDbImpl extends DataConnector implements ViewService
     @Timed(value = "dbrepo_data_count_view_data", description = "Time spent counting view data", histogram = true)
     public Long count(Database database, View view, Instant timestamp) throws SQLException,
             QueryMalformedException {
-        final ComboPooledDataSource dataSource = getDataSource(database);
-        final Connection connection = dataSource.getConnection();
-        final Long queryResult;
-        try {
-            /* find view data */
-            final long start = System.currentTimeMillis();
-            final ResultSet resultSet = connection.prepareStatement(mariaDbMapper.selectCountRawQuery(
-                            database.getInternalName(), view.getInternalName(), timestamp))
-                    .executeQuery();
+        final String query = view.getQuery() == null || view.getQuery().isBlank()
+                ? mariaDbMapper.selectCountRawQuery(database.getInternalName(), view.getInternalName(), timestamp)
+                : mariaDbMapper.viewCountQuery(view.getQuery(), timestamp);
+        final long start = System.currentTimeMillis();
+        final Connection connection = openQueryConnection(database);
+        try (connection; PreparedStatement statement = connection.prepareStatement(query);
+             ResultSet result = statement.executeQuery()) {
+            final Long count = mariaDbMapper.resultSetToNumber(result);
             log.atDebug()
                     .setMessage("count view: " + view.getInternalName() + "." + database.getInternalName())
                     .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
                     .addKeyValue(Constants.ACTION, "count_view")
                     .log();
-            queryResult = mariaDbMapper.resultSetToNumber(resultSet);
-            connection.commit();
+            return count;
         } catch (SQLException e) {
-            connection.rollback();
             log.error("Failed to find row count from view {}.{}: {}", database.getInternalName(), view.getInternalName(), e.getMessage());
             throw new QueryMalformedException("Failed to find row count from view " + database.getInternalName() + "." + view.getInternalName() + ": " + e.getMessage(), e);
-        } finally {
-            dataSource.close();
         }
-        log.info("Find row count from view {}.{}", database.getInternalName(), view.getInternalName());
-        return queryResult;
     }
 
     @Override
