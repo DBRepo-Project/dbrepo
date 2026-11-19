@@ -38,7 +38,7 @@ jobs:
       - uses: actions/setup-java@v5
         with:
           distribution: corretto
-          java-version: '21.0.2'
+          java-version: '21'
           cache: maven
           cache-dependency-path: source/**/pom.xml
       - name: Build and test the reviewed 1.14.1 backport
