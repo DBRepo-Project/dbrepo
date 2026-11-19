@@ -819,17 +819,17 @@ public interface MariaDbMapper {
         }
     }
 
+    private String viewQuerySource(String query, Instant timestamp) {
+        final String period = timestamp == null ? "" : " FOR SYSTEM_TIME AS OF TIMESTAMP '" + mariaDbFormatter.format(timestamp) + "'";
+        return "(" + query + ")" + period + " as tbl";
+    }
+
+    default String viewCountQuery(String query, Instant timestamp) {
+        return "SELECT COUNT(*) FROM " + viewQuerySource(query, timestamp);
+    }
+
     default String rawSelectQuery(String query, Instant timestamp, Long page, Long size) {
-        /* query check (this is enforced by the db also) */
-        final StringBuilder statement = new StringBuilder("SELECT * FROM (")
-                .append(query);
-        statement.append(")");
-        if (timestamp != null) {
-            statement.append(" FOR SYSTEM_TIME AS OF TIMESTAMP '")
-                    .append(mariaDbFormatter.format(timestamp))
-                    .append("'");
-        }
-        statement.append(" as tbl");
+        final StringBuilder statement = new StringBuilder("SELECT * FROM ").append(viewQuerySource(query, timestamp));
         /* pagination */
         if (size != null && page != null) {
             log.trace("pagination size/limit of {}", size);
