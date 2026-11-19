@@ -46,7 +46,8 @@ jobs:
         run: |
           test "$(git rev-parse HEAD)" = "$SOURCE"
           mvn -B -ntp -U -f lib/java/dbrepo-core/pom.xml clean install -DskipTests
-          mvn -B -ntp -U -f dbrepo-data-service/pom.xml -pl rest-service -am clean package \
+          mvn -B -ntp -U -f dbrepo-data-service/pom.xml -pl rest-service -am clean test \
+            -Dtestcontainers.version=1.21.4 \
             -Dtest=MariaDbMapperUnitTest,TableEndpointUnitTest,ViewEndpointUnitTest,TableServiceIntegrationTest,ViewServiceIntegrationTest \
             -Dsurefire.failIfNoSpecifiedTests=false
           python3 - <<'PY'
@@ -58,6 +59,7 @@ jobs:
           assert totals == [160, 0, 0, 0], totals
           print("160 COUNT-related endpoint, mapper and MariaDB tests passed.")
           PY
+          mvn -B -ntp -U -f dbrepo-data-service/pom.xml -pl rest-service -am package -DskipTests
       - name: Verify the four changed classes against the installed release
         run: |
           docker pull --platform linux/amd64 "$BASE"
