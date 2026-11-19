@@ -56,10 +56,10 @@ public class ViewServiceIntegrationTest extends BaseTest {
     public void countUsesTheCatalogQueryIncludingItsLimit() throws Exception {
         final View view = View.builder()
                 .internalName("catalog_only")
-                .query("SELECT DISTINCT 1 FROM weather_aus LIMIT 1")
+                .query("SELECT DISTINCT \"id\" FROM weather_aus LIMIT 2")
                 .build();
 
-        assertEquals(1L, viewService.count(DATABASE_1_CACHE, view, null));
+        assertEquals(2L, viewService.count(DATABASE_1_CACHE, view, null));
         assertEquals(0L, viewService.count(DATABASE_1_CACHE, view, Instant.parse("2000-01-01T00:00:00Z")));
     }
 
