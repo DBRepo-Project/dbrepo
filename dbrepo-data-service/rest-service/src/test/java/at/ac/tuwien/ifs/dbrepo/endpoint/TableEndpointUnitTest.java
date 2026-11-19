@@ -20,6 +20,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
@@ -330,9 +332,11 @@ public class TableEndpointUnitTest extends BaseTest {
 
     }
 
-    @Test
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = "2025-07-01T09:44:47Z")
     @WithAnonymousUser
-    public void getData_head_succeeds() throws DatabaseUnavailableException, TableNotFoundException,
+    public void getData_head_succeeds(Instant timestamp) throws DatabaseUnavailableException, TableNotFoundException,
             SQLException, QueryMalformedException, RemoteUnavailableException, PaginationException,
             MetadataServiceException, NotAllowedException, DatabaseNotFoundException, FormatNotAvailableException,
             MalformedException, ColumnNotFoundException, StorageNotFoundException, ImageInvalidException,
@@ -343,13 +347,13 @@ public class TableEndpointUnitTest extends BaseTest {
                 .thenReturn(TABLE_5_CACHE);
         when(metadataService.getDatabase(DATABASE_2_ID))
                 .thenReturn(DATABASE_2_CACHE);
-        when(tableService.getCount(any(Database.class), anyString(), any(Instant.class)))
+        when(tableService.getCount(any(Database.class), anyString(), eq(timestamp)))
                 .thenReturn(3L);
         when(httpServletRequest.getMethod())
                 .thenReturn("HEAD");
 
         /* test */
-        final ResponseEntity<?> response = tableEndpoint.getData(DATABASE_2_ID, TABLE_5_ID, null, null, null, null, null, MediaType.APPLICATION_JSON, httpServletRequest, null);
+        final ResponseEntity<?> response = tableEndpoint.getData(DATABASE_2_ID, TABLE_5_ID, timestamp, null, null, null, null, MediaType.APPLICATION_JSON, httpServletRequest, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getHeaders().get("Access-Control-Expose-Headers"));
         assertEquals("X-Count", response.getHeaders().get("Access-Control-Expose-Headers").get(0));

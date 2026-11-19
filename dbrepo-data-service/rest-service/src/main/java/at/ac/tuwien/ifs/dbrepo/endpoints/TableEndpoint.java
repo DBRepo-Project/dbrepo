@@ -256,10 +256,6 @@ public class TableEndpoint {
             size = 10L;
             log.debug("size not set: default to {}", size);
         }
-        if (timestamp == null) {
-            timestamp = Instant.now();
-            log.debug("timestamp not set: default to {}", timestamp);
-        }
         final Table table = metadataService.getTable(databaseId, tableId);
         final Database database = metadataService.getDatabase(databaseId);
         if (!table.getIsPublic()) {

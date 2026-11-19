@@ -3,6 +3,7 @@ package at.ac.tuwien.ifs.dbrepo.service;
 import at.ac.tuwien.ifs.dbrepo.config.MariaDbContainerConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.ViewDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.View;
 import at.ac.tuwien.ifs.dbrepo.core.exception.DatabaseMalformedException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.ViewMalformedException;
 import at.ac.tuwien.ifs.dbrepo.core.exception.ViewNotFoundException;
@@ -20,6 +21,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -41,6 +43,23 @@ public class ViewServiceIntegrationTest extends BaseTest {
         /* metadata database */
         MariaDbUtil.dropDatabase(CONTAINER_1_CACHE, DATABASE_1_INTERNAL_NAME);
         MariaDbUtil.createInitDatabase(DATABASE_1_CACHE);
+    }
+
+    @Test
+    public void countUsesTheCatalogQueryIncludingItsLimit() throws Exception {
+        final View view = View.builder()
+                .internalName("catalog_only")
+                .query("SELECT DISTINCT \"id\" FROM weather_aus LIMIT 2")
+                .build();
+
+        assertEquals(2L, viewService.count(DATABASE_1_CACHE, view, null));
+        assertEquals(0L, viewService.count(DATABASE_1_CACHE, view, Instant.parse("2000-01-01T00:00:00Z")));
+    }
+
+    @Test
+    public void countLegacyViewWithoutCatalogSql() throws Exception {
+        final View view = View.builder().internalName("not_in_metadata_db2").build();
+        assertNotNull(viewService.count(DATABASE_1_CACHE, view, null));
     }
 
     @Test
