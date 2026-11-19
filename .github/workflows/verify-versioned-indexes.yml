@@ -1,0 +1,61 @@
+name: Verify indexes on versioned Galera tables
+
+on:
+  push:
+    branches: [build/count-backport-1.14.1]
+    paths: [.github/workflows/verify-versioned-indexes.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  index-fixture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check both index shapes and history on Galera 11.3.2
+        shell: bash
+        run: |
+          image='docker.io/bitnamilegacy/mariadb-galera@sha256:aee9c668098f958712dc8ae243b6cd1e4592ba79ce49b81fcd78dfbad0c71cf4'
+          container=$(docker run -d --hostname fixture -e MARIADB_ROOT_PASSWORD=fixture-root \
+            -e MARIADB_GALERA_MARIABACKUP_PASSWORD=fixture-backup \
+            -e MARIADB_GALERA_CLUSTER_BOOTSTRAP=yes -e MARIADB_GALERA_CLUSTER_ADDRESS=gcomm:// \
+            -e MARIADB_GALERA_CLUSTER_NAME=fixture "$image")
+          trap 'docker rm -f "$container" >/dev/null' EXIT
+          sql() { docker exec -i -e MYSQL_PWD=fixture-root "$container" mariadb -uroot --batch --raw --skip-column-names "$@"; }
+          for i in {1..60}; do
+            if sql -e 'SHOW GLOBAL STATUS LIKE "wsrep_ready"' 2>/dev/null | grep -q 'ON$'; then break; fi
+            sleep 2
+          done
+          sql -e 'SHOW GLOBAL STATUS LIKE "wsrep_ready"' | grep -q 'ON$'
+          sql <<'SQL'
+          CREATE DATABASE fixture;
+          CREATE TABLE fixture.measurement (id BIGINT PRIMARY KEY, label TEXT, pupil_l DOUBLE, pupil_r DOUBLE)
+              ENGINE=InnoDB WITH SYSTEM VERSIONING;
+          INSERT INTO fixture.measurement VALUES (1,'first',1,2),(2,'second',3,4);
+          UPDATE fixture.measurement SET label='updated' WHERE id=1;
+          SQL
+          fingerprint() {
+            sql -e "SELECT COUNT(*),SHA2(GROUP_CONCAT(id,label,pupil_l,pupil_r ORDER BY id,label),256) FROM fixture.measurement;
+                    SELECT COUNT(*),SHA2(GROUP_CONCAT(id,label,pupil_l,pupil_r ORDER BY id,label),256) FROM fixture.measurement FOR SYSTEM_TIME ALL;"
+          }
+          original=$(fingerprint)
+          test "$(sql -e 'SELECT COUNT(*) FROM fixture.measurement FOR SYSTEM_TIME ALL')" = 3
+          sql <<'SQL'
+          SET SESSION system_versioning_alter_history='KEEP';
+          SET SESSION innodb_tmpdir='/bitnami/mariadb';
+          SET SESSION lock_wait_timeout=5;
+          CREATE INDEX ix_text ON fixture.measurement (label(64)) ALGORITHM=NOCOPY LOCK=NONE;
+          CREATE INDEX ix_pupils ON fixture.measurement (pupil_l,pupil_r) ALGORITHM=NOCOPY LOCK=NONE;
+          SQL
+          test "$(sql -e "SELECT COUNT(DISTINCT index_name) FROM information_schema.statistics WHERE table_schema='fixture' AND table_name='measurement' AND index_name IN ('ix_text','ix_pupils');")" = 2
+          test "$(fingerprint)" = "$original"
+          sql <<'SQL'
+          SET SESSION system_versioning_alter_history='KEEP';
+          SET SESSION innodb_tmpdir='/bitnami/mariadb';
+          SET SESSION lock_wait_timeout=5;
+          ALTER TABLE fixture.measurement DROP INDEX ix_pupils, ALGORITHM=NOCOPY, LOCK=NONE;
+          ALTER TABLE fixture.measurement DROP INDEX ix_text, ALGORITHM=NOCOPY, LOCK=NONE;
+          SQL
+          test "$(fingerprint)" = "$original"
+          echo "Current rows and historic versions match before creation, after creation and after rollback."
