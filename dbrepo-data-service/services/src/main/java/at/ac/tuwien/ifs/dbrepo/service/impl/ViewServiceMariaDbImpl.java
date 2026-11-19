@@ -30,6 +30,7 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 
 @Slf4j
 @Service
@@ -164,31 +165,30 @@ public class ViewServiceMariaDbImpl extends DataConnector implements ViewService
     @Timed(value = "dbrepo_data_count_view_data", description = "Time spent counting view data", histogram = true)
     public Long count(Database database, View view, Instant timestamp) throws SQLException,
             QueryMalformedException {
-        final ComboPooledDataSource dataSource = getDataSource(database);
-        final Connection connection = dataSource.getConnection();
-        final Long queryResult;
-        try {
-            /* find view data */
-            final long start = System.currentTimeMillis();
-            final ResultSet resultSet = connection.prepareStatement(mariaDbMapper.selectCountRawQuery(
-                            database.getInternalName(), view.getInternalName(), timestamp))
-                    .executeQuery();
-            log.atDebug()
-                    .setMessage("count view: " + view.getInternalName() + "." + database.getInternalName())
-                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
-                    .addKeyValue(Constants.ACTION, "count_view")
-                    .log();
-            queryResult = mariaDbMapper.resultSetToNumber(resultSet);
-            connection.commit();
-        } catch (SQLException e) {
-            connection.rollback();
-            log.error("Failed to find row count from view {}.{}: {}", database.getInternalName(), view.getInternalName(), e.getMessage());
-            throw new QueryMalformedException("Failed to find row count from view " + database.getInternalName() + "." + view.getInternalName() + ": " + e.getMessage(), e);
-        } finally {
-            dataSource.close();
+        final String query = view.getQuery() == null || view.getQuery().isBlank()
+                ? mariaDbMapper.selectCountRawQuery(database.getInternalName(), view.getInternalName(), timestamp)
+                : mariaDbMapper.viewCountQuery(view.getQuery(), timestamp);
+        final long start = System.currentTimeMillis();
+        try (ComboPooledDataSource dataSource = getDataSource(database)) {
+            // Catalog queries use ANSI-quoted identifiers in the row reader as well.
+            final Properties properties = dataSource.getProperties();
+            properties.setProperty("sessionVariables", "sql_mode='ANSI_QUOTES'");
+            dataSource.setProperties(properties);
+            final Connection connection = dataSource.getConnection();
+            try (connection; PreparedStatement statement = connection.prepareStatement(query);
+                 ResultSet result = statement.executeQuery()) {
+                final Long count = mariaDbMapper.resultSetToNumber(result);
+                log.atDebug()
+                        .setMessage("count view: " + view.getInternalName() + "." + database.getInternalName())
+                        .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                        .addKeyValue(Constants.ACTION, "count_view")
+                        .log();
+                return count;
+            } catch (SQLException e) {
+                log.error("Failed to find row count from view {}.{}: {}", database.getInternalName(), view.getInternalName(), e.getMessage());
+                throw new QueryMalformedException("Failed to find row count from view " + database.getInternalName() + "." + view.getInternalName() + ": " + e.getMessage(), e);
+            }
         }
-        log.info("Find row count from view {}.{}", database.getInternalName(), view.getInternalName());
-        return queryResult;
     }
 
     @Override
