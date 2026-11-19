@@ -1,0 +1,88 @@
+name: Verify COUNT backport candidate
+
+on:
+  push:
+    branches: [build/count-backport-1.14.1]
+    paths:
+      - .github/workflows/count-backport-candidate.yml
+      - .github/count-candidate/**
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency: count-candidate-bbea2e79a
+
+env:
+  SOURCE: bbea2e79a7c0f9c675df69452f04f482f480a142
+  BASE: ghcr.io/dbrepo-project/dbrepo/data-service@sha256:9a2373ccb35424603469b37f8c2d1b878f8281aef2063ab60a3894173c849ef8
+  CANDIDATE: ghcr.io/dbrepo-project/dbrepo/data-service:sha-bbea2e79a7c0f9c675df69452f04f482f480a142
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: .github/count-candidate
+          persist-credentials: false
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ env.SOURCE }}
+          path: source
+          persist-credentials: false
+      - uses: actions/setup-java@v5
+        with:
+          distribution: corretto
+          java-version: '21.0.2'
+          cache: maven
+          cache-dependency-path: source/**/pom.xml
+      - name: Build and test the reviewed 1.14.1 backport
+        working-directory: source
+        run: |
+          test "$(git rev-parse HEAD)" = "$SOURCE"
+          mvn -B -ntp -U -f lib/java/dbrepo-core/pom.xml clean install -DskipTests
+          mvn -B -ntp -U -f dbrepo-data-service/pom.xml -pl rest-service -am clean package \
+            -Dtest=MariaDbMapperUnitTest,TableEndpointUnitTest,ViewEndpointUnitTest,TableServiceIntegrationTest,ViewServiceIntegrationTest \
+            -Dsurefire.failIfNoSpecifiedTests=false
+          python3 - <<'PY'
+          from pathlib import Path
+          from xml.etree import ElementTree
+          reports = Path("dbrepo-data-service/rest-service/target/surefire-reports").glob("TEST-*.xml")
+          suites = [ElementTree.parse(report).getroot() for report in reports]
+          totals = [sum(int(suite.get(field, "0")) for suite in suites) for field in ("tests", "errors", "failures", "skipped")]
+          assert totals == [160, 0, 0, 0], totals
+          print("160 COUNT-related endpoint, mapper and MariaDB tests passed.")
+          PY
+      - name: Verify the four changed classes against the installed release
+        run: |
+          docker pull --platform linux/amd64 "$BASE"
+          container=$(docker create --platform linux/amd64 "$BASE")
+          trap 'docker rm "$container" >/dev/null' EXIT
+          docker cp "$container:/app/data-service.jar" "$RUNNER_TEMP/release.jar"
+          python3 .github/count-candidate/verify_payload.py "$RUNNER_TEMP/release.jar" \
+            source/dbrepo-data-service/rest-service/target/rest-service-1.14.1.jar
+          rm "$RUNNER_TEMP/release.jar"
+      - name: Verify the Linux image on the release runtime
+        run: |
+          dir="$RUNNER_TEMP/count-image"
+          mkdir -p "$dir"
+          mv source/dbrepo-data-service/rest-service/target/rest-service-1.14.1.jar "$dir/data-service.jar"
+          printf 'FROM %s\nCOPY --chown=1001 data-service.jar /app/data-service.jar\n' "$BASE" > "$dir/Dockerfile"
+          docker build --platform linux/amd64 --label "org.opencontainers.image.revision=$SOURCE" -t "$CANDIDATE" "$dir"
+          docker run --rm --network none --entrypoint java "$CANDIDATE" -Djarmode=tools -jar /app/data-service.jar list-layers
+      - name: Publish the CI image under the source SHA
+        env:
+          GHCR_TOKEN: ${{ github.token }}
+        run: |
+          printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          if docker manifest inspect "$CANDIDATE" >/dev/null 2>&1; then
+            echo "Candidate tag already exists; refusing to replace it."
+            exit 1
+          fi
+          docker push "$CANDIDATE"
+          docker buildx imagetools inspect "$CANDIDATE"
