@@ -12,6 +12,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
@@ -314,9 +317,11 @@ public class ViewEndpointUnitTest extends BaseTest {
         });
     }
 
-    @Test
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = "2025-07-01T09:44:47Z")
     @WithMockUser(username = USER_1_USERNAME, authorities = {"view-database-view-data"})
-    public void getData_privateHead_succeeds() throws RemoteUnavailableException, ViewNotFoundException,
+    public void getData_privateHead_succeeds(Instant timestamp) throws RemoteUnavailableException, ViewNotFoundException,
             SQLException, DatabaseUnavailableException, QueryMalformedException, PaginationException,
             NotAllowedException, MetadataServiceException, TableNotFoundException, DatabaseNotFoundException,
             ViewMalformedException, FormatNotAvailableException, MalformedException, ColumnNotFoundException,
@@ -328,11 +333,11 @@ public class ViewEndpointUnitTest extends BaseTest {
                 .thenReturn(DATABASE_1_CACHE);
         when(httpServletRequest.getMethod())
                 .thenReturn("HEAD");
-        when(viewService.count(any(Database.class), eq(VIEW_3_CACHE), any(Instant.class)))
+        when(viewService.count(any(Database.class), eq(VIEW_3_CACHE), eq(timestamp)))
                 .thenReturn(VIEW_3_DATA_COUNT);
 
         /* test */
-        final ResponseEntity<?> response = viewEndpoint.getData(DATABASE_1_ID, VIEW_3_ID, null, null, null, httpServletRequest, "application/json", USER_1_PRINCIPAL);
+        final ResponseEntity<?> response = viewEndpoint.getData(DATABASE_1_ID, VIEW_3_ID, null, null, timestamp, httpServletRequest, "application/json", USER_1_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getHeaders().get("X-Count"));
         assertEquals(1, response.getHeaders().get("X-Count").size());

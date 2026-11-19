@@ -8,6 +8,7 @@ import org.duckdb.DuckDBConnection;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
@@ -51,6 +52,12 @@ public abstract class DataConnector {
 
     public ComboPooledDataSource getDataSource(Database database) {
         return getDataSource(database.getContainer(), database.getInternalName());
+    }
+
+    protected Connection openQueryConnection(Database database) throws SQLException {
+        // The streaming reader also uses this connection for large BLOBs.
+        return DriverManager.getConnection(getSparkJdbcUrl(database) + "&maxAllowedPacket=1073741824",
+                database.getContainer().getUsername(), database.getContainer().getPassword());
     }
 
     public String getSparkJdbcUrl(Container container, String databaseName) {

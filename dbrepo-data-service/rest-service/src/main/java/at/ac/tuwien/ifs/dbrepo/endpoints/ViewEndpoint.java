@@ -288,10 +288,6 @@ public class ViewEndpoint {
             size = 10L;
             log.debug("size not set: default to {}", size);
         }
-        if (timestamp == null) {
-            timestamp = Instant.now();
-            log.debug("timestamp not set: default to {}", timestamp);
-        }
         final Database database = metadataServiceGateway.getDatabaseById(databaseId);
         final View view = currentView(database, databaseId, viewId);
         if (!Boolean.TRUE.equals(view.getIsPublic())) {
