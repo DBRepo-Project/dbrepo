@@ -14,7 +14,15 @@
         color="secondary"
         @click.stop="dialog = true" />
     </v-toolbar>
+    <v-alert v-if="failed" type="error" variant="tonal" role="alert">
+      {{ $t('pages.database.list-error') }}
+      <v-btn variant="text" @click="fetchDatabases">{{ $t('navigation.retry') }}</v-btn>
+    </v-alert>
+    <p v-else-if="!loading && !databases.length" class="pa-4" role="status">
+      {{ $t('pages.database.list-empty') }}
+    </p>
     <DatabaseList
+      v-else
       v-cloak
       :loading="loading"
       :databases="databases" />
@@ -50,6 +58,7 @@ export default {
   data () {
     return {
       loading: true,
+      failed: false,
       dialog: null,
       databases: [],
       cacheStore: useCacheStore()
@@ -73,14 +82,16 @@ export default {
     closed () {
       this.dialog = false
     },
-    fetchDatabases () {
+    async fetchDatabases () {
       this.loading = true
-      const databaseService = useDatabaseService()
-      databaseService.findAll()
-        .then((databases) => {
-          this.databases = databases
-          this.loading = false
-        })
+      this.failed = false
+      try {
+        this.databases = await useDatabaseService().findAll()
+      } catch {
+        this.failed = true
+      } finally {
+        this.loading = false
+      }
     }
   }
 }

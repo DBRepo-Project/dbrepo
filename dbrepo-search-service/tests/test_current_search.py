@@ -353,6 +353,35 @@ def test_uncertain_query_creation_still_deletes_known_uuid(indexed, credentials,
     assert backend.count(index=SearchServiceClient.QUERY_INDEX)['count'] == 0
 
 
+def test_slow_match_can_finish_inside_the_remaining_request_budget(indexed, credentials, requests_mock, monkeypatch):
+    current = current_payload(indexed, 'anonymous')
+    current['name'] = 'coffee_productivity_prediction'
+    authority(requests_mock, [current])
+    backend = SearchServiceClient()._instance()
+    monkeypatch.setattr(SearchServiceClient, '_instance', lambda self: backend)
+    clock = [0]
+    monkeypatch.setattr('dbrepo.core.client.search.time', SimpleNamespace(monotonic=lambda: clock[0]))
+    index, search = backend.index, backend.search
+
+    def create_query(**kwargs):
+        clock[0] += 3
+        return index(**kwargs)
+
+    def slow_match(**kwargs):
+        remaining = SearchServiceClient.REQUEST_BUDGET - clock[0]
+        assert 8 <= kwargs['request_timeout'] <= remaining
+        assert 8000 <= int(kwargs['timeout'].removesuffix('ms')) <= remaining * 1000
+        clock[0] += 8
+        return search(**kwargs)
+
+    monkeypatch.setattr(backend, 'index', create_query)
+    monkeypatch.setattr(backend, 'search', slow_match)
+    with app.test_client() as client:
+        response = client.get('/api/v1/search?q=coffee_productivity_prediction')
+    assert response.status_code == 200
+    assert [record['id'] for record in response.get_json()] == [indexed.id]
+
+
 def test_deadline_after_native_write_fails_and_cleans_up(indexed, credentials, requests_mock, monkeypatch):
     authority(requests_mock, [current_payload(indexed, 'anonymous')])
     backend = SearchServiceClient()._instance()
