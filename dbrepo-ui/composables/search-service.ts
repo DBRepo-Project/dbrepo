@@ -22,7 +22,7 @@ export const useSearchService = (): any => {
     const axios = useAxiosInstance()
     console.debug('fuzzy search for term', term)
     return new Promise<DatabaseDto[]>((resolve, reject) => {
-      axios.get<DatabaseDto[]>(`/api/v1/search?q=${term}`)
+      axios.get<DatabaseDto[]>('/api/v1/search', {params: {q: term}})
         .then((response) => {
           console.info('Searched for term', term)
           resolve(response.data)

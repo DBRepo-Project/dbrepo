@@ -661,6 +661,8 @@
       }
     },
     "database": {
+      "list-empty": "There are no databases visible to you.",
+      "list-error": "The database list could not be loaded.",
       "title": "Database",
       "image": {
         "title": "Preview Image",
@@ -1175,6 +1177,7 @@
       }
     },
     "search": {
+      "load-error": "The search failed. Please try again.",
       "types": {
         "database": "Database",
         "table": "Table",
@@ -1801,5 +1804,18 @@
     "image": {
       "size": "Image size is too large"
     }
+  },
+  "dataState": {
+    "loading": "Loading data…",
+    "empty": "This query returned no matching records.",
+    "failed": "The data could not be loaded.",
+    "missing": "This table or view is unavailable. Its catalog entry may refer to data that no longer exists.",
+    "countFailed": "The total number of records could not be loaded.",
+    "retry": "Try again",
+    "metadataFailed": "This resource could not be loaded. It may be unavailable or require access.",
+    "private": "These data are private. Sign in with an account that has access, or contact the database owner.",
+    "hiddenSchema": "This database does not publish its full schema. Your access determines which tables and views are listed.",
+    "noTables": "No tables are visible to you. Check the public views or sign in with an account that has access to private tables.",
+    "noViews": "No views are visible to you. Views may not exist or may require access."
   }
 }

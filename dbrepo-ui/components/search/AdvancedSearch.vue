@@ -1,8 +1,6 @@
 <template>
   <div>
-    <v-card
-      v-if="isAdvancedSearch"
-      variant="flat">
+    <v-card variant="flat">
       <v-card-text
         class="pt-2">
         <v-form
@@ -220,8 +218,7 @@
                 variant="flat"
                 :loading="loading"
                 :disabled="!valid || loading || loadingFields"
-                size="small"
-                @click="advancedSearch">
+                size="small">
                 {{ $t('navigation.search') }}
               </v-btn>
             </v-col>
@@ -234,11 +231,14 @@
 
 <script>
 export default {
+  props: {
+    loading: Boolean
+  },
+  emits: ['search', 'clear'],
   data () {
     return {
       searchType: 'database',
       valid: false,
-      loading: false,
       loadingConcepts: false,
       loadingUnits: false,
       loadingFields: false,
@@ -317,9 +317,6 @@ export default {
     isEligibleYearRangeSearch () {
       return this.searchType === 'database' && this.yearFrom === 'custom'
     },
-    isAdvancedSearch () {
-      return !this.$route.query.q
-    },
     type () {
       if (!this.$route.query || !this.$route.query.type) {
         return null
@@ -336,21 +333,9 @@ export default {
     }
   },
   watch: {
-    type: {
-      /* from route */
-      handler () {
-        this.initStaticFields()
-        this.initDynamicFields()
-        if (this.searchType === 'column') {
-          this.fetchConcepts()
-          this.fetchUnits()
-        }
-      }
-    },
     searchType: {
       /* from selection */
       handler () {
-        this.initStaticFields()
         this.initDynamicFields()
         if (this.searchType === 'column') {
           this.fetchConcepts()
@@ -365,8 +350,9 @@ export default {
     this.fetchLicenses()
   },
   methods: {
-    submit () {
-      this.$refs.form.validate()
+    async submit () {
+      const { valid } = await this.$refs.form.validate()
+      if (valid) this.advancedSearch()
     },
     /* Removes all advanced search fields when switching the type */
     resetAdvancedSearchFields () {
@@ -379,28 +365,10 @@ export default {
         })
     },
     advancedSearch () {
-      console.debug('performing advanced search')
-      if (this.search) {
-        this.advancedSearchData.search_term = this.search
-      } else {
-        delete this.advancedSearchData.search_term
-      }
-      if ('t1' in this.advancedSearchData && this.advancedSearchData.t1) {
-        this.advancedSearchData.t1 = Number(this.advancedSearchData.t1)
-      }
-      if ('t2' in this.advancedSearchData && this.advancedSearchData.t2) {
-        this.advancedSearchData.t2 = Number(this.advancedSearchData.t2)
-      }
-      this.loading = true
-      const searchService = useSearchService()
-      const type = this.searchType
-      searchService.general_search(type, this.advancedSearchData)
-        .then((results) => {
-          this.$emit('search-result', results, type)
-        })
-        .finally(() => {
-          this.loading = false
-        })
+      const filters = { ...this.advancedSearchData }
+      if (filters.t1) filters.t1 = Number(filters.t1)
+      if (filters.t2) filters.t2 = Number(filters.t2)
+      this.$emit('search', this.searchType, filters)
     },
     shouldRenderItem (item) {
       // Checks if item's attr_name matches any wanted field
@@ -466,7 +434,7 @@ export default {
         return
       }
       this.resetAdvancedSearchFields()
-      this.$emit('search-result', [], this.searchType)
+      this.$emit('clear', this.searchType)
       const searchService = useSearchService()
       this.loadingFields = true
       searchService.fields(this.searchType)
@@ -495,13 +463,12 @@ export default {
         })
     },
     initStaticFields () {
-      if (this.type) {
+      if (this.fieldItems.some(item => item.value === this.type)) {
         console.debug('init search type', this.type)
         this.searchType = this.type
       }
       const keys = Object.keys(this.$route.query)
-        .filter(key => key !== 'type')
-        .filter(key => this.dynamicFields[this.searchType].filter(dkey => key === dkey))
+        .filter(key => key !== 'type' && key !== 'q')
       console.debug('init static fields', keys)
       keys.forEach((key) => {
         this.advancedSearchData[key] = this.$route.query[key]
