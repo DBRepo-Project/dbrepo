@@ -8,12 +8,29 @@ import org.duckdb.DuckDBConnection;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
 @Slf4j
 @Service
 public abstract class DataConnector {
+
+    protected static final int MAX_LOCK_ATTEMPTS = 3;
+
+    protected static boolean isLockConflict(SQLException failure) {
+        return failure.getErrorCode() == 1213 || failure.getErrorCode() == 1205;
+    }
+
+    protected static boolean rollback(Connection connection, Throwable failure) {
+        try {
+            connection.rollback();
+            return true;
+        } catch (SQLException rollbackFailure) {
+            failure.addSuppressed(rollbackFailure);
+            return false;
+        }
+    }
 
     protected static void requireInnoDb(java.sql.Connection connection, String... tables) throws SQLException {
         try (var statement = connection.prepareStatement(

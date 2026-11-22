@@ -4,15 +4,20 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleDeleteDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TupleUpdateDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleReplicationTimestampDto;
 import at.ac.tuwien.ifs.dbrepo.core.exception.QueryMalformedException;
 import at.ac.tuwien.ifs.dbrepo.mapper.DataMapper;
 import at.ac.tuwien.ifs.dbrepo.mapper.MariaDbMapper;
 import at.ac.tuwien.ifs.dbrepo.service.impl.ReplicationServiceImpl;
 import at.ac.tuwien.ifs.dbrepo.service.impl.TableServiceMariaDbImpl;
+import at.ac.tuwien.ifs.dbrepo.service.impl.ReplicationTimestampServiceMariaDbImpl;
+import at.ac.tuwien.ifs.dbrepo.service.outbox.TupleReplicationOutboxEntry;
 import at.ac.tuwien.ifs.dbrepo.service.outbox.TupleReplicationOutboxServiceMariaDbImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.mapstruct.factory.Mappers;
 import org.springframework.http.HttpEntity;
@@ -23,10 +28,17 @@ import org.springframework.web.client.RestTemplate;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -42,6 +54,7 @@ class AtomicTupleOutboxIntegrationTest {
     private Database database;
     private Table table;
     private TableServiceMariaDbImpl service;
+    private ReplicationServiceImpl replication;
     private TupleReplicationNotificationDispatcher dispatcher;
 
     @BeforeEach
@@ -57,7 +70,7 @@ class AtomicTupleOutboxIntegrationTest {
                 .columns(List.of(Column.builder().internalName("replication_key").columnType(ColumnType.VARCHAR).build(),
                         Column.builder().internalName("sample_value").columnType(ColumnType.INT).build())).build();
         dispatcher = mock(TupleReplicationNotificationDispatcher.class);
-        final ReplicationServiceImpl replication = new ReplicationServiceImpl(outbox, dispatcher);
+        replication = new ReplicationServiceImpl(outbox, dispatcher);
         ReflectionTestUtils.setField(replication, "baseUrl", "https://origin.example");
         service = new TableServiceMariaDbImpl(mock(DataMapper.class), Mappers.getMapper(MariaDbMapper.class),
                 mock(SubsetService.class), mock(StorageService.class), mock(DataService.class), replication);
@@ -96,6 +109,93 @@ class AtomicTupleOutboxIntegrationTest {
             final var payload = new ObjectMapper().readTree(event.getPayloadJson());
             assertNotNull(payload.get("tuple").get("replicationKey"));
         }
+    }
+
+    @Test
+    void retriesWholeMutationsAndDispatchesOnlyCommittedEventIds() throws Exception {
+        final var attempted = new HashSet<HttpMethod>();
+        final var discarded = new HashSet<UUID>();
+        final var dispatched = new ArrayList<UUID>();
+        doAnswer(invocation -> {
+            final TupleReplicationOutboxEntry event = (TupleReplicationOutboxEntry) invocation.callRealMethod();
+            if (attempted.add(event.getHttpMethod())) {
+                discarded.add(event.getId());
+                throw new SQLException("simulated lock conflict after writing the event", "40001", 1213);
+            }
+            return event;
+        }).when(outbox).enqueue(any(Connection.class), any(), any(), any(), any());
+        doAnswer(invocation -> {
+            dispatched.addAll(invocation.getArgument(1));
+            return null;
+        }).when(dispatcher).dispatchAsync(eq(database), anyList());
+
+        service.createTuple(database, table, tuple("a", 1));
+        service.updateTuple(database, table, update(1, 2));
+        service.deleteTuple(database, table, TupleDeleteDto.builder().keys(Map.of("sample_value", 2)).build());
+
+        final List<UUID> retained = outbox.findAll(database).stream().map(TupleReplicationOutboxEntry::getId).toList();
+        assertEquals(3, discarded.size());
+        assertEquals(3, dispatched.size());
+        assertEquals(3, retained.size());
+        assertTrue(java.util.Collections.disjoint(discarded, retained));
+        assertEquals(new HashSet<>(retained), new HashSet<>(dispatched));
+        assertEquals(0, count("samples"));
+        assertEquals(1, count("samples FOR SYSTEM_TIME ALL WHERE sample_value=1"));
+        assertEquals(1, count("samples FOR SYSTEM_TIME ALL WHERE sample_value=2"));
+    }
+
+    @Test
+    void exhaustedLockWaitPropagatesAsDatabaseFailureAndLeavesNoEvent() throws Exception {
+        final var timeout = new SQLException("simulated lock wait", "HY000", 1205);
+        doThrow(timeout).when(outbox).enqueue(any(Connection.class), any(), any(), any(), any());
+        assertSame(timeout, assertThrows(SQLException.class, () -> service.createTuple(database, table, tuple("a", 1))));
+        verify(outbox, times(3)).enqueue(any(Connection.class), any(), any(), any(), any());
+        assertEquals(0, count("samples FOR SYSTEM_TIME ALL"));
+        assertEquals(0, count("tuple_replication_notification_outbox"));
+        verifyNoInteractions(dispatcher);
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {0, 1, 2})
+    void primaryWritesAndDelayedAcknowledgementsKeepBothHistories(int primary) throws Exception {
+        final List<String> sites = List.of("https://site-a.example", "https://site-b.example", "https://site-c.example");
+        final String replica = sites.get((primary + 1) % sites.size());
+        database.setCreationLocation(sites.get(primary));
+        database.setReplicaUrls(Map.of(replica, UUID.randomUUID(), sites.get((primary + 2) % sites.size()), UUID.randomUUID()));
+        ReflectionTestUtils.setField(replication, "baseUrl", sites.get(primary));
+        final var acknowledgement = spy(new ReplicationTimestampServiceMariaDbImpl());
+        final var pending = TupleReplicationTimestampDto.builder().siteUrl(replica)
+                .databaseId(database.getId()).tableId(table.getId()).replicationId("a")
+                .rowStart(Instant.parse("2026-01-02T03:04:05Z")).build();
+        final var deleteInFlight = new CountDownLatch(1);
+        final var acknowledgementInFlight = new CountDownLatch(1);
+        doAnswer(invocation -> {
+            acknowledgementInFlight.countDown();
+            return invocation.callRealMethod();
+        }).when(acknowledgement).ensureTableExists(any(Connection.class));
+        doAnswer(invocation -> {
+            if (HttpMethod.DELETE.equals(invocation.getArgument(3))) {
+                deleteInFlight.countDown();
+                assertTrue(acknowledgementInFlight.await(10, TimeUnit.SECONDS));
+            }
+            return invocation.callRealMethod();
+        }).when(outbox).enqueue(any(Connection.class), any(), any(), any(), any());
+
+        try (var workers = Executors.newSingleThreadExecutor()) {
+            var acknowledgements = workers.submit(() -> {
+                assertTrue(deleteInFlight.await(10, TimeUnit.SECONDS));
+                for (int i = 0; i < 2; i++) acknowledgement.saveTimestamps(database, List.of(pending));
+                return null;
+            });
+            service.createTuple(database, table, tuple("a", 1));
+            service.updateTuple(database, table, update(1, 2));
+            service.deleteTuple(database, table, TupleDeleteDto.builder().keys(Map.of("sample_value", 2)).build());
+            acknowledgements.get(30, TimeUnit.SECONDS);
+        }
+        assertEquals(0, count("samples"));
+        assertEquals(2, count("samples FOR SYSTEM_TIME ALL"));
+        assertEquals(1, count("tuple_replication_timestamps WHERE site_url='" + replica + "'"));
+        assertEquals(3, outbox.findAll(database).stream().map(TupleReplicationOutboxEntry::getId).distinct().count());
     }
 
     @Test
@@ -164,6 +264,32 @@ class AtomicTupleOutboxIntegrationTest {
                 TupleDeleteDto.builder().keys(Map.of("sample_value", 2)).build());
         assertEquals(0, count("tuple_replication_notification_outbox"));
         assertEquals(2, count("samples FOR SYSTEM_TIME ALL"));
+        verifyNoInteractions(dispatcher);
+    }
+
+    @Test
+    void directReplicaWriteDoesNotRetryAnUnverifiedStorageEngine() throws Exception {
+        database.setCreationLocation("https://remote.example");
+        try (Connection root = connection(); var sql = root.createStatement()) {
+            sql.execute("ALTER TABLE samples DROP SYSTEM VERSIONING");
+            sql.execute("ALTER TABLE samples ENGINE=MyISAM");
+            sql.execute("CREATE SEQUENCE legacy_write_attempt START WITH 1");
+            sql.execute("""
+                    CREATE TRIGGER legacy_timeout BEFORE INSERT ON samples FOR EACH ROW
+                    BEGIN
+                        IF NEXT VALUE FOR legacy_write_attempt>0 THEN
+                            SIGNAL SQLSTATE 'HY000' SET MYSQL_ERRNO=1205, MESSAGE_TEXT='simulated lock timeout';
+                        END IF;
+                    END
+                    """);
+        }
+        var failure = assertThrows(SQLException.class,
+                () -> service.createTupleWithTimestamps(database, table, tuple("a", 1)));
+        assertEquals(1205, failure.getErrorCode());
+        try (Connection root = connection(); var rows = root.createStatement().executeQuery("SELECT NEXT VALUE FOR legacy_write_attempt")) {
+            assertTrue(rows.next());
+            assertEquals(2, rows.getInt(1));
+        }
         verifyNoInteractions(dispatcher);
     }
 

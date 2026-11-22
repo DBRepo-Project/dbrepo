@@ -22,6 +22,13 @@ keys. DECIMAL values retain decimal precision through JSON and JDBC. Replication
 connections use UTC. Received payloads must contain all target columns for an
 insert/update; incompatible schemas fail before mutation.
 
+The primary rolls back the whole tuple transaction on a MariaDB deadlock or lock
+wait timeout. It makes up to three attempts, rebuilding the history and outbox
+entries each time, and schedules only the event IDs from the committed attempt.
+Acknowledgements use the same limit for their entire timestamp batch. If
+contention persists, the tuple endpoint returns HTTP 503. Request validation
+errors still return HTTP 400.
+
 ## Read API
 
 `GET /api/v1/database/{id}/replication/journal?after=0&limit=100` returns retained
