@@ -4,6 +4,12 @@ import lombok.Getter;
 
 @Getter
 public enum NameType {
-    PERSONAL,
-    ORGANIZATIONAL
+    PERSONAL("Personal"),
+    ORGANIZATIONAL("Organizational");
+
+    private final String dataCiteValue;
+
+    NameType(String dataCiteValue) {
+        this.dataCiteValue = dataCiteValue;
+    }
 }

@@ -332,6 +332,7 @@ CREATE TABLE IF NOT EXISTS `mdb_identifiers`
     result_hash       VARCHAR(255),
     result_number     BIGINT,
     doi               VARCHAR(255),
+    datacite_repository VARCHAR(255),
     created           TIMESTAMP                                    NOT NULL DEFAULT NOW(),
     owned_by          VARCHAR(255)                                 NOT NULL,
     last_modified     TIMESTAMP,

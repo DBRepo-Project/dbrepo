@@ -299,11 +299,14 @@ public class IdentifierServicePersistenceTest extends BaseTest {
     }
 
     @Test
-    public void exportMetadata_succeeds() {
+    public void exportMetadata_succeeds() throws java.io.IOException {
 
         /* test */
-        final InputStreamResource response = identifierService.exportMetadata(IDENTIFIER_1);
-        assertNotNull(response);
+        final String local = identifierService.exportMetadata(IDENTIFIER_1).getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+        assertTrue(local.contains("<oai_dc:dc"));
+        final Identifier registered = IDENTIFIER_1.toBuilder().dataCiteRepository("EXAMPLE.TEST").build();
+        final String deposited = identifierService.exportMetadata(registered).getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+        assertTrue(deposited.contains("<datacentreSymbol>EXAMPLE.TEST</datacentreSymbol>"));
     }
 
     @Test

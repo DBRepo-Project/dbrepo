@@ -16,10 +16,11 @@ public interface IdentifierRepository extends JpaRepository<Identifier, UUID> {
 
     interface Identity {
         String getDoi();
+        String getDataCiteRepository();
         UUID getDatabaseId();
     }
 
-    @Query("select i.doi as doi, i.database.id as databaseId from Identifier i where i.id = :id")
+    @Query("select i.doi as doi, i.dataCiteRepository as dataCiteRepository, i.database.id as databaseId from Identifier i where i.id = :id")
     Optional<Identity> findIdentityById(@Param("id") UUID id);
 
     List<Identifier> findAll();
