@@ -217,3 +217,17 @@ The client uses the reported test database and roundtrip table to check both ID 
 Only a passing companion run with matching runner sources and an identical deployment manifest for this endpoint contributes its observed HTTP successes. Those entries are labeled `observed_in_replication`. SDK method coverage still requires a call through the installed client. An older passing three-site report can supply fixture IDs for fresh reads, while its old HTTP requests stay outside the candidate's coverage.
 
 Writes to peer registrations and replication URLs, low-level replay and snapshot import, and retrying or cancelling shared queued jobs need dedicated receiver and queue fixtures. A healthy cluster, a successful indirect sync, or a historical report leaves those endpoint gaps visible.
+
+### Collecting running image IDs
+
+Choose the workloads exercised by the release suite. Run the collector in the Kubernetes or Docker context that serves the given endpoint. Supply the full source commit from the deployment record. A runtime image ID alone cannot establish which source commit was built.
+
+```sh
+python3 .scripts/client-live-deployment.py \
+  --kubernetes "$NAMESPACE" --endpoint "$ENDPOINT" --commit "$DEPLOYED_SHA" \
+  --output images.json metadata-service data-service search-service consumer-service dashboard-service ui
+```
+
+For Compose, replace `--kubernetes "$NAMESPACE"` with `--compose "$PROJECT"`. Compose service names default to `dbrepo-<component>`. Add `replication-service` for an installation with replication. Use `component=workload` for a different service name or `component=deployment/container` to select the Kubernetes application container alongside a sidecar.
+
+The collector checks readiness and requires all replicas of each component to report one digest. Kubernetes reports the kubelet's running image ID. Compose reports the running container's image configuration digest. Keep each capture with its own target's release record.
