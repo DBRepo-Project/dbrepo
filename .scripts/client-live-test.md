@@ -112,7 +112,7 @@ TLS verification stays enabled. `--ca-bundle /path/company-ca.pem` supports priv
 
 ## Endpoint inventory and offline tests
 
-The main catalogue contains 99 operations, covering literal Spring/Flask API mappings, separate OAI verbs, gateway health and PID routes. Two non-routed internal Data operations are explicitly excluded. All 62 public RestClient methods are listed. Framework-generated OPTIONS/HEAD variants, third-party administration, UI routes, metrics and replication APIs absent from main are outside this HTTP catalogue. The user profile further excludes privileged lifecycles and optional connections that were not configured.
+The integration catalog contains 160 operations across the Data, Metadata, Replication, Search and Dashboard services, OAI verbs, gateway health and PID routes. It lists 75 public RestClient methods and three explicit internal exclusions. Framework-generated OPTIONS/HEAD variants, third-party administration, UI routes and metrics are outside this HTTP catalog. The user profile further excludes privileged lifecycles and optional connections that were not configured.
 
 Existing client methods are called as shipped. Missing methods use the client's transport. A successful API write followed by a client DTO error stays failed; a returned new resource ID is retained so independent tests can continue. There is no client/server patch to turn a failed contract into a pass.
 
@@ -198,3 +198,22 @@ python .scripts/client-live-compare.py baseline.json candidate.json \
 ```
 
 The strict comparison exits 1 for a failed candidate case and 2 for incomplete evidence. The JSON lists missing, skipped or uncovered checks, including earlier passing cases that the candidate no longer verifies. Full success requires an exact match to the supplied candidate commit and complete selected API and SDK coverage. A normal comparison still treats historical reports as diagnostic evidence. Keep raw reports and image inventories private.
+
+### Replication coverage
+
+The integration inventory contains 160 HTTP operations and 75 SDK methods. It includes the Replication Service's own routes as well as the Data and Metadata services' replication routes. Three internal operations have explicit exclusions in the catalog.
+
+A full run with system credentials reads replication health and the outbox of its newly created database. It calls the database-scoped retry only after confirming that this fixture's outbox is empty. The test expects zero retries.
+
+For the peer checks, run the three-site acceptance script with the approved disposable setup. Include `deployment_evidence` for each site in its private configuration, with the same endpoint, verified commit and running image set supplied to the client test. Pass the resulting report to the full client run:
+
+```sh
+python .scripts/client-live-test.py --config full.json --profile full \
+  --replication-report replication.json --deployment-evidence images.json --output candidate.json
+```
+
+The client uses the reported test database and roundtrip table to check both ID mappings, replica access, transport configuration, the metadata outbox and export of the deleted row. The three-site history check also fetches a retained snapshot chunk, verifies its bytes against its SHA-256 and checks the receiver's checkpoint.
+
+Only a passing companion run with matching runner sources and an identical deployment manifest for this endpoint contributes its observed HTTP successes. Those entries are labeled `observed_in_replication`. SDK method coverage still requires a call through the installed client. An older passing three-site report can supply fixture IDs for fresh reads, while its old HTTP requests stay outside the candidate's coverage.
+
+Writes to peer registrations and replication URLs, low-level replay and snapshot import, and retrying or cancelling shared queued jobs need dedicated receiver and queue fixtures. A healthy cluster, a successful indirect sync, or a historical report leaves those endpoint gaps visible.

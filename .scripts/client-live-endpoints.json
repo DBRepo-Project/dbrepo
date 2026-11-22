@@ -1,6 +1,20 @@
 {
   "endpoints": [
     {
+      "operation": "DELETE /api/replication/data",
+      "sources": [
+        "dbrepo-replication-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/DataEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "DELETE /api/replication/table",
+      "sources": [
+        "dbrepo-replication-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
       "operation": "DELETE /api/v1/container/{id}",
       "sources": [
         "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/ContainerEndpoint.java"
@@ -84,6 +98,27 @@
       "operation": "GET /api/metadata/replication/outbox",
       "sources": [
         "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/ReplicationOutboxEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/replication/outbox",
+      "sources": [
+        "dbrepo-replication-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/OutboxEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/replication/status",
+      "sources": [
+        "dbrepo-replication-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/StatusEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "GET /api/replication/transports",
+      "sources": [
+        "dbrepo-replication-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TransportEndpoint.java"
       ],
       "excluded": null
     },
@@ -559,6 +594,90 @@
       "excluded": null
     },
     {
+      "operation": "POST /api/replication/data",
+      "sources": [
+        "dbrepo-replication-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/DataEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/replication/data/synchronise/database/{id}",
+      "sources": [
+        "dbrepo-replication-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/DataEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/replication/data/synchronise/database/{id}/table/{id}",
+      "sources": [
+        "dbrepo-replication-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/DataEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/replication/database",
+      "sources": [
+        "dbrepo-replication-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/DatabaseEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/replication/database/bootstrap",
+      "sources": [
+        "dbrepo-replication-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/DatabaseEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/replication/database/{id}/prepare",
+      "sources": [
+        "dbrepo-replication-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/DatabaseEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/replication/outbox/retry",
+      "sources": [
+        "dbrepo-replication-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/OutboxEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/replication/outbox/{id}/cancel",
+      "sources": [
+        "dbrepo-replication-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/OutboxEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/replication/outbox/{id}/retry",
+      "sources": [
+        "dbrepo-replication-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/OutboxEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/replication/table",
+      "sources": [
+        "dbrepo-replication-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TableEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/replication/transports/deliver",
+      "sources": [
+        "dbrepo-replication-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TransportEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "POST /api/replication/view",
+      "sources": [
+        "dbrepo-replication-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/ViewEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
       "operation": "POST /api/v1/container",
       "sources": [
         "dbrepo-metadata-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/ContainerEndpoint.java"
@@ -783,6 +902,20 @@
       "operation": "POST /api/v1/upload",
       "sources": [
         "dbrepo-data-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/UploadEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "PUT /api/replication/data",
+      "sources": [
+        "dbrepo-replication-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/DataEndpoint.java"
+      ],
+      "excluded": null
+    },
+    {
+      "operation": "PUT /api/replication/transports/{id}",
+      "sources": [
+        "dbrepo-replication-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints/TransportEndpoint.java"
       ],
       "excluded": null
     },

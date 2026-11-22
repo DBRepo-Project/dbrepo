@@ -385,14 +385,23 @@ class Checks(unittest.TestCase):
         manifest = {"format": 3, "snapshotId": snapshot, "origin": runner.primary.url,
                     "sourceDatabaseId": runner.primary.db["id"], "sourceTableId": runner.core[0]["id"],
                     "base": None, "boundary": 3, "legacyThrough": 0, "rows": 2, "currentKeys": 0}
+        manifest.update(epoch=str(uuid.uuid4()), boundaryEventId=str(uuid.uuid4()), chunks=1)
+        chunk = {"snapshotId": snapshot, "index": 0, "payload": "dGVzdA==", "sha256": a.hashlib.sha256(b"test").hexdigest()}
+        checkpoint = {"epoch": manifest["epoch"], "boundary": 3, "eventId": manifest["boundaryEventId"]}
         envelope = {"manifest": manifest, "sha256": "a" * 64}
         receipt = {"snapshotId": snapshot, "tableId": runner.core[1]["id"], "status": "RECONCILED",
                    "historyVerified": True, "currentReconciled": True, "boundary": 3, "legacyThrough": 0,
                    "manifestDigest": envelope["sha256"]}
-        with patch.object(runner.primary, "get", return_value=envelope), \
-                patch.object(runner.sites[1], "get", return_value=receipt) as get:
+        def source(path, **kwargs):
+            return chunk if path.endswith("/chunks/0") else envelope
+        def target(path, **kwargs):
+            return checkpoint if path.endswith("/checkpoint") else receipt
+        with patch.object(runner.primary, "get", side_effect=source), patch.object(runner.sites[1], "get", side_effect=target):
             self.assertEqual(receipt, runner.snapshot_receipt(entry)["receipt"])
-            self.assertTrue(get.call_args.args[0].endswith(snapshot + "/status"))
+            with patch.dict(chunk, sha256="0" * 64), self.assertRaises(a.Failed):
+                runner.snapshot_receipt(entry)
+            with patch.dict(checkpoint, boundary=2), self.assertRaises(a.Failed):
+                runner.snapshot_receipt(entry)
         for wrong in (dict(receipt, historyVerified=False), dict(receipt, currentReconciled=False),
                       dict(receipt, status="VERIFIED"),
                       dict(receipt, manifestDigest="b" * 64), dict(receipt, boundary=2),

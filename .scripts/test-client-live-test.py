@@ -281,6 +281,53 @@ class LiveRunnerTest(unittest.TestCase):
                 self.runner.search_steps(search_cases, '/api/v1/database/fixture-id')
                 self.assertEqual([expected, expected], [result['status'] for result in self.runner.results])
 
+    def test_replication_sdk_reads_and_empty_retry_use_fixture_ids(self):
+        from types import SimpleNamespace
+        self.runner.clients['system'].password = 'system-test'
+        self.runner.resources['database'] = 'new-database'
+        self.runner.replication_ids = {'local_database':'local-db', 'peer_database':'peer-db',
+            'local_table':'local-table', 'peer_table':'peer-table', 'receiver':True}
+        healthy = SimpleNamespace(health=SimpleNamespace(status='UP'), outbox=SimpleNamespace(total=0))
+        def sdk(method, *args, role):
+            self.assertEqual('system', role)
+            if method == 'get_replication_status': return healthy
+            if method == 'get_metadata_replication_outbox': return []
+            if method in ('get_data_replication_outbox', 'retry_data_replication_outbox'):
+                self.assertEqual(('new-database',), args)
+                return [] if method.startswith('get_') else 0
+            if method == 'find_local_database_id_by_replica_database_id':
+                self.assertEqual(('peer-db',), args)
+                return SimpleNamespace(local_database_id='local-db', replica_database_id='peer-db')
+            self.assertEqual(('local-db', 'peer-table'), args)
+            return SimpleNamespace(local_table_id='local-table', replica_table_id='peer-table')
+        def raw(method, path, **kwargs):
+            self.assertEqual('GET', method)
+            if path.endswith('/transports'): return self.response(body={'routes':[], 'sites':[], 'rabbitmqSites':[]})
+            if path.endswith('/pending'): return self.response(body=[])
+            if path.endswith('/replication-access'):
+                return self.response(body=[{'database_id':'local-db','status':'MAPPED'}])
+            self.assertIn('/local-db/table/local-table/', path)
+            return self.response(body={'tuples':[]})
+        with patch.object(self.runner, 'sdk', side_effect=sdk), patch.object(self.runner, 'http', side_effect=raw):
+            self.runner.replication_reads(self.runner.step)
+        self.assertEqual(10, len(self.runner.results))
+        self.assertTrue(all(row['status'] == 'passed' for row in self.runner.results), self.runner.results)
+
+    def test_retry_never_targets_a_nonempty_fixture_outbox(self):
+        from types import SimpleNamespace
+        self.runner.clients['system'].password = 'system-test'
+        self.runner.resources['database'] = 'new-database'
+        calls = []
+        def sdk(method, *args, **kwargs):
+            calls.append(method)
+            if method == 'get_replication_status':
+                return SimpleNamespace(health=SimpleNamespace(status='UP'), outbox=SimpleNamespace(total=0))
+            return [SimpleNamespace(database_id='new-database', attempts=1)]
+        with patch.object(self.runner, 'sdk', side_effect=sdk):
+            self.runner.replication_reads(self.runner.step)
+        self.assertNotIn('retry_data_replication_outbox', calls)
+        self.assertEqual('skipped', next(c['status'] for c in self.runner.results if 'retry_empty' in c['case']))
+
     def test_inventory_matches_current_source(self):
         root=Path(__file__).resolve().parents[1]
         self.assertEqual(json.loads((live.HERE/'client-live-endpoints.json').read_text()),live.source_inventory(root))
@@ -335,7 +382,7 @@ class BearerSessionTest(unittest.TestCase):
 
 class ReleaseEvidenceTest(unittest.TestCase):
     def setUp(self):
-        from client_live_evidence import toolchain
+        from client_live_evidence import CORE_COMPONENTS, toolchain
         self.commit = 'a' * 40
         self.catalog = json.loads((live.HERE / 'client-live-endpoints.json').read_text())
         cases = ['search.fuzzy', 'identifier.retrieve.external', 'identifier.publish', 'oai.GetRecord']
@@ -347,7 +394,7 @@ class ReleaseEvidenceTest(unittest.TestCase):
             'client_methods': {name: 'attempted' for name in self.catalog['client_methods']},
             'toolchain': toolchain(live.HERE, Path(live.importlib.import_module('dbrepo').__file__).parent),
             'runtime_versions': {'python': '3.11'},
-            'deployment': {'endpoint': endpoint, 'commit': self.commit, 'images': {'metadata': 'sha256:' + 'b' * 64}}}
+            'deployment': {'endpoint': endpoint, 'commit': self.commit, 'images': {name: 'sha256:' + 'b' * 64 for name in CORE_COMPONENTS}}}
 
     def test_release_comparison_distinguishes_failed_skipped_and_missing_cases(self):
         from copy import deepcopy
@@ -373,6 +420,9 @@ class ReleaseEvidenceTest(unittest.TestCase):
                 candidate = dict(self.report, **{key: value})
                 self.assertEqual('incomplete', release_check(self.report, candidate, self.commit)['state'])
         candidate = deepcopy(self.report)
+        candidate['deployment']['images'] = {'ui': 'sha256:' + 'b' * 64}
+        self.assertEqual('incomplete', release_check(self.report, candidate, self.commit)['state'])
+        candidate = deepcopy(self.report)
         operation = next(entry for entry in candidate['endpoint_coverage'] if not entry['excluded'])
         operation.update(state='attempted', passed_cases=0)
         result = release_check(self.report, candidate, 'c' * 40)
@@ -389,6 +439,32 @@ class ReleaseEvidenceTest(unittest.TestCase):
                     {**manifest, 'endpoint': 'https://another.invalid'}):
             with self.assertRaises(ValueError):
                 deployment(bad, self.report['endpoint'])
+
+    def test_companion_evidence_requires_matching_site_build_and_runner(self):
+        from uuid import uuid4
+        from client_live_evidence import replication_fixture, replication_sources
+        endpoint = self.report['endpoint']
+        sites = {'origin': 'https://origin.invalid', 'target': endpoint, 'third': 'https://third.invalid'}
+        run = 'replication_acceptance_' + '1' * 16
+        resources = [{'site': site, 'kind': kind, 'id': str(uuid4()), 'name': run if kind == 'database' else 'roundtrip',
+                      'internal_name': 'db' if kind == 'database' else 'roundtrip'}
+                     for kind in ('database', 'table') for site in sites]
+        op = 'GET /api/replication/status'
+        companion = {'status':'PASS', 'protocol':'master-timestamp-history-v3', 'run':run,
+                     'checks':[{'name':'fixture_setup','status':'PASS'}], 'sites':sites, 'resources':resources,
+                     'deployments':{'target':self.report['deployment']}, 'suite_sha256':replication_sources(live.HERE),
+                     'http_operations':{'target':{op:{'200':3,'500':2}}, 'origin':{op:{'200':50}}}}
+        ids, proof = replication_fixture(companion, endpoint, self.report['deployment'], live.HERE)
+        self.assertEqual(resources[1]['id'], ids['local_database'])
+        self.assertEqual(resources[0]['id'], ids['peer_database'])
+        self.assertEqual({op:3}, proof['http_successes'])
+        for key in ('deployments', 'suite_sha256'):
+            old = {k:v for k,v in companion.items() if k != key}
+            _, historical = replication_fixture(old, endpoint, self.report['deployment'], live.HERE)
+            self.assertFalse(historical['eligible'])
+            self.assertEqual({}, historical['http_successes'])
+        with self.assertRaises(ValueError):
+            replication_fixture(dict(companion,status='FAIL'), endpoint, self.report['deployment'], live.HERE)
 
 if __name__=='__main__':
     unittest.main()

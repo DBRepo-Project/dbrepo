@@ -5,6 +5,9 @@ from pathlib import Path
 import re
 
 
+CORE_COMPONENTS = {'metadata-service', 'data-service', 'search-service', 'consumer-service', 'dashboard-service', 'ui', 'replication-service'}
+
+
 def digest_tree(root, files):
     hashes = {path.relative_to(root).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
               for path in files}
@@ -53,6 +56,9 @@ def release_check(baseline, candidate, expected_commit):
         except ValueError:
             incomplete.append(f'Missing or invalid deployment evidence for {role}')
         else:
+            missing = sorted(CORE_COMPONENTS - image_set['images'].keys())
+            if missing:
+                incomplete.append(f"Missing {role} deployment components: {', '.join(missing)}")
             if role == 'candidate' and image_set['commit'] != expected_commit:
                 incomplete.append('The deployed candidate differs from the requested commit')
     for key in ('runner_bundle_sha256', 'catalog_sha256', 'client_package_sha256'):
@@ -85,9 +91,15 @@ def release_check(baseline, candidate, expected_commit):
     baseline_ops = {entry['operation'] for entry in baseline.get('endpoint_coverage', [])}
     if set(coverage) != set(expected) or baseline_ops != set(expected):
         incomplete.append('The reports do not contain the complete endpoint inventory')
-    missing_operations = sorted(op for op, excluded in expected.items()
-                                if not excluded and (coverage.get(op, {}).get('state') != 'passed'
-                                or not coverage[op].get('passed_cases')))
+    def covered(operation):
+        entry = coverage.get(operation, {})
+        if entry.get('state') == 'passed' and entry.get('passed_cases'):
+            return True
+        companion = candidate.get('replication_evidence', {})
+        count = companion.get('http_successes', {}).get(operation, 0)
+        return (companion.get('eligible') is True and entry.get('state') == 'observed_in_replication'
+                and count > 0 and count == entry.get('replication_successes'))
+    missing_operations = sorted(op for op, excluded in expected.items() if not excluded and not covered(op))
     methods = candidate.get('client_methods', {})
     expected_methods = set(catalog['client_methods'])
     if set(methods) != expected_methods or set(baseline.get('client_methods', {})) != expected_methods:
@@ -101,3 +113,49 @@ def release_check(baseline, candidate, expected_commit):
             'candidate_failures': failures, 'previously_passing_unverified': previously_passing,
             'missing_cases': sorted(missing_cases), 'uncovered_operations': missing_operations,
             'uncovered_client_methods': missing_methods}
+
+
+def replication_sources(scripts):
+    return digest_tree(scripts, [scripts / name for name in
+                       ('replication-acceptance.py', 'client_live_auth.py', 'client_live_evidence.py')])
+
+
+def replication_fixture(report, endpoint, deployed, scripts):
+    """Read fixture IDs. Only count observations made on this same, identified deployment."""
+    from uuid import UUID
+    if not isinstance(report, dict):
+        raise ValueError('Invalid replication report')
+    sites = report.get('sites', {})
+    if (report.get('status') != 'PASS' or report.get('protocol') != 'master-timestamp-history-v3'
+            or not report.get('checks') or any(c.get('status') != 'PASS' for c in report['checks'])
+            or not re.fullmatch(r'replication_acceptance_[0-9a-f]{16}', report.get('run', ''))
+            or not isinstance(sites, dict) or len(sites) != 3 or not all(isinstance(url, str) for url in sites.values())
+            or len(set(sites.values())) != 3):
+        raise ValueError('Supply a completed, passing three-site replication acceptance report')
+    local = next((name for name, url in sites.items() if url.rstrip('/') == endpoint.rstrip('/')), None)
+    if local is None:
+        raise ValueError('The tested endpoint is missing from the replication report')
+    databases = {item['site']: item for item in report.get('resources', [])
+                 if item.get('kind') == 'database' and item.get('name') == report['run']}
+    tables = {item['site']: item for item in report.get('resources', [])
+              if item.get('kind') == 'table' and item.get('internal_name') == 'roundtrip'}
+    if set(databases) != set(sites) or set(tables) != set(sites):
+        raise ValueError('The report must contain the database and roundtrip table on all sites')
+    # The acceptance report records the primary database first, before registering peers.
+    primary = next(iter(databases))
+    peer = primary if local != primary else next(name for name in sites if name != local)
+    fixture = {side + '_' + kind: str(UUID(objects[site]['id']))
+               for side, site in [('local', local), ('peer', peer)]
+               for kind, objects in [('database', databases), ('table', tables)]}
+
+    fixture['receiver'] = local != primary
+    eligible = (deployed is not None and report.get('deployments', {}).get(local) == deployed
+                and report.get('suite_sha256') == replication_sources(scripts))
+    successes = {}
+    if eligible:
+        for operation, statuses in report.get('http_operations', {}).get(local, {}).items():
+            count = sum(n for code, n in statuses.items() if code.isdecimal() and 200 <= int(code) < 300
+                        and type(n) is int and n > 0)
+            if count:
+                successes[operation] = count
+    return fixture, {'site': local, 'run': report['run'], 'eligible': eligible, 'http_successes': successes}

@@ -19,6 +19,9 @@ import urllib.request
 import uuid
 
 
+from client_live_evidence import deployment, replication_sources
+
+
 class Blocked(Exception):
     pass
 
@@ -113,6 +116,7 @@ class Site:
             status, headers = response.status, dict((k.lower(), v) for k, v in response.headers.items())
         operation = method + ' ' + re.sub(r'[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}',
                                          '{id}', path.split('?')[0])
+        operation = re.sub(r'(/replication/snapshots/\{id\}/chunks/)\d+$', r'\1{id}', operation)
         counts = self.operations.setdefault(operation, {})
         counts[str(status)] = counts.get(str(status), 0) + 1
         require(status in expected, "%s %s returned HTTP %d" % (self.config["name"], method, status))
@@ -161,6 +165,9 @@ class Acceptance:
                        "sites": {site.config["name"]: site.url for site in self.sites},
                        "runner_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
                        "protocol": "master-timestamp-history-v3"}
+        self.report['suite_sha256'] = replication_sources(Path(__file__).resolve().parent)
+        self.report['deployments'] = {s.config['name']: deployment(s.config['deployment_evidence'], s.url)
+                                      for s in self.sites if 'deployment_evidence' in s.config}
         self.subsets = []
 
     def save(self):
@@ -676,6 +683,25 @@ class Acceptance:
                 and receipt.get("legacyThrough") == manifest["legacyThrough"]
                 and receipt.get("manifestDigest") == envelope["sha256"],
                 "Succeeded history job lacks the matching verified/reconciled target receipt")
+        if entry["localTableId"] == self.core[0]["id"]:
+            require(type(manifest.get("chunks")) is int and manifest["chunks"] > 0,
+                    "Roundtrip history manifest has no chunks")
+            chunk = self.primary.get(self.primary.dbpath() + suffix + "/chunks/0", role="system")
+            require(chunk.get("snapshotId") == snapshot and chunk.get("index") == 0
+                    and isinstance(chunk.get("payload"), str), "Unexpected source history chunk")
+            try:
+                payload = base64.b64decode(chunk["payload"], validate=True)
+            except ValueError:
+                raise Failed("Invalid source history chunk encoding") from None
+            require(payload and hashlib.sha256(payload).hexdigest() == chunk.get("sha256"),
+                    "Source history chunk digest mismatch")
+            checkpoint = target.get(target.dbpath() + "/replication/snapshots/table/" + remote[0]["id"]
+                                    + "/checkpoint", role="system")
+            require(isinstance(checkpoint, dict) and checkpoint.get("epoch") == manifest["epoch"]
+                    and type(checkpoint.get("boundary")) is int and checkpoint["boundary"] >= manifest["boundary"]
+                    and (checkpoint["boundary"] > manifest["boundary"]
+                         or checkpoint.get("eventId") == manifest.get("boundaryEventId")),
+                    "The target checkpoint does not include the verified roundtrip snapshot")
         return {"job": entry["id"], "target": target.config["name"], "receipt": receipt}
 
     def history_sync(self, database=False):
