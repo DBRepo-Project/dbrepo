@@ -44,13 +44,17 @@ def deployment(value, endpoint):
     return {'endpoint': endpoint.rstrip('/'), 'commit': commit, 'images': digests}
 
 
-def release_check(baseline, candidate, expected_commit):
+def release_check(baseline, candidate, expected_candidate, expected_baseline):
     incomplete = []
-    if not re.fullmatch('[0-9a-f]{40}', expected_commit):
-        raise ValueError('Release comparison requires the full candidate commit')
+    runs = (('baseline', baseline, expected_baseline), ('candidate', candidate, expected_candidate))
+    run_ids = [report.get('run_id') for _, report, _ in runs]
+    if not all(isinstance(run_id, str) and run_id.strip() for run_id in run_ids) or run_ids[0] == run_ids[1]:
+        incomplete.append('Release comparison requires two independent run IDs')
     if not all(report.get('profile') == 'full' and report.get('completed') is True for report in (baseline, candidate)):
         incomplete.append('Both reports must be completed full-profile runs')
-    for role, report in (('baseline', baseline), ('candidate', candidate)):
+    for role, report, expected_commit in runs:
+        if not isinstance(expected_commit, str) or not re.fullmatch('[0-9a-f]{40}', expected_commit):
+            raise ValueError(f'Release comparison requires the full {role} commit')
         try:
             image_set = deployment(report.get('deployment'), report.get('endpoint', ''))
         except ValueError:
@@ -59,8 +63,8 @@ def release_check(baseline, candidate, expected_commit):
             missing = sorted(CORE_COMPONENTS - image_set['images'].keys())
             if missing:
                 incomplete.append(f"Missing {role} deployment components: {', '.join(missing)}")
-            if role == 'candidate' and image_set['commit'] != expected_commit:
-                incomplete.append('The deployed candidate differs from the requested commit')
+            if image_set['commit'] != expected_commit:
+                incomplete.append(f'The deployed {role} differs from the requested commit')
     for key in ('runner_bundle_sha256', 'catalog_sha256', 'client_package_sha256'):
         a = baseline.get('toolchain', {}).get(key)
         b = candidate.get('toolchain', {}).get(key)
@@ -109,7 +113,8 @@ def release_check(baseline, candidate, expected_commit):
         incomplete.append('Runtime library versions are missing or differ')
     state = 'failed' if failures else 'incomplete' if (
         incomplete or previously_passing or missing_cases or missing_operations or missing_methods) else 'passed'
-    return {'state': state, 'expected_candidate_commit': expected_commit, 'evidence_gaps': incomplete,
+    return {'state': state, 'expected_baseline_commit': expected_baseline,
+            'expected_candidate_commit': expected_candidate, 'evidence_gaps': incomplete,
             'candidate_failures': failures, 'previously_passing_unverified': previously_passing,
             'missing_cases': sorted(missing_cases), 'uncovered_operations': missing_operations,
             'uncovered_client_methods': missing_methods}

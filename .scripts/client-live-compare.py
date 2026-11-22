@@ -54,13 +54,17 @@ def main():
     p.add_argument('--output',type=Path,default=Path('client-live-comparison.json'))
     p.add_argument('--require-release', metavar='CANDIDATE_COMMIT',
                    help='Require complete full-profile acceptance evidence for this deployed source commit')
+    p.add_argument('--baseline-commit', metavar='RELEASE_COMMIT',
+                   help='Verify the reference deployment against this release commit')
     args=p.parse_args()
+    if bool(args.require_release) != bool(args.baseline_commit):
+        p.error('Supply both --require-release and --baseline-commit for a release comparison')
     if args.output.resolve() in (args.baseline.resolve(),args.candidate.resolve()):p.error('Output must not overwrite an input report')
     baseline, candidate = json.loads(args.baseline.read_text()), json.loads(args.candidate.read_text())
     result = compare(baseline, candidate)
     if args.require_release:
         try:
-            result['release_check'] = release_check(baseline, candidate, args.require_release)
+            result['release_check'] = release_check(baseline, candidate, args.require_release, args.baseline_commit)
         except ValueError as error:
             p.error(str(error))
     with os.fdopen(os.open(args.output,os.O_WRONLY|os.O_CREAT|os.O_TRUNC,0o600),'w') as stream:

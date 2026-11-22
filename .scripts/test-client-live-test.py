@@ -387,7 +387,7 @@ class ReleaseEvidenceTest(unittest.TestCase):
         self.catalog = json.loads((live.HERE / 'client-live-endpoints.json').read_text())
         cases = ['search.fuzzy', 'identifier.retrieve.external', 'identifier.publish', 'oai.GetRecord']
         endpoint = 'https://candidate.invalid'
-        self.report = {'completed': True, 'profile': 'full', 'endpoint': endpoint,
+        self.report = {'completed': True, 'profile': 'full', 'endpoint': endpoint, 'run_id': 'candidate-run',
             'cases': [{'case': name, 'status': 'passed'} for name in cases],
             'endpoint_coverage': [{**e, 'state': 'excluded' if e['excluded'] else 'passed', 'passed_cases': 1}
                                   for e in self.catalog['endpoints']],
@@ -396,17 +396,34 @@ class ReleaseEvidenceTest(unittest.TestCase):
             'runtime_versions': {'python': '3.11'},
             'deployment': {'endpoint': endpoint, 'commit': self.commit, 'images': {name: 'sha256:' + 'b' * 64 for name in CORE_COMPONENTS}}}
 
+        self.baseline_commit = 'c' * 40
+        self.baseline = dict(self.report, run_id='baseline-run',
+                             deployment=dict(self.report['deployment'], commit=self.baseline_commit))
+
+    def test_release_requires_independent_runs_and_an_identified_baseline(self):
+        from client_live_evidence import release_check
+        for run_id in (None, self.baseline['run_id']):
+            candidate = dict(self.report, run_id=run_id)
+            result = release_check(self.baseline, candidate, self.commit, self.baseline_commit)
+            self.assertEqual('incomplete', result['state'])
+            self.assertTrue(any('independent run IDs' in gap for gap in result['evidence_gaps']))
+        result = release_check(self.baseline, self.report, self.commit, 'd' * 40)
+        self.assertEqual('incomplete', result['state'])
+        self.assertTrue(any('deployed baseline' in gap for gap in result['evidence_gaps']))
+        with self.assertRaisesRegex(ValueError, 'full baseline commit'):
+            release_check(self.baseline, self.report, self.commit, 'main')
+
     def test_release_comparison_distinguishes_failed_skipped_and_missing_cases(self):
         from copy import deepcopy
         from client_live_evidence import release_check
-        self.assertEqual('passed', release_check(self.report, self.report, self.commit)['state'])
+        self.assertEqual('passed', release_check(self.baseline, self.report, self.commit, self.baseline_commit)['state'])
         for status in ('failed', 'skipped', None):
             candidate = deepcopy(self.report)
             if status:
                 candidate['cases'][0]['status'] = status
             else:
                 candidate['cases'].pop(0)
-            result = release_check(self.report, candidate, self.commit)
+            result = release_check(self.baseline, candidate, self.commit, self.baseline_commit)
             self.assertEqual('failed' if status == 'failed' else 'incomplete', result['state'])
             self.assertIn('search.fuzzy', result['previously_passing_unverified'])
 
@@ -418,14 +435,14 @@ class ReleaseEvidenceTest(unittest.TestCase):
                            ('runtime_versions', {})]:
             with self.subTest(key=key):
                 candidate = dict(self.report, **{key: value})
-                self.assertEqual('incomplete', release_check(self.report, candidate, self.commit)['state'])
+                self.assertEqual('incomplete', release_check(self.baseline, candidate, self.commit, self.baseline_commit)['state'])
         candidate = deepcopy(self.report)
         candidate['deployment']['images'] = {'ui': 'sha256:' + 'b' * 64}
-        self.assertEqual('incomplete', release_check(self.report, candidate, self.commit)['state'])
+        self.assertEqual('incomplete', release_check(self.baseline, candidate, self.commit, self.baseline_commit)['state'])
         candidate = deepcopy(self.report)
         operation = next(entry for entry in candidate['endpoint_coverage'] if not entry['excluded'])
         operation.update(state='attempted', passed_cases=0)
-        result = release_check(self.report, candidate, 'c' * 40)
+        result = release_check(self.baseline, candidate, 'c' * 40, self.baseline_commit)
         self.assertEqual('incomplete', result['state'])
         self.assertIn(operation['operation'], result['uncovered_operations'])
         self.assertTrue(any('deployed candidate' in reason for reason in result['evidence_gaps']))
