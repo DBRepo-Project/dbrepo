@@ -79,6 +79,7 @@ def test_failed_rebuild_leaves_current_index_complete(catalog, monkeypatch, phas
     with pytest.raises(error):
         catalog.index_update({}, fetch)
     assert set(os.indices.get(index='database*')) == before
+    assert catalog._catalog_indices()[1] == []
     assert os.get(index='database', id=req.id)['_source']['name'] == req.name
 
 
@@ -121,6 +122,17 @@ def test_write_that_started_on_retired_index_reaches_new_index(catalog, monkeypa
         assert catalog._instance().get(index='database', id=req.id)['_source']['name'] == newer.name
 
 
+def test_catalog_write_only_deletes_marked_rebuild_guards(catalog):
+    os = catalog._instance()
+    other_index = catalog.REBUILD_GUARD_PREFIX + uuid4().hex
+    os.indices.create(index=other_index)
+    try:
+        catalog.save_database(req.id, req)
+        assert os.indices.exists(index=other_index)
+    finally:
+        os.indices.delete(index=other_index)
+
+
 def test_lost_switch_response_keeps_published_index(catalog, monkeypatch):
     os = catalog._instance()
     update_aliases = os.indices.update_aliases
@@ -138,13 +150,34 @@ def test_lost_switch_response_keeps_published_index(catalog, monkeypatch):
     assert len(os.indices.get_alias(name='database')) == 1
 
 
-@pytest.mark.parametrize('starting_index', ['missing', 'concrete', 'alias'])
+def test_switch_delayed_until_after_failure_cannot_republish(catalog, monkeypatch):
+    os = catalog._instance()
+    publish = os.indices.update_aliases
+    queued = []
+
+    def delay_switch(*, body):
+        queued.append(body)
+        raise ConnectionTimeout('timeout', 'publication not confirmed')
+
+    monkeypatch.setattr(os.indices, 'update_aliases', delay_switch)
+    with pytest.raises(ConnectionTimeout):
+        catalog.index_update({}, lambda: [req])
+    assert catalog._catalog_indices() == ('database', [])
+    with pytest.raises(TransportError):
+        publish(body=queued[0])
+    assert os.get(index='database', id=req.id)['_source']['name'] == req.name
+
+
+@pytest.mark.parametrize('starting_index', ['missing', 'concrete', 'alias', 'retained'])
 def test_overlapping_rebuilds_publish_one_generation(catalog, monkeypatch, starting_index):
     os = catalog._instance()
     if starting_index == 'missing':
         os.indices.delete(index='database')
-    elif starting_index == 'alias':
+    elif starting_index in ('alias', 'retained'):
         catalog.index_update({}, lambda: [req])
+        if starting_index == 'retained':
+            previous, = os.indices.get_alias(name='database')
+            os.indices.put_alias(index=previous, name='retained-generation')
     winner = req.model_copy(update={'name': 'Published by the other job'})
     update_aliases = os.indices.update_aliases
 
@@ -159,7 +192,13 @@ def test_overlapping_rebuilds_publish_one_generation(catalog, monkeypatch, start
     with pytest.raises(TransportError):
         catalog.index_update({}, lambda: [req])
     active, = os.indices.get_alias(name='database')
-    assert list(os.indices.get(index='database*')) == [active]
+    if starting_index == 'retained':
+        assert set(os.indices.get(index='database*')) == {active, previous}
+        assert list(os.indices.get_alias(name='retained-generation')) == [previous]
+        os.indices.delete(index=previous)
+    else:
+        assert list(os.indices.get(index='database*')) == [active]
+    assert catalog._catalog_indices() == (active, [])
     assert os.get(index='database', id=winner.id)['_source']['name'] == winner.name
 
 
