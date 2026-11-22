@@ -1,5 +1,5 @@
 <GetRecord>
-    <record>
+    <record th:fragment="record">
         <header>
             <identifier>[[${pid}]]</identifier>
             <datestamp>[[${datestamp}]]</datestamp>

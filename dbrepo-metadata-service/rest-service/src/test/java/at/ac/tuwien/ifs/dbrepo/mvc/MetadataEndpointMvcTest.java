@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,6 +20,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.mockito.Mockito.when;
@@ -104,18 +106,42 @@ public class MetadataEndpointMvcTest extends BaseTest {
                 .andExpect(status().isOk());
     }
 
-    @Test
-    public void listRecords_excludesDrafts() throws Exception {
+    @ParameterizedTest
+    @CsvSource({
+            "oai_dc,dublin:dc/dc:title",
+            "oai_datacite,datacite:oai_datacite/datacite:payload/kernel:resource/kernel:titles/kernel:title"
+    })
+    public void listRecords_returnsPublishedMetadata(String prefix, String titlePath) throws Exception {
         when(identifierRepository.findAll())
                 .thenReturn(List.of(publishedIdentifier, IDENTIFIER_2, IDENTIFIER_3, IDENTIFIER_4, IDENTIFIER_5));
 
+        final Map<String, String> namespaces = Map.of(
+                "oai", "http://www.openarchives.org/OAI/2.0/",
+                "dublin", "http://www.openarchives.org/OAI/2.0/oai_dc/",
+                "dc", "http://purl.org/dc/elements/1.1/",
+                "datacite", "http://schema.datacite.org/oai/oai-1.1/",
+                "kernel", "http://datacite.org/schema/kernel-4");
+        final String record = "/oai:OAI-PMH/oai:ListRecords/oai:record";
         this.mockMvc.perform(get("/api/v1/oai")
                         .param("verb", "ListRecords")
-                        .param("metadataPrefix", "oai_dc"))
+                        .param("metadataPrefix", prefix))
                 .andExpect(status().isOk())
-                .andExpect(xpath("//record").nodeCount(2))
-                .andExpect(xpath("//record[1]/header/identifier").string("doi:" + IDENTIFIER_1_DOI))
-                .andExpect(xpath("//record[2]/header/identifier").string("oai:" + IDENTIFIER_4_ID));
+                .andExpect(xpath(record, namespaces).nodeCount(2))
+                .andExpect(xpath(record + "/oai:header/oai:datestamp", namespaces).nodeCount(2))
+                .andExpect(xpath(record + "/oai:metadata", namespaces).nodeCount(2))
+                .andExpect(xpath(record + "[1]/oai:header/oai:identifier", namespaces).string("doi:" + IDENTIFIER_1_DOI))
+                .andExpect(xpath(record + "[2]/oai:header/oai:identifier", namespaces).string("oai:" + IDENTIFIER_4_ID))
+                .andExpect(xpath(record + "[1]/oai:metadata/" + titlePath, namespaces).string(IDENTIFIER_1_TITLE_1_TITLE));
+    }
+
+    @Test
+    public void listRecords_rejectsUnknownMetadataPrefix() throws Exception {
+        this.mockMvc.perform(get("/api/v1/oai")
+                        .param("verb", "ListRecords")
+                        .param("metadataPrefix", "unknown"))
+                .andExpect(status().isOk())
+                .andExpect(xpath("//error[@code='cannotDisseminateFormat']").exists())
+                .andExpect(xpath("//record").doesNotExist());
     }
 
     @ParameterizedTest
@@ -208,8 +234,8 @@ public class MetadataEndpointMvcTest extends BaseTest {
                 .andExpect(content().contentType("text/xml;charset=UTF-8"))
                 .andExpect(xpath("//request[@verb='ListMetadataFormats']").exists())
                 .andExpect(xpath("//ListMetadataFormats/metadataFormat[1]/metadataPrefix").string("oai_dc"))
-                .andExpect(xpath("//ListMetadataFormats/metadataFormat[2]/metadataPrefix").string("datacite"))
-                .andExpect(xpath("//ListMetadataFormats/metadataFormat[3]/metadataPrefix").string("oai_datacite"))
+                .andExpect(xpath("//ListMetadataFormats/metadataFormat[2]/metadataPrefix").string("oai_datacite"))
+                .andExpect(xpath("//ListMetadataFormats/metadataFormat").nodeCount(2))
                 .andExpect(status().isOk());
     }
 

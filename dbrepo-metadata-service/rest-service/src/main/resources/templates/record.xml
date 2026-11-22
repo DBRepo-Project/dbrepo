@@ -1,7 +1,0 @@
-<record>
-    <header>
-        <identifier>[[${pid}]]</identifier>
-        <datestamp>[[${datestamp}]]</datestamp>
-        <setSpec>[[${setspec}]]</setSpec>
-    </header>
-</record>
