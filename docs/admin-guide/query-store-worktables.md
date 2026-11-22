@@ -76,3 +76,16 @@ The service also creates the guard when provisioning new databases. An image
 update alone does not migrate existing research databases. Back up the new table
 with the other database objects. Keeping it during a rollback to the previous
 routine bodies is harmless; pause Query Store calls before changing routines.
+
+## Historical SQL saved by an older store_query
+
+Upgrade existing research databases with the routine migration described above.
+New calls save the supplied historical SQL in `qs_queries.query_normalized`
+for both empty and nonempty results. The original SQL remains in `query`.
+
+Some older nonempty subsets have the original SQL in both columns. Equal
+columns alone do not identify a bad record. The timestamp and result hash
+cannot recover an arbitrary SQL statement. Preserve existing IDs and citations.
+If the submitted historical SQL is available in a trusted export or audit
+record, verify it against retained table history, row count and the hash
+format used by that subset before correcting an individual record.

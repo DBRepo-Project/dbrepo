@@ -38,6 +38,7 @@ def main():
         spec=importlib.util.spec_from_file_location("migration",ROOT/".scripts/query-worktables-migration.py")
         module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
         sql(module.migration(["fixture"]))
+        sql("USE fixture;\n" + (ROOT / ".scripts/test-query-replay.sql").read_text())
         for call in ["CALL hash_query('SELECT 1 AS sample', @h); SELECT @h,@count;",
                      "CALL store_query('SELECT 2 AS sample','SELECT 2 AS sample',NOW(),@id); SELECT result_hash,result_number FROM qs_queries WHERE id=@id;",
                      "CALL _store_query('fixture','SELECT 3 AS sample','SELECT 3 AS sample',NOW(),@id); SELECT result_hash,result_number FROM qs_queries WHERE id=@id;"]:
