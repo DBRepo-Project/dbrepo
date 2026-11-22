@@ -164,10 +164,10 @@ For an approved disposable release run, enable the publication and external-prov
 
 ```sh
 python .scripts/client-live-compare.py baseline.json candidate.json \
-  --require-release "$CANDIDATE_COMMIT" --output comparison.json
+  --require-release "$CANDIDATE_COMMIT" --baseline-commit "$BASELINE_COMMIT" --output comparison.json
 ```
 
-The strict comparison exits 1 for a failed candidate case and 2 for incomplete evidence. The JSON lists missing, skipped or uncovered checks, including earlier passing cases that the candidate no longer verifies. Full success requires an exact match to the supplied candidate commit and complete selected API and SDK coverage. A normal comparison still treats historical reports as diagnostic evidence. Keep raw reports and image inventories private.
+The strict comparison exits 1 for a failed candidate case and 2 for incomplete evidence. The JSON lists missing, skipped or uncovered checks, including earlier passing cases that the candidate no longer verifies. Full success requires two independent test runs, a deployment matching each supplied commit and complete selected API and SDK coverage. You can run the baseline and the candidate in sequence on the same endpoint. A normal comparison still treats historical reports as diagnostic evidence. Keep raw reports and image inventories private.
 
 ### Collecting running image IDs
 
