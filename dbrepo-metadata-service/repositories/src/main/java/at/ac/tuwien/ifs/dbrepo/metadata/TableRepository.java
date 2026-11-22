@@ -15,6 +15,9 @@ import java.util.UUID;
 @Repository
 public interface TableRepository extends JpaRepository<Table, UUID> {
 
+    @Query("select coalesce(sum(t.dataLength), 0) from Table t")
+    long sumDataLength();
+
     @Query("select t from Table t join t.replicaUrls r where r.replicaTableId = :replicaTableId")
     Optional<Table> findByReplicaTableId(@Param("replicaTableId") UUID replicaTableId);
 

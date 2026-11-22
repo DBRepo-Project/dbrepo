@@ -1,6 +1,7 @@
 package at.ac.tuwien.ifs.dbrepo.metadata;
 
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.Identifier;
+import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.IdentifierType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -47,6 +48,8 @@ public interface IdentifierRepository extends JpaRepository<Identifier, UUID> {
     List<Identifier> findAllDatabaseIdentifiers();
 
     List<Identifier> findAllSubsetIdentifiers();
+
+    long countByType(IdentifierType type);
 
     Optional<Identifier> findByDoi(String doi);
 
