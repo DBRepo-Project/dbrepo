@@ -84,6 +84,7 @@ import java.text.Normalizer;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -877,9 +878,7 @@ public interface MetadataMapper {
     LicenseDto licenseToLicenseDto(License data);
 
     default String instantToDatestamp(Instant data) {
-        final String datestamp = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
-                .withZone(ZoneId.systemDefault())
-                .format(data);
+        final String datestamp = data.truncatedTo(ChronoUnit.SECONDS).toString();
         log.trace("mapped instant {} to string {}", data, datestamp);
         return datestamp;
     }

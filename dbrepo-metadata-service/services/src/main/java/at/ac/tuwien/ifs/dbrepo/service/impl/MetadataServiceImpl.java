@@ -15,6 +15,7 @@ import at.ac.tuwien.ifs.dbrepo.gateway.RorGateway;
 import at.ac.tuwien.ifs.dbrepo.oaipmh.OaiErrorType;
 import at.ac.tuwien.ifs.dbrepo.oaipmh.OaiListIdentifiersParameters;
 import at.ac.tuwien.ifs.dbrepo.oaipmh.OaiListRecordsParameters;
+import at.ac.tuwien.ifs.dbrepo.oaipmh.OaiListParameters;
 import at.ac.tuwien.ifs.dbrepo.oaipmh.OaiRecordParameters;
 import at.ac.tuwien.ifs.dbrepo.metadata.IdentifierRepository;
 import at.ac.tuwien.ifs.dbrepo.service.IdentifierService;
@@ -28,7 +29,9 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.unbescape.xml.XmlEscape;
 
+import java.time.DateTimeException;
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -65,7 +68,7 @@ public class MetadataServiceImpl implements MetadataService {
     @Override
     public String identify() {
         final Optional<Identifier> optional = identifierRepository.findEarliest();
-        final String earliest = optional.map(o -> o.getCreated().toString()).orElse(null);
+        final String earliest = optional.map(o -> harvestDate(o.getCreated())).orElse(null);
         final Context context = new Context();
         context.setVariable("repositoryName", metadataConfig.getRepositoryName());
         context.setVariable("baseURL", metadataConfig.getBaseUrl());
@@ -82,9 +85,9 @@ public class MetadataServiceImpl implements MetadataService {
     public String listIdentifiers(OaiListIdentifiersParameters parameters) {
         if (recordTemplate(parameters.getMetadataPrefix()) == null) return error(OaiErrorType.CANNOT_DISSEMINATE_FORMAT);
         final StringBuilder builder = new StringBuilder("<ListIdentifiers>");
-        final List<Identifier> identifiers = identifierService.findAll().stream()
-                .filter(identifier -> IdentifierStatusType.PUBLISHED.equals(identifier.getStatus()))
-                .toList();
+        final Harvest harvest = selectForHarvest(parameters);
+        if (harvest.error() != null) return harvest.error();
+        final List<Identifier> identifiers = harvest.records();
         log.debug("found {} identifiers", identifiers.size());
         final List<Identifier> available = availableInFormat(identifiers, parameters.getMetadataPrefix());
         if (available.isEmpty()) return parseResponse(parameters.getParametersString(), errorBody(OaiErrorType.NO_RECORDS_MATCH));
@@ -92,7 +95,7 @@ public class MetadataServiceImpl implements MetadataService {
             final Context context = new Context();
             context.setVariable("identifier", identifier);
             context.setVariable("pid", identifier.getDoi() != null ? ("doi:" + identifier.getDoi()) : ("oai:" + identifier.getId()));
-            context.setVariable("datestamp", metadataMapper.instantToDatestamp(identifier.getCreated()));
+            context.setVariable("datestamp", harvestDate(identifier));
             context.setVariable("setspec", "openaire_data");
             builder.append(templateEngine.process("identifier.xml", context));
         });
@@ -108,9 +111,9 @@ public class MetadataServiceImpl implements MetadataService {
             return error(OaiErrorType.CANNOT_DISSEMINATE_FORMAT);
         }
         final StringBuilder builder = new StringBuilder("<ListRecords>");
-        final List<Identifier> identifiers = identifierService.findAll().stream()
-                .filter(identifier -> IdentifierStatusType.PUBLISHED.equals(identifier.getStatus()))
-                .toList();
+        final Harvest harvest = selectForHarvest(parameters);
+        if (harvest.error() != null) return harvest.error();
+        final List<Identifier> identifiers = harvest.records();
         log.debug("found {} identifiers", identifiers.size());
         final List<Identifier> available = availableInFormat(identifiers, parameters.getMetadataPrefix());
         if (available.isEmpty()) return parseResponse(parameters.getParametersString(), errorBody(OaiErrorType.NO_RECORDS_MATCH));
@@ -118,7 +121,7 @@ public class MetadataServiceImpl implements MetadataService {
             final Context context = new Context();
             context.setVariable("identifier", identifier);
             context.setVariable("pid", identifier.getDoi() != null ? ("doi:" + identifier.getDoi()) : ("oai:" + identifier.getId()));
-            context.setVariable("datestamp", metadataMapper.instantToDatestamp(identifier.getCreated()));
+            context.setVariable("datestamp", harvestDate(identifier));
             context.setVariable("setspec", "openaire_data");
             context.setVariable("identifierType", identifier.getDoi() != null ? "DOI" : "OAI");
             builder.append(templateEngine.process(template, Set.of("record"), context));
@@ -140,7 +143,7 @@ public class MetadataServiceImpl implements MetadataService {
         context.setVariable("identifierType", identifier.getDoi() != null ? "DOI" : "OAI");
         context.setVariable("setspec", "openaire_data");
         context.setVariable("pid", identifier.getDoi() != null ? ("doi:" + identifier.getDoi()) : ("oai:" + identifier.getId()));
-        context.setVariable("datestamp", metadataMapper.instantToDatestamp(identifier.getCreated()));
+        context.setVariable("datestamp", harvestDate(identifier));
         final String body = parseResponse(parameters.getParametersString(), templateEngine.process(templateFileName, context));
         log.trace("mapped body {}", body);
         return body;
@@ -269,6 +272,38 @@ public class MetadataServiceImpl implements MetadataService {
         }
         log.error("Failed to find metadata: unsupported identifier {}", url);
         throw new IdentifierNotSupportedException("Failed to find metadata: unsupported identifier " + url);
+    }
+
+    private record Harvest(List<Identifier> records, String error) {}
+
+    private Harvest selectForHarvest(OaiListParameters parameters) {
+        final OaiErrorType error = parameters.argumentError();
+        if (error == OaiErrorType.BAD_ARGUMENT) return new Harvest(List.of(), error(error));
+        if (error != null) return new Harvest(List.of(), parseResponse(parameters.getParametersString(), errorBody(error)));
+
+        final OaiListParameters.DateRange range;
+        try {
+            range = parameters.dateRange("YYYY-MM-DD".equals(metadataConfig.getGranularity()));
+        } catch (DateTimeException e) {
+            return new Harvest(List.of(), error(OaiErrorType.BAD_ARGUMENT));
+        }
+        // All published identifiers belong to the single set advertised by ListSets.
+        final List<Identifier> identifiers = parameters.getSet() == null || OaiListParameters.SET_SPEC.equals(parameters.getSet())
+                ? identifierRepository.findForHarvest(range.from(), range.untilExclusive()) : List.of();
+        return identifiers.isEmpty()
+                ? new Harvest(List.of(), parseResponse(parameters.getParametersString(), errorBody(OaiErrorType.NO_RECORDS_MATCH)))
+                : new Harvest(identifiers, null);
+    }
+
+    private String harvestDate(Identifier identifier) {
+        final Instant modified = identifier.getLastModified();
+        return harvestDate(modified != null && modified.isAfter(identifier.getCreated()) ? modified : identifier.getCreated());
+    }
+
+    private String harvestDate(Instant date) {
+        return "YYYY-MM-DD".equals(metadataConfig.getGranularity())
+                ? date.atZone(ZoneOffset.UTC).toLocalDate().toString()
+                : metadataMapper.instantToDatestamp(date);
     }
 
 }
