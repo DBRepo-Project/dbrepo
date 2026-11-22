@@ -15,6 +15,10 @@ import java.sql.SQLException;
 @Service
 public abstract class DataConnector {
 
+    protected static boolean isLockConflict(SQLException failure) {
+        return failure.getErrorCode() == 1213 || failure.getErrorCode() == 1205;
+    }
+
     // Preserve existing connection behavior; deployments with TLS can select verify-full.
     @Value("${dbrepo.jdbc.ssl-mode:disable}")
     private String sslMode = "disable";
