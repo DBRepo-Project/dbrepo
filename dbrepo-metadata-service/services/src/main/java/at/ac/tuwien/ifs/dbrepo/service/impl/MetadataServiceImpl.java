@@ -30,6 +30,7 @@ import org.thymeleaf.context.Context;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
@@ -98,6 +99,10 @@ public class MetadataServiceImpl implements MetadataService {
     @Transactional(readOnly = true)
     @Override
     public String listRecords(OaiListRecordsParameters parameters) {
+        final String template = recordTemplate(parameters.getMetadataPrefix());
+        if (template == null) {
+            return error(OaiErrorType.CANNOT_DISSEMINATE_FORMAT);
+        }
         final StringBuilder builder = new StringBuilder("<ListRecords>");
         final List<Identifier> identifiers = identifierService.findAll().stream()
                 .filter(identifier -> IdentifierStatusType.PUBLISHED.equals(identifier.getStatus()))
@@ -109,7 +114,8 @@ public class MetadataServiceImpl implements MetadataService {
             context.setVariable("pid", identifier.getDoi() != null ? ("doi:" + identifier.getDoi()) : ("oai:" + identifier.getId()));
             context.setVariable("datestamp", metadataMapper.instantToDatestamp(identifier.getCreated()));
             context.setVariable("setspec", "openaire_data");
-            builder.append(templateEngine.process("record.xml", context));
+            context.setVariable("identifierType", identifier.getDoi() != null ? "DOI" : "OAI");
+            builder.append(templateEngine.process(template, Set.of("record"), context));
         });
         builder.append("</ListRecords>");
         return parseResponse(parameters.getParametersString(), builder.toString());
@@ -132,7 +138,10 @@ public class MetadataServiceImpl implements MetadataService {
         if (!IdentifierStatusType.PUBLISHED.equals(identifier.getStatus())) {
             throw new IdentifierNotFoundException("Identifier is not available through OAI-PMH");
         }
-        final String templateFileName = "record_" + (parameters.getMetadataPrefix() == null ? "oai_datacite" : parameters.getMetadataPrefix()) + ".xml";
+        final String templateFileName = recordTemplate(parameters.getMetadataPrefix());
+        if (templateFileName == null) {
+            return error(OaiErrorType.CANNOT_DISSEMINATE_FORMAT);
+        }
         final Context context = new Context();
         context.setVariable("identifier", identifier);
         context.setVariable("identifierType", identifier.getDoi() != null ? "DOI" : "OAI");
@@ -142,6 +151,14 @@ public class MetadataServiceImpl implements MetadataService {
         final String body = parseResponse(parameters.getParametersString(), templateEngine.process(templateFileName, context));
         log.trace("mapped body {}", body);
         return body;
+    }
+
+    private String recordTemplate(String prefix) {
+        return switch (prefix == null ? "oai_datacite" : prefix) {
+            case "oai_datacite" -> "record_oai_datacite.xml";
+            case "oai_dc" -> "record_oai_dc.xml";
+            default -> null;
+        };
     }
 
     @Override
