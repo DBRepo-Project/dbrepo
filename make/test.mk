@@ -22,4 +22,4 @@ test-lib: ## Test the Python Library.
 
 .PHONY: test-ui
 test-ui: ## Test the UI.
-	bash ./dbrepo-ui/test/test_heap.sh
+	bash ./dbrepo-ui/tests/test_heap.sh
