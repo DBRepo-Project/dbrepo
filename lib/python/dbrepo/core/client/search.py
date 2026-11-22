@@ -199,8 +199,8 @@ class SearchServiceClient:
             raise ServiceConnectionError('Failed to retrieve current search metadata') from error
         return current
 
-    def _engine_call(self, operation, deadline, **kwargs):
-        response = operation(request_timeout=min(5, self._remaining(deadline)), **kwargs)
+    def _engine_call(self, operation, deadline, *, timeout_limit=5, **kwargs):
+        response = operation(request_timeout=min(timeout_limit, self._remaining(deadline)), **kwargs)
         self._remaining(deadline)
         return response
 
@@ -274,7 +274,8 @@ class SearchServiceClient:
                         attempted_create = True
                         self._engine_call(backend.index, deadline, index=self.QUERY_INDEX, id=query_id,
                                           body={self.QUERY_FIELD: native_query, self.EXPIRY_FIELD: expires}, refresh=True)
-                    response = self._engine_call(backend.search, deadline, index=self.QUERY_INDEX,
+                    response = self._engine_call(backend.search, deadline, timeout_limit=self.REQUEST_BUDGET,
+                        index=self.QUERY_INDEX, timeout=f'{max(1, int(self._remaining(deadline) * 1000))}ms',
                         allow_partial_search_results=False, body={'size': 1, '_source': False,
                             'query': {'bool': {
                                 'filter': [{'ids': {'values': [query_id]}},

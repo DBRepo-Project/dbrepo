@@ -1,18 +1,27 @@
 <template>
   <div>
+    <v-alert v-if="dataError || countError" type="error" variant="tonal" role="alert" class="mb-3">
+      {{ $t(dataError ? dataErrorKey : 'dataState.countFailed') }}
+      <v-btn variant="text" @click="retry">{{ $t('dataState.retry') }}</v-btn>
+    </v-alert>
     <v-data-table-server
+      v-if="!dataError"
       flat
       v-model="selection"
       :headers="result.headers"
-      :loading="loading || loadingCount || loadingExecute"
+      :loading="loading || loadingExecute"
       :options="options"
       :items="result.rows"
       :items-length="total"
+      :hide-default-footer="loadingCount || countError"
       :footer-props="footerProps"
       :show-select="select"
       return-object
       :items-per-page-options="footerProps.itemsPerPageOptions"
       @update:options="updateOptions">
+      <template #no-data>
+        {{ $t(loaded ? 'dataState.empty' : 'dataState.loading') }}
+      </template>
       <template
         v-for="header in primaryKeyHeaders"
         :key="header.key"
@@ -71,6 +80,13 @@ export default {
   },
   data () {
     return {
+      dataError: false,
+      dataErrorKey: 'dataState.failed',
+      countError: false,
+      loaded: false,
+      dataRequest: 0,
+      countRequest: 0,
+      requestTimestamp: undefined,
       loadingCount: false,
       loadingExecute: false,
       resultId: null,
@@ -111,150 +127,62 @@ export default {
     }
   },
   methods: {
-    reExecute (id, timestamp) {
-      if (id === null) {
-        return
-      }
+    async reExecute (id, timestamp) {
+      if (id == null) return
+      const request = ++this.dataRequest
+      const databaseId = this.$route.params.database_id
+      this.id = id
+      this.requestTimestamp = timestamp ?? this.requestTimestamp
       this.loadingExecute = true
-      if (this.type === 'query') {
-        const queryService = useQueryService()
-        queryService.reExecuteData(this.$route.params.database_id, id, this.options.page - 1, this.options.itemsPerPage)
-          .then((result) => {
-            this.mapResults(result)
-            this.id = id
-            this.loadingExecute = false
-          })
-          .catch(({code, message}) => {
-            this.loadingExecute = false
-            const toast = useToastInstance()
-            /* prefer field `message` and use field `code` only as fallback */
-            if (typeof message !== 'string') {
-              toast.error(this.$t(code))
-              return
-            }
-            toast.error(message)
-          })
-          .finally(() => {
-            this.loadingExecute = false
-          })
-      } else if (this.type === 'table') {
-        const tableService = useTableService()
-        const activeSort = this.options.sortBy?.[0]
-        const sortColumn = activeSort?.key ?? null
-        const sortDirection = activeSort?.order ?? null
-
-        tableService.getData(
-          this.$route.params.database_id,
-          id,
-          (this.options.page - 1),
-          this.options.itemsPerPage,
-          timestamp ? timestamp : this.timestamp,
-          sortColumn,
-          sortDirection
-        )
-          .then((result) => {
-            this.mapResults(result)
-            this.id = id
-            this.loadingExecute = false
-          })
-          .catch(({code, message}) => {
-            this.loadingExecute = false
-            const toast = useToastInstance()
-            /* prefer field `message` and use field `code` only as fallback */
-            if (typeof message !== 'string') {
-              toast.error(this.$t(code))
-              return
-            }
-            toast.error(message)
-          })
-          .finally(() => {
-            this.loadingExecute = false
-          })
-      } else {
-        const viewService = useViewService()
-        viewService.reExecuteData(this.$route.params.database_id, id, this.options.page - 1, this.options.itemsPerPage)
-          .then((result) => {
-            this.mapResults(result)
-            this.id = id
-            this.loadingExecute = false
-          })
-          .catch(({code, message}) => {
-            this.loadingExecute = false
-            const toast = useToastInstance()
-            if (typeof code !== 'string') {
-              toast.error(message)
-              return
-            }
-            toast.error(this.$t(code))
-          })
-          .finally(() => {
-            this.loadingExecute = false
-          })
+      this.dataError = false
+      this.loaded = false
+      this.result = { headers: [], rows: [] }
+      try {
+        let result
+        if (this.type === 'table') {
+          const sort = this.options.sortBy?.[0]
+          result = await useTableService().getData(databaseId, id, this.options.page - 1,
+            this.options.itemsPerPage, this.requestTimestamp ?? this.timestamp, sort?.key ?? null, sort?.order ?? null)
+        } else {
+          const service = this.type === 'view' ? useViewService() : useQueryService()
+          result = await service.reExecuteData(databaseId, id, this.options.page - 1, this.options.itemsPerPage)
+        }
+        if (request !== this.dataRequest || databaseId !== this.$route.params.database_id) return
+        this.mapResults(result)
+        this.loaded = true
+      } catch (error) {
+        if (request === this.dataRequest && databaseId === this.$route.params.database_id) {
+          this.dataError = true
+          this.dataErrorKey = [401, 403, 'UNAUTHORIZED', 'FORBIDDEN'].includes(error?.status)
+            ? 'dataState.private' : [404, 'NOT_FOUND'].includes(error?.status) ? 'dataState.missing' : 'dataState.failed'
+        }
+      } finally {
+        if (request === this.dataRequest) this.loadingExecute = false
       }
     },
-    reExecuteCount (id, timestamp) {
-      if (id === null) {
-        return
-      }
+    async reExecuteCount (id, timestamp) {
+      if (id == null) return
+      const request = ++this.countRequest
+      const databaseId = this.$route.params.database_id
+      this.id = id
+      this.requestTimestamp = timestamp ?? this.requestTimestamp
       this.loadingCount = true
-      if (this.type === 'query') {
-        const queryService = useQueryService()
-        queryService.reExecuteCount(this.$route.params.database_id, id)
-          .then((count) => {
-            this.total = count
-            this.loadingCount = false
-          })
-          .catch(({code, message}) => {
-            this.loadingCount = false
-            const toast = useToastInstance()
-            if (typeof code !== 'string') {
-              toast.error(message)
-              return
-            }
-            toast.error(this.$t(code))
-          })
-          .finally(() => {
-            this.loadingCount = false
-          })
-      } else if (this.type === 'table') {
-        const tableService = useTableService()
-        tableService.getCount(this.$route.params.database_id, id, timestamp ? timestamp : this.timestamp)
-          .then((count) => {
-            this.total = count
-            this.loadingCount = false
-          })
-          .catch(({code, message}) => {
-            this.loadingCount = false
-            const toast = useToastInstance()
-            if (typeof code !== 'string') {
-              toast.error(message)
-              return
-            }
-            toast.error(this.$t(code))
-          })
-          .finally(() => {
-            this.loadingCount = false
-          })
-      } else {
-        const viewService = useViewService()
-        viewService.reExecuteCount(this.$route.params.database_id, id)
-          .then((count) => {
-            this.total = count
-            this.loadingCount = false
-          })
-          .catch(({code, message}) => {
-            this.loadingCount = false
-            const toast = useToastInstance()
-            if (typeof code !== 'string') {
-              toast.error(message)
-              return
-            }
-            toast.error(this.$t(code))
-          })
-          .finally(() => {
-            this.loadingCount = false
-          })
+      this.countError = false
+      try {
+        const count = this.type === 'table'
+          ? await useTableService().getCount(databaseId, id, this.requestTimestamp ?? this.timestamp)
+          : await (this.type === 'view' ? useViewService() : useQueryService()).reExecuteCount(databaseId, id)
+        if (request !== this.countRequest || databaseId !== this.$route.params.database_id) return
+        this.total = count
+      } catch (error) {
+        if (request === this.countRequest && databaseId === this.$route.params.database_id) this.countError = true
+      } finally {
+        if (request === this.countRequest) this.loadingCount = false
       }
+    },
+    retry () {
+      this.reExecute(this.id, this.requestTimestamp)
+      this.reExecuteCount(this.id, this.requestTimestamp)
     },
     mapResults (data) {
       this.result.headers = data.headers.map((header) => {
@@ -266,7 +194,6 @@ export default {
           isPrimaryKey: this.type === 'table' && this.primaryKeyColumnNames.includes(header)
         }
       })
-      console.debug('query result', data)
       this.result.rows = data.result
     },
     updateOptions ({ page, itemsPerPage, sortBy }) {
