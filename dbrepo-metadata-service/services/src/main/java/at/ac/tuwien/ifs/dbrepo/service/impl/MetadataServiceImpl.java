@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
+import org.unbescape.xml.XmlEscape;
 
 import java.time.Instant;
 import java.util.List;
@@ -79,12 +80,15 @@ public class MetadataServiceImpl implements MetadataService {
     @Override
     @Transactional(readOnly = true)
     public String listIdentifiers(OaiListIdentifiersParameters parameters) {
+        if (recordTemplate(parameters.getMetadataPrefix()) == null) return error(OaiErrorType.CANNOT_DISSEMINATE_FORMAT);
         final StringBuilder builder = new StringBuilder("<ListIdentifiers>");
         final List<Identifier> identifiers = identifierService.findAll().stream()
                 .filter(identifier -> IdentifierStatusType.PUBLISHED.equals(identifier.getStatus()))
                 .toList();
         log.debug("found {} identifiers", identifiers.size());
-        identifiers.forEach(identifier -> {
+        final List<Identifier> available = availableInFormat(identifiers, parameters.getMetadataPrefix());
+        if (available.isEmpty()) return parseResponse(parameters.getParametersString(), errorBody(OaiErrorType.NO_RECORDS_MATCH));
+        available.forEach(identifier -> {
             final Context context = new Context();
             context.setVariable("identifier", identifier);
             context.setVariable("pid", identifier.getDoi() != null ? ("doi:" + identifier.getDoi()) : ("oai:" + identifier.getId()));
@@ -108,7 +112,9 @@ public class MetadataServiceImpl implements MetadataService {
                 .filter(identifier -> IdentifierStatusType.PUBLISHED.equals(identifier.getStatus()))
                 .toList();
         log.debug("found {} identifiers", identifiers.size());
-        identifiers.forEach(identifier -> {
+        final List<Identifier> available = availableInFormat(identifiers, parameters.getMetadataPrefix());
+        if (available.isEmpty()) return parseResponse(parameters.getParametersString(), errorBody(OaiErrorType.NO_RECORDS_MATCH));
+        available.forEach(identifier -> {
             final Context context = new Context();
             context.setVariable("identifier", identifier);
             context.setVariable("pid", identifier.getDoi() != null ? ("doi:" + identifier.getDoi()) : ("oai:" + identifier.getId()));
@@ -124,28 +130,15 @@ public class MetadataServiceImpl implements MetadataService {
     @Override
     @Transactional(readOnly = true)
     public String getRecord(OaiRecordParameters parameters) throws IdentifierNotFoundException {
-        /* find identifier */
-        final Identifier identifier;
-        if (parameters.getIdentifier().startsWith("doi")) {
-            identifier = identifierService.findByDoi(parameters.getIdentifier().substring(4));
-        } else if (parameters.getIdentifier().startsWith("oai")) {
-            identifier = identifierService.find(UUID.fromString(parameters.getIdentifier().substring(4)));
-        } else {
-            final String prefix = parameters.getIdentifier().substring(0, 3);
-            log.error("Invalid prefix: {}", prefix);
-            throw new IdentifierNotFoundException("Invalid prefix: " + prefix);
-        }
-        if (!IdentifierStatusType.PUBLISHED.equals(identifier.getStatus())) {
-            throw new IdentifierNotFoundException("Identifier is not available through OAI-PMH");
-        }
+        final Identifier identifier = publishedIdentifier(parameters.getIdentifier());
         final String templateFileName = recordTemplate(parameters.getMetadataPrefix());
-        if (templateFileName == null) {
-            return error(OaiErrorType.CANNOT_DISSEMINATE_FORMAT);
+        if (templateFileName == null || !supportsFormat(identifier, parameters.getMetadataPrefix())) {
+            return parseResponse(parameters.getParametersString(), errorBody(OaiErrorType.CANNOT_DISSEMINATE_FORMAT));
         }
         final Context context = new Context();
         context.setVariable("identifier", identifier);
         context.setVariable("identifierType", identifier.getDoi() != null ? "DOI" : "OAI");
-        context.setVariable("setspec", "oai_datacite");
+        context.setVariable("setspec", "openaire_data");
         context.setVariable("pid", identifier.getDoi() != null ? ("doi:" + identifier.getDoi()) : ("oai:" + identifier.getId()));
         context.setVariable("datestamp", metadataMapper.instantToDatestamp(identifier.getCreated()));
         final String body = parseResponse(parameters.getParametersString(), templateEngine.process(templateFileName, context));
@@ -153,8 +146,35 @@ public class MetadataServiceImpl implements MetadataService {
         return body;
     }
 
+    private Identifier publishedIdentifier(String pid) throws IdentifierNotFoundException {
+        final Identifier identifier;
+        if (pid.startsWith("doi:")) {
+            identifier = identifierService.findByDoi(pid.substring(4));
+        } else if (pid.startsWith("oai:")) {
+            try {
+                identifier = identifierService.find(UUID.fromString(pid.substring(4)));
+            } catch (IllegalArgumentException e) {
+                throw new IdentifierNotFoundException("Invalid OAI identifier");
+            }
+        } else {
+            throw new IdentifierNotFoundException("Unsupported identifier prefix");
+        }
+        if (!IdentifierStatusType.PUBLISHED.equals(identifier.getStatus())) {
+            throw new IdentifierNotFoundException("Identifier is not available through OAI-PMH");
+        }
+        return identifier;
+    }
+
+    private List<Identifier> availableInFormat(List<Identifier> identifiers, String prefix) {
+        return "oai_datacite".equals(prefix) ? identifiers.stream().filter(Identifier::hasDataCiteRegistration).toList() : identifiers;
+    }
+
+    private boolean supportsFormat(Identifier identifier, String prefix) {
+        return !"oai_datacite".equals(prefix) || identifier.hasDataCiteRegistration();
+    }
+
     private String recordTemplate(String prefix) {
-        return switch (prefix == null ? "oai_datacite" : prefix) {
+        return switch (prefix == null ? "oai_dc" : prefix) {
             case "oai_datacite" -> "record_oai_datacite.xml";
             case "oai_dc" -> "record_oai_dc.xml";
             default -> null;
@@ -163,9 +183,21 @@ public class MetadataServiceImpl implements MetadataService {
 
     @Override
     public String listMetadataFormats() {
-        String builder = "<ListMetadataFormats>" + templateEngine.process("metadata-format.xml", new Context()) +
-                "</ListMetadataFormats>";
-        return parseResponse("verb=\"ListMetadataFormats\"", builder);
+        return metadataFormats("verb=\"ListMetadataFormats\"", true);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public String listMetadataFormats(String pid) throws IdentifierNotFoundException {
+        final Identifier identifier = publishedIdentifier(pid);
+        final String args = "verb=\"ListMetadataFormats\" identifier=\"" + XmlEscape.escapeXml10AttributeMinimal(pid) + "\"";
+        return metadataFormats(args, identifier.hasDataCiteRegistration());
+    }
+
+    private String metadataFormats(String args, boolean dataCite) {
+        final Context context = new Context();
+        context.setVariable("dataCite", dataCite);
+        return parseResponse(args, "<ListMetadataFormats>" + templateEngine.process("metadata-format.xml", context) + "</ListMetadataFormats>");
     }
 
     @Override
@@ -177,12 +209,14 @@ public class MetadataServiceImpl implements MetadataService {
 
     @Override
     public String error(OaiErrorType type) {
+        return parseResponse(errorBody(type));
+    }
+
+    private String errorBody(OaiErrorType type) {
         final Context context = new Context();
         context.setVariable("code", type.getErrorCode());
         context.setVariable("message", type.getErrorText());
-        final String body = templateEngine.process("error.xml", context);
-        log.trace("mapped error {}", type);
-        return parseResponse(body);
+        return templateEngine.process("error.xml", context);
     }
 
     private String requestUrl() {

@@ -2,6 +2,7 @@ package at.ac.tuwien.ifs.dbrepo.service;
 
 import at.ac.tuwien.ifs.dbrepo.cache.DatabaseCacheRepository;
 import at.ac.tuwien.ifs.dbrepo.core.api.datacite.DataCiteBody;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import at.ac.tuwien.ifs.dbrepo.core.api.datacite.doi.DataCiteDoi;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.BibliographyTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
@@ -240,10 +241,13 @@ public class DataCiteIdentifierServicePersistenceTest extends BaseTest {
 
     @Test
     public void publish_succeeds() throws MalformedException, DataServiceConnectionException, SearchServiceException,
-            DatabaseNotFoundException, SearchServiceConnectionException, ExternalServiceException {
+            DatabaseNotFoundException, SearchServiceConnectionException, ExternalServiceException, IdentifierNotFoundException {
         IDENTIFIER_7_DATA_CITE.getData().getAttributes().setDoi("10.12345/local-draft");
-        final ResponseEntity<DataCiteBody<DataCiteDoi>> mock = ResponseEntity.status(HttpStatus.OK)
-                .body(IDENTIFIER_7_DATA_CITE);
+        final ObjectMapper mapper = new ObjectMapper();
+        final var deposit = mapper.<com.fasterxml.jackson.databind.node.ObjectNode>valueToTree(IDENTIFIER_7_DATA_CITE);
+        deposit.withObject("/data/relationships/client/data").put("type", "clients").put("id", "example.test");
+        final DataCiteBody<DataCiteDoi> receipt = mapper.convertValue(deposit, new com.fasterxml.jackson.core.type.TypeReference<>() {});
+        final ResponseEntity<DataCiteBody<DataCiteDoi>> mock = ResponseEntity.status(HttpStatus.OK).body(receipt);
 
         /* mock */
         when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(dataCiteBodyParameterizedTypeReference)))
@@ -255,6 +259,8 @@ public class DataCiteIdentifierServicePersistenceTest extends BaseTest {
         /* test */
         assertEquals(7, dataCiteIdentifierService.findAll().size());
         final Identifier response = dataCiteIdentifierService.publish(IDENTIFIER_7);
+        assertEquals("EXAMPLE.TEST", response.getDataCiteRepository());
+        assertEquals("EXAMPLE.TEST", dataCiteIdentifierService.findByDoi(response.getDoi()).getDataCiteRepository());
         assertEquals(IDENTIFIER_7.getId(), response.getId());
         assertEquals(IdentifierStatusType.PUBLISHED, response.getStatus());
         assertEquals("10.12345/local-draft", response.getDoi());
