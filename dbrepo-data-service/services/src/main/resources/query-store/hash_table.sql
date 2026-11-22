@@ -1,4 +1,4 @@
-CREATE PROCEDURE hash_table(IN table_name VARCHAR(255), OUT result_hash VARCHAR(255), OUT result_count BIGINT) BEGIN
+CREATE PROCEDURE hash_table(IN table_name VARCHAR(255), OUT result_hash VARCHAR(255), OUT result_count BIGINT) SQL SECURITY INVOKER BEGIN
     DECLARE field_expressions LONGTEXT;
     DECLARE schema_encoding LONGTEXT;
     DECLARE row_digest CHAR(64);

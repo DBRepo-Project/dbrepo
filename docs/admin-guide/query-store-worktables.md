@@ -32,6 +32,8 @@ results that the old algorithm treated as equal.
 
 ## Apply the migration
 
+For a replication deployment, call `POST /api/v1/database/{databaseId}/subset/maintenance/upgrade` for each research database. It installs the same hash checks while keeping the replication routines and outbox. The standalone generator below refuses replication databases.
+
 1. Stop incoming Query Store calls, including subset creation and hash/count
    requests. Keep ordinary SQL-user routine execution disabled as documented in
    [the access migration](restrict-query-store-routines.md).
@@ -47,9 +49,11 @@ results that the old algorithm treated as equal.
 4. Review the file and apply it using the privileged service connection and its
    protected client configuration. The helper writes SQL only; it does not connect
    to the database. Run the existing supported MariaDB SQL mode and verify the
-   intended routine definers. The migration reads and preserves existing definers,
-   SQL security type, SQL modes and connection character settings. New internal
-   routines use the existing root-definer policy.
+   intended routine definers. The migration keeps those definers, the three calling
+   procedures' SQL security settings, SQL modes and connection character settings.
+   It installs the internal `hash_table` helper with `SQL SECURITY INVOKER` on
+   existing and new databases. Hashing runs with the privileges of the calling
+   procedure. Existing EXECUTE grants on the calling procedures still apply.
 5. Confirm the marker-table, concurrent-call, failed-call and ordinary-user denial
    checks before resuming traffic. Repeat for every existing research database.
 
