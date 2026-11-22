@@ -163,7 +163,7 @@ services:
       CACHE_DB_HOST: "${CACHE_DB_HOST:-cache-db}"
       CACHE_DB_USERNAME: "${CACHE_DB_USERNAME:-default}"
       CACHE_DB_PASSWORD: "${CACHE_DB_PASSWORD:-valkey}"
-      CROSSREF_ENDPOINT: "${CROSSREF_ENDPOINT:-http://data.crossref.org}"
+      CROSSREF_ENDPOINT: "${CROSSREF_ENDPOINT:-https://data.crossref.org}"
       DASHBOARD_SERVICE_ENDPOINT: "${DASHBOARD_SERVICE_ENDPOINT:-http://dashboard-service:8080}"
       DATA_SERVICE_ENDPOINT: ${DATA_SERVICE_ENDPOINT:-http://data-service:8080}
       DELETED_RECORD: "${DELETED_RECORD:-persistent}"

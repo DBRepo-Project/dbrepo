@@ -68,6 +68,7 @@ jobs:
           python3 .scripts/test-ui-secrets.py
           python3 .scripts/test-compose-credentials.py
           python3 .scripts/test-consumer-error-config.py
+          python3 .scripts/test-service-endpoints.py
 
   java-services:
     runs-on: ubuntu-latest
