@@ -186,6 +186,10 @@ jobs:
           sleep 30
           ENDPOINT=http://localhost:3000 node --test ./dbrepo-ui/tests/health.test.mjs
           ENDPOINT=http://localhost:3000 bash ./dbrepo-ui/tests/test_heap.sh
+          if ENDPOINT=http://localhost:3000 CALLS=1 CONCURRENCY=1 bash ./dbrepo-ui/tests/test_heap.sh /__missing_smoke_route; then
+            echo "The smoke test accepted a missing route"
+            exit 1
+          fi
 
   docker-integration:
     runs-on: ubuntu-latest
