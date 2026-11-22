@@ -168,3 +168,17 @@ python .scripts/client-live-compare.py baseline.json candidate.json \
 ```
 
 The strict comparison exits 1 for a failed candidate case and 2 for incomplete evidence. The JSON lists missing, skipped or uncovered checks, including earlier passing cases that the candidate no longer verifies. Full success requires an exact match to the supplied candidate commit and complete selected API and SDK coverage. A normal comparison still treats historical reports as diagnostic evidence. Keep raw reports and image inventories private.
+
+### Collecting running image IDs
+
+Choose the workloads exercised by the release suite. Run the collector in the Kubernetes or Docker context that serves the given endpoint. Supply the full source commit from the deployment record. A runtime image ID alone cannot establish which source commit was built.
+
+```sh
+python3 .scripts/client-live-deployment.py \
+  --kubernetes "$NAMESPACE" --endpoint "$ENDPOINT" --commit "$DEPLOYED_SHA" \
+  --output images.json metadata-service data-service search-service consumer-service dashboard-service ui
+```
+
+For Compose, replace `--kubernetes "$NAMESPACE"` with `--compose "$PROJECT"`. Compose service names default to `dbrepo-<component>`. Add `replication-service` for an installation with replication. Use `component=workload` for a different service name or `component=deployment/container` to select the Kubernetes application container alongside a sidecar.
+
+The collector checks readiness and requires all replicas of each component to report one digest. Kubernetes reports the kubelet's running image ID. Compose reports the running container's image configuration digest. Keep each capture with its own target's release record.
