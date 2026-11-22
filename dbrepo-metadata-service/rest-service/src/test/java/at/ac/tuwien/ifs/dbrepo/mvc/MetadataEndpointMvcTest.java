@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -106,15 +105,16 @@ public class MetadataEndpointMvcTest extends BaseTest {
                 .andExpect(status().isOk());
     }
 
-    @ParameterizedTest
-    @CsvSource({
-            "oai_dc,dublin:dc/dc:title",
-            "oai_datacite,datacite:oai_datacite/datacite:payload/kernel:resource/kernel:titles/kernel:title"
-    })
-    public void listRecords_returnsPublishedMetadata(String prefix, String titlePath) throws Exception {
+    @Test
+    public void listRecords_excludesDrafts() throws Exception {
         when(identifierRepository.findAll())
                 .thenReturn(List.of(publishedIdentifier, IDENTIFIER_2, IDENTIFIER_3, IDENTIFIER_4, IDENTIFIER_5));
 
+        assertListRecordMetadata("oai_dc", "dublin:dc/dc:title");
+        assertListRecordMetadata("oai_datacite", "datacite:oai_datacite/datacite:payload/kernel:resource/kernel:titles/kernel:title");
+    }
+
+    private void assertListRecordMetadata(String prefix, String titlePath) throws Exception {
         final Map<String, String> namespaces = Map.of(
                 "oai", "http://www.openarchives.org/OAI/2.0/",
                 "dublin", "http://www.openarchives.org/OAI/2.0/oai_dc/",
