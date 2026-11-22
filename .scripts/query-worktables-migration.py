@@ -6,7 +6,7 @@ from pathlib import Path
 import re
 
 ROOT = Path(__file__).resolve().parents[1]
-ROUTINES = ("store_query", "_store_query", "hash_query")
+ROUTINES = ("hash_table", "store_query", "_store_query", "hash_query")
 RESOURCES = ROOT / "dbrepo-data-service/services/src/main/resources/query-store"
 
 
@@ -43,14 +43,16 @@ def migration(databases):
             body = re.sub(r"^CREATE(?: DEFINER\s*=\s*'root')? PROCEDURE\s+", "", sql)
             assert body != sql
             signature, implementation = body.split(" BEGIN", 1)
+            signature, _, declared_security = signature.partition(" SQL SECURITY ")
             fallback = "'root@%'" if "DEFINER" in sql[:sql.index("PROCEDURE")] else "CURRENT_USER()"
             where = f"FROM information_schema.ROUTINES WHERE ROUTINE_SCHEMA=DATABASE() AND ROUTINE_NAME='{routine}' AND ROUTINE_TYPE='PROCEDURE'"
+            security = f"'{declared_security}'" if declared_security else f"COALESCE((SELECT SECURITY_TYPE {where}), 'DEFINER')"
             result.extend([
                 f"SET @_dbrepo_definer = COALESCE((SELECT DEFINER {where}), {fallback})$dbrepo$",
                 f"SET SESSION sql_mode = COALESCE((SELECT SQL_MODE {where}), @_dbrepo_mode)$dbrepo$",
                 f"SET SESSION character_set_client = COALESCE((SELECT CHARACTER_SET_CLIENT {where}), @_dbrepo_client)$dbrepo$",
                 f"SET SESSION collation_connection = COALESCE((SELECT COLLATION_CONNECTION {where}), @_dbrepo_collation)$dbrepo$",
-                f"SET @_dbrepo_security = COALESCE((SELECT SECURITY_TYPE {where}), 'DEFINER')$dbrepo$",
+                f"SET @_dbrepo_security = {security}$dbrepo$",
                 "SET @_dbrepo_host = SUBSTRING_INDEX(@_dbrepo_definer, '@', -1)$dbrepo$",
                 "SET @_dbrepo_user = LEFT(@_dbrepo_definer, CHAR_LENGTH(@_dbrepo_definer)-CHAR_LENGTH(@_dbrepo_host)-1)$dbrepo$",
                 "SET @_dbrepo_ddl = CONCAT('CREATE OR REPLACE DEFINER=`', REPLACE(@_dbrepo_user, '`', '``'), '`@`', REPLACE(@_dbrepo_host, '`', '``'), '` PROCEDURE ', "
