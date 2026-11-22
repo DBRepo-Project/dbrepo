@@ -82,7 +82,7 @@ dbrepo:
     analyseService: "${ANALYSE_SERVICE_ENDPOINT:http://analyse-service:8080}"
     authService: "${AUTH_SERVICE_ENDPOINT:http://auth-service:8080}"
     brokerService: "${BROKER_SERVICE_ENDPOINT:http://broker-service:15672}"
-    crossRefService: "${CROSSREF_ENDPOINT:http://data.crossref.org}"
+    crossRefService: "${CROSSREF_ENDPOINT:https://data.crossref.org}"
     dashboardService: "${DASHBOARD_SERVICE_ENDPOINT:http://dashboard-service:8080}"
     doiService: "${DOI_ENDPOINT:https://doi.org}"
     dataService: "${DATA_SERVICE_ENDPOINT:http://data-service:8080}"

@@ -603,7 +603,7 @@ metadataservice:
   endpoint: http://metadata-service
   crossref:
     ## @param metadataservice.crossref.endpoint The CrossRef endpoint.
-    endpoint: http://data.crossref.org
+    endpoint: https://data.crossref.org
   ror:
     ## @param metadataservice.ror.endpoint The ROR endpoint.
     endpoint: https://api.ror.org
