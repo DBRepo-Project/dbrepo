@@ -268,6 +268,32 @@ class AtomicTupleOutboxIntegrationTest {
     }
 
     @Test
+    void directReplicaWriteDoesNotRetryAnUnverifiedStorageEngine() throws Exception {
+        database.setCreationLocation("https://remote.example");
+        try (Connection root = connection(); var sql = root.createStatement()) {
+            sql.execute("ALTER TABLE samples DROP SYSTEM VERSIONING");
+            sql.execute("ALTER TABLE samples ENGINE=MyISAM");
+            sql.execute("CREATE SEQUENCE legacy_write_attempt START WITH 1");
+            sql.execute("""
+                    CREATE TRIGGER legacy_timeout BEFORE INSERT ON samples FOR EACH ROW
+                    BEGIN
+                        IF NEXT VALUE FOR legacy_write_attempt>0 THEN
+                            SIGNAL SQLSTATE 'HY000' SET MYSQL_ERRNO=1205, MESSAGE_TEXT='simulated lock timeout';
+                        END IF;
+                    END
+                    """);
+        }
+        var failure = assertThrows(SQLException.class,
+                () -> service.createTupleWithTimestamps(database, table, tuple("a", 1)));
+        assertEquals(1205, failure.getErrorCode());
+        try (Connection root = connection(); var rows = root.createStatement().executeQuery("SELECT NEXT VALUE FOR legacy_write_attempt")) {
+            assertTrue(rows.next());
+            assertEquals(2, rows.getInt(1));
+        }
+        verifyNoInteractions(dispatcher);
+    }
+
+    @Test
     void replicationIdentityCannotBeChanged() throws Exception {
         service.createTuple(database, table, tuple("a", 1));
         assertThrows(QueryMalformedException.class, () -> service.updateTuple(database, table,

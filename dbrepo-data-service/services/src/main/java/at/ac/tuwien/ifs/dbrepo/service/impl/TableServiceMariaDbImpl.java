@@ -688,7 +688,10 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
                         final boolean rolledBack = rollback(connection, failure);
                         blobs.rethrowTransferFailure(failure);
                         if (isLockConflict(failure)) {
-                            if (rolledBack && attempt < MAX_LOCK_ATTEMPTS) continue;
+                            // prepare() verifies InnoDB for primary writes. Legacy inbound tables have no such guarantee.
+                            if (rolledBack && attempt < MAX_LOCK_ATTEMPTS && replicationService.isEnabled(database, table)) {
+                                continue;
+                            }
                             throw failure;
                         }
                         throw new QueryMalformedException("Failed to " + operation + " tuple with timestamps: "
