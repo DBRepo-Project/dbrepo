@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -22,6 +23,15 @@ public interface IdentifierRepository extends JpaRepository<Identifier, UUID> {
     Optional<Identity> findIdentityById(@Param("id") UUID id);
 
     List<Identifier> findAll();
+
+    @Query("""
+            select i from Identifier i
+            where i.status = at.ac.tuwien.ifs.dbrepo.core.entity.identifier.IdentifierStatusType.PUBLISHED
+              and (:from is null or greatest(i.created, coalesce(i.lastModified, i.created)) >= :from)
+              and (:until is null or greatest(i.created, coalesce(i.lastModified, i.created)) < :until)
+            order by greatest(i.created, coalesce(i.lastModified, i.created)), i.id
+            """)
+    List<Identifier> findForHarvest(@Param("from") Instant from, @Param("until") Instant untilExclusive);
 
     /**
      * Finds identifiers by given database id.
