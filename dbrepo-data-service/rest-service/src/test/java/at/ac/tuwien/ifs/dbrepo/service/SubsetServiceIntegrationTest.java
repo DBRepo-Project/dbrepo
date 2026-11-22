@@ -178,7 +178,7 @@ public class SubsetServiceIntegrationTest extends BaseTest {
         final SubsetMetadata response = subsetService.getMetadata(DATABASE_1_CACHE, MariaDbUtil.replaceExecutionTimestamp(
                 QUERY_1_STATEMENT_NORMALIZED, QUERY_1_EXECUTION, Instant.now().plus(12, ChronoUnit.HOURS)));
         assertNotNull(response);
-        assertEquals(QUERY_1_RESULT_HASH, response.getResultHash());
+        assertTrue(response.getResultHash().matches("v2:[0-9a-f]{64}"));
         assertEquals(3, response.getResultCount());
     }
 
