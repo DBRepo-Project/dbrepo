@@ -353,6 +353,48 @@ def test_uncertain_query_creation_still_deletes_known_uuid(indexed, credentials,
     assert backend.count(index=SearchServiceClient.QUERY_INDEX)['count'] == 0
 
 
+@pytest.mark.parametrize('role,match_seconds,expected', [
+    ('anonymous', 8, 200), ('owner', 8, 200), ('owner', SearchServiceClient.REQUEST_BUDGET, 503),
+])
+def test_slow_match_obeys_the_callers_scope_and_remaining_budget(indexed, credentials, requests_mock, monkeypatch,
+                                                                 role, match_seconds, expected):
+    current = current_payload(indexed, role)
+    current['is_public'] = current['is_schema_public'] = role == 'anonymous'
+    current['name'] = 'coffee_productivity_prediction'
+    listed, batched = authority(requests_mock, [current])
+    backend = SearchServiceClient()._instance()
+    monkeypatch.setattr(SearchServiceClient, '_instance', lambda self: backend)
+    clock = [0]
+    monkeypatch.setattr('dbrepo.core.client.search.time', SimpleNamespace(monotonic=lambda: clock[0]))
+    # A match in the physical index alone must never make this other private database visible.
+    hidden = dict(current, id=str(uuid4()), is_public=False, is_schema_public=False)
+    backend.index(index='database', id=hidden['id'], body=hidden, refresh=True)
+    index, search = backend.index, backend.search
+
+    def create_query(**kwargs):
+        clock[0] += 3
+        return index(**kwargs)
+
+    def slow_match(**kwargs):
+        remaining = SearchServiceClient.REQUEST_BUDGET - clock[0]
+        assert 8 <= kwargs['request_timeout'] <= remaining
+        assert 8000 <= int(kwargs['timeout'].removesuffix('ms')) <= remaining * 1000
+        clock[0] += match_seconds
+        return search(**kwargs)
+
+    monkeypatch.setattr(backend, 'index', create_query)
+    monkeypatch.setattr(backend, 'search', slow_match)
+    with app.test_client() as client:
+        headers = credentials(role)
+        response = client.get('/api/v1/search?q=coffee_productivity_prediction', headers=headers)
+    assert listed.last_request.headers.get('Authorization') == headers.get('Authorization')
+    assert batched.last_request.headers.get('Authorization') == headers.get('Authorization')
+    assert response.status_code == expected
+    if expected == 200:
+        assert [record['id'] for record in response.get_json()] == [indexed.id]
+    assert backend.count(index=SearchServiceClient.QUERY_INDEX)['count'] == 0
+
+
 def test_deadline_after_native_write_fails_and_cleans_up(indexed, credentials, requests_mock, monkeypatch):
     authority(requests_mock, [current_payload(indexed, 'anonymous')])
     backend = SearchServiceClient()._instance()
