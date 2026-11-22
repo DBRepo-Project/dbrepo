@@ -390,6 +390,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         } catch (SQLException e) {
             try { connection.rollback(); } catch (SQLException rollback) { e.addSuppressed(rollback); }
             blobs.rethrowTransferFailure(e);
+            if (isLockConflict(e)) throw e;
             log.error("Failed to delete tuple: {}", e.getMessage());
             throw new QueryMalformedException("Failed to delete tuple: " + e.getMessage(), e);
         } finally {
@@ -427,6 +428,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         } catch (SQLException e) {
             try { connection.rollback(); } catch (SQLException rollback) { e.addSuppressed(rollback); }
             blobs.rethrowTransferFailure(e);
+            if (isLockConflict(e)) throw e;
             log.error("Failed to create tuple: {}", e.getMessage());
             throw new QueryMalformedException("Failed to create tuple: " + e.getMessage(), e);
         } finally {
@@ -472,6 +474,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         } catch (SQLException e) {
             try { connection.rollback(); } catch (SQLException rollback) { e.addSuppressed(rollback); }
             blobs.rethrowTransferFailure(e);
+            if (isLockConflict(e)) throw e;
             log.error("Failed to update tuple: {}", e.getMessage());
             throw new QueryMalformedException("Failed to update tuple: " + e.getMessage(), e);
         } finally {
