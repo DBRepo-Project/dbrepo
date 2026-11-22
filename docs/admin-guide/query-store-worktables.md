@@ -11,10 +11,26 @@ The work tables are ordinary MariaDB tables so `hash_table` can still discover
 columns through `information_schema`. A lost connection or server crash can leave
 an orphan. Before removing a suspected orphan, verify its ownership and that no
 Query Store call is using it; do not delete tables merely because their names have
-a particular prefix. This change preserves the existing result-hash format. The
-separate collision/truncation finding #137 is not resolved by work-table isolation.
+a particular prefix.
 
-For an existing installation:
+## Result hashes and existing citations
+
+The Query Store prefixes new result hashes with `v2:`. The hash covers the names,
+types and positions of the result columns, each value (including NULL), and every
+occurrence of a row. It sorts the individual row hashes before combining them, so
+a different row order produces the same digest. An empty result has a digest of
+its own. The database stores one temporary 64-character digest per row while
+calculating the hash.
+
+The migration leaves existing subset IDs and their recorded hashes intact. Those
+citations continue to resolve. The first time you store the same query after
+upgrading, it receives a new ID even if the result is unchanged. Subsequent
+submissions reuse that new ID when the query and result match. Recalculating a
+result through the API returns a v2 hash. To check a legacy citation, compare its
+historical rows with a retained copy. An unprefixed hash alone cannot distinguish
+results that the old algorithm treated as equal.
+
+## Apply the migration
 
 1. Stop incoming Query Store calls, including subset creation and hash/count
    requests. Keep ordinary SQL-user routine execution disabled as documented in
@@ -55,8 +71,7 @@ cleanup before starting a short metadata transaction. They lock the singleton ro
 in the internal `qs_metadata_lock` InnoDB table, insert or reuse the query identity,
 and commit. A SQL error rolls that transaction back. Both paths restore the
 connection's previous lock-wait timeout; contention is limited to ten seconds.
-The user query is not replayed. Query-result hashes and existing subset IDs remain
-unchanged.
+The transaction uses the result that the caller already materialized.
 
 The guard belongs to each research database and uses its existing SQL permission
 boundary. An account without access to that database cannot acquire its row lock.

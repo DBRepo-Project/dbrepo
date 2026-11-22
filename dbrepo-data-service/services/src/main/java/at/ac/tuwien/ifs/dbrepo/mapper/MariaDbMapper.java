@@ -183,9 +183,7 @@ public interface MariaDbMapper {
     }
 
     default String queryStoreCreateHashTableProcedureRawQuery() {
-        final String statement = "CREATE PROCEDURE hash_table(IN name VARCHAR(255), OUT hash VARCHAR(255), OUT count BIGINT) BEGIN DECLARE _sql TEXT; SELECT CONCAT('SELECT SHA2(GROUP_CONCAT(CONCAT_WS(\\'\\',', GROUP_CONCAT(CONCAT('`', column_name, '`') ORDER BY column_name), ') SEPARATOR \\',\\'), 256) AS hash, COUNT(*) AS count FROM `', name, '` INTO @hash, @count;') FROM `information_schema`.`columns` WHERE `table_schema` = DATABASE() AND `table_name` = name INTO _sql; PREPARE stmt FROM _sql; EXECUTE stmt; DEALLOCATE PREPARE stmt; SET hash = @hash; SET count = @count; END;";
-        log.trace("mapped create query store hash_table procedure statement: {}", statement);
-        return statement;
+        return queryStoreResource("hash_table");
     }
 
     default String queryStoreCreateStoreQueryProcedureRawQuery() {

@@ -1,4 +1,4 @@
-CREATE DEFINER = 'root' PROCEDURE hash_query(IN normalized_query TEXT, OUT queryHash VARCHAR(64)) BEGIN
+CREATE DEFINER = 'root' PROCEDURE hash_query(IN normalized_query TEXT, OUT queryHash VARCHAR(255)) BEGIN
 DECLARE _work VARCHAR(64) DEFAULT CONCAT('_dbrepo_hash_', REPLACE(UUID(), '-', ''));
 DECLARE _created BOOLEAN DEFAULT FALSE;
 DECLARE _query TEXT;

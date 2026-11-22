@@ -6,7 +6,7 @@ from pathlib import Path
 import re
 
 ROOT = Path(__file__).resolve().parents[1]
-ROUTINES = ("store_query", "_store_query", "hash_query")
+ROUTINES = ("hash_table", "store_query", "_store_query", "hash_query")
 RESOURCES = ROOT / "dbrepo-data-service/services/src/main/resources/query-store"
 
 
