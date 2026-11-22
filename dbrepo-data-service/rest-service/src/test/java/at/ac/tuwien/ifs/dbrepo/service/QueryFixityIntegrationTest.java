@@ -107,6 +107,72 @@ class QueryFixityIntegrationTest {
     }
 
     @Test
+    void hashingPreservesACallersTemporaryTable() throws Exception {
+        try (Connection connection = connect(); var statement = connection.createStatement()) {
+            statement.execute("CREATE TEMPORARY TABLE _dbrepo_hash_rows (marker INT)");
+            statement.execute("INSERT INTO _dbrepo_hash_rows VALUES (137)");
+            statement.execute("SET SESSION group_concat_max_len = 512");
+            final SQLException conflict = assertThrows(SQLException.class, () -> hash(connection, "SELECT 1 a"));
+            assertEquals(1050, conflict.getErrorCode());
+            try (var rows = statement.executeQuery("SELECT marker, @@session.group_concat_max_len FROM _dbrepo_hash_rows")) {
+                assertTrue(rows.next());
+                assertEquals(137, rows.getInt(1));
+                assertEquals(512, rows.getInt(2));
+            }
+            statement.execute("DROP TEMPORARY TABLE _dbrepo_hash_rows");
+            assertTrue(hash(connection, "SELECT 1 a").startsWith("v2:"));
+        }
+    }
+
+    @Test
+    void upgradedStoreRejectsRowsOverThePacketLimitAndCleansUp() throws Exception {
+        try (Connection connection = connect(); var statement = connection.createStatement()) {
+            statement.execute("""
+                    CREATE OR REPLACE PROCEDURE hash_table(IN n VARCHAR(255), OUT h VARCHAR(255), OUT c BIGINT)
+                    SQL SECURITY INVOKER SELECT 'old', 1 INTO h, c
+                    """);
+            service.upgradeQueryStore(database);
+            statement.execute("CREATE TABLE wide (payload BLOB)");
+            statement.execute("INSERT INTO wide VALUES (REPEAT('x', 20000))");
+
+            final int oldLimit;
+            try (var row = statement.executeQuery("SELECT @@global.max_allowed_packet")) {
+                assertTrue(row.next());
+                oldLimit = row.getInt(1);
+            }
+            // The packet setting is inherited when a client connects.
+            Connection limited;
+            try {
+                statement.execute("SET GLOBAL max_allowed_packet = 32768");
+                limited = connect();
+            } finally {
+                statement.execute("SET GLOBAL max_allowed_packet = " + oldLimit);
+            }
+            try (limited; var run = limited.createStatement()) {
+                run.execute("SET SESSION group_concat_max_len = 512");
+                assertThrows(SQLException.class, () -> run.execute(
+                        "CALL store_query('SELECT payload FROM wide','SELECT payload FROM wide',NOW(6),@id)"));
+                try (var result = run.executeQuery("""
+                        SELECT @@session.group_concat_max_len, (SELECT COUNT(*) FROM qs_queries),
+                               (SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE()
+                                    AND table_name LIKE '_dbrepo_query_%')
+                        """)) {
+                    assertTrue(result.next());
+                    assertEquals(512, result.getInt(1));
+                    assertEquals(0, result.getInt(2));
+                    assertEquals(0, result.getInt(3));
+                }
+                run.execute("UPDATE wide SET payload = 'small'");
+                run.execute("CALL store_query('SELECT payload FROM wide','SELECT payload FROM wide',NOW(6),@id)");
+                try (var result = run.executeQuery("SELECT result_hash FROM qs_queries WHERE id = @id")) {
+                    assertTrue(result.next());
+                    assertTrue(result.getString(1).startsWith("v2:"));
+                }
+            }
+        }
+    }
+
+    @Test
     void changedColumnBoundariesProduceDifferentSubsetIds() throws Exception {
         try (Connection connection = connect(); var statement = connection.createStatement()) {
             statement.execute("INSERT INTO data VALUES ('ab','c')");

@@ -4,7 +4,9 @@ New query stores use microsecond UTC selection timestamps and `v2:` result hashe
 
 ## Hash format
 
-The v2 digest includes the ordered column names and MariaDB column types. Each cell is encoded as `N` for NULL or `V` followed by the hexadecimal binary representation of its value. JSON arrays delimit the ordered cells unambiguously. Each encoded row is SHA-256 hashed. Sorted row digests, including duplicates, are folded into a SHA-256 chain seeded with the schema encoding and the `dbrepo:rows:v2:` domain separator. Empty results have a schema-dependent digest. Row order does not affect result fixity; the saved SQL retains requested ordering for presentation.
+The v2 digest includes the ordered column names and MariaDB column types. Each cell is encoded as `N` for NULL or `V` followed by the hexadecimal binary representation of its value. JSON arrays delimit the ordered cells unambiguously. Each encoded row is SHA-256 hashed. Sorted row digests, including duplicates, are folded into a SHA-256 chain seeded with the schema encoding and the `dbrepo:rows:v2:` domain separator. Empty results have a schema-dependent digest. Row order does not affect result fixity. The saved SQL retains requested ordering for presentation. If MariaDB cannot encode the schema or a row within its size limits, the request fails before the Query Store assigns an ID.
+
+A session that already owns a temporary table named `_dbrepo_hash_rows` gets a SQL error and retains its table.
 
 The algorithm never concatenates the full dataset into a bounded `GROUP_CONCAT`. It uses a session-local row-digest table and one cursor. Schema construction temporarily raises the session concatenation limit, then restores it. Query evaluation uses a uniquely named `_dbrepo_query_<uuid>` work table, removed on completion or SQL failure. Concurrent calls do not share it. Canonical query-ID allocation uses a database/query/result-scoped MariaDB lock, released after the insert commits. All routines use invoker privileges, never a root definer to execute caller-supplied SQL.
 
@@ -17,6 +19,8 @@ Back up the query store and pause query creation while upgrading. For each datab
 ```
 POST /api/v1/database/{databaseId}/subset/maintenance/upgrade
 ```
+
+Run this upgrade even on databases that already store v2 hashes. It installs the size checks and temporary-table cleanup without changing the v2 digest format.
 
 This opt-in operation updates timestamp precision, the identity index and routines from the same definitions used for new databases. It is repeatable and retains system-versioned query-store history. It is not a cross-service transaction; after an interrupted upgrade, repeat the operation before resuming query creation. No global installer action runs it implicitly.
 

@@ -4,12 +4,92 @@ from concurrent.futures import ThreadPoolExecutor
 import hashlib
 import importlib.util
 import os
+import re
 from pathlib import Path
 import secrets
 import subprocess
 import time
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def check_result_hashes(sql):
+    query = "SELECT a, b FROM samples"
+
+    def digest(statement, expected_count, limit=1024, database="fixture"):
+        literal = statement.replace("'", "''")
+        result = sql(f"USE {database}; SET SESSION group_concat_max_len={limit}; "
+                     f"CALL hash_query('{literal}', @digest); SELECT @digest,@count,@@session.group_concat_max_len")
+        value, count, restored_limit = result.stdout.strip().split("\t")
+        assert re.fullmatch(r"v2:[0-9a-f]{64}", value), value
+        assert (int(count), int(restored_limit)) == (expected_count, limit)
+        return value
+
+    def store():
+        return sql(f"USE fixture; CALL store_query('{query}','{query}',NOW(),@id); SELECT @id").stdout.strip()
+
+    sql("USE fixture; CREATE TABLE samples(a VARCHAR(12), b VARCHAR(12)); INSERT INTO samples VALUES('ab','c')")
+    first_hash = digest(query, 1)
+    first_id = store()
+    # The pre-upgrade citation keeps its stored hash and ID, even for the same query and rows.
+    legacy = sql("SELECT result_hash FROM fixture.qs_queries WHERE id='00000000-0000-0000-0000-000000000137'")
+    assert legacy.stdout.strip() == hashlib.sha256(b"abc").hexdigest()
+    assert first_id != "00000000-0000-0000-0000-000000000137"
+    assert sql(f"SELECT result_hash FROM fixture.qs_queries WHERE id='{first_id}'").stdout.strip() == first_hash
+    assert store() == first_id
+    sql("USE fixture; UPDATE samples SET a='a',b='bc'")
+    assert digest(query, 1) != first_hash and store() != first_id
+
+    sql("USE fixture; UPDATE samples SET a=NULL,b=''")
+    null_first = digest(query, 1)
+    sql("USE fixture; UPDATE samples SET a='',b=NULL")
+    assert digest(query, 1) != null_first
+    sql("USE fixture; UPDATE samples SET a='',b=''")
+    assert digest(query, 1) != null_first
+    assert digest("SELECT 1 AS a", 1) != digest("SELECT '1' AS a", 1)
+    assert digest("SELECT b AS a,a AS b FROM samples WHERE FALSE", 0) != digest("SELECT a FROM samples WHERE FALSE", 0)
+    assert digest("SELECT UNHEX('00FF') AS b", 1) != digest("SELECT UNHEX('0000') AS b", 1)
+
+    sql("USE fixture; DELETE FROM samples; INSERT INTO samples VALUES('a',''),('z',NULL)")
+    ascending = digest(query + " ORDER BY a ASC", 2)
+    assert digest(query + " ORDER BY a DESC", 2) == ascending
+    sql("USE fixture; INSERT INTO samples VALUES('a','')")
+    assert digest(query, 3) != ascending
+    # These two hashes also identify the same rows on integration/replication.
+    sql("USE fixture; CREATE TABLE long_sample(payload VARBINARY(8192)); "
+        "INSERT INTO long_sample VALUES(CONCAT(REPEAT('x',4096),'a'))")
+    long_query = "SELECT payload FROM long_sample"
+    first_long = "v2:075eec59e7a682b7830c96f43fd37354c5a0004eea8c5ddf77fed130750cace1"
+    assert digest(long_query, 1) == first_long
+    assert digest(long_query, 1, 16) == digest(long_query, 1, 100000) == first_long
+    sql("USE fixture; UPDATE long_sample SET payload=CONCAT(REPEAT('x',4096),'b')")
+    assert digest(long_query, 1) == "v2:5104b51a8064488e97a7b6d14a652b1bbc03be7ace51efa0edf414cb0debf90d"
+    assert digest("SELECT 42 AS fixture", 1) == digest("SELECT 42 AS fixture", 1, database="fresh_fixture")
+
+    # An oversized encoded row must fail instead of storing a digest of a partial row.
+    packet_limit = int(sql("SELECT @@global.max_allowed_packet").stdout)
+    sql("SET GLOBAL max_allowed_packet=32768")
+    try:
+        sql("USE fixture; CREATE TABLE wide(v BLOB); INSERT INTO wide VALUES(REPEAT('x',20000))")
+        failed = sql("USE fixture; CALL store_query('SELECT v FROM wide','SELECT v FROM wide',NOW(),@id)", expect=False)
+        assert failed.returncode != 0, "Oversized row was given a result hash"
+        assert sql("SELECT COUNT(*) FROM fixture.qs_queries WHERE query='SELECT v FROM wide'").stdout.strip() == "0"
+    finally:
+        sql(f"SET GLOBAL max_allowed_packet={packet_limit}")
+
+    preserved = sql("""USE fixture;
+        CREATE TEMPORARY TABLE _dbrepo_hash_rows(marker INT);
+        INSERT INTO _dbrepo_hash_rows VALUES(137);
+        SET SESSION group_concat_max_len=512;
+        DELIMITER $$
+        BEGIN NOT ATOMIC
+            DECLARE CONTINUE HANDLER FOR SQLEXCEPTION SET @failed=1;
+            CALL hash_query('SELECT 13 AS sample', @h);
+        END$$
+        DELIMITER ;
+        SELECT @failed,marker,@@session.group_concat_max_len FROM _dbrepo_hash_rows;
+    """)
+    assert preserved.stdout.strip() == "1\t137\t512"
 
 
 def main():
@@ -33,8 +113,13 @@ def main():
         else:raise RuntimeError("MariaDB fixture did not start")
         sql("CREATE DATABASE fixture; USE fixture; CREATE TABLE _tmp(marker INT); INSERT INTO _tmp VALUES(94817);")
         fixture=(ROOT/"dbrepo-data-service/rest-service/src/test/resources/init/querystore.sql").read_text()
-        fixture=fixture.replace("DECLARE _sql TEXT; SELECT", "DECLARE _sql TEXT; SET @fixture_hash_calls=COALESCE(@fixture_hash_calls,0)+1; SELECT")
         sql("USE fixture;\nDELIMITER $$\n"+"\n".join(line.rstrip(";")+"$$" for line in fixture.splitlines() if line.strip())+"\nDELIMITER ;")
+        sql("""USE fixture;
+            CREATE PROCEDURE hash_table(IN name VARCHAR(255), OUT h VARCHAR(255), OUT n BIGINT)
+                SELECT SHA2('abc',256),1 INTO h,n;
+            INSERT INTO qs_queries (id,query,query_normalized,is_persisted,query_hash,result_hash,result_number)
+                VALUES ('00000000-0000-0000-0000-000000000137','SELECT a, b FROM samples','SELECT a, b FROM samples',
+                        TRUE,SHA2('SELECT a, b FROM samples',256),SHA2('abc',256),1)""")
         spec=importlib.util.spec_from_file_location("migration",ROOT/".scripts/query-worktables-migration.py")
         module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
         sql(module.migration(["fixture"]))
@@ -44,8 +129,16 @@ def main():
             out=sql("USE fixture; "+call).stdout.strip().split("\t")
             assert out[-1]=="1"
             assert sql("SELECT marker FROM fixture._tmp").stdout.strip()=="94817"
+        sql("CREATE DATABASE fresh_fixture")
+        for routine in ("hash_table", "hash_query"):
+            ddl = (module.RESOURCES / (routine + ".sql")).read_text().strip().rstrip(";")
+            sql("USE fresh_fixture;\nDELIMITER $$\n" + ddl + "$$\nDELIMITER ;")
+        check_result_hashes(sql)
         # Make metadata inserts overlap instead of relying on runner timing.
         sql("USE fixture; CREATE TRIGGER fixture_overlap BEFORE INSERT ON qs_queries FOR EACH ROW DO SLEEP(0.15)")
+        expected = [sql(f"USE fixture; CALL hash_query('SELECT {n} AS sample',@h); SELECT @h,@count").stdout.strip()
+                    for n in range(12)]
+        assert len(set(expected)) == 12
         def hashed(value):
             query=f"SELECT {value} AS sample WHERE SLEEP(0.03)=0"
             if value % 3 == 0:
@@ -55,7 +148,7 @@ def main():
             else:
                 call="CALL _store_query('fixture','"+query+"','"+query+"',NOW(),@id); SELECT result_hash,result_number FROM qs_queries WHERE id=@id;"
             out=sql("USE fixture; "+call).stdout.strip()
-            assert out==hashlib.sha256(str(value).encode()).hexdigest()+"\t1", "Concurrent result differs"
+            assert out==expected[value], "Concurrent result differs"
         with ThreadPoolExecutor(max_workers=4) as pool:list(pool.map(hashed,range(12)))
         for empty in (False,True):
             query="SELECT 77 AS sample"+(" WHERE 1=0" if empty else "")
@@ -87,13 +180,13 @@ CREATE TRIGGER fixture_failure BEFORE INSERT ON qs_queries FOR EACH ROW
 CREATE PROCEDURE fixture_capture_failure() BEGIN
  DECLARE failed BOOLEAN DEFAULT FALSE;
  DECLARE CONTINUE HANDLER FOR SQLSTATE '45000' SET failed=TRUE;
- CALL store_query('SELECT 901 AS sample','SELECT 901 AS sample',NOW(),@id);
- SELECT failed,@fixture_hash_calls,@@in_transaction,@@SESSION.innodb_lock_wait_timeout;
+ CALL store_query('SELECT 901 AS sample','SELECT 901+0*(@fixture_query_calls:=COALESCE(@fixture_query_calls,0)+1) AS sample',NOW(),@id);
+ SELECT failed,@fixture_query_calls,@@in_transaction,@@SESSION.innodb_lock_wait_timeout;
 END$$
 DELIMITER ;""")
         assert sql("USE fixture; SET SESSION innodb_lock_wait_timeout=17; CALL fixture_capture_failure()").stdout.strip()=="1\t1\t0\t17"
         sql("USE fixture; DROP TRIGGER fixture_failure")
-        assert sql("USE fixture; CALL _store_query('fixture','SELECT 902 AS sample','SELECT 902 AS sample',NOW(),@id); SELECT @fixture_hash_calls,@id IS NOT NULL,@@in_transaction,@@SESSION.innodb_lock_wait_timeout").stdout.strip()=="1\t1\t0\t50"
+        assert sql("USE fixture; CALL _store_query('fixture','SELECT 902 AS sample','SELECT 902+0*(@fixture_query_calls:=COALESCE(@fixture_query_calls,0)+1) AS sample',NOW(),@id); SELECT @fixture_query_calls,@id IS NOT NULL,@@in_transaction,@@SESSION.innodb_lock_wait_timeout").stdout.strip()=="1\t1\t0\t50"
         before_count=sql("SELECT COUNT(*) FROM fixture.qs_queries").stdout.strip()
         with ThreadPoolExecutor(max_workers=1) as pool:
             held=pool.submit(sql,"START TRANSACTION; SELECT id FROM fixture.qs_metadata_lock FOR UPDATE; DO GET_LOCK('fixture-row-held',0); DO SLEEP(13); ROLLBACK")
@@ -121,7 +214,7 @@ DELIMITER ;""")
         # Routine replacement is repeatable and does not reopen ordinary SQL-user EXECUTE access.
         sql("CREATE USER reader@'%' IDENTIFIED BY '"+password+"'; GRANT SELECT ON fixture.* TO reader@'%';")
         sql("CREATE USER service_fixture@'%' IDENTIFIED BY '"+password+"'; GRANT EXECUTE ON PROCEDURE fixture.hash_query TO service_fixture@'%';")
-        metadata="SELECT ROUTINE_NAME,DEFINER,SQL_MODE,SECURITY_TYPE,CHARACTER_SET_CLIENT,COLLATION_CONNECTION FROM information_schema.ROUTINES WHERE ROUTINE_SCHEMA='fixture' AND ROUTINE_NAME IN ('store_query','_store_query','hash_query') ORDER BY ROUTINE_NAME"
+        metadata="SELECT ROUTINE_NAME,DEFINER,SQL_MODE,SECURITY_TYPE,CHARACTER_SET_CLIENT,COLLATION_CONNECTION FROM information_schema.ROUTINES WHERE ROUTINE_SCHEMA='fixture' AND ROUTINE_NAME IN ('store_query','_store_query','hash_query','hash_table') ORDER BY ROUTINE_NAME"
         sql("USE fixture; ALTER PROCEDURE store_query SQL SECURITY INVOKER")
         before=sql(metadata).stdout
         sql(module.migration(["fixture"]))
@@ -129,7 +222,7 @@ DELIMITER ;""")
         denied=sql("CALL fixture.hash_query('SELECT 1 AS sample',@h)",expect=False,user="reader")
         assert denied.returncode != 0 and "1370" in denied.stderr
         allowed=sql("CALL fixture.hash_query('SELECT 1 AS sample',@h)",expect=False,user="service_fixture")
-        assert "fixture hash failure" in allowed.stderr, "Existing service EXECUTE grant was lost"
+        assert allowed.returncode == 0, "Existing service EXECUTE grant was lost"
         sql("CREATE DATABASE conflict_fixture; CREATE TABLE conflict_fixture.qs_metadata_lock(marker INT); INSERT INTO conflict_fixture.qs_metadata_lock VALUES(9817)")
         conflict=sql(module.migration(["conflict_fixture"]),expect=False)
         assert conflict.returncode != 0 and "conflicts" in conflict.stderr
@@ -139,7 +232,7 @@ DELIMITER ;""")
         refused=sql(module.migration(["fixture"]),expect=False)
         assert refused.returncode != 0 and "Replication Query Store" in refused.stderr
         assert sql("SHOW CREATE PROCEDURE fixture.store_query").stdout == before
-        print("PASS: isolated work tables, overlapping metadata writes, nullable deduplication, database-scoped row locking, cleanup and migration/grant preservation")
+        print("PASS: complete v2 result hashes, legacy citations, fresh and upgraded stores, isolated work tables, overlapping metadata writes, nullable deduplication, database-scoped row locking, cleanup and migration/grant preservation")
     finally:
         subprocess.run(["docker","rm","-f","-v",name],capture_output=True,timeout=30)
 
