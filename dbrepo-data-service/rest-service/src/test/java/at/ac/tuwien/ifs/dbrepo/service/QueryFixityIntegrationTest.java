@@ -66,10 +66,43 @@ class QueryFixityIntegrationTest {
                     hash(connection, "SELECT * FROM data ORDER BY a DESC"));
             connection.createStatement().execute("SET SESSION group_concat_max_len=10");
             final String smallLimit = hash(connection, "SELECT * FROM data");
-            connection.createStatement().execute("SET SESSION group_concat_max_len=100000");
-            assertEquals(smallLimit, hash(connection, "SELECT * FROM data"));
             assertNotEquals(hash(connection, "SELECT CONCAT(REPEAT('x',4096),'a') a"),
                     hash(connection, "SELECT CONCAT(REPEAT('x',4096),'b') a"));
+            connection.createStatement().execute("SET SESSION group_concat_max_len=100000");
+            assertEquals(smallLimit, hash(connection, "SELECT * FROM data"));
+        }
+    }
+
+    @Test
+    void changedByteBeyondConcatLimitProducesANewSubsetId() throws Exception {
+        try (Connection connection = connect(); var statement = connection.createStatement()) {
+            statement.execute("CREATE TABLE long_values (payload VARBINARY(8192))");
+            statement.execute("SET SESSION group_concat_max_len = 1024");
+            statement.execute("SET @selection = 'SELECT payload FROM long_values'");
+            statement.execute("INSERT INTO long_values VALUES (CONCAT(REPEAT('x', 4096), 'a'))");
+            statement.execute("CALL store_query(@selection, @selection, NOW(6), @first)");
+            statement.execute("UPDATE long_values SET payload = CONCAT(REPEAT('x', 4096), 'b')");
+            statement.execute("CALL store_query(@selection, @selection, NOW(6), @second)");
+            statement.execute("CALL store_query(@selection, @selection, NOW(6), @retry)");
+
+            try (var stored = statement.executeQuery("""
+                    SELECT @first <> @second AS changed_id, @second = @retry AS reused_id,
+                           @@session.group_concat_max_len AS concat_limit,
+                           (SELECT result_hash FROM qs_queries WHERE id = @first) AS first_hash,
+                           (SELECT result_hash FROM qs_queries WHERE id = @second) AS second_hash,
+                           (SELECT COUNT(*) FROM qs_queries) AS subset_count
+                    """)) {
+                assertTrue(stored.next());
+                assertTrue(stored.getBoolean("changed_id"));
+                assertTrue(stored.getBoolean("reused_id"));
+                assertEquals(2, stored.getInt("subset_count"));
+                assertEquals(1024, stored.getInt("concat_limit"));
+                // Published v2 hashes must keep verifying after upgrades.
+                assertEquals("v2:075eec59e7a682b7830c96f43fd37354c5a0004eea8c5ddf77fed130750cace1",
+                        stored.getString("first_hash"));
+                assertEquals("v2:5104b51a8064488e97a7b6d14a652b1bbc03be7ace51efa0edf414cb0debf90d",
+                        stored.getString("second_hash"));
+            }
         }
     }
 
