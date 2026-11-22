@@ -4,7 +4,6 @@ import at.ac.tuwien.ifs.dbrepo.core.api.replication.TupleReplicationTimestampDto
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.replication.ReplicationPeers;
 import at.ac.tuwien.ifs.dbrepo.service.ReplicationTimestampService;
-import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -55,36 +54,36 @@ public class ReplicationTimestampServiceMariaDbImpl extends DataConnector implem
             }
             requireCanonicalOrigin(timestamp.getSiteUrl());
         }
-        final ComboPooledDataSource dataSource = getDataSource(database);
-        try (Connection connection = dataSource.getConnection()) {
-            // MariaDB DDL implicitly commits: schema work must precede the batch transaction.
-            ensureTableExists(connection);
-            try (PreparedStatement statement = connection.prepareStatement("SET SESSION time_zone = '+00:00'")) {
-                statement.executeUpdate();
-            }
-            connection.setAutoCommit(false);
-            try {
-                for (TupleReplicationTimestampDto timestamp : timestamps) {
-                    if (closeEarlier) {
-                        closeActiveTimestamp(connection, timestamp);
+        try (var pool = getDataSource(database)) {
+            for (int attempt = 1; ; attempt++) {
+                try (Connection connection = pool.getConnection()) {
+                    // MariaDB DDL commits implicitly, so finish schema preparation before the transaction.
+                    ensureTableExists(connection);
+                    try (PreparedStatement statement = connection.prepareStatement("SET SESSION time_zone = '+00:00'")) {
+                        statement.executeUpdate();
                     }
-                    upsertTimestamp(connection, timestamp);
+                    connection.setAutoCommit(false);
+                    try {
+                        for (TupleReplicationTimestampDto timestamp : timestamps) {
+                            if (closeEarlier) closeActiveTimestamp(connection, timestamp);
+                            upsertTimestamp(connection, timestamp);
+                        }
+                        connection.commit();
+                        return;
+                    } catch (SQLException failure) {
+                        final boolean rolledBack = rollback(connection, failure);
+                        if (rolledBack && isLockConflict(failure) && attempt < MAX_LOCK_ATTEMPTS) continue;
+                        throw failure;
+                    } catch (RuntimeException failure) {
+                        rollback(connection, failure);
+                        throw failure;
+                    }
                 }
-                connection.commit();
-            } catch (SQLException | RuntimeException e) {
-                try {
-                    connection.rollback();
-                } catch (SQLException rollbackFailure) {
-                    e.addSuppressed(rollbackFailure);
-                }
-                throw e;
             }
-        } catch (SQLException e) {
+        } catch (SQLException failure) {
             log.error("Failed to merge replication timestamps in database {}: {}", database.getInternalName(),
-                    e.getMessage());
-            throw e;
-        } finally {
-            dataSource.close();
+                    failure.getMessage());
+            throw failure;
         }
     }
 

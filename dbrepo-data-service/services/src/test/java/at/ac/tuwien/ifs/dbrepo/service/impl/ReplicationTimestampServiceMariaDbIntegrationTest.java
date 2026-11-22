@@ -72,6 +72,51 @@ class ReplicationTimestampServiceMariaDbIntegrationTest {
     }
 
     @Test
+    void aConflictOnTheSecondAcknowledgementRetriesTheEntireBatch() throws Exception {
+        try (Connection connection = connection()) {
+            service.ensureTableExists(connection);
+        }
+        sql("CREATE OR REPLACE SEQUENCE fixture_ack_attempt START WITH 1");
+        sql("""
+                CREATE TRIGGER fixture_ack_conflict BEFORE INSERT ON tuple_replication_timestamps FOR EACH ROW
+                BEGIN
+                    IF NEW.replication_id='second' AND NEXT VALUE FOR fixture_ack_attempt=1 THEN
+                        SIGNAL SQLSTATE '40001' SET MYSQL_ERRNO=1213, MESSAGE_TEXT='simulated acknowledgement deadlock';
+                    END IF;
+                END
+                """);
+        service.closeAndSaveTimestamps(database, List.of(timestamp("first", START, END), timestamp("second", START, END)));
+        assertEquals(END, end("first", START));
+        assertEquals(END, end("second", START));
+        assertEquals(2, rows("").size());
+    }
+
+    @Test
+    void exhaustedTimestampConflictRollsBackTheBatchAfterThreeAttempts() throws Exception {
+        try (Connection connection = connection()) {
+            service.ensureTableExists(connection);
+        }
+        sql("CREATE OR REPLACE SEQUENCE fixture_ack_attempt START WITH 1");
+        sql("""
+                CREATE TRIGGER fixture_ack_conflict BEFORE INSERT ON tuple_replication_timestamps FOR EACH ROW
+                BEGIN
+                    IF NEW.replication_id='second' AND NEXT VALUE FOR fixture_ack_attempt>0 THEN
+                        SIGNAL SQLSTATE 'HY000' SET MYSQL_ERRNO=1205, MESSAGE_TEXT='simulated acknowledgement timeout';
+                    END IF;
+                END
+                """);
+        var failure = assertThrows(SQLException.class, () -> service.saveTimestamps(database,
+                List.of(timestamp("first", START, END), timestamp("second", START, END))));
+        assertEquals(1205, failure.getErrorCode());
+        assertTrue(rows("").isEmpty());
+        try (Connection connection = connection(); var statement = connection.createStatement();
+             var result = statement.executeQuery("SELECT NEXT VALUE FOR fixture_ack_attempt")) {
+            assertTrue(result.next());
+            assertEquals(4, result.getInt(1));
+        }
+    }
+
+    @Test
     void migratesLegacyKeyWithoutGuessingLostIdentitiesAndSeparatesSourceScopes() throws Exception {
         sql(LEGACY_SCHEMA);
         sql("""

@@ -413,6 +413,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         } catch (SQLException e) {
             try { connection.rollback(); } catch (SQLException rollback) { e.addSuppressed(rollback); }
             blobs.rethrowTransferFailure(e);
+            if (isLockConflict(e)) throw e;
             log.error("Failed to delete tuple: {}", e.getMessage());
             throw new QueryMalformedException("Failed to delete tuple: " + e.getMessage(), e);
         } finally {
@@ -462,6 +463,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         } catch (SQLException e) {
             try { connection.rollback(); } catch (SQLException rollback) { e.addSuppressed(rollback); }
             blobs.rethrowTransferFailure(e);
+            if (isLockConflict(e)) throw e;
             log.error("Failed to create tuple: {}", e.getMessage());
             throw new QueryMalformedException("Failed to create tuple: " + e.getMessage(), e);
         } finally {
@@ -477,49 +479,30 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             StorageNotFoundException {
         log.trace("create tuple with timestamps: {}", data);
         ensureReplicationKey(table, data);
-        final ComboPooledDataSource dataSource = getDataSource(database);
-        final Connection connection = dataSource.getConnection();
-        final var blobs = new BlobParameters(storageService);
-        try (blobs) {
-            replicationService.prepare(connection, database, table);
-            connection.setAutoCommit(false);
+        return writeTupleWithTimestamps(database, table, "create", (connection, blobs, eventIds) -> {
             final int[] idx = new int[]{1};
-            final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.tupleToRawCreateQuery(
-                    database.getInternalName(), table, data));
-            for (Map.Entry<String, Object> entry : data.getData().entrySet()) {
-                bindTupleValue(blobs, statement,
-                        getColumnType(table.getColumns(), entry.getKey()), idx[0], entry.getKey(), entry.getValue());
-                idx[0]++;
+            try (PreparedStatement statement = connection.prepareStatement(mariaDbMapper.tupleToRawCreateQuery(
+                    database.getInternalName(), table, data))) {
+                for (Map.Entry<String, Object> entry : data.getData().entrySet()) {
+                    bindTupleValue(blobs, statement,
+                            getColumnType(table.getColumns(), entry.getKey()), idx[0], entry.getKey(), entry.getValue());
+                    idx[0]++;
+                }
+                final long start = System.currentTimeMillis();
+                statement.executeUpdate();
+                log.atDebug()
+                        .setMessage("create tuple with timestamps in table: " + table.getInternalName() + "."
+                                + database.getInternalName())
+                        .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                        .addKeyValue(Constants.ACTION, "table_create_tuple_with_timestamps")
+                        .log();
             }
-            final long start = System.currentTimeMillis();
-            statement.executeUpdate();
-            log.atDebug()
-                    .setMessage("create tuple with timestamps in table: " + table.getInternalName() + "."
-                            + database.getInternalName())
-                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
-                    .addKeyValue(Constants.ACTION, "table_create_tuple_with_timestamps")
-                    .log();
             final TupleWithTimestampsDto tuple = selectTupleWithTimestamps(connection, database, table,
                     lookupKeys(data.getData()));
             final UUID eventId = replicationService.enqueue(connection, tuple, database, table, HttpMethod.POST);
-            connection.commit();
-            replicationService.dispatchCommitted(database, eventId == null ? List.of() : List.of(eventId));
-            log.info("Created tuple with timestamps in table: {}.{}", database.getInternalName(),
-                    table.getInternalName());
+            if (eventId != null) eventIds.add(eventId);
             return tuple;
-        } catch (SQLException e) {
-            connection.rollback();
-            blobs.rethrowTransferFailure(e);
-            log.error("Failed to create tuple with timestamps: {}", e.getMessage());
-            throw new QueryMalformedException("Failed to create tuple with timestamps: " + e.getMessage(), e);
-        } catch (RuntimeException | QueryMalformedException | TableMalformedException
-                 | StorageUnavailableException | StorageNotFoundException e) {
-            connection.rollback();
-            throw e;
-        } finally {
-            connection.close();
-            dataSource.close();
-        }
+        });
     }
 
     @Override
@@ -599,6 +582,7 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         } catch (SQLException e) {
             try { connection.rollback(); } catch (SQLException rollback) { e.addSuppressed(rollback); }
             blobs.rethrowTransferFailure(e);
+            if (isLockConflict(e)) throw e;
             log.error("Failed to update tuple: {}", e.getMessage());
             throw new QueryMalformedException("Failed to update tuple: " + e.getMessage(), e);
         } finally {
@@ -616,58 +600,36 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         if (data.getData().containsKey("replication_key")) {
             throw new QueryMalformedException("The replication key cannot be changed");
         }
-        final ComboPooledDataSource dataSource = getDataSource(database);
-        final Connection connection = dataSource.getConnection();
-        final var blobs = new BlobParameters(storageService);
-        try (blobs) {
-            replicationService.prepare(connection, database, table);
-            connection.setAutoCommit(false);
+        return writeTupleWithTimestamps(database, table, "update", (connection, blobs, eventIds) -> {
             final List<String> affectedKeys = lockReplicationKeys(connection, database, table, data.getKeys());
             final int[] idx = new int[]{1};
-            final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.tupleToRawUpdateQuery(
-                    database.getInternalName(), table, data));
-            for (Map.Entry<String, Object> entry : data.getData().entrySet()) {
-                bindTupleValue(blobs, statement,
-                        getColumnType(table.getColumns(), entry.getKey()), idx[0], entry.getKey(), entry.getValue());
-                idx[0]++;
-            }
-            for (Map.Entry<String, Object> entry : data.getKeys().entrySet()) {
-                if (entry.getValue() == null) {
-                    continue;
+            try (PreparedStatement statement = connection.prepareStatement(mariaDbMapper.tupleToRawUpdateQuery(
+                    database.getInternalName(), table, data))) {
+                for (Map.Entry<String, Object> entry : data.getData().entrySet()) {
+                    bindTupleValue(blobs, statement,
+                            getColumnType(table.getColumns(), entry.getKey()), idx[0], entry.getKey(), entry.getValue());
+                    idx[0]++;
                 }
-                bindTupleValue(blobs, statement,
-                        getColumnType(table.getColumns(), entry.getKey()), idx[0], entry.getKey(), entry.getValue());
-                idx[0]++;
+                for (Map.Entry<String, Object> entry : data.getKeys().entrySet()) {
+                    if (entry.getValue() == null) {
+                        continue;
+                    }
+                    bindTupleValue(blobs, statement,
+                            getColumnType(table.getColumns(), entry.getKey()), idx[0], entry.getKey(), entry.getValue());
+                    idx[0]++;
+                }
+                final long start = System.currentTimeMillis();
+                statement.executeUpdate();
+                log.atDebug()
+                        .setMessage("update tuple with timestamps in table: " + table.getInternalName() + "."
+                                + database.getInternalName())
+                        .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                        .addKeyValue(Constants.ACTION, "table_update_tuple_with_timestamps")
+                        .log();
             }
-            final long start = System.currentTimeMillis();
-            statement.executeUpdate();
-            log.atDebug()
-                    .setMessage("update tuple with timestamps in table: " + table.getInternalName() + "."
-                            + database.getInternalName())
-                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
-                    .addKeyValue(Constants.ACTION, "table_update_tuple_with_timestamps")
-                    .log();
-            final List<UUID> eventIds = new ArrayList<>();
-            final TupleWithTimestampsDto tuple = enqueueChangedTuples(connection, database, table, affectedKeys,
+            return enqueueChangedTuples(connection, database, table, affectedKeys,
                     HttpMethod.PUT, eventIds);
-            connection.commit();
-            replicationService.dispatchCommitted(database, eventIds);
-            log.info("Updated tuple with timestamps in table: {}.{}", database.getInternalName(),
-                    table.getInternalName());
-            return tuple;
-        } catch (SQLException e) {
-            connection.rollback();
-            blobs.rethrowTransferFailure(e);
-            log.error("Failed to update tuple with timestamps: {}", e.getMessage());
-            throw new QueryMalformedException("Failed to update tuple with timestamps: " + e.getMessage(), e);
-        } catch (RuntimeException | QueryMalformedException | TableMalformedException
-                 | StorageUnavailableException | StorageNotFoundException e) {
-            connection.rollback();
-            throw e;
-        } finally {
-            connection.close();
-            dataSource.close();
-        }
+        });
     }
 
     @Override
@@ -676,50 +638,70 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
             throws SQLException, QueryMalformedException, TableMalformedException, StorageUnavailableException,
             StorageNotFoundException {
         log.trace("delete tuple with timestamps: {}", data);
-        final ComboPooledDataSource dataSource = getDataSource(database);
-        final Connection connection = dataSource.getConnection();
-        final var blobs = new BlobParameters(storageService);
-        try (blobs) {
-            replicationService.prepare(connection, database, table);
-            connection.setAutoCommit(false);
+        return writeTupleWithTimestamps(database, table, "delete", (connection, blobs, eventIds) -> {
             final List<String> affectedKeys = lockReplicationKeys(connection, database, table, data.getKeys());
             final int[] idx = new int[]{1};
-            final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.tupleToRawDeleteQuery(
-                    database.getInternalName(), table, data));
-            for (String column : data.getKeys().keySet()) {
-                if (data.getKeys().get(column) == null) continue;
-                bindTupleValue(blobs, statement,
-                        getColumnType(table.getColumns(), column), idx[0], column, data.getKeys().get(column));
-                idx[0]++;
+            try (PreparedStatement statement = connection.prepareStatement(mariaDbMapper.tupleToRawDeleteQuery(
+                    database.getInternalName(), table, data))) {
+                for (String column : data.getKeys().keySet()) {
+                    if (data.getKeys().get(column) == null) continue;
+                    bindTupleValue(blobs, statement,
+                            getColumnType(table.getColumns(), column), idx[0], column, data.getKeys().get(column));
+                    idx[0]++;
+                }
+                final long start = System.currentTimeMillis();
+                statement.executeUpdate();
+                log.atDebug()
+                        .setMessage("delete tuple with timestamps in table: " + table.getInternalName() + "."
+                                + database.getInternalName())
+                        .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                        .addKeyValue(Constants.ACTION, "table_delete_tuple_with_timestamps")
+                        .log();
             }
-            final long start = System.currentTimeMillis();
-            statement.executeUpdate();
-            log.atDebug()
-                    .setMessage("delete tuple with timestamps in table: " + table.getInternalName() + "."
-                            + database.getInternalName())
-                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
-                    .addKeyValue(Constants.ACTION, "table_delete_tuple_with_timestamps")
-                    .log();
-            final List<UUID> eventIds = new ArrayList<>();
-            final TupleWithTimestampsDto tuple = enqueueChangedTuples(connection, database, table, affectedKeys,
+            return enqueueChangedTuples(connection, database, table, affectedKeys,
                     HttpMethod.DELETE, eventIds);
-            connection.commit();
-            replicationService.dispatchCommitted(database, eventIds);
-            log.info("Deleted tuple with timestamps from table: {}.{}", database.getInternalName(),
-                    table.getInternalName());
-            return tuple;
-        } catch (SQLException e) {
-            connection.rollback();
-            blobs.rethrowTransferFailure(e);
-            log.error("Failed to delete tuple with timestamps: {}", e.getMessage());
-            throw new QueryMalformedException("Failed to delete tuple with timestamps: " + e.getMessage(), e);
-        } catch (RuntimeException | QueryMalformedException | TableMalformedException
-                 | StorageUnavailableException | StorageNotFoundException e) {
-            connection.rollback();
-            throw e;
-        } finally {
-            connection.close();
-            dataSource.close();
+        });
+    }
+
+    @FunctionalInterface
+    private interface TupleMutation {
+        TupleWithTimestampsDto execute(Connection connection, BlobParameters blobs, List<UUID> eventIds)
+                throws SQLException, QueryMalformedException, TableMalformedException, StorageUnavailableException,
+                StorageNotFoundException;
+    }
+
+    private TupleWithTimestampsDto writeTupleWithTimestamps(Database database, Table table, String operation,
+                                                            TupleMutation mutation)
+            throws SQLException, QueryMalformedException, TableMalformedException, StorageUnavailableException,
+            StorageNotFoundException {
+        try (var pool = getDataSource(database)) {
+            for (int attempt = 1; ; attempt++) {
+                final List<UUID> eventIds = new ArrayList<>();
+                final TupleWithTimestampsDto tuple;
+                try (Connection connection = pool.getConnection(); var blobs = new BlobParameters(storageService)) {
+                    try {
+                        replicationService.prepare(connection, database, table);
+                        connection.setAutoCommit(false);
+                        tuple = mutation.execute(connection, blobs, eventIds);
+                        connection.commit();
+                    } catch (SQLException failure) {
+                        final boolean rolledBack = rollback(connection, failure);
+                        blobs.rethrowTransferFailure(failure);
+                        if (isLockConflict(failure)) {
+                            if (rolledBack && attempt < MAX_LOCK_ATTEMPTS) continue;
+                            throw failure;
+                        }
+                        throw new QueryMalformedException("Failed to " + operation + " tuple with timestamps: "
+                                + failure.getMessage(), failure);
+                    } catch (RuntimeException | QueryMalformedException | TableMalformedException
+                             | StorageUnavailableException | StorageNotFoundException failure) {
+                        rollback(connection, failure);
+                        throw failure;
+                    }
+                }
+                replicationService.dispatchCommitted(database, eventIds);
+                return tuple;
+            }
         }
     }
 
