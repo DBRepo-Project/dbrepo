@@ -31,25 +31,25 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
     @Override
     public Database create(Container container, CreateDatabaseDto data) throws DatabaseMalformedException,
             SQLException {
-        final ComboPooledDataSource dataSource = getDataSource(container);
-        final Connection connection = dataSource.getConnection();
-        try {
-            /* create database if not exists */
+        try (ComboPooledDataSource dataSource = getDataSource(container);
+             Connection connection = dataSource.getConnection()) {
             final long start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.databaseCreateDatabaseQuery(data.getInternalName()))
-                    .execute();
-            connection.commit();
-            log.atDebug()
-                    .setMessage("created database: " + data.getInternalName())
-                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
-                    .addKeyValue(Constants.ACTION, "create_database")
-                    .log();
-        } catch (SQLException e) {
-            connection.rollback();
-            log.error("Failed to create database access: {}", e.getMessage());
-            throw new DatabaseMalformedException("Failed to create database access: " + e.getMessage(), e);
-        } finally {
-            dataSource.close();
+            try (var create = connection.prepareStatement(mariaDbMapper.databaseCreateDatabaseQuery(data.getInternalName()))) {
+                create.execute();
+                connection.commit();
+                log.atDebug()
+                        .setMessage("created database: " + data.getInternalName())
+                        .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                        .addKeyValue(Constants.ACTION, "create_database")
+                        .log();
+            } catch (SQLException e) {
+                connection.rollback();
+                if (e.getSQLState() != null && e.getSQLState().startsWith("08")) {
+                    throw e;
+                }
+                log.error("Failed to create database access: {}", e.getMessage());
+                throw new DatabaseMalformedException("Failed to create database access: " + e.getMessage(), e);
+            }
         }
         log.info("Created database with name {}", data.getInternalName());
         return Database.builder()

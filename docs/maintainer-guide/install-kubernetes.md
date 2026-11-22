@@ -46,6 +46,20 @@ configmaps: '20'
 services: '40'
 ```
 
+## Galera recovery and application traffic
+
+For both database StatefulSets, readiness requires a primary component, a synced
+local node and `wsrep_ready=ON`. The headless service still advertises peers for
+discovery. The application service routes to ready pods. A responsive SQL
+listener can stay alive while a node waits for quorum. The startup probe allows
+30 minutes for initialization or state transfer. Increase its failure threshold
+if your largest measured recovery takes longer.
+
+When all pods are unready, inspect the Galera status and the previous container
+logs on each node. After a full cluster outage, preserve the volumes and recover
+the most advanced node before restoring traffic. A readiness probe cannot choose
+a safe bootstrap node. See the [MariaDB quorum recovery procedure](https://mariadb.com/docs/galera-cluster/high-availability/resetting-the-quorum-cluster-bootstrap).
+
 ## Uninstall
 
 Remove DBRepo by stopping and removing all pods and persistent volume claims:
