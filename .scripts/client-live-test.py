@@ -28,6 +28,7 @@ import pydantic
 import urllib3
 from dbrepo.RestClient import RestClient
 from dbrepo.api import dto
+from client_live_evidence import deployment, replication_fixture, toolchain
 
 HERE = Path(__file__).resolve().parent
 _auth_spec = importlib.util.spec_from_file_location('client_live_auth', HERE / 'client_live_auth.py')
@@ -39,6 +40,7 @@ BearerSession = _auth_module.BearerSession
 def canonical(method, url, params=None):
     parsed = urlsplit(url)
     path = re.sub(r'\{[^}]+\}|<[^>]+>|[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}', '{id}', parsed.path)
+    path = re.sub(r'(/replication/snapshots/\{id\}/chunks/)\d+$', r'\1{id}', path)
     if '/user/' in path or '/access/' in path or '/grant/' in path:
         path = re.sub(r'/(user|access|grant)/[^/]+$', r'/\1/{id}', path)
     path = re.sub(r'(^/api/v1/dashboard/)(?!user(?:/|$))[^/]+', r'\1{id}', path)
@@ -56,7 +58,7 @@ def canonical(method, url, params=None):
 def source_inventory(root):
     """Read Spring mappings and Flask decorators; no server imports or requests."""
     found = {}
-    for service in ('metadata', 'data'):
+    for service in ('metadata', 'data', 'replication'):
         directory = root / f'dbrepo-{service}-service/rest-service/src/main/java/at/ac/tuwien/ifs/dbrepo/endpoints'
         for file in directory.glob('*.java'):
             text = file.read_text()
@@ -162,6 +164,17 @@ class Runner:
         self.original_wrapper = RestClient._wrapper
         self.active = None
         self.catalog = json.loads((HERE / 'client-live-endpoints.json').read_text())
+        client_file = Path(importlib.import_module('dbrepo.RestClient').__file__).resolve()
+        self.client_sha256 = hashlib.sha256(client_file.read_bytes()).hexdigest()
+        self.runner_sha256 = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+        self.toolchain = toolchain(HERE, client_file.parent)
+        self.deployment = deployment(config['deployment_evidence'], self.endpoint) if 'deployment_evidence' in config else None
+        self.replication_ids, self.replication = None, {}
+        if 'replication_report' in config:
+            if self.profile != 'full':
+                raise ValueError('Replication evidence requires the full profile')
+            self.replication_ids, self.replication = replication_fixture(
+                config['replication_report'], self.endpoint, self.deployment, HERE)
 
     def transport(self, **kwargs):
         if not kwargs['url'].startswith(self.endpoint + '/'):
@@ -273,12 +286,14 @@ class Runner:
                 (path == '/api/v1/user/{id}' and method == 'PUT') or
                 path in ('/api/v1/identifier/retrieve','/api/v1/identifier/{id}/publish') or
                 (('/access/' in path or '/grant/' in path) and not self.clients['peer'].password))
-            coverage.append({**endpoint, 'attempts': len(calls), 'passed_cases': len(successful),
-                             'state': 'excluded' if endpoint.get('excluded') else 'not_in_profile' if outside else 'passed' if successful else 'attempted' if calls else 'uncovered'})
+            observed = self.replication.get('http_successes', {}).get(endpoint['operation'], 0)
+            coverage.append({**endpoint, 'attempts': len(calls), 'passed_cases': len(successful), 'replication_successes': observed,
+                             'state': 'excluded' if endpoint.get('excluded') else 'not_in_profile' if outside else 'passed' if successful else 'observed_in_replication' if observed else 'attempted' if calls else 'uncovered'})
         report = {'runtime_versions': {'python': sys.version.split()[0], 'requests': requests.__version__, 'urllib3': urllib3.__version__, 'pydantic': pydantic.__version__, 'pandas': pd.__version__}, 'instance': self.instance, 'profile': self.profile, 'setup': self.config.get('setup', []), 'completed': self.finished, 'run_id': self.run_id, 'endpoint': self.endpoint,
                   'client_module': str(Path(importlib.import_module('dbrepo.RestClient').__file__).resolve()),
-                  'runner_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
-                  'client_sha256': hashlib.sha256(Path(importlib.import_module('dbrepo.RestClient').__file__).read_bytes()).hexdigest(),
+                  'runner_sha256': self.runner_sha256,
+                  'client_sha256': self.client_sha256, 'toolchain': self.toolchain, 'deployment': self.deployment,
+                  'replication_evidence': self.replication,
                   'contracts': {'table_deletion': self.table_deletion},
                   'summary': dict(counts), 'resources': self.resources, 'cases': self.results,
                   'requests': self.http_calls, 'endpoint_coverage': coverage,
@@ -403,6 +418,8 @@ class Runner:
         self.amqp_steps(step, call, db, tid, table)
         self.identifier_steps(step, call, db, qid, tid, vid, publish, external_doi, keep)
         self.search_steps(step, dp)
+        if self.profile == 'full':
+            self.replication_reads(step)
         step('database.visibility.public',lambda:call('update_database_visibility',db,True,True,False),need=('database',))
         step('database.public.anonymous',lambda:self.http('GET',dp,role='anonymous'),need=('database',))
         step('database.visibility.private',lambda:call('update_database_visibility',db,False,False,False),need=('database',))
@@ -550,6 +567,49 @@ c.publish_dataframe(v['key'],pd.DataFrame([{'id':5,'value':50,'label':'amqp-fram
         if not keep and self.table_deletion == 'physical':
             step('identifier.delete',lambda:self.http('DELETE',ip,expected=(202,)),need=('identifier',))
 
+    def replication_reads(self, step):
+        system = None if self.clients['system'].password else 'System credentials required'
+        def call(method, *args):
+            return self.sdk(method, *args, role='system')
+        step('replication.status', lambda: call('get_replication_status'), reason=system,
+             check=lambda status: status.health.status == 'UP' and status.outbox.total >= 0)
+        # This database was created by the portable runner without replica URLs.
+        fresh = self.resources.get('database')
+        queued = step('replication.data_outbox', lambda: call('get_data_replication_outbox', fresh),
+                      need=('database',), reason=system, check=lambda entries: isinstance(entries, list)
+                      and all(row.database_id == fresh and row.attempts >= 0 for row in entries))
+        step('replication.data_outbox.retry_empty_own', lambda: call('retry_data_replication_outbox', fresh),
+             need=('database',), reason=system or (None if queued == [] else 'A verified empty fixture outbox is required'),
+             check=lambda count: type(count) is int and count == 0)
+
+        fixture = self.replication_ids or {}
+        reason = system or (None if fixture else 'Dedicated three-site fixture report required')
+        step('replication.metadata_outbox', lambda: call('get_metadata_replication_outbox'), reason=reason,
+             check=lambda records: isinstance(records, list) and all(row.attempts >= 0 for row in records))
+        step('replication.database_mapping', lambda: call('find_local_database_id_by_replica_database_id',
+             fixture['peer_database']), reason=reason, check=lambda ids: (
+                 ids.local_database_id == fixture['local_database'] and ids.replica_database_id == fixture['peer_database']))
+        step('replication.table_mapping', lambda: call('find_local_table_id_by_replica_table_id',
+             fixture['local_database'], fixture['peer_table']), reason=reason, check=lambda ids: (
+                 ids.local_table_id == fixture['local_table'] and ids.replica_table_id == fixture['peer_table']))
+
+        def get(path, **kwargs):
+            return self.http('GET', path, role='system', **kwargs).json()
+        step('replication.transports', lambda: get('/api/replication/transports'), reason=reason,
+             check=lambda value: isinstance(value, dict) and all(isinstance(value.get(k), list)
+                 for k in ('sites', 'routes', 'rabbitmqSites')))
+        def mapped(records):
+            if not isinstance(records, list) or any(row.get('status') not in ('MAPPED', 'PENDING') for row in records):
+                return False
+            return not fixture['receiver'] or any(row.get('database_id') == fixture['local_database']
+                and row['status'] == 'MAPPED' for row in records)
+        step('replication.access', lambda: get('/api/v1/database/replication-access'), reason=reason, check=mapped)
+        step('replication.access.pending', lambda: get('/api/v1/database/replication-access/pending'), reason=reason,
+             check=lambda records: isinstance(records, list) and all(row.get('status') == 'PENDING' for row in records))
+        step('replication.export.deleted_roundtrip', lambda: get('/api/v1/database/' + fixture['local_database']
+             + '/table/' + fixture['local_table'] + '/data/replicate', params={'page': 0, 'size': 10}), reason=reason,
+             check=lambda result: isinstance(result, dict) and result.get('tuples') == [])
+
     def search_steps(self, step, dp):
         credentials=self.config.get('oidc')
         bearer=self.clients['owner']
@@ -569,12 +629,19 @@ c.publish_dataframe(v['key'],pd.DataFrame([{'id':5,'value':50,'label':'amqp-fram
             step('search.public.enable',lambda:self.http('PUT',dp+'/visibility',
                  {'is_public':True,'is_schema_public':True,'is_dashboard_enabled':False},expected=(202,)),need=('database',))
         else: self.clients['search']=bearer
+        def contains_fixture(response):
+            records = response.json()
+            return isinstance(records, list) and any(
+                isinstance(item, dict) and item.get('id') == self.resources['database'] for item in records)
+
         for name,method,path,kwargs in [
             ('search.fuzzy','GET','/api/v1/search',{'params':[('q',self.run_id)]}),
             ('search.index','GET','/api/v1/search/database',{}),
             ('search.fields','GET','/api/v1/search/database/fields',{}),
             ('search.general','POST','/api/v1/search/database',{'payload':{'name':self.run_id}}),
-        ]: step(name,lambda m=method,p=path,k=kwargs:self.http(m,p,role='search',**k),need=('database',))
+        ]:
+            step(name, lambda m=method,p=path,k=kwargs:self.http(m,p,role='search',**k), need=('database',),
+                 check=contains_fixture if name in ('search.fuzzy', 'search.general') else None)
         if public_search:
             step('search.public.restore_private',lambda:self.http('PUT',dp+'/visibility',
                  {'is_public':False,'is_schema_public':False,'is_dashboard_enabled':False},expected=(202,)),need=('database',))
@@ -619,6 +686,10 @@ def main(argv=None):
     parser.add_argument('--config',type=Path,help='JSON file: endpoint, owner, optional peer/admin/system/oidc/test_container')
     parser.add_argument('--endpoint',help='Any DBRepo instance base URL')
     parser.add_argument('--table-deletion', choices=('physical', 'archive'), help='Expected server table-removal contract; default physical')
+    parser.add_argument('--deployment-evidence', type=Path,
+                        help='JSON with the tested endpoint, deployed source commit and running image digests')
+    parser.add_argument('--replication-report', type=Path,
+                        help='Passing three-site acceptance report for read-only fixture checks in the full profile')
     parser.add_argument('--container-id',help='Optional existing container ID for the new test database')
     parser.add_argument('--profile',choices=('user','full'),help='user: ordinary account; full: additionally admin/system checks')
     parser.add_argument('--username',help='Owner username; password is prompted without echo')
@@ -659,6 +730,19 @@ def main(argv=None):
         detail=str(error) if isinstance(error,(ValueError,RuntimeError)) else type(error).__name__
         print('Account setup was not completed: '+detail,file=sys.stderr)
         return 2
+    if args.deployment_evidence:
+        try:
+            config['deployment_evidence'] = deployment(json.loads(args.deployment_evidence.read_text()), config['endpoint'])
+        except (ValueError, OSError) as error:
+            parser.error(str(error))
+    if args.replication_report:
+        try:
+            config['replication_report'] = json.loads(args.replication_report.read_text())
+            replication_fixture(config['replication_report'], config['endpoint'], config.get('deployment_evidence'), HERE)
+        except (ValueError, OSError) as error:
+            parser.error(str(error))
+        if config['profile'] != 'full':
+            parser.error('--replication-report requires the full profile')
     if args.table_deletion: config['table_deletion'] = args.table_deletion
     if (args.publish or args.external_doi) and config['profile']!='full': parser.error('--publish and --external-doi require --profile full')
     if args.output is None:

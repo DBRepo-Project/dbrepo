@@ -198,8 +198,8 @@ class LiveRunnerTest(unittest.TestCase):
         path=live.HERE/'client-live-compare.py'
         spec=importlib.util.spec_from_file_location('live_compare',path)
         module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
-        a={'completed':True,'client_sha256':'same','profile':'user','cases':[{'case':'operation','status':'passed'},{'case':'optional','status':'skipped'}]}
-        b={'completed':True,'client_sha256':'same','profile':'user','cases':[{'case':'operation','status':'failed','error':'AssertionError'},{'case':'optional','status':'passed'}]}
+        a={'completed':True,'client_sha256':'same','runner_sha256':'same-runner','profile':'user','cases':[{'case':'operation','status':'passed'},{'case':'optional','status':'skipped'}]}
+        b={'completed':True,'client_sha256':'same','runner_sha256':'same-runner','profile':'user','cases':[{'case':'operation','status':'failed','error':'AssertionError'},{'case':'optional','status':'passed'}]}
         result=module.compare(a,b)
         self.assertEqual('candidate_only_failure',result['cases'][0 if result['cases'][0]['case']=='operation' else 1]['state'])
         self.assertEqual(1,result['summary']['uncompared'])
@@ -247,7 +247,7 @@ class LiveRunnerTest(unittest.TestCase):
     def test_comparison_reports_explicit_deletion_contract_difference(self):
         spec = importlib.util.spec_from_file_location('compare_contract', live.HERE/'client-live-compare.py')
         module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
-        a = {'completed':True,'client_sha256':'same','profile':'user',
+        a = {'completed':True,'client_sha256':'same','runner_sha256':'same-runner','profile':'user',
              'contracts':{'table_deletion':'physical'},'cases':[{'case':'table.deleted','status':'passed'}]}
         b = {**a, 'contracts':{'table_deletion':'archive'}}
         result = module.compare(a,b)
@@ -268,6 +268,65 @@ class LiveRunnerTest(unittest.TestCase):
         self.assertTrue(next(v for v in report['endpoint_coverage'] if v['operation'].endswith('/data/ingest'))['excluded'])
         self.assertTrue(next(v for v in report['endpoint_coverage'] if v['operation'].endswith('/synchronize'))['excluded'])
         self.assertTrue(next(v for v in report['endpoint_coverage'] if v['operation']=='PUT /api/v1/database/{id}')['excluded'])
+
+    def test_successful_search_requires_the_fixture_in_the_result(self):
+        self.runner.resources['database'] = 'fixture-id'
+        self.runner.config['search'] = {'token': 'example'}
+        def search_cases(name, action, **kwargs):
+            if name in ('search.fuzzy', 'search.general'):
+                return self.runner.step(name, action, **kwargs)
+        for records, expected in [([], 'failed'), ([{'id':'other'}], 'failed'), ([{'id':'fixture-id'}], 'passed')]:
+            with self.subTest(records=records), patch.object(self.runner, 'http', return_value=self.response(200, records)):
+                self.runner.results = []
+                self.runner.search_steps(search_cases, '/api/v1/database/fixture-id')
+                self.assertEqual([expected, expected], [result['status'] for result in self.runner.results])
+
+    def test_replication_sdk_reads_and_empty_retry_use_fixture_ids(self):
+        from types import SimpleNamespace
+        self.runner.clients['system'].password = 'system-test'
+        self.runner.resources['database'] = 'new-database'
+        self.runner.replication_ids = {'local_database':'local-db', 'peer_database':'peer-db',
+            'local_table':'local-table', 'peer_table':'peer-table', 'receiver':True}
+        healthy = SimpleNamespace(health=SimpleNamespace(status='UP'), outbox=SimpleNamespace(total=0))
+        def sdk(method, *args, role):
+            self.assertEqual('system', role)
+            if method == 'get_replication_status': return healthy
+            if method == 'get_metadata_replication_outbox': return []
+            if method in ('get_data_replication_outbox', 'retry_data_replication_outbox'):
+                self.assertEqual(('new-database',), args)
+                return [] if method.startswith('get_') else 0
+            if method == 'find_local_database_id_by_replica_database_id':
+                self.assertEqual(('peer-db',), args)
+                return SimpleNamespace(local_database_id='local-db', replica_database_id='peer-db')
+            self.assertEqual(('local-db', 'peer-table'), args)
+            return SimpleNamespace(local_table_id='local-table', replica_table_id='peer-table')
+        def raw(method, path, **kwargs):
+            self.assertEqual('GET', method)
+            if path.endswith('/transports'): return self.response(body={'routes':[], 'sites':[], 'rabbitmqSites':[]})
+            if path.endswith('/pending'): return self.response(body=[])
+            if path.endswith('/replication-access'):
+                return self.response(body=[{'database_id':'local-db','status':'MAPPED'}])
+            self.assertIn('/local-db/table/local-table/', path)
+            return self.response(body={'tuples':[]})
+        with patch.object(self.runner, 'sdk', side_effect=sdk), patch.object(self.runner, 'http', side_effect=raw):
+            self.runner.replication_reads(self.runner.step)
+        self.assertEqual(10, len(self.runner.results))
+        self.assertTrue(all(row['status'] == 'passed' for row in self.runner.results), self.runner.results)
+
+    def test_retry_never_targets_a_nonempty_fixture_outbox(self):
+        from types import SimpleNamespace
+        self.runner.clients['system'].password = 'system-test'
+        self.runner.resources['database'] = 'new-database'
+        calls = []
+        def sdk(method, *args, **kwargs):
+            calls.append(method)
+            if method == 'get_replication_status':
+                return SimpleNamespace(health=SimpleNamespace(status='UP'), outbox=SimpleNamespace(total=0))
+            return [SimpleNamespace(database_id='new-database', attempts=1)]
+        with patch.object(self.runner, 'sdk', side_effect=sdk):
+            self.runner.replication_reads(self.runner.step)
+        self.assertNotIn('retry_data_replication_outbox', calls)
+        self.assertEqual('skipped', next(c['status'] for c in self.runner.results if 'retry_empty' in c['case']))
 
     def test_inventory_matches_current_source(self):
         root=Path(__file__).resolve().parents[1]
@@ -320,6 +379,109 @@ class BearerSessionTest(unittest.TestCase):
                 self.assertEqual(('system', 'system-password'), request.call_args.kwargs['auth'])
                 self.assertNotIn('bearer-secret', json.dumps(runner.http_calls))
 
+
+class ReleaseEvidenceTest(unittest.TestCase):
+    def setUp(self):
+        from client_live_evidence import CORE_COMPONENTS, toolchain
+        self.commit = 'a' * 40
+        self.catalog = json.loads((live.HERE / 'client-live-endpoints.json').read_text())
+        cases = ['search.fuzzy', 'identifier.retrieve.external', 'identifier.publish', 'oai.GetRecord']
+        endpoint = 'https://candidate.invalid'
+        self.report = {'completed': True, 'profile': 'full', 'endpoint': endpoint, 'run_id': 'candidate-run',
+            'cases': [{'case': name, 'status': 'passed'} for name in cases],
+            'endpoint_coverage': [{**e, 'state': 'excluded' if e['excluded'] else 'passed', 'passed_cases': 1}
+                                  for e in self.catalog['endpoints']],
+            'client_methods': {name: 'attempted' for name in self.catalog['client_methods']},
+            'toolchain': toolchain(live.HERE, Path(live.importlib.import_module('dbrepo').__file__).parent),
+            'runtime_versions': {'python': '3.11'},
+            'deployment': {'endpoint': endpoint, 'commit': self.commit, 'images': {name: 'sha256:' + 'b' * 64 for name in CORE_COMPONENTS}}}
+
+        self.baseline_commit = 'c' * 40
+        self.baseline = dict(self.report, run_id='baseline-run',
+                             deployment=dict(self.report['deployment'], commit=self.baseline_commit))
+
+    def test_release_requires_independent_runs_and_an_identified_baseline(self):
+        from client_live_evidence import release_check
+        for run_id in (None, self.baseline['run_id']):
+            candidate = dict(self.report, run_id=run_id)
+            result = release_check(self.baseline, candidate, self.commit, self.baseline_commit)
+            self.assertEqual('incomplete', result['state'])
+            self.assertTrue(any('independent run IDs' in gap for gap in result['evidence_gaps']))
+        result = release_check(self.baseline, self.report, self.commit, 'd' * 40)
+        self.assertEqual('incomplete', result['state'])
+        self.assertTrue(any('deployed baseline' in gap for gap in result['evidence_gaps']))
+        with self.assertRaisesRegex(ValueError, 'full baseline commit'):
+            release_check(self.baseline, self.report, self.commit, 'main')
+
+    def test_release_comparison_distinguishes_failed_skipped_and_missing_cases(self):
+        from copy import deepcopy
+        from client_live_evidence import release_check
+        self.assertEqual('passed', release_check(self.baseline, self.report, self.commit, self.baseline_commit)['state'])
+        for status in ('failed', 'skipped', None):
+            candidate = deepcopy(self.report)
+            if status:
+                candidate['cases'][0]['status'] = status
+            else:
+                candidate['cases'].pop(0)
+            result = release_check(self.baseline, candidate, self.commit, self.baseline_commit)
+            self.assertEqual('failed' if status == 'failed' else 'incomplete', result['state'])
+            self.assertIn('search.fuzzy', result['previously_passing_unverified'])
+
+    def test_strict_release_rejects_wrong_target_toolchain_or_coverage(self):
+        from copy import deepcopy
+        from client_live_evidence import release_check
+        for key, value in [('deployment', None), ('toolchain', {}), ('cases', []), ('profile', 'user'),
+                           ('completed', False), ('endpoint_coverage', []), ('client_methods', {}),
+                           ('runtime_versions', {})]:
+            with self.subTest(key=key):
+                candidate = dict(self.report, **{key: value})
+                self.assertEqual('incomplete', release_check(self.baseline, candidate, self.commit, self.baseline_commit)['state'])
+        candidate = deepcopy(self.report)
+        candidate['deployment']['images'] = {'ui': 'sha256:' + 'b' * 64}
+        self.assertEqual('incomplete', release_check(self.baseline, candidate, self.commit, self.baseline_commit)['state'])
+        candidate = deepcopy(self.report)
+        operation = next(entry for entry in candidate['endpoint_coverage'] if not entry['excluded'])
+        operation.update(state='attempted', passed_cases=0)
+        result = release_check(self.baseline, candidate, 'c' * 40, self.baseline_commit)
+        self.assertEqual('incomplete', result['state'])
+        self.assertIn(operation['operation'], result['uncovered_operations'])
+        self.assertTrue(any('deployed candidate' in reason for reason in result['evidence_gaps']))
+
+    def test_deployment_digests_are_bound_to_endpoint(self):
+        from client_live_evidence import deployment
+        manifest = self.report['deployment']
+        entry = dict(manifest, images={'data': 'example.invalid/data@sha256:' + '3' * 64})
+        self.assertEqual({'data': 'sha256:' + '3' * 64}, deployment(entry, self.report['endpoint'])['images'])
+        for bad in ({**manifest, 'images': {'data': 'image:latest'}}, {**manifest, 'endpoint': None},
+                    {**manifest, 'endpoint': 'https://another.invalid'}):
+            with self.assertRaises(ValueError):
+                deployment(bad, self.report['endpoint'])
+
+    def test_companion_evidence_requires_matching_site_build_and_runner(self):
+        from uuid import uuid4
+        from client_live_evidence import replication_fixture, replication_sources
+        endpoint = self.report['endpoint']
+        sites = {'origin': 'https://origin.invalid', 'target': endpoint, 'third': 'https://third.invalid'}
+        run = 'replication_acceptance_' + '1' * 16
+        resources = [{'site': site, 'kind': kind, 'id': str(uuid4()), 'name': run if kind == 'database' else 'roundtrip',
+                      'internal_name': 'db' if kind == 'database' else 'roundtrip'}
+                     for kind in ('database', 'table') for site in sites]
+        op = 'GET /api/replication/status'
+        companion = {'status':'PASS', 'protocol':'master-timestamp-history-v3', 'run':run,
+                     'checks':[{'name':'fixture_setup','status':'PASS'}], 'sites':sites, 'resources':resources,
+                     'deployments':{'target':self.report['deployment']}, 'suite_sha256':replication_sources(live.HERE),
+                     'http_operations':{'target':{op:{'200':3,'500':2}}, 'origin':{op:{'200':50}}}}
+        ids, proof = replication_fixture(companion, endpoint, self.report['deployment'], live.HERE)
+        self.assertEqual(resources[1]['id'], ids['local_database'])
+        self.assertEqual(resources[0]['id'], ids['peer_database'])
+        self.assertEqual({op:3}, proof['http_successes'])
+        for key in ('deployments', 'suite_sha256'):
+            old = {k:v for k,v in companion.items() if k != key}
+            _, historical = replication_fixture(old, endpoint, self.report['deployment'], live.HERE)
+            self.assertFalse(historical['eligible'])
+            self.assertEqual({}, historical['http_successes'])
+        with self.assertRaises(ValueError):
+            replication_fixture(dict(companion,status='FAIL'), endpoint, self.report['deployment'], live.HERE)
 
 if __name__=='__main__':
     unittest.main()

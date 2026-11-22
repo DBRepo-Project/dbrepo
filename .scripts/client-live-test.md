@@ -112,7 +112,7 @@ TLS verification stays enabled. `--ca-bundle /path/company-ca.pem` supports priv
 
 ## Endpoint inventory and offline tests
 
-The main catalogue contains 99 operations, covering literal Spring/Flask API mappings, separate OAI verbs, gateway health and PID routes. Two non-routed internal Data operations are explicitly excluded. All 62 public RestClient methods are listed. Framework-generated OPTIONS/HEAD variants, third-party administration, UI routes, metrics and replication APIs absent from main are outside this HTTP catalogue. The user profile further excludes privileged lifecycles and optional connections that were not configured.
+The integration catalog contains 160 operations across the Data, Metadata, Replication, Search and Dashboard services, OAI verbs, gateway health and PID routes. It lists 75 public RestClient methods and three explicit internal exclusions. Framework-generated OPTIONS/HEAD variants, third-party administration, UI routes and metrics are outside this HTTP catalog. The user profile further excludes privileged lifecycles and optional connections that were not configured.
 
 Existing client methods are called as shipped. Missing methods use the client's transport. A successful API write followed by a client DTO error stays failed; a returned new resource ID is retained so independent tests can continue. There is no client/server patch to turn a failed contract into a pass.
 
@@ -179,3 +179,55 @@ concurrent password grants for one user even when the password is correct; see
 [keycloak/keycloak#33527](https://github.com/keycloak/keycloak/issues/33527).
 This change does not add parallel Basic-authentication support to the server or
 resolve its per-request session lifecycle issue (#134).
+
+## Comparing a release candidate
+
+Keep the deployed image IDs alongside each full report. Supply `--deployment-evidence images.json` when running the test. The JSON object has three fields.
+
+- `endpoint` is the origin that the runner will call.
+- `commit` is the full Git commit verified against the deployed image build.
+- `images` maps each deployed component name to its running `sha256:…` digest or its full `image@sha256:…` reference. Capture those IDs from running pods or containers. A tag or the commit advertised by the UI is insufficient.
+
+The runner records the supplied evidence and fingerprints the installed Python package, its own runtime helpers and the endpoint catalog. Use the same client and runner checkout for both targets. Keep the credentials in their separate private configuration files.
+
+For an approved disposable release run, enable the publication and external-provider cases. After both reports have been written, run:
+
+```sh
+python .scripts/client-live-compare.py baseline.json candidate.json \
+  --require-release "$CANDIDATE_COMMIT" --baseline-commit "$BASELINE_COMMIT" --output comparison.json
+```
+
+The strict comparison exits 1 for a failed candidate case and 2 for incomplete evidence. The JSON lists missing, skipped or uncovered checks, including earlier passing cases that the candidate no longer verifies. Full success requires two independent test runs, a deployment matching each supplied commit and complete selected API and SDK coverage. You can run the baseline and the candidate in sequence on the same endpoint. A normal comparison still treats historical reports as diagnostic evidence. Keep raw reports and image inventories private.
+
+### Replication coverage
+
+The integration inventory contains 160 HTTP operations and 75 SDK methods. It includes the Replication Service's own routes as well as the Data and Metadata services' replication routes. Three internal operations have explicit exclusions in the catalog.
+
+A full run with system credentials reads replication health and the outbox of its newly created database. It calls the database-scoped retry only after confirming that this fixture's outbox is empty. The test expects zero retries.
+
+For the peer checks, run the three-site acceptance script with the approved disposable setup. Include `deployment_evidence` for each site in its private configuration, with the same endpoint, verified commit and running image set supplied to the client test. Pass the resulting report to the full client run:
+
+```sh
+python .scripts/client-live-test.py --config full.json --profile full \
+  --replication-report replication.json --deployment-evidence images.json --output candidate.json
+```
+
+The client uses the reported test database and roundtrip table to check both ID mappings, replica access, transport configuration, the metadata outbox and export of the deleted row. The three-site history check also fetches a retained snapshot chunk, verifies its bytes against its SHA-256 and checks the receiver's checkpoint.
+
+Only a passing companion run with matching runner sources and an identical deployment manifest for this endpoint contributes its observed HTTP successes. Those entries are labeled `observed_in_replication`. SDK method coverage still requires a call through the installed client. An older passing three-site report can supply fixture IDs for fresh reads, while its old HTTP requests stay outside the candidate's coverage.
+
+Writes to peer registrations and replication URLs, low-level replay and snapshot import, and retrying or cancelling shared queued jobs need dedicated receiver and queue fixtures. A healthy cluster, a successful indirect sync, or a historical report leaves those endpoint gaps visible.
+
+### Collecting running image IDs
+
+Choose the workloads exercised by the release suite. Run the collector in the Kubernetes or Docker context that serves the given endpoint. Supply the full source commit from the deployment record. A runtime image ID alone cannot establish which source commit was built.
+
+```sh
+python3 .scripts/client-live-deployment.py \
+  --kubernetes "$NAMESPACE" --endpoint "$ENDPOINT" --commit "$DEPLOYED_SHA" \
+  --output images.json metadata-service data-service search-service consumer-service dashboard-service ui
+```
+
+For Compose, replace `--kubernetes "$NAMESPACE"` with `--compose "$PROJECT"`. Compose service names default to `dbrepo-<component>`. Add `replication-service` for an installation with replication. Use `component=workload` for a different service name or `component=deployment/container` to select the Kubernetes application container alongside a sidecar.
+
+The collector checks readiness and requires all replicas of each component to report one digest. Kubernetes reports the kubelet's running image ID. Compose reports the running container's image configuration digest. Keep each capture with its own target's release record.
