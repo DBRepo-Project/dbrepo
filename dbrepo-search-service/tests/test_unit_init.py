@@ -3,7 +3,7 @@ import unittest
 import requests_mock
 from dbrepo.api.dto import UserBrief, DatabaseBrief, Database, ContainerBrief, ImageBrief
 
-from app import fetch_databases
+from init import fetch_databases
 
 exp = DatabaseBrief(
     id="6bd39359-b154-456d-b9c2-caa516a45732",
