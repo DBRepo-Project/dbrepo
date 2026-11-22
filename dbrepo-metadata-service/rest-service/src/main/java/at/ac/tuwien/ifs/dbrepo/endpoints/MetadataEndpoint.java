@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @CrossOrigin(origins = "*")
@@ -32,11 +34,14 @@ import java.util.List;
 @RequestMapping(path = "/api/v1/oai")
 public class MetadataEndpoint extends RestEndpoint {
 
+    private static final Set<String> LIST_ARGUMENTS = Set.of("verb", "from", "until", "set", "metadataPrefix", "resumptionToken");
     private final MetadataService metadataService;
+    private final HttpServletRequest request;
 
     @Autowired
-    public MetadataEndpoint(MetadataService metadataService) {
+    public MetadataEndpoint(MetadataService metadataService, HttpServletRequest request) {
         this.metadataService = metadataService;
+        this.request = request;
     }
 
     @GetMapping(produces = MediaType.TEXT_XML_VALUE)
@@ -78,6 +83,7 @@ public class MetadataEndpoint extends RestEndpoint {
     @Operation(summary = "List identifiers")
     public ResponseEntity<String> listIdentifiers(OaiListIdentifiersParameters parameters) {
         log.debug("endpoint list identifiers, verb=ListIdentifiers, parameters={}", parameters);
+        if (invalidListArguments()) return ResponseEntity.ok(metadataService.error(OaiErrorType.BAD_ARGUMENT));
         final String xml = metadataService.listIdentifiers(parameters);
         log.trace("list identifiers resulted in xml {}", xml);
         return ResponseEntity.ok(xml);
@@ -88,9 +94,15 @@ public class MetadataEndpoint extends RestEndpoint {
     @Operation(summary = "List records")
     public ResponseEntity<String> listRecords(OaiListRecordsParameters parameters) {
         log.debug("endpoint list records, verb=ListRecords, parameters={}", parameters);
+        if (invalidListArguments()) return ResponseEntity.ok(metadataService.error(OaiErrorType.BAD_ARGUMENT));
         final String xml = metadataService.listRecords(parameters);
         log.trace("list records resulted in xml {}", xml);
         return ResponseEntity.ok(xml);
+    }
+
+    private boolean invalidListArguments() {
+        return request.getParameterMap().entrySet().stream()
+                .anyMatch(arg -> !LIST_ARGUMENTS.contains(arg.getKey()) || arg.getValue().length != 1);
     }
 
     @GetMapping(params = "verb=GetRecord", produces = MediaType.TEXT_XML_VALUE)

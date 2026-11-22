@@ -90,11 +90,11 @@ public class MetadataEndpointMvcTest extends BaseTest {
     public void listIdentifiers_succeeds() throws Exception {
 
         /* mock */
-        when(identifierRepository.findAll())
-                .thenReturn(List.of(publishedIdentifier, IDENTIFIER_2, IDENTIFIER_3, IDENTIFIER_4, IDENTIFIER_5));
+        when(identifierRepository.findForHarvest(null, null))
+                .thenReturn(List.of(publishedIdentifier, IDENTIFIER_4));
 
         /* test */
-        this.mockMvc.perform(get("/api/v1/oai?verb=ListIdentifiers"))
+        this.mockMvc.perform(get("/api/v1/oai?verb=ListIdentifiers&metadataPrefix=oai_dc"))
                 .andDo(print())
                 .andExpect(content().contentType("text/xml;charset=UTF-8"))
                 .andExpect(xpath("//request[@verb='ListIdentifiers']").exists())
@@ -106,8 +106,8 @@ public class MetadataEndpointMvcTest extends BaseTest {
 
     @Test
     public void listRecords_excludesDrafts() throws Exception {
-        when(identifierRepository.findAll())
-                .thenReturn(List.of(publishedIdentifier, IDENTIFIER_2, IDENTIFIER_3, IDENTIFIER_4, IDENTIFIER_5));
+        when(identifierRepository.findForHarvest(null, null))
+                .thenReturn(List.of(publishedIdentifier, IDENTIFIER_4));
 
         this.mockMvc.perform(get("/api/v1/oai")
                         .param("verb", "ListRecords")
