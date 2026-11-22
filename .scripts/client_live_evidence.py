@@ -5,6 +5,9 @@ from pathlib import Path
 import re
 
 
+CORE_COMPONENTS = {'metadata-service', 'data-service', 'search-service', 'consumer-service', 'dashboard-service', 'ui'}
+
+
 def digest_tree(root, files):
     hashes = {path.relative_to(root).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
               for path in files}
@@ -53,6 +56,9 @@ def release_check(baseline, candidate, expected_commit):
         except ValueError:
             incomplete.append(f'Missing or invalid deployment evidence for {role}')
         else:
+            missing = sorted(CORE_COMPONENTS - image_set['images'].keys())
+            if missing:
+                incomplete.append(f"Missing {role} deployment components: {', '.join(missing)}")
             if role == 'candidate' and image_set['commit'] != expected_commit:
                 incomplete.append('The deployed candidate differs from the requested commit')
     for key in ('runner_bundle_sha256', 'catalog_sha256', 'client_package_sha256'):

@@ -287,7 +287,7 @@ class LiveRunnerTest(unittest.TestCase):
 
 class ReleaseEvidenceTest(unittest.TestCase):
     def setUp(self):
-        from client_live_evidence import toolchain
+        from client_live_evidence import CORE_COMPONENTS, toolchain
         self.commit = 'a' * 40
         self.catalog = json.loads((live.HERE / 'client-live-endpoints.json').read_text())
         cases = ['search.fuzzy', 'identifier.retrieve.external', 'identifier.publish', 'oai.GetRecord']
@@ -299,7 +299,7 @@ class ReleaseEvidenceTest(unittest.TestCase):
             'client_methods': {name: 'attempted' for name in self.catalog['client_methods']},
             'toolchain': toolchain(live.HERE, Path(live.importlib.import_module('dbrepo').__file__).parent),
             'runtime_versions': {'python': '3.11'},
-            'deployment': {'endpoint': endpoint, 'commit': self.commit, 'images': {'metadata': 'sha256:' + 'b' * 64}}}
+            'deployment': {'endpoint': endpoint, 'commit': self.commit, 'images': {name: 'sha256:' + 'b' * 64 for name in CORE_COMPONENTS}}}
 
     def test_release_comparison_distinguishes_failed_skipped_and_missing_cases(self):
         from copy import deepcopy
@@ -324,6 +324,9 @@ class ReleaseEvidenceTest(unittest.TestCase):
             with self.subTest(key=key):
                 candidate = dict(self.report, **{key: value})
                 self.assertEqual('incomplete', release_check(self.report, candidate, self.commit)['state'])
+        candidate = deepcopy(self.report)
+        candidate['deployment']['images'] = {'ui': 'sha256:' + 'b' * 64}
+        self.assertEqual('incomplete', release_check(self.report, candidate, self.commit)['state'])
         candidate = deepcopy(self.report)
         operation = next(entry for entry in candidate['endpoint_coverage'] if not entry['excluded'])
         operation.update(state='attempted', passed_cases=0)
