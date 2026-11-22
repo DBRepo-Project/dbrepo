@@ -77,11 +77,11 @@ public class MetadataEndpointUnitTest extends BaseTest {
     @Test
     @WithAnonymousUser
     public void listIdentifiers_succeeds() {
-        final OaiListIdentifiersParameters parameters = new OaiListIdentifiersParameters();
+        final OaiListIdentifiersParameters parameters = OaiListIdentifiersParameters.builder().metadataPrefix("oai_dc").build();
 
         /* mock */
-        when(identifierRepository.findAll())
-                .thenReturn(List.of(publishedIdentifier, IDENTIFIER_2, IDENTIFIER_5));
+        when(identifierRepository.findForHarvest(null, null))
+                .thenReturn(List.of(publishedIdentifier));
 
         /* test */
         final ResponseEntity<String> response = metadataEndpoint.listIdentifiers(parameters);

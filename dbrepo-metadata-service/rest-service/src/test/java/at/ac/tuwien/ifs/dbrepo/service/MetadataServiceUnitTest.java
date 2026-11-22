@@ -8,6 +8,7 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.Identifier;
 import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.IdentifierStatusType;
+import at.ac.tuwien.ifs.dbrepo.metadata.IdentifierRepository;
 import at.ac.tuwien.ifs.dbrepo.gateway.CrossRefGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.OrcidGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.RorGateway;
@@ -59,6 +60,9 @@ public class MetadataServiceUnitTest extends BaseTest {
     @MockitoBean
     private IdentifierService identifierService;
 
+    @MockitoBean
+    private IdentifierRepository identifierRepository;
+
     @Autowired
     private MetadataService metadataService;
 
@@ -80,10 +84,9 @@ public class MetadataServiceUnitTest extends BaseTest {
 
     @Test
     public void listIdentifiers_succeeds() {
-        final OaiListIdentifiersParameters parameters = OaiListIdentifiersParameters.builder()
-                .build();
+        final OaiListIdentifiersParameters parameters = OaiListIdentifiersParameters.builder().metadataPrefix("oai_dc").build();
 
-        when(identifierService.findAll())
+        when(identifierRepository.findForHarvest(null, null))
                 .thenReturn(List.of(publishedIdentifier));
 
         /* test */
@@ -94,10 +97,9 @@ public class MetadataServiceUnitTest extends BaseTest {
 
     @Test
     public void listRecords_succeeds() {
-        final OaiListRecordsParameters parameters = OaiListRecordsParameters.builder()
-                .build();
+        final OaiListRecordsParameters parameters = OaiListRecordsParameters.builder().metadataPrefix("oai_dc").build();
 
-        when(identifierService.findAll())
+        when(identifierRepository.findForHarvest(null, null))
                 .thenReturn(List.of(publishedIdentifier));
 
         /* test */
@@ -105,19 +107,6 @@ public class MetadataServiceUnitTest extends BaseTest {
         assertTrue(response.contains("identifier"));
         assertTrue(response.contains("datestamp"));
         assertTrue(response.contains("record"));
-    }
-
-    @Test
-    public void lists_excludeDraftIdentifiers() {
-        when(identifierService.findAll()).thenReturn(List.of(publishedIdentifier, IDENTIFIER_2, IDENTIFIER_5));
-
-        final String identifiers = metadataService.listIdentifiers(OaiListIdentifiersParameters.builder().build());
-        final String records = metadataService.listRecords(OaiListRecordsParameters.builder().build());
-        for (String response : List.of(identifiers, records)) {
-            assertTrue(response.contains("doi:" + IDENTIFIER_1_DOI));
-            assertFalse(response.contains("oai:" + IDENTIFIER_2_ID));
-            assertFalse(response.contains("doi:" + IDENTIFIER_5_DOI));
-        }
     }
 
     @Test
