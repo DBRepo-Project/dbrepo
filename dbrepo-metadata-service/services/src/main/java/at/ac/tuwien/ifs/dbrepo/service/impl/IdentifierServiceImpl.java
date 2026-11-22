@@ -178,6 +178,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         }
         final Identifier identifier = metadataMapper.identifierSaveDtoToIdentifier(data);
         identifier.setDoi(existing.getDoi());
+        identifier.setDataCiteRepository(existing.getDataCiteRepository());
         setAdditionalMetadata(database, identifier, ownedBy);
         /* save identifier in metadata database */
         final Identifier entity = identifierRepository.save(identifier);
@@ -236,7 +237,8 @@ public class IdentifierServiceImpl implements IdentifierService {
         context.setVariable("pid", identifier.getDoi() != null ? ("doi:" + identifier.getDoi()) : identifier.getId());
         context.setVariable("datestamp", metadataMapper.instantToDatestamp(identifier.getCreated()));
         /* map */
-        final String body = templateEngine.process("record_oai_datacite.xml", context)
+        final String template = identifier.hasDataCiteRegistration() ? "record_oai_datacite.xml" : "record_oai_dc.xml";
+        final String body = templateEngine.process(template, context)
                 .replaceAll("\\s+", " ");
         return new InputStreamResource(IOUtils.toInputStream(body, Charset.defaultCharset()));
     }

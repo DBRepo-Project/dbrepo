@@ -151,6 +151,13 @@ public class Identifier implements Serializable {
     @Column
     private String doi;
 
+    @Column(name = "datacite_repository")
+    private String dataCiteRepository;
+
+    public boolean hasDataCiteRegistration() {
+        return doi != null && !doi.isBlank() && dataCiteRepository != null && !dataCiteRepository.isBlank();
+    }
+
     @Column(columnDefinition = "VARCHAR(255)", nullable = false)
     private String ownedBy;
 

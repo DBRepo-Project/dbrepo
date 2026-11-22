@@ -147,10 +147,16 @@ public class DataCiteGatewayImpl implements DataCiteGateway {
                 log.trace("failed payload: {}", request);
                 throw new ExternalServiceException(LOG_MINT_FAILED + response.getBody());
             }
-            final String doi = response.getBody()
-                    .getData()
-                    .getAttributes()
-                    .getDoi();
+            final DataCiteData<DataCiteDoi> deposited = response.getBody().getData();
+            if (deposited == null || deposited.getAttributes() == null) {
+                throw new ExternalServiceException("DataCite returned no DOI details for this deposit");
+            }
+            final String doi = deposited.getAttributes().getDoi();
+            if (!identifier.getDoi().equalsIgnoreCase(doi)) {
+                throw new ExternalServiceException("DataCite returned a different DOI for this deposit");
+            }
+            // The current API account may differ from the repository responsible for this DOI.
+            identifier.setDataCiteRepository(deposited.registeringRepository());
             log.atInfo()
                     .setMessage("Successfully requested doi: " + doi)
                     .addKeyValue(LOG_DOI, doi)

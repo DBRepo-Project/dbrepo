@@ -1,5 +1,5 @@
 <GetRecord>
-    <record>
+    <record th:fragment="record">
         <header>
             <identifier>[[${pid}]]</identifier>
             <datestamp>[[${datestamp}]]</datestamp>
@@ -13,9 +13,9 @@
                     xmlns:dc="http://purl.org/dc/elements/1.1/"
                     xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
                 <dc:identifier>[[${pid}]]</dc:identifier>
-                <dc:title th:each="title: ${identifier.titles}" th:xmllang="${title.language}">[[${title.title}]]</dc:title>
+                <dc:title th:each="title: ${identifier.titles}" th:attr="'xml:lang'=${title.language}">[[${title.title}]]</dc:title>
                 <dc:publisher>[[${identifier.publisher}]]</dc:publisher>
-                <dc:description th:each="description: ${identifier.descriptions}" th:xmllang="${description.language}">[[${description.description}]]</dc:description>
+                <dc:description th:each="description: ${identifier.descriptions}" th:attr="'xml:lang'=${description.language}">[[${description.description}]]</dc:description>
                 <dc:creator th:each="creator: ${identifier.creators}">[[${creator.creatorName}]]</dc:creator>
             </oai_dc:dc>
         </metadata>
