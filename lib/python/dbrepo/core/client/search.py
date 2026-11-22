@@ -4,12 +4,13 @@ The opensearch_client.py is used by the different API endpoints in routes.py to 
 import logging
 import math
 import os
+import re
 import time
 from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 from urllib.parse import urlsplit
 from uuid import UUID, uuid4
-from collections.abc import MutableMapping
+from collections.abc import Callable, MutableMapping
 from json import dumps, load
 from decimal import Decimal
 
@@ -30,6 +31,8 @@ class SearchServiceClient:
     The client to communicate with the OpenSearch database.
     """
     instance: OpenSearch = None
+    BUILDING_ALIAS = 'dbrepo-search-building'
+    REBUILD_GUARD_PREFIX = 'dbrepo-search-guard-'
     QUERY_INDEX = 'dbrepo-search-queries'
     QUERY_FIELD = 'search_query'
     EXPIRY_FIELD = 'search_expires_at'
@@ -62,17 +65,125 @@ class SearchServiceClient:
 
     def database_exists(self, database_id: str):
         try:
-            SearchServiceClient()._instance().get(index="database", id=database_id)
+            self._instance().get(index="database", id=database_id)
             return True
         except NotFoundError:
             return False
 
-    def index_update(self, mapping: dict) -> None:
-        if SearchServiceClient()._instance().indices.exists(index="database"):
-            logging.debug(f"index 'database' exists, removing...")
-            SearchServiceClient()._instance().indices.delete(index="database")
-        SearchServiceClient()._instance().indices.create(index="database", body=mapping)
-        logging.info(f"Created index 'database'")
+    def _catalog_indices(self) -> tuple[str | None, list[str]]:
+        state = self._instance().indices.resolve_index(name=f'database,{self.BUILDING_ALIAS}')
+        aliases = {alias['name']: alias['indices'] for alias in state['aliases']}
+        active = aliases.get('database', [index['name'] for index in state['indices'] if index['name'] == 'database'])
+        if len(active) > 1:
+            raise ServiceConnectionError('The database alias must have a single backing index')
+        guards = [name for name in aliases.get(self.BUILDING_ALIAS, [])
+                  if re.fullmatch(self.REBUILD_GUARD_PREFIX + '[0-9a-f]{32}', name)]
+        return next(iter(active), None), guards
+
+    def _catalog_revision(self):
+        # Physical index identity and per-primary-shard sequence numbers cover writes and deletes.
+        try:
+            response = self._instance().indices.stats(index='database', metric='docs', level='shards')
+        except NotFoundError:
+            return None
+        if response['_shards']['failed'] or len(response['indices']) != 1:
+            raise ServiceConnectionError('Cannot verify the active database index')
+        index, details = next(iter(response['indices'].items()))
+        sequences = {}
+        for shard, copies in details['shards'].items():
+            primary, = (copy for copy in copies if copy['routing']['primary'])
+            sequences[shard] = primary['seq_no']['max_seq_no']
+        return index, details['uuid'], sequences
+
+    def _retire_index(self, index: str) -> None:
+        indices = self._instance().indices
+        try:
+            if not indices.get_alias(index=index)[index]['aliases']:
+                indices.delete(index=index)
+        except TransportError:
+            logging.warning('Could not retire unused search index %s', index)
+
+    def _invalidate_rebuild(self, guard: str) -> None:
+        try:
+            removed = self._instance().indices.delete(index=guard)
+        except NotFoundError:
+            return  # Another writer or the atomic publication already removed it.
+        if removed.get('acknowledged') is not True:
+            raise ServiceConnectionError('Could not confirm invalidation of the database rebuild')
+
+    def index_update(self, mapping: dict, fetch_databases: Callable[[], list[Database]]) -> list[Database]:
+        aliases = mapping.get('aliases', {})
+        if (self.BUILDING_ALIAS in aliases or 'database' in aliases
+                or any(alias.startswith(self.REBUILD_GUARD_PREFIX) for alias in aliases)):
+            raise ValueError('The database alias and rebuild guard names are reserved')
+        backend = self._instance()
+        revision = self._catalog_revision()
+        databases = fetch_databases()
+        generation = uuid4().hex
+        candidate = f'database-{generation}'
+        guard = self.REBUILD_GUARD_PREFIX + generation
+        try:
+            # A concrete index must exist when remove_index executes on every supported OpenSearch version.
+            # Writers can cancel a stale snapshot without ever deleting the candidate that might be live.
+            guard_settings = {'settings': {'number_of_shards': 1, 'number_of_replicas': 0},
+                              'aliases': {self.BUILDING_ALIAS: {}}}
+            if backend.indices.create(index=guard, body=guard_settings).get('acknowledged') is not True:
+                raise ServiceConnectionError('Could not confirm creation of the rebuild guard')
+            if backend.indices.create(index=candidate, body={**mapping, 'aliases': {}}).get('acknowledged') is not True:
+                raise ServiceConnectionError('Could not confirm creation of the replacement index')
+            for database in databases:
+                backend.index(index=candidate, id=database.id, body=database.model_dump(), op_type='create')
+            refresh = backend.indices.refresh(index=candidate)
+            count = backend.count(index=candidate)
+            if refresh['_shards']['failed'] or count['_shards']['failed'] or count['count'] != len(databases):
+                raise ServiceConnectionError('Replacement database index is incomplete')
+            if revision != self._catalog_revision():
+                raise ServiceConnectionError('Database index changed during rebuild')
+
+            actions = [{'remove_index': {'index': guard}}]
+            if revision is not None:
+                if revision[0] == 'database':
+                    # The old concrete index must release its name in the same cluster-state update.
+                    actions.append({'remove_index': {'index': 'database'}})
+                else:
+                    actions.append({'remove': {'index': revision[0], 'alias': 'database'}})
+            previous_aliases = {}
+            if aliases and revision is not None and revision[0] != 'database':
+                previous_aliases = backend.indices.get_alias(index=revision[0])[revision[0]]['aliases']
+            for alias, settings in aliases.items():
+                if alias in previous_aliases:
+                    actions.append({'remove': {'index': revision[0], 'alias': alias}})
+                actions.append({'add': {**settings, 'index': candidate, 'alias': alias}})
+            actions.append({'add': {'index': candidate, 'alias': 'database', 'is_write_index': True}})
+            switched = backend.indices.update_aliases(body={'actions': actions})
+            if switched.get('acknowledged') is not True:
+                raise ServiceConnectionError('Could not confirm the database index switch')
+        except Exception:
+            # Even if the publish response was lost, revoking this guard prevents a late switch.
+            # An already-published target still has its 'database' alias and must be retained.
+            try:
+                self._invalidate_rebuild(guard)
+                self._retire_index(candidate)
+            except (TransportError, ServiceConnectionError):
+                logging.warning('Could not confirm the state of replacement search index %s', candidate)
+            raise
+        if revision is not None and re.fullmatch(r'database-[0-9a-f]{32}', revision[0]):
+            self._retire_index(revision[0])
+        return databases
+
+    def _write_database(self, operation, **params):
+        result = operation(index='database', **params)
+        for _ in range(5):
+            active, guards = self._catalog_indices()
+            if result['_index'] != active:
+                # A rebuild won the race with this write. Reapply it to the new generation.
+                result = operation(index='database', ignore=404, **params)
+            elif not guards:
+                return
+            else:
+                for guard in guards:
+                    self._invalidate_rebuild(guard)
+        raise ServiceConnectionError('Database index kept changing during the write')
 
     def save_database(self, database_id: str, data: Database, fetch: bool = False) -> Database | None:
         """
@@ -87,8 +198,8 @@ class SearchServiceClient:
         @returns: The updated database, if successful.
         @throws: opensearchpy.exceptions.NotFoundError If the database was not found in the Search Database. Ignored when `force` is `True`.
         """
-        self._instance().update(index="database", id=database_id,
-                                body={'doc': data.model_dump(), 'doc_as_upsert': True})
+        self._write_database(self._instance().update, id=database_id,
+                             body={'doc': data.model_dump(), 'doc_as_upsert': True})
         logging.info(f'Updated database with id: {database_id}')
         if fetch is False:
             return None
@@ -103,7 +214,7 @@ class SearchServiceClient:
         @param database_id: The database id.
         @throws: opensearchpy.exceptions.NotFoundError If the database was not found in the Search Database.
         """
-        self._instance().delete(index="database", id=database_id)
+        self._write_database(self._instance().delete, id=database_id)
         logging.info(f"Deleted database with id {database_id} in index 'database'")
 
     def get_fields_for_index(self, field_type: str):
@@ -127,10 +238,8 @@ class SearchServiceClient:
         logging.debug(f'requesting field(s) {fields[field_type]} for filter: {field_type}')
         fields = self._instance().indices.get_field_mapping(fields=fields[field_type], index='database')
         fields_list = []
-        fd = flatten_dict(fields)
+        fd = flatten_dict({'database': next(iter(fields.values()), {})})
         for key in fd.keys():
-            if not key.startswith('database'):
-                continue
             entry = {}
             if key.split(".")[-1] == "type":
                 entry["attr_name"] = key_to_attr_name(key)
@@ -208,7 +317,8 @@ class SearchServiceClient:
     def _query_index(self, backend, deadline):
         try:
             source = self._engine_call(backend.indices.get_mapping, deadline, index='database')
-            properties = deepcopy(source['database']['mappings'].get('properties', {}))
+            backing, = source.values()  # Mapping responses use the physical name even for an alias.
+            properties = deepcopy(backing['mappings'].get('properties', {}))
         except NotFoundError:
             properties = {}
         existing_properties = None
