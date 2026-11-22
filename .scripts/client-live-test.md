@@ -179,3 +179,22 @@ concurrent password grants for one user even when the password is correct; see
 [keycloak/keycloak#33527](https://github.com/keycloak/keycloak/issues/33527).
 This change does not add parallel Basic-authentication support to the server or
 resolve its per-request session lifecycle issue (#134).
+
+## Comparing a release candidate
+
+Keep the deployed image IDs alongside each full report. Supply `--deployment-evidence images.json` when running the test. The JSON object has three fields.
+
+- `endpoint` is the origin that the runner will call.
+- `commit` is the full Git commit verified against the deployed image build.
+- `images` maps each deployed component name to its running `sha256:…` digest or its full `image@sha256:…` reference. Capture those IDs from running pods or containers. A tag or the commit advertised by the UI is insufficient.
+
+The runner records the supplied evidence and fingerprints the installed Python package, its own runtime helpers and the endpoint catalog. Use the same client and runner checkout for both targets. Keep the credentials in their separate private configuration files.
+
+For an approved disposable release run, enable the publication and external-provider cases. After both reports have been written, run:
+
+```sh
+python .scripts/client-live-compare.py baseline.json candidate.json \
+  --require-release "$CANDIDATE_COMMIT" --output comparison.json
+```
+
+The strict comparison exits 1 for a failed candidate case and 2 for incomplete evidence. The JSON lists missing, skipped or uncovered checks, including earlier passing cases that the candidate no longer verifies. Full success requires an exact match to the supplied candidate commit and complete selected API and SDK coverage. A normal comparison still treats historical reports as diagnostic evidence. Keep raw reports and image inventories private.
