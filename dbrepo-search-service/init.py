@@ -61,7 +61,7 @@ rest_client = RestClient(endpoint=os.getenv("METADATA_SERVICE_ENDPOINT", "http:/
 
 def fetch_databases() -> List[Database]:
     databases = []
-    for index, database in enumerate(rest_client.get_databases()):
+    for database in rest_client.get_databases():
         database = rest_client.get_database(database_id=database.id)
         logging.debug(f'fetch database details with id: {database.id}')
         databases.append(database)
@@ -69,22 +69,18 @@ def fetch_databases() -> List[Database]:
     return databases
 
 
-def save_databases(databases: List[Database]):
-    logging.debug(f"save {len(databases)} database(s)")
+def update_statistics(databases: List[Database]):
     for doc in databases:
-        search_client.save_database(database_id=doc.id, data=doc, fetch=False)
-        logging.debug(f'updated database index for database: {doc.id}')
-        for table in doc.tables:
+        for table in doc.tables or []:
             logging.debug(f'update statistic for table: {doc.internal_name}.{table.internal_name}')
             try:
                 rest_client.update_table_statistics(database_id=doc.id, table_id=table.id)
             except Exception as e:
                 logging.warning(f'failed to update statistic for table {doc.internal_name}.{table.internal_name}: {e}')
-        logging.info(f"Saved database with id {doc.id}")
 
 
 if __name__ == "__main__":
     with open('./database.json', 'r') as f:
-        search_client.index_update(mapping=json.load(f))
-    save_databases(databases=fetch_databases())
+        databases = search_client.index_update(json.load(f), fetch_databases)
+    update_statistics(databases)
     logging.info("Finished. Exiting.")
