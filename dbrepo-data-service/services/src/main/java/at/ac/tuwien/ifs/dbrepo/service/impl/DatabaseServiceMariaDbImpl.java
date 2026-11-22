@@ -37,43 +37,45 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
     @Override
     public Database create(Container container, CreateDatabaseDto data) throws DatabaseMalformedException,
             SQLException {
-        final ComboPooledDataSource dataSource = getDataSource(container);
-        final Connection connection = dataSource.getConnection();
-        try {
-            /* create database if not exists */
-            final long start = System.currentTimeMillis();
-            if (ReplicationSites.isReplica(data.getCreationLocation(), baseUrl)) {
-                final var creationId = data.getReplicaUrls() == null ? null
-                        : data.getReplicaUrls().get(data.getCreationLocation());
-                final var legacyId = ReplicationCreation.localId("DATABASE", data.getContainerId(),
-                        data.getCreationLocation(), creationId);
-                final var targetId = ReplicationCreation.localId("DATABASE", data.getContainerId(),
-                        data.getCreationLocation(), creationId, baseUrl);
-                // Metadata retains legacy reservations and scopes new reservations to this target site.
-                final var id = ReplicationCreation.databaseName(legacyId).equals(data.getInternalName())
-                        ? legacyId : targetId;
-                if (!ReplicationCreation.databaseName(id).equals(data.getInternalName())) {
-                    throw new SQLException("Replicated database name does not match its creation identity");
+        try (ComboPooledDataSource dataSource = getDataSource(container);
+             Connection connection = dataSource.getConnection()) {
+            try {
+                /* create database if not exists */
+                final long start = System.currentTimeMillis();
+                if (ReplicationSites.isReplica(data.getCreationLocation(), baseUrl)) {
+                    final var creationId = data.getReplicaUrls() == null ? null
+                            : data.getReplicaUrls().get(data.getCreationLocation());
+                    final var legacyId = ReplicationCreation.localId("DATABASE", data.getContainerId(),
+                            data.getCreationLocation(), creationId);
+                    final var targetId = ReplicationCreation.localId("DATABASE", data.getContainerId(),
+                            data.getCreationLocation(), creationId, baseUrl);
+                    // Metadata retains legacy reservations and scopes new reservations to this target site.
+                    final var id = ReplicationCreation.databaseName(legacyId).equals(data.getInternalName())
+                            ? legacyId : targetId;
+                    if (!ReplicationCreation.databaseName(id).equals(data.getInternalName())) {
+                        throw new SQLException("Replicated database name does not match its creation identity");
+                    }
+                    ReplicaDdl.createDatabase(connection, data.getInternalName(), id.toString());
+                } else {
+                    try (var statement = connection.prepareStatement(
+                            mariaDbMapper.databaseCreateDatabaseQuery(data.getInternalName()))) {
+                        statement.execute();
+                    }
                 }
-                ReplicaDdl.createDatabase(connection, data.getInternalName(), id.toString());
-            } else {
-                try (var statement = connection.prepareStatement(
-                        mariaDbMapper.databaseCreateDatabaseQuery(data.getInternalName()))) {
-                    statement.execute();
+                connection.commit();
+                log.atDebug()
+                        .setMessage("created database: " + data.getInternalName())
+                        .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
+                        .addKeyValue(Constants.ACTION, "create_database")
+                        .log();
+            } catch (SQLException e) {
+                connection.rollback();
+                if (e.getSQLState() != null && e.getSQLState().startsWith("08")) {
+                    throw e;
                 }
+                log.error("Failed to create database access: {}", e.getMessage());
+                throw new DatabaseMalformedException("Failed to create database access: " + e.getMessage(), e);
             }
-            connection.commit();
-            log.atDebug()
-                    .setMessage("created database: " + data.getInternalName())
-                    .addKeyValue(Constants.DURATION, System.currentTimeMillis() - start)
-                    .addKeyValue(Constants.ACTION, "create_database")
-                    .log();
-        } catch (SQLException e) {
-            connection.rollback();
-            log.error("Failed to create database access: {}", e.getMessage());
-            throw new DatabaseMalformedException("Failed to create database access: " + e.getMessage(), e);
-        } finally {
-            dataSource.close();
         }
         log.info("Created database with name {}", data.getInternalName());
         return Database.builder()

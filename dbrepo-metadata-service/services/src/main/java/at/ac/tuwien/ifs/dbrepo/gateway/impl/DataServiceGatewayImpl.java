@@ -20,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
@@ -131,7 +132,9 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
         log.trace("create database at endpoint {} with path {}", gatewayConfig.getDataEndpoint(), path);
         try {
             response = restTemplate.exchange(path, HttpMethod.POST, new HttpEntity<>(data), DatabaseDto.class);
-        } catch (HttpServerErrorException e) {
+        } catch (HttpServerErrorException.ServiceUnavailable e) {
+            throw new DataServiceException("Database storage is temporarily unavailable", e);
+        } catch (HttpServerErrorException | ResourceAccessException e) {
             log.error("Failed to create database: {}", e.getMessage());
             throw new DataServiceConnectionException("Failed to create database: " + e.getMessage(), e);
         } catch (HttpClientErrorException.BadRequest | HttpClientErrorException.Unauthorized e) {
@@ -140,6 +143,8 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
         } catch (HttpClientErrorException.NotFound e) {
             log.error("Failed to create database: not found: {}", e.getMessage());
             throw new DatabaseNotFoundException("Failed to create database: not found: " + e.getMessage(), e);
+        } catch (HttpClientErrorException e) {
+            throw new DataServiceException("Data Service rejected database creation with HTTP " + e.getStatusCode().value(), e);
         }
         if (!response.getStatusCode().equals(HttpStatus.CREATED)) {
             log.error("Failed to create database: wrong http code: {}", response.getStatusCode());
