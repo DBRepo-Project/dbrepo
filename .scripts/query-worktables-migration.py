@@ -44,15 +44,15 @@ def migration(databases):
             assert body != sql
             signature, implementation = body.split(" BEGIN", 1)
             signature, _, declared_security = signature.partition(" SQL SECURITY ")
-            default_security = declared_security or "DEFINER"
             fallback = "'root@%'" if "DEFINER" in sql[:sql.index("PROCEDURE")] else "CURRENT_USER()"
             where = f"FROM information_schema.ROUTINES WHERE ROUTINE_SCHEMA=DATABASE() AND ROUTINE_NAME='{routine}' AND ROUTINE_TYPE='PROCEDURE'"
+            security = f"'{declared_security}'" if declared_security else f"COALESCE((SELECT SECURITY_TYPE {where}), 'DEFINER')"
             result.extend([
                 f"SET @_dbrepo_definer = COALESCE((SELECT DEFINER {where}), {fallback})$dbrepo$",
                 f"SET SESSION sql_mode = COALESCE((SELECT SQL_MODE {where}), @_dbrepo_mode)$dbrepo$",
                 f"SET SESSION character_set_client = COALESCE((SELECT CHARACTER_SET_CLIENT {where}), @_dbrepo_client)$dbrepo$",
                 f"SET SESSION collation_connection = COALESCE((SELECT COLLATION_CONNECTION {where}), @_dbrepo_collation)$dbrepo$",
-                f"SET @_dbrepo_security = COALESCE((SELECT SECURITY_TYPE {where}), '{default_security}')$dbrepo$",
+                f"SET @_dbrepo_security = {security}$dbrepo$",
                 "SET @_dbrepo_host = SUBSTRING_INDEX(@_dbrepo_definer, '@', -1)$dbrepo$",
                 "SET @_dbrepo_user = LEFT(@_dbrepo_definer, CHAR_LENGTH(@_dbrepo_definer)-CHAR_LENGTH(@_dbrepo_host)-1)$dbrepo$",
                 "SET @_dbrepo_ddl = CONCAT('CREATE OR REPLACE DEFINER=`', REPLACE(@_dbrepo_user, '`', '``'), '`@`', REPLACE(@_dbrepo_host, '`', '``'), '` PROCEDURE ', "

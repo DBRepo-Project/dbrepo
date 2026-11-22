@@ -129,10 +129,26 @@ def main():
             out=sql("USE fixture; "+call).stdout.strip().split("\t")
             assert out[-1]=="1"
             assert sql("SELECT marker FROM fixture._tmp").stdout.strip()=="94817"
-        sql("CREATE DATABASE fresh_fixture")
-        for routine in ("hash_table", "hash_query"):
+        sql("CREATE DATABASE fresh_fixture; USE fresh_fixture; " + fixture)
+        sql("USE fresh_fixture; " + (module.RESOURCES / "create_metadata_lock.sql").read_text())
+        for routine in module.ROUTINES:
             ddl = (module.RESOURCES / (routine + ".sql")).read_text().strip().rstrip(";")
             sql("USE fresh_fixture;\nDELIMITER $$\n" + ddl + "$$\nDELIMITER ;")
+        # Nested INVOKER hashing uses the execution context of each supported wrapper.
+        sql("CREATE USER wrapper_fixture@'%' IDENTIFIED BY '" + password + "'")
+        for schema in ("fixture", "fresh_fixture"):
+            security = sql(f"SELECT SECURITY_TYPE FROM information_schema.ROUTINES WHERE ROUTINE_SCHEMA='{schema}' "
+                           "AND ROUTINE_NAME='hash_table'")
+            assert security.stdout.strip() == "INVOKER"
+            for routine in ("hash_query", "store_query", "_store_query"):
+                sql(f"GRANT EXECUTE ON PROCEDURE {schema}.{routine} TO wrapper_fixture@'%'")
+            checks = sql(f"USE {schema}; "
+                         "CALL hash_query('SELECT 317 AS sample',@digest); "
+                         "CALL store_query('SELECT 317 AS sample','SELECT 317 AS sample',NOW(),@public); "
+                         "CALL _store_query('fixture','SELECT 317 AS sample','SELECT 317 AS sample',NOW(),@internal); "
+                         "SELECT @digest REGEXP '^v2:[0-9a-f]{64}$',@public=@internal",
+                         user="wrapper_fixture")
+            assert checks.stdout.strip() == "1\t1"
         check_result_hashes(sql)
         # Make metadata inserts overlap instead of relying on runner timing.
         sql("USE fixture; CREATE TRIGGER fixture_overlap BEFORE INSERT ON qs_queries FOR EACH ROW DO SLEEP(0.15)")
@@ -216,9 +232,13 @@ DELIMITER ;""")
         sql("CREATE USER service_fixture@'%' IDENTIFIED BY '"+password+"'; GRANT EXECUTE ON PROCEDURE fixture.hash_query TO service_fixture@'%';")
         metadata="SELECT ROUTINE_NAME,DEFINER,SQL_MODE,SECURITY_TYPE,CHARACTER_SET_CLIENT,COLLATION_CONNECTION FROM information_schema.ROUTINES WHERE ROUTINE_SCHEMA='fixture' AND ROUTINE_NAME IN ('store_query','_store_query','hash_query','hash_table') ORDER BY ROUTINE_NAME"
         sql("USE fixture; ALTER PROCEDURE store_query SQL SECURITY INVOKER")
-        before=sql(metadata).stdout
+        before = [row.split("\t") for row in sql(metadata).stdout.splitlines()]
+        for row in before:
+            if row[0] == "hash_table":
+                assert row[3] == "DEFINER"  # The injected failure stub models a legacy helper.
+                row[3] = "INVOKER"
         sql(module.migration(["fixture"]))
-        assert sql(metadata).stdout==before, "Routine execution context changed during migration"
+        assert [row.split("\t") for row in sql(metadata).stdout.splitlines()] == before
         denied=sql("CALL fixture.hash_query('SELECT 1 AS sample',@h)",expect=False,user="reader")
         assert denied.returncode != 0 and "1370" in denied.stderr
         allowed=sql("CALL fixture.hash_query('SELECT 1 AS sample',@h)",expect=False,user="service_fixture")
