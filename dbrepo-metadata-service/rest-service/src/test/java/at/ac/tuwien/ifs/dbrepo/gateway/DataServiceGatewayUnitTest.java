@@ -24,6 +24,8 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doThrow;
@@ -298,6 +300,18 @@ public class DataServiceGatewayUnitTest extends BaseTest {
         assertThrows(DataServiceException.class, () -> {
             dataServiceGateway.createDatabase(DATABASE_1_CREATE_INTERNAL);
         });
+    }
+
+    @Test
+    public void createDatabase_unavailableStorageIsReportedAsAServiceFailure() {
+        for (HttpStatus status : List.of(HttpStatus.SERVICE_UNAVAILABLE, HttpStatus.EXPECTATION_FAILED)) {
+            var failure = status.is5xxServerError()
+                    ? HttpServerErrorException.create(status, "Storage unavailable", null, null, null)
+                    : HttpClientErrorException.create(status, "Creation rejected", null, null, null);
+            doThrow(failure).when(dataServiceRestTemplate)
+                    .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(DatabaseDto.class));
+            assertThrows(DataServiceException.class, () -> dataServiceGateway.createDatabase(DATABASE_1_CREATE_INTERNAL));
+        }
     }
 
     @Test

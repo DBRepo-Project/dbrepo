@@ -32,6 +32,44 @@ password: admin
 ## @section Metadata Database
 
 metadatadb:
+  ## @param metadatadb.startupProbe Allow an initial recovery or state transfer to finish.
+  startupProbe: &galeraStartup
+    enabled: true
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 180
+  ## @param metadatadb.customLivenessProbe Keep a responsive SQL listener alive while Galera recovers quorum.
+  customLivenessProbe: &galeraLiveness
+    tcpSocket:
+      port: mysql
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 6
+  ## @param metadatadb.customReadinessProbe Route application traffic only to a synced member of the primary component.
+  customReadinessProbe: &galeraReadiness
+    exec:
+      command:
+        - bash
+        - -ec
+        - |
+          set -o pipefail
+          if [[ '{{ if or (.Files.Glob "files/docker-entrypoint-initdb.d/*.{sh,sql,sql.gz}") .Values.initdbScriptsConfigMap .Values.initdbScripts }}true{{ else }}false{{ end }}' == true ]]; then
+            test -f {{ printf "%s/.user_scripts_initialized" .Values.persistence.mountPath | quote }}
+          fi
+          export MYSQL_PWD="${MARIADB_ROOT_PASSWORD:-}"
+          if [[ -f "${MARIADB_ROOT_PASSWORD_FILE:-}" ]]; then
+            MYSQL_PWD=$(cat "$MARIADB_ROOT_PASSWORD_FILE")
+          fi
+          mariadb --protocol=socket -u "$MARIADB_ROOT_USER" --batch --skip-column-names \
+            -e "SHOW GLOBAL STATUS WHERE Variable_name IN ('wsrep_cluster_status','wsrep_local_state_comment','wsrep_ready')" |
+            awk '$1 == "wsrep_cluster_status" && $2 == "Primary" { primary=1 }
+                 $1 == "wsrep_local_state_comment" && $2 == "Synced" { synced=1 }
+                 $1 == "wsrep_ready" && $2 == "ON" { ready=1 }
+                 END { exit !(primary && synced && ready) }'
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 1
   ## @param metadatadb.enabled Enable the Metadata Database.
   enabled: true
   ## @skip metadatadb.fullnameOverride
@@ -244,6 +282,12 @@ cachedb:
 ## @section Data Database
 
 datadb:
+  ## @param datadb.startupProbe Allow an initial recovery or state transfer to finish.
+  startupProbe: *galeraStartup
+  ## @param datadb.customLivenessProbe Keep a responsive SQL listener alive while Galera recovers quorum.
+  customLivenessProbe: *galeraLiveness
+  ## @param datadb.customReadinessProbe Route application traffic only to a synced member of the primary component.
+  customReadinessProbe: *galeraReadiness
   ## @param datadb.enabled Enable the Auth Service.
   enabled: true
   ## @skip datadb.fullnameOverride
