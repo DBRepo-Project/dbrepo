@@ -1,6 +1,6 @@
 package at.ac.tuwien.ifs.dbrepo.config;
 
-import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
+import at.ac.tuwien.ifs.dbrepo.core.entity.identifier.IdentifierType;
 import at.ac.tuwien.ifs.dbrepo.metadata.DatabaseRepository;
 import at.ac.tuwien.ifs.dbrepo.metadata.IdentifierRepository;
 import at.ac.tuwien.ifs.dbrepo.metadata.TableRepository;
@@ -13,8 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.Objects;
 
 @Slf4j
 @Configuration
@@ -36,7 +34,7 @@ public class MetricsConfig {
 
     @Bean
     public Gauge databaseCountGauge() {
-        return Gauge.builder("dbrepo.database.count", () -> databaseRepository.findAll().size())
+        return Gauge.builder("dbrepo.database.count", databaseRepository::count)
                 .description("The total number of managed research databases")
                 .strongReference(true)
                 .register(Metrics.globalRegistry);
@@ -44,7 +42,7 @@ public class MetricsConfig {
 
     @Bean
     public Gauge viewCountGauge() {
-        return Gauge.builder("dbrepo.view.count", () -> viewRepository.findAll().size())
+        return Gauge.builder("dbrepo.view.count", viewRepository::count)
                 .description("The total number of available view data sources")
                 .strongReference(true)
                 .register(Metrics.globalRegistry);
@@ -52,7 +50,7 @@ public class MetricsConfig {
 
     @Bean
     public Gauge subsetCountGauge() {
-        return Gauge.builder("dbrepo.subset.count", () -> identifierRepository.findAllSubsetIdentifiers().size())
+        return Gauge.builder("dbrepo.subset.count", () -> identifierRepository.countByType(IdentifierType.SUBSET))
                 .description("The total number of available subset data sources")
                 .strongReference(true)
                 .register(Metrics.globalRegistry);
@@ -60,7 +58,7 @@ public class MetricsConfig {
 
     @Bean
     public Gauge tableCountGauge() {
-        return Gauge.builder("dbrepo.table.count", () -> tableRepository.findAll().size())
+        return Gauge.builder("dbrepo.table.count", tableRepository::count)
                 .description("The total number of available table data sources")
                 .strongReference(true)
                 .register(Metrics.globalRegistry);
@@ -68,17 +66,7 @@ public class MetricsConfig {
 
     @Bean
     public Gauge volumeSumGauge() {
-        return Gauge.builder("dbrepo.volume.sum", () -> {
-                    if (tableRepository.findAll().isEmpty()) {
-                        return 0;
-                    }
-                    return tableRepository.findAll()
-                            .stream()
-                            .map(Table::getDataLength)
-                            .filter(Objects::nonNull)
-                            .mapToLong(d -> d)
-                            .sum();
-                })
+        return Gauge.builder("dbrepo.volume.sum", tableRepository::sumDataLength)
                 .description("The total volume of available research data")
                 .strongReference(true)
                 .register(Metrics.globalRegistry);
