@@ -28,6 +28,7 @@ import pydantic
 import urllib3
 from dbrepo.RestClient import RestClient
 from dbrepo.api import dto
+from client_live_evidence import deployment, toolchain
 
 HERE = Path(__file__).resolve().parent
 
@@ -149,6 +150,11 @@ class Runner:
         self.original_wrapper = RestClient._wrapper
         self.active = None
         self.catalog = json.loads((HERE / 'client-live-endpoints.json').read_text())
+        client_file = Path(importlib.import_module('dbrepo.RestClient').__file__).resolve()
+        self.client_sha256 = hashlib.sha256(client_file.read_bytes()).hexdigest()
+        self.runner_sha256 = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+        self.toolchain = toolchain(HERE, client_file.parent)
+        self.deployment = deployment(config['deployment_evidence'], self.endpoint) if 'deployment_evidence' in config else None
 
     def transport(self, **kwargs):
         if not kwargs['url'].startswith(self.endpoint + '/'):
@@ -259,8 +265,8 @@ class Runner:
                              'state': 'excluded' if endpoint.get('excluded') else 'not_in_profile' if outside else 'passed' if successful else 'attempted' if calls else 'uncovered'})
         report = {'runtime_versions': {'python': sys.version.split()[0], 'requests': requests.__version__, 'urllib3': urllib3.__version__, 'pydantic': pydantic.__version__, 'pandas': pd.__version__}, 'instance': self.instance, 'profile': self.profile, 'setup': self.config.get('setup', []), 'completed': self.finished, 'run_id': self.run_id, 'endpoint': self.endpoint,
                   'client_module': str(Path(importlib.import_module('dbrepo.RestClient').__file__).resolve()),
-                  'runner_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
-                  'client_sha256': hashlib.sha256(Path(importlib.import_module('dbrepo.RestClient').__file__).read_bytes()).hexdigest(),
+                  'runner_sha256': self.runner_sha256,
+                  'client_sha256': self.client_sha256, 'toolchain': self.toolchain, 'deployment': self.deployment,
                   'contracts': {'table_deletion': self.table_deletion},
                   'summary': dict(counts), 'resources': self.resources, 'cases': self.results,
                   'requests': self.http_calls, 'endpoint_coverage': coverage,
@@ -551,12 +557,19 @@ c.publish_dataframe(v['key'],pd.DataFrame([{'id':5,'value':50,'label':'amqp-fram
             step('search.public.enable',lambda:self.http('PUT',dp+'/visibility',
                  {'is_public':True,'is_schema_public':True,'is_dashboard_enabled':False},expected=(202,)),need=('database',))
         else: self.clients['search']=bearer
+        def contains_fixture(response):
+            records = response.json()
+            return isinstance(records, list) and any(
+                isinstance(item, dict) and item.get('id') == self.resources['database'] for item in records)
+
         for name,method,path,kwargs in [
             ('search.fuzzy','GET','/api/v1/search',{'params':[('q',self.run_id)]}),
             ('search.index','GET','/api/v1/search/database',{}),
             ('search.fields','GET','/api/v1/search/database/fields',{}),
             ('search.general','POST','/api/v1/search/database',{'payload':{'name':self.run_id}}),
-        ]: step(name,lambda m=method,p=path,k=kwargs:self.http(m,p,role='search',**k),need=('database',))
+        ]:
+            step(name, lambda m=method,p=path,k=kwargs:self.http(m,p,role='search',**k), need=('database',),
+                 check=contains_fixture if name in ('search.fuzzy', 'search.general') else None)
         if public_search:
             step('search.public.restore_private',lambda:self.http('PUT',dp+'/visibility',
                  {'is_public':False,'is_schema_public':False,'is_dashboard_enabled':False},expected=(202,)),need=('database',))
@@ -601,6 +614,8 @@ def main(argv=None):
     parser.add_argument('--config',type=Path,help='JSON file: endpoint, owner, optional peer/admin/system/oidc/test_container')
     parser.add_argument('--endpoint',help='Any DBRepo instance base URL')
     parser.add_argument('--table-deletion', choices=('physical', 'archive'), help='Expected server table-removal contract; default physical')
+    parser.add_argument('--deployment-evidence', type=Path,
+                        help='JSON with the tested endpoint, deployed source commit and running image digests')
     parser.add_argument('--container-id',help='Optional existing container ID for the new test database')
     parser.add_argument('--profile',choices=('user','full'),help='user: ordinary account; full: additionally admin/system checks')
     parser.add_argument('--username',help='Owner username; password is prompted without echo')
@@ -641,6 +656,11 @@ def main(argv=None):
         detail=str(error) if isinstance(error,(ValueError,RuntimeError)) else type(error).__name__
         print('Account setup was not completed: '+detail,file=sys.stderr)
         return 2
+    if args.deployment_evidence:
+        try:
+            config['deployment_evidence'] = deployment(json.loads(args.deployment_evidence.read_text()), config['endpoint'])
+        except (ValueError, OSError) as error:
+            parser.error(str(error))
     if args.table_deletion: config['table_deletion'] = args.table_deletion
     if (args.publish or args.external_doi) and config['profile']!='full': parser.error('--publish and --external-doi require --profile full')
     if args.output is None:

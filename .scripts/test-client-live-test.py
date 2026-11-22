@@ -198,8 +198,8 @@ class LiveRunnerTest(unittest.TestCase):
         path=live.HERE/'client-live-compare.py'
         spec=importlib.util.spec_from_file_location('live_compare',path)
         module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
-        a={'completed':True,'client_sha256':'same','profile':'user','cases':[{'case':'operation','status':'passed'},{'case':'optional','status':'skipped'}]}
-        b={'completed':True,'client_sha256':'same','profile':'user','cases':[{'case':'operation','status':'failed','error':'AssertionError'},{'case':'optional','status':'passed'}]}
+        a={'completed':True,'client_sha256':'same','runner_sha256':'same-runner','profile':'user','cases':[{'case':'operation','status':'passed'},{'case':'optional','status':'skipped'}]}
+        b={'completed':True,'client_sha256':'same','runner_sha256':'same-runner','profile':'user','cases':[{'case':'operation','status':'failed','error':'AssertionError'},{'case':'optional','status':'passed'}]}
         result=module.compare(a,b)
         self.assertEqual('candidate_only_failure',result['cases'][0 if result['cases'][0]['case']=='operation' else 1]['state'])
         self.assertEqual(1,result['summary']['uncompared'])
@@ -247,7 +247,7 @@ class LiveRunnerTest(unittest.TestCase):
     def test_comparison_reports_explicit_deletion_contract_difference(self):
         spec = importlib.util.spec_from_file_location('compare_contract', live.HERE/'client-live-compare.py')
         module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
-        a = {'completed':True,'client_sha256':'same','profile':'user',
+        a = {'completed':True,'client_sha256':'same','runner_sha256':'same-runner','profile':'user',
              'contracts':{'table_deletion':'physical'},'cases':[{'case':'table.deleted','status':'passed'}]}
         b = {**a, 'contracts':{'table_deletion':'archive'}}
         result = module.compare(a,b)
@@ -268,10 +268,99 @@ class LiveRunnerTest(unittest.TestCase):
         self.assertTrue(next(v for v in report['endpoint_coverage'] if v['operation'].endswith('/data/ingest'))['excluded'])
         self.assertTrue(next(v for v in report['endpoint_coverage'] if v['operation']=='PUT /api/v1/database/{id}')['excluded'])
 
+    def test_successful_search_requires_the_fixture_in_the_result(self):
+        self.runner.resources['database'] = 'fixture-id'
+        self.runner.config['search'] = {'token': 'example'}
+        def search_cases(name, action, **kwargs):
+            if name in ('search.fuzzy', 'search.general'):
+                return self.runner.step(name, action, **kwargs)
+        for records, expected in [([], 'failed'), ([{'id':'other'}], 'failed'), ([{'id':'fixture-id'}], 'passed')]:
+            with self.subTest(records=records), patch.object(self.runner, 'http', return_value=self.response(200, records)):
+                self.runner.results = []
+                self.runner.search_steps(search_cases, '/api/v1/database/fixture-id')
+                self.assertEqual([expected, expected], [result['status'] for result in self.runner.results])
+
     def test_inventory_matches_current_source(self):
         root=Path(__file__).resolve().parents[1]
         self.assertEqual(json.loads((live.HERE/'client-live-endpoints.json').read_text()),live.source_inventory(root))
 
+
+class ReleaseEvidenceTest(unittest.TestCase):
+    def setUp(self):
+        from client_live_evidence import CORE_COMPONENTS, toolchain
+        self.commit = 'a' * 40
+        self.catalog = json.loads((live.HERE / 'client-live-endpoints.json').read_text())
+        cases = ['search.fuzzy', 'identifier.retrieve.external', 'identifier.publish', 'oai.GetRecord']
+        endpoint = 'https://candidate.invalid'
+        self.report = {'completed': True, 'profile': 'full', 'endpoint': endpoint, 'run_id': 'candidate-run',
+            'cases': [{'case': name, 'status': 'passed'} for name in cases],
+            'endpoint_coverage': [{**e, 'state': 'excluded' if e['excluded'] else 'passed', 'passed_cases': 1}
+                                  for e in self.catalog['endpoints']],
+            'client_methods': {name: 'attempted' for name in self.catalog['client_methods']},
+            'toolchain': toolchain(live.HERE, Path(live.importlib.import_module('dbrepo').__file__).parent),
+            'runtime_versions': {'python': '3.11'},
+            'deployment': {'endpoint': endpoint, 'commit': self.commit, 'images': {name: 'sha256:' + 'b' * 64 for name in CORE_COMPONENTS}}}
+
+        self.baseline_commit = 'c' * 40
+        self.baseline = dict(self.report, run_id='baseline-run',
+                             deployment=dict(self.report['deployment'], commit=self.baseline_commit))
+
+    def test_release_requires_independent_runs_and_an_identified_baseline(self):
+        from client_live_evidence import release_check
+        for run_id in (None, self.baseline['run_id']):
+            candidate = dict(self.report, run_id=run_id)
+            result = release_check(self.baseline, candidate, self.commit, self.baseline_commit)
+            self.assertEqual('incomplete', result['state'])
+            self.assertTrue(any('independent run IDs' in gap for gap in result['evidence_gaps']))
+        result = release_check(self.baseline, self.report, self.commit, 'd' * 40)
+        self.assertEqual('incomplete', result['state'])
+        self.assertTrue(any('deployed baseline' in gap for gap in result['evidence_gaps']))
+        with self.assertRaisesRegex(ValueError, 'full baseline commit'):
+            release_check(self.baseline, self.report, self.commit, 'main')
+
+    def test_release_comparison_distinguishes_failed_skipped_and_missing_cases(self):
+        from copy import deepcopy
+        from client_live_evidence import release_check
+        self.assertEqual('passed', release_check(self.baseline, self.report, self.commit, self.baseline_commit)['state'])
+        for status in ('failed', 'skipped', None):
+            candidate = deepcopy(self.report)
+            if status:
+                candidate['cases'][0]['status'] = status
+            else:
+                candidate['cases'].pop(0)
+            result = release_check(self.baseline, candidate, self.commit, self.baseline_commit)
+            self.assertEqual('failed' if status == 'failed' else 'incomplete', result['state'])
+            self.assertIn('search.fuzzy', result['previously_passing_unverified'])
+
+    def test_strict_release_rejects_wrong_target_toolchain_or_coverage(self):
+        from copy import deepcopy
+        from client_live_evidence import release_check
+        for key, value in [('deployment', None), ('toolchain', {}), ('cases', []), ('profile', 'user'),
+                           ('completed', False), ('endpoint_coverage', []), ('client_methods', {}),
+                           ('runtime_versions', {})]:
+            with self.subTest(key=key):
+                candidate = dict(self.report, **{key: value})
+                self.assertEqual('incomplete', release_check(self.baseline, candidate, self.commit, self.baseline_commit)['state'])
+        candidate = deepcopy(self.report)
+        candidate['deployment']['images'] = {'ui': 'sha256:' + 'b' * 64}
+        self.assertEqual('incomplete', release_check(self.baseline, candidate, self.commit, self.baseline_commit)['state'])
+        candidate = deepcopy(self.report)
+        operation = next(entry for entry in candidate['endpoint_coverage'] if not entry['excluded'])
+        operation.update(state='attempted', passed_cases=0)
+        result = release_check(self.baseline, candidate, 'c' * 40, self.baseline_commit)
+        self.assertEqual('incomplete', result['state'])
+        self.assertIn(operation['operation'], result['uncovered_operations'])
+        self.assertTrue(any('deployed candidate' in reason for reason in result['evidence_gaps']))
+
+    def test_deployment_digests_are_bound_to_endpoint(self):
+        from client_live_evidence import deployment
+        manifest = self.report['deployment']
+        entry = dict(manifest, images={'data': 'example.invalid/data@sha256:' + '3' * 64})
+        self.assertEqual({'data': 'sha256:' + '3' * 64}, deployment(entry, self.report['endpoint'])['images'])
+        for bad in ({**manifest, 'images': {'data': 'image:latest'}}, {**manifest, 'endpoint': None},
+                    {**manifest, 'endpoint': 'https://another.invalid'}):
+            with self.assertRaises(ValueError):
+                deployment(bad, self.report['endpoint'])
 
 if __name__=='__main__':
     unittest.main()

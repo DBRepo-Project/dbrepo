@@ -149,3 +149,36 @@ does not enable publication. The comparison tool marks differing deletion contra
 explicitly instead of calling a contract difference a regression. Other cases remain
 comparable when the client and profile match. Batch lookup compatibility is described
 in [live-check contracts](../docs/developer-guide/live-check-contracts.md).
+
+## Comparing a release candidate
+
+Keep the deployed image IDs alongside each full report. Supply `--deployment-evidence images.json` when running the test. The JSON object has three fields.
+
+- `endpoint` is the origin that the runner will call.
+- `commit` is the full Git commit verified against the deployed image build.
+- `images` maps each deployed component name to its running `sha256:…` digest or its full `image@sha256:…` reference. Capture those IDs from running pods or containers. A tag or the commit advertised by the UI is insufficient.
+
+The runner records the supplied evidence and fingerprints the installed Python package, its own runtime helpers and the endpoint catalog. Use the same client and runner checkout for both targets. Keep the credentials in their separate private configuration files.
+
+For an approved disposable release run, enable the publication and external-provider cases. After both reports have been written, run:
+
+```sh
+python .scripts/client-live-compare.py baseline.json candidate.json \
+  --require-release "$CANDIDATE_COMMIT" --baseline-commit "$BASELINE_COMMIT" --output comparison.json
+```
+
+The strict comparison exits 1 for a failed candidate case and 2 for incomplete evidence. The JSON lists missing, skipped or uncovered checks, including earlier passing cases that the candidate no longer verifies. Full success requires two independent test runs, a deployment matching each supplied commit and complete selected API and SDK coverage. You can run the baseline and the candidate in sequence on the same endpoint. A normal comparison still treats historical reports as diagnostic evidence. Keep raw reports and image inventories private.
+
+### Collecting running image IDs
+
+Choose the workloads exercised by the release suite. Run the collector in the Kubernetes or Docker context that serves the given endpoint. Supply the full source commit from the deployment record. A runtime image ID alone cannot establish which source commit was built.
+
+```sh
+python3 .scripts/client-live-deployment.py \
+  --kubernetes "$NAMESPACE" --endpoint "$ENDPOINT" --commit "$DEPLOYED_SHA" \
+  --output images.json metadata-service data-service search-service consumer-service dashboard-service ui
+```
+
+For Compose, replace `--kubernetes "$NAMESPACE"` with `--compose "$PROJECT"`. Compose service names default to `dbrepo-<component>`. Add `replication-service` for an installation with replication. Use `component=workload` for a different service name or `component=deployment/container` to select the Kubernetes application container alongside a sidecar.
+
+The collector checks readiness and requires all replicas of each component to report one digest. Kubernetes reports the kubelet's running image ID. Compose reports the running container's image configuration digest. Keep each capture with its own target's release record.
