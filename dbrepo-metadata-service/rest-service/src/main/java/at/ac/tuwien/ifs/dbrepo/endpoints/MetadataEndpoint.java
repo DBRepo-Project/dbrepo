@@ -22,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -135,6 +136,16 @@ public class MetadataEndpoint extends RestEndpoint {
         final String xml = metadataService.listMetadataFormats();
         log.trace("list metadata formats resulted in xml {}", xml);
         return ResponseEntity.ok(xml);
+    }
+
+    @GetMapping(params = {"verb=ListMetadataFormats", "identifier"}, produces = MediaType.TEXT_XML_VALUE)
+    @Operation(summary = "List metadata formats available for one published identifier")
+    public ResponseEntity<String> listMetadataFormats(@RequestParam("identifier") String identifier) {
+        try {
+            return ResponseEntity.ok(metadataService.listMetadataFormats(identifier));
+        } catch (IdentifierNotFoundException e) {
+            return ResponseEntity.ok(metadataService.error(OaiErrorType.ID_DOES_NOT_EXIST));
+        }
     }
 
     @GetMapping(params = "verb=ListSets", produces = MediaType.TEXT_XML_VALUE)

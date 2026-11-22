@@ -49,6 +49,8 @@ public interface MetadataService {
      */
     String listMetadataFormats();
 
+    String listMetadataFormats(String identifier) throws IdentifierNotFoundException;
+
     /**
      * Retrieve the set structure of a repository, useful for selective harvesting.
      *
