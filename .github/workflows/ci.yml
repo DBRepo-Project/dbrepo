@@ -212,7 +212,7 @@ jobs:
       - name: Build UI
         run: |
           bun install --cwd ./dbrepo-ui --frozen-lockfile
-          node --test ./dbrepo-ui/tests/search-results.test.mjs ./dbrepo-ui/tests/numeric-value.test.mjs ./dbrepo-ui/tests/schema-numbers.test.mjs
+          node --test ./dbrepo-ui/tests/search-results.test.mjs ./dbrepo-ui/tests/numeric-value.test.mjs ./dbrepo-ui/tests/schema-numbers.test.mjs ./dbrepo-ui/tests/data-loading.test.mjs
           cd dbrepo-ui
           bunx playwright install --with-deps chromium
           bunx playwright test
