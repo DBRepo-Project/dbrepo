@@ -8,7 +8,7 @@ from typing import List
 
 import jwt
 import pytest
-from dbrepo.api.dto import Database, Table, Constraints, Column, ColumnType, ConceptBrief, UnitBrief, \
+from dbrepo.api.dto import Database, Table, Constraints, Column, ColumnType, ConceptBrief, UnitBrief, Check, \
     UserBrief, ContainerBrief, ImageBrief
 
 from app import app
@@ -34,7 +34,10 @@ req = Database(id="209acf92-5c9b-4633-ad99-113c86f6e948",
                              name="Data",
                              internal_name="data",
                              owner=UserBrief(id="c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502", username="foo"),
-                             constraints=Constraints(uniques=[], foreign_keys=[], checks=[], primary_key=[]),
+                             constraints=Constraints(uniques=[], foreign_keys=[],
+                                                     checks=[Check(id="a5688386-dea0-11f0-a111-0242ac120002",
+                                                                   check="weight > 100")],
+                                                     primary_key=[]),
                              is_versioned=False,
                              queue_name="dbrepo",
                              routing_key="dbrepo.1.1",

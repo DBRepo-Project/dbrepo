@@ -108,6 +108,7 @@
         </v-chip>
       </v-col>
       <v-col
+        v-if="showListControls"
         cols="auto"
         class="mt-3">
         <v-btn
@@ -119,13 +120,15 @@
           @click="removeForeignKey(index)" />
       </v-col>
     </v-row>
-    <v-row dense>
+    <v-row
+      v-if="showListControls"
+      dense>
       <v-col>
         <v-btn
           size="small"
           :color="disabled ? '' : 'tertiary'"
           :variant="buttonVariant"
-          :disabled="disabled || localColumnOptions.length === 0"
+          :disabled="disabled || localColumnOptions.length === 0 || (max !== null && localForeignKeys.length >= max)"
           :loading="loading"
           :text="$t('pages.table.subpages.schema.foreign_keys.add.text')"
           @click="addForeignKey" />
@@ -190,6 +193,18 @@ export default {
       default () {
         return 'flat'
       }
+    },
+    max: {
+      type: Number,
+      default () {
+        return null
+      }
+    },
+    showListControls: {
+      type: Boolean,
+      default () {
+        return true
+      }
     }
   },
   emits: ['update:modelValue'],
@@ -220,7 +235,7 @@ export default {
         .map(column => {
           return {
             name: column.name,
-            internal_name: column.name,
+            internal_name: this.toInternalName(column.name),
             type: column.type,
             column_type: column.type,
             size: column.size,
@@ -415,7 +430,13 @@ export default {
       return Number(value)
     },
     columnInternalName (column) {
-      return column.internal_name || column.name
+      return column.internal_name || this.toInternalName(column.name)
+    },
+    toInternalName (name) {
+      if (!name) {
+        return name
+      }
+      return useTableService().tableNameToInternalName(name)
     },
     sameReference (option, foreignKey) {
       return option.referenced_table === foreignKey.referenced_table &&

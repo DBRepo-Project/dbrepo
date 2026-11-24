@@ -257,7 +257,7 @@ headers = {'Content-Type': 'application/json'}
 
 @app.errorhandler(ServiceConnectionError)
 def metadata_unavailable(error):
-    logging.warning("Current search metadata is unavailable")
+    logging.warning("Current search metadata is unavailable", exc_info=error)
     return ApiError(status='SERVICE_UNAVAILABLE', message='Current search metadata is unavailable',
                     code='search.metadata.unavailable').model_dump(), 503, headers
 

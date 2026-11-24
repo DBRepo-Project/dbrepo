@@ -3,24 +3,33 @@ package at.ac.tuwien.ifs.dbrepo.service.impl;
 import at.ac.tuwien.ifs.dbrepo.cache.DatabaseCacheRepository;
 import at.ac.tuwien.ifs.dbrepo.config.RabbitConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableStatisticDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableUpdateDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnStatisticDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.CreateTableColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintAddDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintDeleteDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.ColumnEnum;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.ColumnSet;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumn;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.Constraints;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.check.CheckConstraint;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.foreignKey.ForeignKey;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.foreignKey.ForeignKeyReference;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.unique.Unique;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.mapper.MetadataMapper;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
+import at.ac.tuwien.ifs.dbrepo.metadata.CheckConstraintRepository;
 import at.ac.tuwien.ifs.dbrepo.metadata.ColumnDependencyRepository;
 import at.ac.tuwien.ifs.dbrepo.metadata.DatabaseRepository;
 import at.ac.tuwien.ifs.dbrepo.metadata.ForeignKeyRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.UniqueRepository;
 import at.ac.tuwien.ifs.dbrepo.service.TableService;
 import at.ac.tuwien.ifs.dbrepo.utils.AuthUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -29,10 +38,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -43,7 +50,9 @@ public class TableServiceImpl implements TableService {
     private final DataServiceGateway dataServiceGateway;
     private final DatabaseRepository databaseRepository;
     private final ColumnDependencyRepository columnDependencyRepository;
+    private final CheckConstraintRepository checkConstraintRepository;
     private final ForeignKeyRepository foreignKeyRepository;
+    private final UniqueRepository uniqueRepository;
     private final SearchServiceGateway searchServiceGateway;
     private final DatabaseCacheRepository databaseCacheRepository;
 
@@ -51,7 +60,9 @@ public class TableServiceImpl implements TableService {
     public TableServiceImpl(RabbitConfig rabbitConfig, MetadataMapper metadataMapper,
                             DataServiceGateway dataServiceGateway, DatabaseRepository databaseRepository,
                             ColumnDependencyRepository columnDependencyRepository,
+                            CheckConstraintRepository checkConstraintRepository,
                             ForeignKeyRepository foreignKeyRepository,
+                            UniqueRepository uniqueRepository,
                             SearchServiceGateway searchServiceGateway,
                             DatabaseCacheRepository databaseCacheRepository) {
         this.rabbitConfig = rabbitConfig;
@@ -59,7 +70,9 @@ public class TableServiceImpl implements TableService {
         this.dataServiceGateway = dataServiceGateway;
         this.databaseRepository = databaseRepository;
         this.columnDependencyRepository = columnDependencyRepository;
+        this.checkConstraintRepository = checkConstraintRepository;
         this.foreignKeyRepository = foreignKeyRepository;
+        this.uniqueRepository = uniqueRepository;
         this.searchServiceGateway = searchServiceGateway;
         this.databaseCacheRepository = databaseCacheRepository;
     }
@@ -182,6 +195,36 @@ public class TableServiceImpl implements TableService {
 
     @Override
     @Transactional
+    public Table addConstraint(Table table, ConstraintAddDto data) throws DataServiceException,
+            DataServiceConnectionException, DatabaseNotFoundException, TableNotFoundException, SearchServiceException,
+            SearchServiceConnectionException, MalformedException {
+        final String type = normalizeConstraintType(data.getType());
+        return switch (type) {
+            case "unique" -> addUniqueConstraint(table, data);
+            case "foreign_key" -> addForeignKeyConstraint(table, data);
+            case "check" -> addCheckConstraint(table, data);
+            case "not_null" -> addNotNullConstraint(table, data);
+            default -> throw new MalformedException("Unsupported constraint type: " + data.getType());
+        };
+    }
+
+    @Override
+    @Transactional
+    public Table deleteConstraint(Table table, ConstraintDeleteDto data) throws DataServiceException,
+            DataServiceConnectionException, DatabaseNotFoundException, TableNotFoundException, SearchServiceException,
+            SearchServiceConnectionException, MalformedException {
+        final String type = normalizeConstraintType(data.getType());
+        return switch (type) {
+            case "unique" -> deleteUniqueConstraint(table, data);
+            case "foreign_key" -> deleteForeignKeyConstraint(table, data);
+            case "check" -> deleteCheckConstraint(table, data);
+            case "not_null" -> deleteNotNullConstraint(table, data);
+            default -> throw new MalformedException("Unsupported constraint type: " + data.getType());
+        };
+    }
+
+    @Override
+    @Transactional
     public void deleteTable(Table table) throws DataServiceException, DataServiceConnectionException,
             DatabaseNotFoundException, SearchServiceConnectionException, SearchServiceException {
         /* remove metadata constraints that would otherwise keep the table columns alive */
@@ -213,6 +256,216 @@ public class TableServiceImpl implements TableService {
         /* update in search service */
         searchServiceGateway.update(database);
         log.info("Deleted table with id {}", table.getId());
+    }
+
+    private Table addUniqueConstraint(Table table, ConstraintAddDto data) throws MalformedException,
+            DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, TableNotFoundException,
+            SearchServiceException, SearchServiceConnectionException {
+        requireColumns(data.getColumns(), "Unique constraint columns are required");
+        final String name = nextConstraintName(table, "uk");
+        dataServiceGateway.addTableConstraint(table.getDatabase().getId(), table.getId(), ConstraintAddDto.builder()
+                .type("unique")
+                .name(name)
+                .columns(data.getColumns())
+                .build());
+        table.getConstraints().getUniques().add(Unique.builder()
+                .name(name)
+                .table(table)
+                .columns(data.getColumns().stream()
+                        .map(column -> findColumn(table, metadataMapper.nameToInternalName(column)))
+                        .collect(Collectors.toCollection(LinkedList::new)))
+                .build());
+        return saveConstraintMetadata(table);
+    }
+
+    private Table addForeignKeyConstraint(Table table, ConstraintAddDto data) throws MalformedException,
+            DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, TableNotFoundException,
+            SearchServiceException, SearchServiceConnectionException {
+        requireColumns(data.getColumns(), "Foreign key columns are required");
+        requireColumns(data.getReferencedColumns(), "Foreign key referenced columns are required");
+        if (data.getReferencedTable() == null || data.getReferencedTable().isBlank()) {
+            throw new MalformedException("Foreign key referenced table is required");
+        }
+        final Table referencedTable = findReferencedTable(table.getDatabase(), data.getReferencedTable());
+        final String name = nextConstraintName(table, "fk");
+        dataServiceGateway.addTableConstraint(table.getDatabase().getId(), table.getId(), ConstraintAddDto.builder()
+                .type("foreign_key")
+                .name(name)
+                .columns(data.getColumns())
+                .referencedTable(data.getReferencedTable())
+                .referencedColumns(data.getReferencedColumns())
+                .onUpdate(data.getOnUpdate())
+                .onDelete(data.getOnDelete())
+                .build());
+        final ForeignKey foreignKey = ForeignKey.builder()
+                .name(name)
+                .table(table)
+                .referencedTable(referencedTable)
+                .onUpdate(metadataMapper.referenceTypeDtoToReferenceType(data.getOnUpdate()))
+                .onDelete(metadataMapper.referenceTypeDtoToReferenceType(data.getOnDelete()))
+                .references(new LinkedList<>())
+                .build();
+        final ForeignKey managed = foreignKeyRepository.save(foreignKey);
+        for (int i = 0; i < data.getColumns().size(); i++) {
+            managed.getReferences().add(ForeignKeyReference.builder()
+                    .foreignKey(managed)
+                    .column(findColumn(table, metadataMapper.nameToInternalName(data.getColumns().get(i))))
+                    .referencedColumn(findColumn(referencedTable,
+                            metadataMapper.nameToInternalName(data.getReferencedColumns().get(i))))
+                    .build());
+        }
+        table.getConstraints().getForeignKeys().add(managed);
+        return saveConstraintMetadata(table);
+    }
+
+    private Table addCheckConstraint(Table table, ConstraintAddDto data) throws MalformedException,
+            DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, TableNotFoundException,
+            SearchServiceException, SearchServiceConnectionException {
+        if (data.getCheck() == null || data.getCheck().isBlank()) {
+            throw new MalformedException("Check constraint expression is required");
+        }
+        dataServiceGateway.addTableConstraint(table.getDatabase().getId(), table.getId(), ConstraintAddDto.builder()
+                .type("check")
+                .check(data.getCheck())
+                .build());
+        table.getConstraints().getChecks().add(CheckConstraint.builder()
+                .table(table)
+                .check(data.getCheck())
+                .build());
+        return saveConstraintMetadata(table);
+    }
+
+    private Table addNotNullConstraint(Table table, ConstraintAddDto data) throws MalformedException,
+            DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, TableNotFoundException,
+            SearchServiceException, SearchServiceConnectionException {
+        final TableColumn column;
+        if (data.getId() != null) {
+            column = findColumn(table, data.getId());
+        } else {
+            if (data.getColumn() == null || data.getColumn().isBlank()) {
+                throw new MalformedException("Column is required");
+            }
+            column = findColumn(table, metadataMapper.nameToInternalName(data.getColumn()));
+        }
+        dataServiceGateway.addTableConstraint(table.getDatabase().getId(), table.getId(), ConstraintAddDto.builder()
+                .type("not_null")
+                .column(column.getInternalName())
+                .build());
+        column.setIsNullAllowed(false);
+        return saveConstraintMetadata(table);
+    }
+
+    private Table deleteUniqueConstraint(Table table, ConstraintDeleteDto data) throws MalformedException,
+            DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, TableNotFoundException,
+            SearchServiceException, SearchServiceConnectionException {
+        final Unique unique = findUnique(table, requiredId(data));
+        dataServiceGateway.deleteTableConstraint(table.getDatabase().getId(), table.getId(), ConstraintDeleteDto.builder()
+                .type("unique")
+                .name(unique.getName())
+                .build());
+        table.getConstraints().getUniques().removeIf(item -> unique.getId().equals(item.getId()));
+        uniqueRepository.deleteById(unique.getId());
+        return saveConstraintMetadata(table);
+    }
+
+    private Table deleteForeignKeyConstraint(Table table, ConstraintDeleteDto data) throws MalformedException,
+            DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, TableNotFoundException,
+            SearchServiceException, SearchServiceConnectionException {
+        final ForeignKey foreignKey = findForeignKey(table, requiredId(data));
+        dataServiceGateway.deleteTableConstraint(table.getDatabase().getId(), table.getId(), ConstraintDeleteDto.builder()
+                .type("foreign_key")
+                .name(foreignKey.getName())
+                .build());
+        table.getConstraints().getForeignKeys().removeIf(item -> foreignKey.getId().equals(item.getId()));
+        foreignKeyRepository.deleteReferencesByForeignKeyId(foreignKey.getId());
+        foreignKeyRepository.deleteById(foreignKey.getId());
+        return saveConstraintMetadata(table);
+    }
+
+    private Table deleteCheckConstraint(Table table, ConstraintDeleteDto data) throws MalformedException,
+            DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, TableNotFoundException,
+            SearchServiceException, SearchServiceConnectionException {
+        final CheckConstraint check = findCheck(table, requiredId(data));
+        dataServiceGateway.deleteTableConstraint(table.getDatabase().getId(), table.getId(), ConstraintDeleteDto.builder()
+                .type("check")
+                .check(check.getCheck())
+                .build());
+        table.getConstraints().getChecks().removeIf(item -> check.getId().equals(item.getId()));
+        checkConstraintRepository.deleteById(check.getId());
+        return saveConstraintMetadata(table);
+    }
+
+    private Table deleteNotNullConstraint(Table table, ConstraintDeleteDto data) throws MalformedException,
+            DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, TableNotFoundException,
+            SearchServiceException, SearchServiceConnectionException {
+        final TableColumn column = findColumn(table, requiredId(data));
+        dataServiceGateway.deleteTableConstraint(table.getDatabase().getId(), table.getId(), ConstraintDeleteDto.builder()
+                .type("not_null")
+                .column(column.getInternalName())
+                .build());
+        column.setIsNullAllowed(true);
+        return saveConstraintMetadata(table);
+    }
+
+    private Table saveConstraintMetadata(Table table) throws DatabaseNotFoundException, TableNotFoundException,
+            SearchServiceException, SearchServiceConnectionException {
+        final Database database = databaseRepository.save(table.getDatabase());
+        databaseCacheRepository.deleteById(database.getId());
+        searchServiceGateway.update(database);
+        return findById(database, table.getId());
+    }
+
+    private String normalizeConstraintType(String type) throws MalformedException {
+        if (type == null) {
+            throw new MalformedException("Constraint type is required");
+        }
+        return type.toLowerCase(Locale.ENGLISH).replace('-', '_').replace(' ', '_');
+    }
+
+    private UUID requiredId(ConstraintDeleteDto data) throws MalformedException {
+        if (data.getId() == null) {
+            throw new MalformedException("Constraint id is required");
+        }
+        return data.getId();
+    }
+
+    private void requireColumns(List<String> columns, String message) throws MalformedException {
+        if (columns == null || columns.isEmpty()) {
+            throw new MalformedException(message);
+        }
+    }
+
+    private String nextConstraintName(Table table, String prefix) {
+        final String base = prefix + "_" + table.getInternalName() + "_";
+        final Set<String> existing = new HashSet<>();
+        table.getConstraints().getUniques().stream().map(Unique::getName).forEach(existing::add);
+        table.getConstraints().getForeignKeys().stream().map(ForeignKey::getName).forEach(existing::add);
+        int idx = 0;
+        while (existing.contains(base + idx)) {
+            idx++;
+        }
+        return base + idx;
+    }
+
+    private Unique findUnique(Table table, UUID id) throws MalformedException {
+        return table.getConstraints().getUniques().stream()
+                .filter(unique -> id.equals(unique.getId()))
+                .findFirst()
+                .orElseThrow(() -> new MalformedException("Failed to find unique constraint"));
+    }
+
+    private ForeignKey findForeignKey(Table table, UUID id) throws MalformedException {
+        return table.getConstraints().getForeignKeys().stream()
+                .filter(foreignKey -> id.equals(foreignKey.getId()))
+                .findFirst()
+                .orElseThrow(() -> new MalformedException("Failed to find foreign key constraint"));
+    }
+
+    private CheckConstraint findCheck(Table table, UUID id) throws MalformedException {
+        return table.getConstraints().getChecks().stream()
+                .filter(check -> id.equals(check.getId()))
+                .findFirst()
+                .orElseThrow(() -> new MalformedException("Failed to find check constraint"));
     }
 
     private void removeForeignKeysFromGraph(Table table) {
@@ -332,6 +585,31 @@ public class TableServiceImpl implements TableService {
         /* update in open search service */
         searchServiceGateway.update(database);
         log.info("Updated statistics for the table and {} column(s)", table.getColumns().size());
+    }
+
+    private Table findReferencedTable(Database database, String internalName) {
+        final String normalized = metadataMapper.nameToInternalName(internalName);
+        return database.getTables()
+                .stream()
+                .filter(table -> table.getInternalName().equals(normalized))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Failed to find foreign key referenced table"));
+    }
+
+    private TableColumn findColumn(Table table, String internalName) {
+        return table.getColumns()
+                .stream()
+                .filter(column -> column.getInternalName().equals(internalName))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Failed to find constraint column"));
+    }
+
+    private TableColumn findColumn(Table table, UUID id) {
+        return table.getColumns()
+                .stream()
+                .filter(column -> id.equals(column.getId()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Failed to find constraint column"));
     }
 
 }

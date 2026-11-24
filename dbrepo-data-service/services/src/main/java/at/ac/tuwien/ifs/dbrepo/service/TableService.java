@@ -2,6 +2,8 @@ package at.ac.tuwien.ifs.dbrepo.service;
 
 import at.ac.tuwien.ifs.dbrepo.core.api.database.query.ImportDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintAddDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintDeleteDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
@@ -52,6 +54,34 @@ public interface TableService {
      */
     void update(Database database, Table table, TableUpdateDto data) throws SQLException, TableMalformedException,
             TableNotFoundException;
+
+    /**
+     * Adds a supported table constraint.
+     *
+     * @param database The database.
+     * @param table    The table.
+     * @param data     The constraint definition.
+     * @return The inspected table after the change.
+     * @throws SQLException            Query statement is malformed.
+     * @throws TableMalformedException The constraint is malformed.
+     * @throws TableNotFoundException  The table could not be inspected in the metadata database.
+     */
+    TableDto addConstraint(Database database, Table table, ConstraintAddDto data) throws SQLException,
+            TableMalformedException, TableNotFoundException;
+
+    /**
+     * Deletes a supported table constraint.
+     *
+     * @param database The database.
+     * @param table    The table.
+     * @param data     The constraint identifier.
+     * @return The inspected table after the change.
+     * @throws SQLException            Query statement is malformed.
+     * @throws TableMalformedException The constraint is malformed.
+     * @throws TableNotFoundException  The table could not be inspected in the metadata database.
+     */
+    TableDto deleteConstraint(Database database, Table table, ConstraintDeleteDto data) throws SQLException,
+            TableMalformedException, TableNotFoundException;
 
     /**
      * Drops a table in given table object.

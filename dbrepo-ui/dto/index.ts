@@ -111,6 +111,31 @@ interface TableUpdateDto {
   is_schema_public: boolean;
 }
 
+interface ConstraintAddDto {
+  type: string;
+  id?: string | null;
+  columns?: string[];
+  referenced_table?: string | null;
+  referenced_columns?: string[];
+  on_update?: string | null;
+  on_delete?: string | null;
+  check?: string | null;
+  column?: string | null;
+}
+
+interface ConstraintDeleteDto {
+  type: string;
+  id?: string | null;
+  name?: string | null;
+  column?: string | null;
+  check?: string | null;
+}
+
+interface CheckDto {
+  id: string;
+  check: string;
+}
+
 interface ColumnBriefDto {
   id: string;
   name: string;
@@ -146,6 +171,7 @@ interface TableDto {
 }
 
 interface ForeignKeyDto {
+  id: string;
   name: string;
   columns: ColumnDto[];
   referenced_table: TableDto;
@@ -157,7 +183,7 @@ interface ForeignKeyDto {
 interface ConstraintsDto {
   primary_key: string[];
   uniques: UniqueDto[];
-  checks: string[];
+  checks: CheckDto[];
   foreign_keys: ForeignKeyDto[];
 }
 
@@ -192,7 +218,7 @@ interface ColumnAnalysisResultDto {
 }
 
 interface UniqueDto {
-  uid: string;
+  id: string;
   table: TableBriefDto;
   columns: ColumnDto[];
 }

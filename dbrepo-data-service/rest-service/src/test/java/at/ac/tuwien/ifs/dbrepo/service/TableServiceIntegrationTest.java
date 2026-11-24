@@ -3,8 +3,11 @@ package at.ac.tuwien.ifs.dbrepo.service;
 import at.ac.tuwien.ifs.dbrepo.config.MariaDbContainerConfig;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.*;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintAddDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintDeleteDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.CreateTableConstraintsDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.check.CheckDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.CreateForeignKeyDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.ForeignKeyDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.ForeignKeyReferenceDto;
@@ -12,6 +15,8 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.Refer
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.primary.PrimaryKeyDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.unique.UniqueDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.identifier.IdentifierDto;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Column;
+import at.ac.tuwien.ifs.dbrepo.core.entity.cache.ColumnType;
 import at.ac.tuwien.ifs.dbrepo.core.entity.cache.Table;
 import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
@@ -35,6 +40,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -433,7 +439,7 @@ public class TableServiceIntegrationTest extends BaseTest {
         assertNotNull(constraints);
         final List<PrimaryKeyDto> primaryKey = constraints.getPrimaryKey();
         assertEquals(1, primaryKey.size());
-        final Set<String> checks = constraints.getChecks();
+        final Set<String> checks = checkExpressions(constraints.getChecks());
         assertEquals(1, checks.size());
         assertEquals(Set.of("`age` > 0 and `age` < 120"), checks);
         final List<UniqueDto> uniques = constraints.getUniques();
@@ -532,7 +538,7 @@ public class TableServiceIntegrationTest extends BaseTest {
         assertNull(unique0.getColumns().get(0).getTableId());
         assertEquals("date", unique0.getColumns().get(0).getName());
         assertEquals("date", unique0.getColumns().get(0).getInternalName());
-        final List<String> checks = new LinkedList<>(constraints.getChecks());
+        final List<String> checks = new LinkedList<>(checkExpressions(constraints.getChecks()));
         assertEquals("`mintemp` > 0", checks.get(0));
         final List<ForeignKeyDto> foreignKeys = constraints.getForeignKeys();
         assertEquals(1, foreignKeys.size());
@@ -787,7 +793,7 @@ public class TableServiceIntegrationTest extends BaseTest {
         assertNotNull(constraints2);
         final List<PrimaryKeyDto> primaryKey2 = constraints2.getPrimaryKey();
         Assertions.assertEquals(1, primaryKey2.size());
-        final Set<String> checks2 = constraints2.getChecks();
+        final Set<String> checks2 = checkExpressions(constraints2.getChecks());
         Assertions.assertEquals(0, checks2.size());
         final List<UniqueDto> uniques2 = constraints2.getUniques();
         Assertions.assertEquals(0, uniques2.size());
@@ -810,7 +816,7 @@ public class TableServiceIntegrationTest extends BaseTest {
         assertNotNull(constraints3);
         final List<PrimaryKeyDto> primaryKey3 = constraints3.getPrimaryKey();
         Assertions.assertEquals(1, primaryKey3.size());
-        final Set<String> checks3 = constraints3.getChecks();
+        final Set<String> checks3 = checkExpressions(constraints3.getChecks());
         Assertions.assertEquals(1, checks3.size());
         Assertions.assertEquals(Set.of("`age` > 0 and `age` < 120"), checks3);
         final List<UniqueDto> uniques3 = constraints3.getUniques();
@@ -837,7 +843,7 @@ public class TableServiceIntegrationTest extends BaseTest {
         assertNotNull(constraints);
         final List<PrimaryKeyDto> primaryKey = constraints.getPrimaryKey();
         Assertions.assertEquals(1, primaryKey.size());
-        final Set<String> checks = constraints.getChecks();
+        final Set<String> checks = checkExpressions(constraints.getChecks());
         Assertions.assertEquals(0, checks.size());
     }
 
@@ -859,6 +865,29 @@ public class TableServiceIntegrationTest extends BaseTest {
         assertThrows(TableMalformedException.class, () -> {
             tableService.create(DATABASE_1_CACHE, request);
         });
+    }
+
+    @Test
+    public void createTable_malformedCheckSql_fails() {
+        final CreateTableDto request = CreateTableDto.builder()
+                .name("malformed_check")
+                .columns(List.of(CreateTableColumnDto.builder()
+                        .name("score")
+                        .type(ColumnTypeDto.INT)
+                        .nullAllowed(true)
+                        .build()))
+                .constraints(CreateTableConstraintsDto.builder()
+                        .primaryKey(List.of())
+                        .checks(Set.of("`score` >= 0); DROP TABLE some_table; --"))
+                        .uniques(List.of())
+                        .foreignKeys(List.of())
+                        .build())
+                .build();
+
+        final TableMalformedException exception = assertThrows(TableMalformedException.class, () -> {
+            tableService.create(DATABASE_1_CACHE, request);
+        });
+        assertTrue(exception.getMessage().contains("Invalid check constraint expression"));
     }
 
     @Test
@@ -905,7 +934,7 @@ public class TableServiceIntegrationTest extends BaseTest {
         assertColumn(columns.get(2), null, null, DATABASE_1_ID, "lng", "lng", ColumnTypeDto.DECIMAL, 10L, 10L, false, null);
         final ConstraintsDto constraints = response.getConstraints();
         assertNotNull(constraints);
-        final Set<String> checks = constraints.getChecks();
+        final Set<String> checks = checkExpressions(constraints.getChecks());
         assertNotNull(checks);
         assertEquals(0, checks.size());
         final List<PrimaryKeyDto> primaryKeys = new LinkedList<>(constraints.getPrimaryKey());
@@ -934,6 +963,245 @@ public class TableServiceIntegrationTest extends BaseTest {
         assertEquals(TABLE_1_COLUMNS.size(), response.getColumns().size());
     }
 
+    @Test
+    public void addDeleteUniqueConstraint_succeeds() throws SQLException, TableMalformedException,
+            TableNotFoundException, TableExistsException {
+        final Table table = createConstraintTestTable("constraint_unique_add", Set.of(), List.of(), List.of());
+
+        TableDto response = tableService.addConstraint(DATABASE_1_CACHE, table, ConstraintAddDto.builder()
+                .type("unique")
+                .columns(List.of("code"))
+                .build());
+        assertEquals(1, response.getConstraints().getUniques().size());
+        final String uniqueName = response.getConstraints().getUniques().get(0).getName();
+
+        response = tableService.deleteConstraint(DATABASE_1_CACHE, table, ConstraintDeleteDto.builder()
+                .type("unique")
+                .name(uniqueName)
+                .build());
+        assertEquals(0, response.getConstraints().getUniques().size());
+    }
+
+    @Test
+    public void deleteCreateTableUniqueConstraint_succeeds() throws SQLException, TableMalformedException,
+            TableNotFoundException, TableExistsException {
+        final Table table = createConstraintTestTable("constraint_unique_create", Set.of(), List.of(List.of("code")), List.of());
+        final TableDto inspected = tableService.inspect(DATABASE_1_CACHE, table.getInternalName());
+        assertEquals(1, inspected.getConstraints().getUniques().size());
+
+        final TableDto response = tableService.deleteConstraint(DATABASE_1_CACHE, table, ConstraintDeleteDto.builder()
+                .type("unique")
+                .name(inspected.getConstraints().getUniques().get(0).getName())
+                .build());
+        assertEquals(0, response.getConstraints().getUniques().size());
+    }
+
+    @Test
+    public void addDeleteForeignKeyConstraint_succeeds() throws SQLException, TableMalformedException,
+            TableNotFoundException, TableExistsException {
+        createConstraintParentTable("constraint_fk_parent_add");
+        final Table child = createConstraintChildTable("constraint_fk_child_add", List.of());
+
+        TableDto response = tableService.addConstraint(DATABASE_1_CACHE, child, ConstraintAddDto.builder()
+                .type("foreign_key")
+                .columns(List.of("parent_id"))
+                .referencedTable("constraint_fk_parent_add")
+                .referencedColumns(List.of("id"))
+                .onDelete(ReferenceTypeDto.CASCADE)
+                .onUpdate(ReferenceTypeDto.CASCADE)
+                .build());
+        assertEquals(1, response.getConstraints().getForeignKeys().size());
+        final String foreignKeyName = response.getConstraints().getForeignKeys().get(0).getName();
+
+        response = tableService.deleteConstraint(DATABASE_1_CACHE, child, ConstraintDeleteDto.builder()
+                .type("foreign_key")
+                .name(foreignKeyName)
+                .build());
+        assertEquals(0, response.getConstraints().getForeignKeys().size());
+    }
+
+    @Test
+    public void deleteCreateTableForeignKeyConstraint_succeeds() throws SQLException, TableMalformedException,
+            TableNotFoundException, TableExistsException {
+        createConstraintParentTable("constraint_fk_parent_create");
+        final Table child = createConstraintChildTable("constraint_fk_child_create", List.of(CreateForeignKeyDto.builder()
+                .columns(List.of("parent_id"))
+                .referencedTable("constraint_fk_parent_create")
+                .referencedColumns(List.of("id"))
+                .onDelete(ReferenceTypeDto.RESTRICT)
+                .onUpdate(ReferenceTypeDto.NO_ACTION)
+                .build()));
+        final TableDto inspected = tableService.inspect(DATABASE_1_CACHE, child.getInternalName());
+        assertEquals(1, inspected.getConstraints().getForeignKeys().size());
+
+        final TableDto response = tableService.deleteConstraint(DATABASE_1_CACHE, child, ConstraintDeleteDto.builder()
+                .type("foreign_key")
+                .name(inspected.getConstraints().getForeignKeys().get(0).getName())
+                .build());
+        assertEquals(0, response.getConstraints().getForeignKeys().size());
+    }
+
+    @Test
+    public void addDeleteCheckConstraint_succeeds() throws SQLException, TableMalformedException,
+            TableNotFoundException, TableExistsException {
+        final Table table = createConstraintTestTable("constraint_check_add", Set.of(), List.of(), List.of());
+
+        TableDto response = tableService.addConstraint(DATABASE_1_CACHE, table, ConstraintAddDto.builder()
+                .type("check")
+                .check("`score` >= 0")
+                .build());
+        assertEquals(Set.of("`score` >= 0"), checkExpressions(response.getConstraints().getChecks()));
+
+        response = tableService.deleteConstraint(DATABASE_1_CACHE, table, ConstraintDeleteDto.builder()
+                .type("check")
+                .check("`score` >= 0")
+                .build());
+        assertEquals(0, response.getConstraints().getChecks().size());
+    }
+
+    @Test
+    public void deleteCreateTableCheckConstraint_succeeds() throws SQLException, TableMalformedException,
+            TableNotFoundException, TableExistsException {
+        final Table table = createConstraintTestTable("constraint_check_create", Set.of("`score` >= 0"), List.of(), List.of());
+        final TableDto inspected = tableService.inspect(DATABASE_1_CACHE, table.getInternalName());
+        assertEquals(Set.of("`score` >= 0"), checkExpressions(inspected.getConstraints().getChecks()));
+
+        final TableDto response = tableService.deleteConstraint(DATABASE_1_CACHE, table, ConstraintDeleteDto.builder()
+                .type("check")
+                .check("`score` >= 0")
+                .build());
+        assertEquals(0, response.getConstraints().getChecks().size());
+    }
+
+    @Test
+    public void addDeleteNotNullConstraint_succeeds() throws SQLException, TableMalformedException,
+            TableNotFoundException, TableExistsException {
+        final Table table = createConstraintTestTable("constraint_not_null_add", Set.of(), List.of(), List.of());
+
+        TableDto response = tableService.addConstraint(DATABASE_1_CACHE, table, ConstraintAddDto.builder()
+                .type("not_null")
+                .column("description")
+                .build());
+        assertFalse(column(response, "description").getIsNullAllowed());
+
+        response = tableService.deleteConstraint(DATABASE_1_CACHE, table, ConstraintDeleteDto.builder()
+                .type("not_null")
+                .column("description")
+                .build());
+        assertTrue(column(response, "description").getIsNullAllowed());
+    }
+
+    @Test
+    public void deleteCreateTableNotNullConstraint_succeeds() throws SQLException, TableMalformedException,
+            TableNotFoundException, TableExistsException {
+        final Table table = createConstraintTestTable("constraint_not_null_create", Set.of(), List.of(), List.of(),
+                false);
+        final TableDto inspected = tableService.inspect(DATABASE_1_CACHE, table.getInternalName());
+        assertFalse(column(inspected, "description").getIsNullAllowed());
+
+        final TableDto response = tableService.deleteConstraint(DATABASE_1_CACHE, table, ConstraintDeleteDto.builder()
+                .type("not_null")
+                .column("description")
+                .build());
+        assertTrue(column(response, "description").getIsNullAllowed());
+    }
+
+    @Test
+    public void addDeleteNotNullConstraint_preservesDefaultAndCollation_succeeds() throws SQLException,
+            TableMalformedException, TableNotFoundException {
+        final String tableName = "constraint_not_null_preserve_attrs";
+        MariaDbUtil.execute(DATABASE_1_CACHE, "CREATE TABLE `" + tableName + "` " +
+                "(`id` INT NOT NULL, `status` VARCHAR(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT 'new', " +
+                "PRIMARY KEY (`id`)) WITH SYSTEM VERSIONING;");
+        final Table table = Table.builder()
+                .databaseId(DATABASE_1_ID)
+                .internalName(tableName)
+                .isPublic(true)
+                .isSchemaPublic(true)
+                .columns(List.of())
+                .build();
+
+        TableDto response = tableService.addConstraint(DATABASE_1_CACHE, table, ConstraintAddDto.builder()
+                .type("not_null")
+                .column("status")
+                .build());
+        assertFalse(column(response, "status").getIsNullAllowed());
+        assertColumnKeepsDefaultAndCollation(tableName, true);
+        MariaDbUtil.execute(DATABASE_1_CACHE, "INSERT INTO `" + tableName + "` (`id`) VALUES (1);");
+
+        response = tableService.deleteConstraint(DATABASE_1_CACHE, table, ConstraintDeleteDto.builder()
+                .type("not_null")
+                .column("status")
+                .build());
+        assertTrue(column(response, "status").getIsNullAllowed());
+        assertColumnKeepsDefaultAndCollation(tableName, false);
+        MariaDbUtil.execute(DATABASE_1_CACHE, "INSERT INTO `" + tableName + "` (`id`) VALUES (2);");
+    }
+
+    @Test
+    public void addConstraint_primaryKey_fails() throws SQLException, TableMalformedException,
+            TableNotFoundException, TableExistsException {
+        final Table table = createConstraintTestTable("constraint_primary_key_fail", Set.of(), List.of(), List.of());
+
+        assertThrows(TableMalformedException.class, () -> tableService.addConstraint(DATABASE_1_CACHE, table,
+                ConstraintAddDto.builder()
+                        .type("primary_key")
+                        .columns(List.of("code"))
+                        .build()));
+    }
+
+    @Test
+    public void addConstraint_missingPayload_fails() throws SQLException, TableMalformedException,
+            TableNotFoundException, TableExistsException {
+        final Table table = createConstraintTestTable("constraint_missing_payload_fail", Set.of(), List.of(), List.of());
+
+        assertThrows(TableMalformedException.class, () -> tableService.addConstraint(DATABASE_1_CACHE, table,
+                ConstraintAddDto.builder()
+                        .type("unique")
+                        .build()));
+    }
+
+    @Test
+    public void addConstraint_unsatisfiedCheck_fails() throws SQLException, TableMalformedException,
+            TableNotFoundException, TableExistsException, QueryMalformedException, StorageUnavailableException,
+            StorageNotFoundException {
+        final Table table = createConstraintTestTable("constraint_unsatisfied_check_fail", Set.of(), List.of(), List.of());
+        tableService.createTuple(DATABASE_1_CACHE, table, TupleDto.builder()
+                .data(Map.of("id", 1, "code", "A", "score", -1, "description", "bad"))
+                .build());
+
+        assertThrows(TableMalformedException.class, () -> tableService.addConstraint(DATABASE_1_CACHE, table,
+                ConstraintAddDto.builder()
+                        .type("check")
+                        .check("`score` >= 0")
+                        .build()));
+    }
+
+    @Test
+    public void addConstraint_malformedCheckSql_fails() throws SQLException, TableMalformedException,
+            TableNotFoundException, TableExistsException {
+        final Table table = createConstraintTestTable("constraint_malformed_check_fail", Set.of(), List.of(), List.of());
+
+        final TableMalformedException exception = assertThrows(TableMalformedException.class, () -> {
+            tableService.addConstraint(DATABASE_1_CACHE, table, ConstraintAddDto.builder()
+                    .type("check")
+                    .check("`score` >= 0); DROP TABLE some_table; --")
+                    .build());
+        });
+        assertTrue(exception.getMessage().contains("Invalid check constraint expression"));
+    }
+
+    @Test
+    public void deleteConstraint_missingName_fails() throws SQLException, TableMalformedException,
+            TableNotFoundException, TableExistsException {
+        final Table table = createConstraintTestTable("constraint_missing_name_fail", Set.of(), List.of(), List.of());
+
+        assertThrows(TableMalformedException.class, () -> tableService.deleteConstraint(DATABASE_1_CACHE, table,
+                ConstraintDeleteDto.builder()
+                        .type("unique")
+                        .build()));
+    }
+
     protected static void assertColumn(ColumnDto column, UUID id, UUID tableId, UUID databaseId, String name,
                                        String internalName, ColumnTypeDto type, Long size, Long d, Boolean nullAllowed,
                                        String description) {
@@ -949,6 +1217,120 @@ public class TableServiceIntegrationTest extends BaseTest {
         assertEquals(d, column.getD());
         assertEquals(nullAllowed, column.getIsNullAllowed());
         assertEquals(description, column.getDescription());
+    }
+
+    private Table createConstraintTestTable(String name, Set<String> checks, List<List<String>> uniques,
+                                            List<CreateForeignKeyDto> foreignKeys) throws SQLException,
+            TableMalformedException, TableNotFoundException, TableExistsException {
+        return createConstraintTestTable(name, checks, uniques, foreignKeys, true);
+    }
+
+    private Table createConstraintTestTable(String name, Set<String> checks, List<List<String>> uniques,
+                                            List<CreateForeignKeyDto> foreignKeys, boolean descriptionNullAllowed)
+            throws SQLException, TableMalformedException, TableNotFoundException, TableExistsException {
+        final TableDto dto = tableService.create(DATABASE_1_CACHE, CreateTableDto.builder()
+                .name(name)
+                .columns(List.of(CreateTableColumnDto.builder()
+                                .name("id")
+                                .type(ColumnTypeDto.INT)
+                                .nullAllowed(false)
+                                .build(),
+                        CreateTableColumnDto.builder()
+                                .name("code")
+                                .type(ColumnTypeDto.VARCHAR)
+                                .size(32L)
+                                .nullAllowed(false)
+                                .build(),
+                        CreateTableColumnDto.builder()
+                                .name("score")
+                                .type(ColumnTypeDto.INT)
+                                .nullAllowed(true)
+                                .build(),
+                        CreateTableColumnDto.builder()
+                                .name("description")
+                                .type(ColumnTypeDto.VARCHAR)
+                                .size(64L)
+                                .nullAllowed(descriptionNullAllowed)
+                                .build()))
+                .constraints(CreateTableConstraintsDto.builder()
+                        .primaryKey(List.of("id"))
+                        .checks(checks)
+                        .uniques(uniques)
+                        .foreignKeys(foreignKeys)
+                        .build())
+                .build());
+        return table(dto);
+    }
+
+    private Table createConstraintParentTable(String name) throws SQLException, TableMalformedException,
+            TableNotFoundException, TableExistsException {
+        return createConstraintTestTable(name, Set.of(), List.of(List.of("code")), List.of());
+    }
+
+    private Table createConstraintChildTable(String name, List<CreateForeignKeyDto> foreignKeys)
+            throws SQLException, TableMalformedException, TableNotFoundException, TableExistsException {
+        final TableDto dto = tableService.create(DATABASE_1_CACHE, CreateTableDto.builder()
+                .name(name)
+                .columns(List.of(CreateTableColumnDto.builder()
+                                .name("id")
+                                .type(ColumnTypeDto.INT)
+                                .nullAllowed(false)
+                                .build(),
+                        CreateTableColumnDto.builder()
+                                .name("parent_id")
+                                .type(ColumnTypeDto.INT)
+                                .nullAllowed(true)
+                                .build()))
+                .constraints(CreateTableConstraintsDto.builder()
+                        .primaryKey(List.of("id"))
+                        .checks(Set.of())
+                        .uniques(List.of())
+                        .foreignKeys(foreignKeys)
+                        .build())
+                .build());
+        return table(dto);
+    }
+
+    private Table table(TableDto dto) {
+        return Table.builder()
+                .id(dto.getId())
+                .databaseId(DATABASE_1_ID)
+                .internalName(dto.getInternalName())
+                .isPublic(true)
+                .isSchemaPublic(true)
+                .columns(dto.getColumns()
+                        .stream()
+                        .map(column -> Column.builder()
+                                .id(column.getId())
+                                .internalName(column.getInternalName())
+                                .columnType(ColumnType.valueOf(column.getColumnType().name()))
+                                .build())
+                        .toList())
+                .build();
+    }
+
+    private ColumnDto column(TableDto table, String internalName) {
+        return table.getColumns()
+                .stream()
+                .filter(column -> column.getInternalName().equals(internalName))
+                .findFirst()
+                .orElseThrow();
+    }
+
+    private Set<String> checkExpressions(Set<CheckDto> checks) {
+        return checks.stream()
+                .map(CheckDto::getCheck)
+                .collect(Collectors.toSet());
+    }
+
+    private void assertColumnKeepsDefaultAndCollation(String tableName, boolean notNull) throws SQLException {
+        final String statement = MariaDbUtil.selectQuery(DATABASE_1_CACHE, "SHOW CREATE TABLE `" + tableName + "`",
+                        Set.of("Create Table"))
+                .get(0)
+                .get("Create Table");
+        assertTrue(statement.contains("`status` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin"));
+        assertTrue(statement.contains("DEFAULT 'new'"));
+        assertEquals(notNull, statement.contains("`status` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL"));
     }
 
 }

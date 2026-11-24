@@ -8,6 +8,7 @@ import at.ac.tuwien.ifs.dbrepo.core.api.database.query.QueryDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.*;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintsDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.check.CheckDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.ForeignKeyBriefDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.ForeignKeyDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.ForeignKeyReferenceDto;

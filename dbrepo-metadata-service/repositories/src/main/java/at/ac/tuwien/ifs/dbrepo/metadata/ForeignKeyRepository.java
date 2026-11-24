@@ -30,6 +30,13 @@ public interface ForeignKeyRepository extends JpaRepository<ForeignKey, UUID> {
 
     @Modifying
     @Query("""
+            delete from ForeignKeyReference r
+            where r.foreignKey.id = :foreignKeyId
+            """)
+    int deleteReferencesByForeignKeyId(@Param("foreignKeyId") UUID foreignKeyId);
+
+    @Modifying
+    @Query("""
             delete from ForeignKey foreignKey
             where foreignKey.table.id = :tableId
             or foreignKey.referencedTable.id = :tableId

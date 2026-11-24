@@ -2,15 +2,26 @@ package at.ac.tuwien.ifs.dbrepo.service;
 
 import at.ac.tuwien.ifs.dbrepo.cache.DatabaseCacheRepository;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.CreateTableDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableBriefDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableStatisticDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.TableUpdateDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnBriefDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnStatisticDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.ColumnTypeDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.CreateTableColumnDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintAddDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintDeleteDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.ConstraintsDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.CreateTableConstraintsDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.check.CheckDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.CreateForeignKeyDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.ForeignKeyDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.ForeignKeyReferenceDto;
 import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.foreign.ReferenceTypeDto;
+import at.ac.tuwien.ifs.dbrepo.core.api.database.table.constraints.unique.UniqueDto;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.Database;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.Table;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.ColumnEnum;
@@ -18,6 +29,7 @@ import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.ColumnSet;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumn;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.columns.TableColumnType;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.Constraints;
+import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.check.CheckConstraint;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.foreignKey.ForeignKey;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.foreignKey.ForeignKeyReference;
 import at.ac.tuwien.ifs.dbrepo.core.entity.database.table.constraints.foreignKey.ReferenceType;
@@ -25,9 +37,11 @@ import at.ac.tuwien.ifs.dbrepo.core.exception.*;
 import at.ac.tuwien.ifs.dbrepo.core.test.BaseTest;
 import at.ac.tuwien.ifs.dbrepo.gateway.DataServiceGateway;
 import at.ac.tuwien.ifs.dbrepo.gateway.SearchServiceGateway;
+import at.ac.tuwien.ifs.dbrepo.metadata.CheckConstraintRepository;
 import at.ac.tuwien.ifs.dbrepo.metadata.ColumnDependencyRepository;
 import at.ac.tuwien.ifs.dbrepo.metadata.DatabaseRepository;
 import at.ac.tuwien.ifs.dbrepo.metadata.ForeignKeyRepository;
+import at.ac.tuwien.ifs.dbrepo.metadata.UniqueRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,6 +58,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -62,6 +77,12 @@ public class TableServiceUnitTest extends BaseTest {
 
     @MockitoBean
     private ForeignKeyRepository foreignKeyRepository;
+
+    @MockitoBean
+    private UniqueRepository uniqueRepository;
+
+    @MockitoBean
+    private CheckConstraintRepository checkConstraintRepository;
 
     @MockitoBean
     private ColumnDependencyRepository columnDependencyRepository;
@@ -869,6 +890,299 @@ public class TableServiceUnitTest extends BaseTest {
     }
 
     @Test
+    public void addDeleteUniqueConstraint_succeeds() throws DataServiceException, DataServiceConnectionException,
+            DatabaseNotFoundException, TableNotFoundException, SearchServiceException,
+            SearchServiceConnectionException, MalformedException {
+        final ConstraintAddDto add = ConstraintAddDto.builder()
+                .type("unique")
+                .columns(List.of("linie"))
+                .build();
+        final UUID uniqueId = UUID.fromString("a2e0de42-36c8-4a1a-b51f-8dd51d882a0b");
+
+        /* mock */
+        when(databaseRepository.save(any(Database.class)))
+                .thenAnswer(invocation -> {
+                    final Database database = invocation.getArgument(0);
+                    TABLE_3.getConstraints().getUniques().forEach(unique -> {
+                        if (unique.getId() == null) {
+                            unique.setId(uniqueId);
+                        }
+                    });
+                    return database;
+                });
+        when(searchServiceGateway.update(any(Database.class)))
+                .thenReturn(DATABASE_1_BRIEF_DTO);
+
+        /* test */
+        Table response = tableService.addConstraint(TABLE_3, add);
+        assertEquals(1, response.getConstraints().getUniques().size());
+        assertEquals("uk_sensor_0", response.getConstraints().getUniques().get(0).getName());
+        final ArgumentCaptor<ConstraintAddDto> addCaptor = forClass(ConstraintAddDto.class);
+        verify(dataServiceGateway)
+                .addTableConstraint(eq(TABLE_3.getDatabase().getId()), eq(TABLE_3_ID), addCaptor.capture());
+        assertEquals("uk_sensor_0", addCaptor.getValue().getName());
+
+        final ConstraintDeleteDto delete = ConstraintDeleteDto.builder()
+                .type("unique")
+                .id(uniqueId)
+                .build();
+        response = tableService.deleteConstraint(TABLE_3, delete);
+        assertEquals(0, response.getConstraints().getUniques().size());
+        final ArgumentCaptor<ConstraintDeleteDto> deleteCaptor = forClass(ConstraintDeleteDto.class);
+        verify(dataServiceGateway)
+                .deleteTableConstraint(eq(TABLE_3.getDatabase().getId()), eq(TABLE_3_ID), deleteCaptor.capture());
+        assertEquals("uk_sensor_0", deleteCaptor.getValue().getName());
+    }
+
+    @Test
+    public void addDeleteForeignKeyConstraint_succeeds() throws DataServiceException, DataServiceConnectionException,
+            DatabaseNotFoundException, TableNotFoundException, SearchServiceException,
+            SearchServiceConnectionException, MalformedException {
+        final ConstraintAddDto add = ConstraintAddDto.builder()
+                .type("foreign_key")
+                .columns(List.of("id"))
+                .referencedTable(TABLE_1_INTERNAL_NAME)
+                .referencedColumns(List.of("id"))
+                .onUpdate(ReferenceTypeDto.CASCADE)
+                .onDelete(ReferenceTypeDto.NO_ACTION)
+                .build();
+        final UUID foreignKeyId = UUID.fromString("54ec5226-d9a2-4d25-85e8-5a89ca1df9ab");
+
+        /* mock */
+        when(foreignKeyRepository.save(any(ForeignKey.class)))
+                .thenAnswer(invocation -> {
+                    final ForeignKey foreignKey = invocation.getArgument(0);
+                    foreignKey.setId(foreignKeyId);
+                    return foreignKey;
+                });
+        when(databaseRepository.save(any(Database.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(searchServiceGateway.update(any(Database.class)))
+                .thenReturn(DATABASE_1_BRIEF_DTO);
+
+        /* test */
+        Table response = tableService.addConstraint(TABLE_3, add);
+        assertEquals(1, response.getConstraints().getForeignKeys().size());
+        assertEquals("fk_sensor_0", response.getConstraints().getForeignKeys().get(0).getName());
+        final ArgumentCaptor<ConstraintAddDto> addCaptor = forClass(ConstraintAddDto.class);
+        verify(dataServiceGateway)
+                .addTableConstraint(eq(TABLE_3.getDatabase().getId()), eq(TABLE_3_ID), addCaptor.capture());
+        assertEquals("fk_sensor_0", addCaptor.getValue().getName());
+
+        final ConstraintDeleteDto delete = ConstraintDeleteDto.builder()
+                .type("foreign_key")
+                .id(foreignKeyId)
+                .build();
+        response = tableService.deleteConstraint(TABLE_3, delete);
+        assertEquals(0, response.getConstraints().getForeignKeys().size());
+        final ArgumentCaptor<ConstraintDeleteDto> deleteCaptor = forClass(ConstraintDeleteDto.class);
+        verify(dataServiceGateway)
+                .deleteTableConstraint(eq(TABLE_3.getDatabase().getId()), eq(TABLE_3_ID), deleteCaptor.capture());
+        assertEquals("fk_sensor_0", deleteCaptor.getValue().getName());
+    }
+
+    @Test
+    public void addDeleteCheckConstraint_succeeds() throws DataServiceException, DataServiceConnectionException,
+            DatabaseNotFoundException, TableNotFoundException, SearchServiceException,
+            SearchServiceConnectionException, MalformedException {
+        final ConstraintAddDto add = ConstraintAddDto.builder()
+                .type("check")
+                .check("`linie` > 0")
+                .build();
+        final UUID checkId = UUID.fromString("e4bb21f2-b2f2-491a-852b-397639206836");
+
+        /* mock */
+        when(databaseRepository.save(any(Database.class)))
+                .thenAnswer(invocation -> {
+                    final Database database = invocation.getArgument(0);
+                    TABLE_3.getConstraints().getChecks().forEach(check -> {
+                        if (check.getId() == null) {
+                            check.setId(checkId);
+                        }
+                    });
+                    return database;
+                });
+        when(searchServiceGateway.update(any(Database.class)))
+                .thenReturn(DATABASE_1_BRIEF_DTO);
+
+        /* test */
+        Table response = tableService.addConstraint(TABLE_3, add);
+        assertEquals(Set.of("`linie` > 0"), response.getConstraints().getChecks()
+                .stream()
+                .map(CheckConstraint::getCheck)
+                .collect(Collectors.toSet()));
+
+        final ConstraintDeleteDto delete = ConstraintDeleteDto.builder()
+                .type("check")
+                .id(checkId)
+                .build();
+        response = tableService.deleteConstraint(TABLE_3, delete);
+        assertEquals(0, response.getConstraints().getChecks().size());
+        final ArgumentCaptor<ConstraintDeleteDto> deleteCaptor = forClass(ConstraintDeleteDto.class);
+        verify(dataServiceGateway)
+                .deleteTableConstraint(eq(TABLE_3.getDatabase().getId()), eq(TABLE_3_ID), deleteCaptor.capture());
+        assertEquals("`linie` > 0", deleteCaptor.getValue().getCheck());
+    }
+
+    @Test
+    public void addDeleteNotNullConstraint_succeeds() throws DataServiceException, DataServiceConnectionException,
+            DatabaseNotFoundException, TableNotFoundException, SearchServiceException,
+            SearchServiceConnectionException, MalformedException {
+        final ConstraintAddDto add = ConstraintAddDto.builder()
+                .type("not_null")
+                .id(COLUMN_3_2_ID)
+                .build();
+        final ConstraintDeleteDto delete = ConstraintDeleteDto.builder()
+                .type("not_null")
+                .id(COLUMN_3_2_ID)
+                .build();
+
+        /* mock */
+        when(databaseRepository.save(any(Database.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(searchServiceGateway.update(any(Database.class)))
+                .thenReturn(DATABASE_1_BRIEF_DTO);
+
+        /* test */
+        Table response = tableService.addConstraint(TABLE_3, add);
+        assertFalse(column(response, "linie").getIsNullAllowed());
+
+        response = tableService.deleteConstraint(TABLE_3, delete);
+        assertTrue(column(response, "linie").getIsNullAllowed());
+        final ArgumentCaptor<ConstraintDeleteDto> deleteCaptor = forClass(ConstraintDeleteDto.class);
+        verify(dataServiceGateway)
+                .deleteTableConstraint(eq(TABLE_3.getDatabase().getId()), eq(TABLE_3_ID), deleteCaptor.capture());
+        assertEquals("linie", deleteCaptor.getValue().getColumn());
+        final ArgumentCaptor<ConstraintAddDto> addCaptor = forClass(ConstraintAddDto.class);
+        verify(dataServiceGateway)
+                .addTableConstraint(eq(TABLE_3.getDatabase().getId()), eq(TABLE_3_ID), addCaptor.capture());
+        assertEquals("linie", addCaptor.getValue().getColumn());
+    }
+
+    @Test
+    public void deleteCreateTableConstraints_succeeds() throws DataServiceException, DataServiceConnectionException,
+            DatabaseNotFoundException, TableNotFoundException, SearchServiceException,
+            SearchServiceConnectionException, MalformedException {
+        final ConstraintDeleteDto delete = ConstraintDeleteDto.builder()
+                .type("unique")
+                .id(UUID.fromString("408e398f-d157-49a1-8b45-87a070f3b4de"))
+                .build();
+
+        /* mock */
+        when(databaseRepository.save(any(Database.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(searchServiceGateway.update(any(Database.class)))
+                .thenReturn(DATABASE_1_BRIEF_DTO);
+
+        /* test */
+        final Table response = tableService.deleteConstraint(TABLE_2, delete);
+        assertEquals(0, response.getConstraints().getUniques().size());
+        verify(uniqueRepository)
+                .deleteById(UUID.fromString("408e398f-d157-49a1-8b45-87a070f3b4de"));
+        final ArgumentCaptor<ConstraintDeleteDto> deleteCaptor = forClass(ConstraintDeleteDto.class);
+        verify(dataServiceGateway)
+                .deleteTableConstraint(eq(TABLE_2.getDatabase().getId()), eq(TABLE_2_ID), deleteCaptor.capture());
+        assertEquals("uk_1", deleteCaptor.getValue().getName());
+    }
+
+    @Test
+    public void deleteCreateTableForeignKeyConstraint_succeeds() throws DataServiceException,
+            DataServiceConnectionException, DatabaseNotFoundException, TableNotFoundException, SearchServiceException,
+            SearchServiceConnectionException, MalformedException {
+        final ConstraintDeleteDto delete = ConstraintDeleteDto.builder()
+                .type("foreign_key")
+                .id(UUID.fromString("d79f0fb1-05d6-4f3e-a5e2-8559982b8516"))
+                .build();
+
+        /* mock */
+        when(databaseRepository.save(any(Database.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(searchServiceGateway.update(any(Database.class)))
+                .thenReturn(DATABASE_1_BRIEF_DTO);
+
+        /* test */
+        final Table response = tableService.deleteConstraint(TABLE_2, delete);
+        assertEquals(0, response.getConstraints().getForeignKeys().size());
+        verify(foreignKeyRepository)
+                .deleteReferencesByForeignKeyId(UUID.fromString("d79f0fb1-05d6-4f3e-a5e2-8559982b8516"));
+        verify(foreignKeyRepository)
+                .deleteById(UUID.fromString("d79f0fb1-05d6-4f3e-a5e2-8559982b8516"));
+        final ArgumentCaptor<ConstraintDeleteDto> deleteCaptor = forClass(ConstraintDeleteDto.class);
+        verify(dataServiceGateway)
+                .deleteTableConstraint(eq(TABLE_2.getDatabase().getId()), eq(TABLE_2_ID), deleteCaptor.capture());
+        assertEquals("fk_location", deleteCaptor.getValue().getName());
+    }
+
+    @Test
+    public void deleteCreateTableCheckConstraint_succeeds() throws DataServiceException, DataServiceConnectionException,
+            DatabaseNotFoundException, TableNotFoundException, SearchServiceException,
+            SearchServiceConnectionException, MalformedException {
+        final ConstraintDeleteDto delete = ConstraintDeleteDto.builder()
+                .type("check")
+                .id(UUID.fromString("85efe3c7-5661-4958-bffc-9aeb966d2279"))
+                .build();
+
+        /* mock */
+        when(foreignKeyRepository.save(any(ForeignKey.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(databaseRepository.save(any(Database.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(searchServiceGateway.update(any(Database.class)))
+                .thenReturn(DATABASE_1_BRIEF_DTO);
+
+        /* test */
+        final Table response = tableService.deleteConstraint(TABLE_2, delete);
+        assertEquals(0, response.getConstraints().getChecks().size());
+        final ArgumentCaptor<ConstraintDeleteDto> deleteCaptor = forClass(ConstraintDeleteDto.class);
+        verify(dataServiceGateway)
+                .deleteTableConstraint(eq(TABLE_2.getDatabase().getId()), eq(TABLE_2_ID), deleteCaptor.capture());
+        assertEquals("`mintemp` > 0", deleteCaptor.getValue().getCheck());
+        verify(checkConstraintRepository)
+                .deleteById(UUID.fromString("85efe3c7-5661-4958-bffc-9aeb966d2279"));
+    }
+
+    @Test
+    public void deleteCreateTableNotNullConstraint_succeeds() throws DataServiceException, DataServiceConnectionException,
+            DatabaseNotFoundException, TableNotFoundException, SearchServiceException,
+            SearchServiceConnectionException, MalformedException {
+        final ConstraintDeleteDto delete = ConstraintDeleteDto.builder()
+                .type("not_null")
+                .id(COLUMN_1_1_ID)
+                .build();
+
+        /* mock */
+        when(databaseRepository.save(any(Database.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(searchServiceGateway.update(any(Database.class)))
+                .thenReturn(DATABASE_1_BRIEF_DTO);
+
+        /* test */
+        final Table response = tableService.deleteConstraint(TABLE_1, delete);
+        assertTrue(column(response, "id").getIsNullAllowed());
+        final ArgumentCaptor<ConstraintDeleteDto> deleteCaptor = forClass(ConstraintDeleteDto.class);
+        verify(dataServiceGateway)
+                .deleteTableConstraint(eq(TABLE_1.getDatabase().getId()), eq(TABLE_1_ID), deleteCaptor.capture());
+        assertEquals("id", deleteCaptor.getValue().getColumn());
+    }
+
+    @Test
+    public void addConstraint_dataServiceMalformed_fails() throws DataServiceException, DataServiceConnectionException,
+            TableNotFoundException, MalformedException {
+        final ConstraintAddDto request = ConstraintAddDto.builder()
+                .type("check")
+                .check("`linie` > 0")
+                .build();
+
+        /* mock */
+        doThrow(new MalformedException("Failed to alter table constraint: check constraint violated"))
+                .when(dataServiceGateway)
+                .addTableConstraint(TABLE_3.getDatabase().getId(), TABLE_3_ID, request);
+
+        /* test */
+        assertThrows(MalformedException.class, () -> tableService.addConstraint(TABLE_3, request));
+    }
+
+    @Test
     public void create_succeeds() throws MalformedException, DataServiceException, DataServiceConnectionException,
             UserNotFoundException, TableNotFoundException, DatabaseNotFoundException, TableExistsException,
             SearchServiceException, SearchServiceConnectionException, OntologyNotFoundException,
@@ -1087,6 +1401,98 @@ public class TableServiceUnitTest extends BaseTest {
                 .deleteReferencesByTableId(TABLE_4_ID);
         verify(foreignKeyRepository)
                 .deleteByTableId(TABLE_4_ID);
+    }
+
+    private TableDto inspectedTable(Table table, List<ColumnDto> columns, ConstraintsDto constraints) {
+        return TableDto.builder()
+                .id(table.getId())
+                .databaseId(table.getDatabase().getId())
+                .name(table.getName())
+                .internalName(table.getInternalName())
+                .description(table.getDescription())
+                .isVersioned(table.getIsVersioned())
+                .isPublic(table.getIsPublic())
+                .isSchemaPublic(table.getIsSchemaPublic())
+                .queueName(table.getQueueName())
+                .columns(columns)
+                .constraints(constraints)
+                .build();
+    }
+
+    private UniqueDto uniqueDto(Table table, String name, String columnInternalName) {
+        final TableColumn column = column(table, columnInternalName);
+        return UniqueDto.builder()
+                .name(name)
+                .table(tableBriefDto(table))
+                .columns(List.of(columnBriefDto(column)))
+                .build();
+    }
+
+    private ForeignKeyDto foreignKeyDto(Table table, Table referencedTable, String name, String columnInternalName,
+                                        String referencedColumnInternalName) {
+        return ForeignKeyDto.builder()
+                .name(name)
+                .table(tableBriefDto(table))
+                .referencedTable(tableBriefDto(referencedTable))
+                .onUpdate(ReferenceTypeDto.CASCADE)
+                .onDelete(ReferenceTypeDto.NO_ACTION)
+                .references(List.of(ForeignKeyReferenceDto.builder()
+                        .column(columnBriefDto(column(table, columnInternalName)))
+                        .referencedColumn(columnBriefDto(column(referencedTable, referencedColumnInternalName)))
+                        .build()))
+                .build();
+    }
+
+    private TableBriefDto tableBriefDto(Table table) {
+        return TableBriefDto.builder()
+                .id(table.getId())
+                .databaseId(table.getDatabase().getId())
+                .name(table.getName())
+                .internalName(table.getInternalName())
+                .description(table.getDescription())
+                .isVersioned(table.getIsVersioned())
+                .isPublic(table.getIsPublic())
+                .isSchemaPublic(table.getIsSchemaPublic())
+                .ownedBy(table.getOwnedBy())
+                .build();
+    }
+
+    private ColumnBriefDto columnBriefDto(TableColumn column) {
+        return ColumnBriefDto.builder()
+                .id(column.getId())
+                .databaseId(column.getTable().getDatabase().getId())
+                .tableId(column.getTable().getId())
+                .name(column.getName())
+                .internalName(column.getInternalName())
+                .columnType(ColumnTypeDto.valueOf(column.getColumnType().name()))
+                .build();
+    }
+
+    private List<ColumnDto> nullability(List<ColumnDto> columns, String internalName, boolean nullAllowed) {
+        return columns.stream()
+                .map(column -> ColumnDto.builder()
+                        .id(column.getId())
+                        .databaseId(column.getDatabaseId())
+                        .tableId(column.getTableId())
+                        .ordinalPosition(column.getOrdinalPosition())
+                        .name(column.getName())
+                        .internalName(column.getInternalName())
+                        .columnType(column.getColumnType())
+                        .size(column.getSize())
+                        .d(column.getD())
+                        .isNullAllowed(column.getInternalName().equals(internalName) ? nullAllowed : column.getIsNullAllowed())
+                        .enums(column.getEnums())
+                        .sets(column.getSets())
+                        .build())
+                .toList();
+    }
+
+    private TableColumn column(Table table, String internalName) {
+        return table.getColumns()
+                .stream()
+                .filter(column -> column.getInternalName().equals(internalName))
+                .findFirst()
+                .orElseThrow();
     }
 
 }
