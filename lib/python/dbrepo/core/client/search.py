@@ -382,7 +382,7 @@ def percolator_document(value, mapping, path=()):
     if isinstance(value, dict):
         properties = mapping.get('properties', {})
         return {name: percolator_document(item, properties.get(name, {}), path + (name,))
-                for name, item in value.items()}
+                for name, item in value.items() if name in properties}
     if mapping.get('type') in ('date', 'date_nanos') and isinstance(value, str) and ' ' in value:
         date_format = mapping.get('format', 'strict_date_optional_time||epoch_millis')
         if 'date_optional_time' in date_format:

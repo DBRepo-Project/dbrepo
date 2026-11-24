@@ -558,3 +558,15 @@ def test_check_constraints_follow_established_percolator_mapping():
                                                                         'check': {'type': 'text'}}}))
     assert object_result['tables'][0]['constraints']['checks'] == [check, {'check': 'height > 0'}]
     assert value['tables'][0]['constraints']['checks'] == [check, 'height > 0']
+
+
+def test_percolator_document_excludes_unmapped_fields():
+    from dbrepo.core.client.search import percolator_document
+    value = {'name': 'catalog', 'never_indexed_field': 'currentonlytoken',
+             'tables': [{'name': 'measurements', 'never_indexed_column': 'hidden'}]}
+    mapping = {'properties': {'name': {'type': 'text'},
+                              'tables': {'properties': {'name': {'type': 'text'}}}}}
+
+    assert percolator_document(value, mapping) == {
+        'name': 'catalog', 'tables': [{'name': 'measurements'}]}
+    assert value['never_indexed_field'] == 'currentonlytoken'
