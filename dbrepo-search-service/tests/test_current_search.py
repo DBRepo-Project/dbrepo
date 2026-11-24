@@ -159,6 +159,8 @@ def test_unmapped_fields_remain_no_match_after_mapping_growth(indexed, credentia
     assert response.get_json() == []
     assert [item['id'] for item in mapped.get_json()] == [indexed.id]
     assert 'never_indexed_field' not in mapped.get_json()[0]
+    settings = backend.indices.get_settings(index=SearchServiceClient.QUERY_INDEX)
+    assert int(settings[SearchServiceClient.QUERY_INDEX]['settings']['index']['mapping']['total_fields']['limit']) >= 2000
 
 
 @pytest.mark.parametrize('kind', TYPES)

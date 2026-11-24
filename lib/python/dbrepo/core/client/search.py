@@ -37,6 +37,7 @@ class SearchServiceClient:
     REQUEST_BUDGET = 30
     QUERY_LIFETIME = 300
     CLEANUP_LIMIT = 100
+    QUERY_FIELD_LIMIT = 2000
 
     def __init__(self, host: str = None, port: int = 9000, username: str = 'admin', password: str = 'admin'):
         if host is None:
@@ -225,7 +226,8 @@ class SearchServiceClient:
         if existing_properties is None:
             try:
                 created = self._engine_call(backend.indices.create, deadline, index=self.QUERY_INDEX,
-                                  body={'settings': {'number_of_shards': 1, 'number_of_replicas': 0},
+                                  body={'settings': {'number_of_shards': 1, 'number_of_replicas': 0,
+                                                     'index.mapping.total_fields.limit': self.QUERY_FIELD_LIMIT},
                                         'mappings': {'properties': properties}})
             except RequestError as error:
                 if error.error != 'resource_already_exists_exception':
@@ -235,6 +237,11 @@ class SearchServiceClient:
                     raise ServiceConnectionError('Temporary search index creation was not acknowledged')
                 existing_properties = properties
         if properties != existing_properties:
+            if existing_properties is not None:
+                settings = self._engine_call(backend.indices.put_settings, deadline, index=self.QUERY_INDEX,
+                                             body={'index.mapping.total_fields.limit': self.QUERY_FIELD_LIMIT})
+                if not isinstance(settings, dict) or settings.get('acknowledged') is not True:
+                    raise ServiceConnectionError('Temporary search field limit update was not acknowledged')
             updated = self._engine_call(backend.indices.put_mapping, deadline, index=self.QUERY_INDEX,
                               body={'properties': {name: mapping for name, mapping in properties.items()
                                                    if name not in (self.QUERY_FIELD, self.EXPIRY_FIELD)}})
