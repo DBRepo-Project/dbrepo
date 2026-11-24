@@ -540,3 +540,21 @@ def test_date_normalization_keeps_text_and_custom_formats():
     assert result == {**value, 'created': '2026-11-06T10:44:58',
                       'nanos': '2026-11-06T10:44:58.123456789'}
     assert value['created'] == '2026-11-06 10:44:58'
+
+
+def test_check_constraints_follow_established_percolator_mapping():
+    from dbrepo.core.client.search import percolator_document
+    check = {'id': 'check-id', 'check': 'weight > 100'}
+    value = {'tables': [{'constraints': {'checks': [check, 'height > 0']}}]}
+
+    def mapping(check_mapping):
+        return {'properties': {'tables': {'properties': {'constraints': {
+            'properties': {'checks': check_mapping}}}}}}
+
+    text_result = percolator_document(value, mapping({'type': 'text'}))
+    assert text_result['tables'][0]['constraints']['checks'] == ['weight > 100', 'height > 0']
+
+    object_result = percolator_document(value, mapping({'properties': {'id': {'type': 'text'},
+                                                                        'check': {'type': 'text'}}}))
+    assert object_result['tables'][0]['constraints']['checks'] == [check, {'check': 'height > 0'}]
+    assert value['tables'][0]['constraints']['checks'] == [check, 'height > 0']

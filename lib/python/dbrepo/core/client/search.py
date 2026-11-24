@@ -370,13 +370,19 @@ class SearchServiceClient:
         return results
 
 
-def percolator_document(value, mapping):
-    """Normalize only mapped dates; preserve the remaining authorized metadata."""
+def percolator_document(value, mapping, path=()):
+    """Match current metadata to the established percolator field types."""
+    if path == ('tables', 'constraints', 'checks'):
+        if mapping.get('type') == 'text' and isinstance(value, dict):
+            return value['check']
+        if 'properties' in mapping and isinstance(value, str):
+            return {'check': value}
     if isinstance(value, list):
-        return [percolator_document(item, mapping) for item in value]
+        return [percolator_document(item, mapping, path) for item in value]
     if isinstance(value, dict):
         properties = mapping.get('properties', {})
-        return {name: percolator_document(item, properties.get(name, {})) for name, item in value.items()}
+        return {name: percolator_document(item, properties.get(name, {}), path + (name,))
+                for name, item in value.items()}
     if mapping.get('type') in ('date', 'date_nanos') and isinstance(value, str) and ' ' in value:
         date_format = mapping.get('format', 'strict_date_optional_time||epoch_millis')
         if 'date_optional_time' in date_format:
